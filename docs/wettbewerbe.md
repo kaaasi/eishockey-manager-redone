@@ -28,7 +28,7 @@ Heimspiele gehen über die gemeinsame Spielabrechnung `SettleHomeMatch` (genau e
 | Nach dem dritten Termin: Sieger auf Platz 2k, nächste Runde = Sieger der Reihe nach, dann 20 zufällige Vertauschungen | 0x3489D, 0x3494B |
 | Pokalsieger nach dem dritten Endspieltermin (Titel „DEB Pokalsieger“, Meisterfoto – im Video 1995: ESV Kaufbeuren nach dem Deutschen Meister) | 0x34ED0, Karriere 17:37 |
 | Rundennamen „Erste Runde“, „Achtelfinale“, „Viertelfinale“, „Halbfinale“, „Endspiel“ | DGROUP 0x2576 |
-| `[ORIGINAL]` Unentschieden: Endstand mit Marke + 30 wie im Original – schneller Weg random(0, 2) je Seite bis ungleich, Minutenweg Verlängerung und Penaltyschießen (Gleichstand + Treffer 2 … 5); Marken 0/1/2 in `CupTie.Marks`, ein bzw. zwei Punkte in der Übersicht (`CupMatch`, Spur wettbewerbe-spiel Teil 1) | 0x376F0–0x377A3, 0x39770–0x397B3, 0x38402, 0x338AB |
+| `[ORIGINAL]` Unentschieden: Endstand mit Marke + 30 wie im Original – schneller Weg ein Wurf random(0, 2) je Seite mit zwei Marken, stehender Gleichstand für den Heimverein (0x32B9D, 0x3775D, 0x34C76; #925 (b), Spur re-reste Teil 2); die ersten beiden gerechneten Paarungen eines Termins mit offener Paarung dahinter würfeln auch ungleich bis ungleich mit einer Marke (RR-01, `MatchEngine.DebCupExtraRoll`), Minutenweg Verlängerung und Penaltyschießen (Gleichstand + Treffer 2 … 5); Marken 0/1/2 in `CupTie.Marks`, ein bzw. zwei Punkte in der Übersicht (`CupMatch`, Spur wettbewerbe-spiel Teil 1) | 0x376F0–0x377A3, 0x39770–0x397B3, 0x38402, 0x338AB |
 
 ### Bildschirm „DEB-Pokal Auslosung“ (`UI/Screens/Competitions/DebCupDrawScreen.cs`)
 

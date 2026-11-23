@@ -333,6 +333,13 @@ public sealed class MatchReport
     /// Weg der Pokale die Zusatztore random(0, 2) je Seite (0x376F0); sonst null. Der Spielstand oben bleibt der Gleichstand.
     /// </summary>
     public (int Home, int Away)? ShootoutGoals { get; set; }
+
+    /// <summary>
+    /// Zusatztore aus dem schnellen Weg der Pokale (0x376F0, <see cref="OriginalMinutes.FastCupResultWithTie"/>) statt aus dem
+    /// Penaltyschießen 0x3901B des Minutenwegs; <see cref="CupMatch.FromReport"/> bildet daraus im DEB-Pokal zwei Marken und den
+    /// stehenden Gleichstand für den Heimverein (#925 (b), Spur re-reste Teil 2).
+    /// </summary>
+    public bool FastCupPath { get; set; }
 }
 
 /// <summary>Minutenrechnung des Originals (Spur spielberechnung, Teil 2): Abschluss, Strafbank, Strafen, Ablauf je Minute.</summary>
@@ -604,7 +611,7 @@ public static partial class OriginalMinutes
     public static (int Home, int Away, bool Shootout) FastCupResult(MatchSide home, MatchSide away, bool homeIsClub,
         bool awayIsClub, bool worldCup, bool playoff, bool knockOut, Random random)
     {
-        var (h, g, shootout, _) = FastCupResultWithTie(home, away, homeIsClub, awayIsClub, worldCup, playoff, knockOut, random);
+        var (h, g, shootout, _, _) = FastCupResultWithTie(home, away, homeIsClub, awayIsClub, worldCup, playoff, knockOut, random);
         return (h, g, shootout);
     }
 
@@ -629,12 +636,21 @@ public static partial class OriginalMinutes
     ///   leer seit dem letzten Termin), also bei der ersten gerechneten Paarung eines Termins – dann wird bis ungleich gewürfelt
     ///   und die Zusatztore zählen zum Ergebnis (Wertung 0x315E9 nach Abzug der Marke).</item>
     /// </list>
-    /// DEB-Pokal, Europapokal und WM-Endrunde wie bisher (A003: eine Marke, bis ungleich; Prüfung am Video vor einer Änderung,
-    /// #925).
+    /// DEB-Pokal (<paramref name="debCup"/>, Spur re-reste Teil 2, <c>docs/analyse/re-reste-23.md</c> §1): [ORIGINAL] 0x32AA3
+    /// markiert auch die Zeile 0 (0x32AF4 <c>cmp byte [bp+0x6],0x1</c>; Gleichstand → Heimbyte + 30, Datei 0x32B9D–0x32BAA), der
+    /// Vergleich 0x37748 ist also auch hier nie gleich – genau ein Wurf, der Gleichstand bleibt bei x = y stehen; die Wertung
+    /// 0x34C76 (<c>cmp al,[bx+0x5c4c]; jnc</c>) zählt Heim ≥ Gast für den Heimverein (<see cref="CupMatch.FromReport"/>).
+    /// Vorher würfelte das Remake im DEB-Pokal bis ungleich (A003). Europapokal und WM-Endrunde (Zeilen 2/3 in 0x32AA3 nicht
+    /// gelesen) wie bisher: bis ungleich, eine Marke.
+    /// Ungleiches Ergebnis im DEB-Pokal mit <paramref name="debExtraRoll"/> (RR-01, Review #965; <see cref="MatchEngine.DebCupExtraRoll"/>):
+    /// [ORIGINAL] 0x32AA3 meldet auch eine noch offene Paarung des Termins (0:0 bzw. 30:0) als Gleichstand, 0x376F0 würfelt dann
+    /// für die eben gerechnete Paarung bis Heim + x ≠ Gast + y (0x37724–0x37748, Heimbyte ohne Marke), 0x3775D setzt eine Marke;
+    /// <c>Shootout</c> mit <c>Tie</c> = Heimtore und <c>AwayBeforeRoll</c> = Gasttore vor dem Wurf (<see cref="CupMatch.FromReport"/>:
+    /// Endstand = Summe, eine Marke, Sieger nach der Summe 0x34C76). Bei eigenem Gleichstand gilt <c>AwayBeforeRoll</c> = <c>Tie</c>.
     /// </summary>
-    public static (int Home, int Away, bool Shootout, int Tie) FastCupResultWithTie(MatchSide home, MatchSide away,
-        bool homeIsClub, bool awayIsClub, bool worldCup, bool playoff, bool knockOut, Random random,
-        bool playoffExtraRoll = false)
+    public static (int Home, int Away, bool Shootout, int Tie, int AwayBeforeRoll) FastCupResultWithTie(MatchSide home,
+        MatchSide away, bool homeIsClub, bool awayIsClub, bool worldCup, bool playoff, bool knockOut, Random random,
+        bool playoffExtraRoll = false, bool debCup = false, bool debExtraRoll = false)
     {
         FastCupCalls++;
         var si = home.Strength + (homeIsClub ? 6 : 0);
@@ -676,7 +692,7 @@ public static partial class OriginalMinutes
         {
             var ownTie = h == g;
             if (!ownTie && !playoffExtraRoll)
-                return (h, g, false, 0);
+                return (h, g, false, 0, 0);
             int px, py;
             do
             {
@@ -684,18 +700,20 @@ public static partial class OriginalMinutes
                 py = OriginalMatch.Rnd(random, 0, 2);
             }
             while (!ownTie && h + px == g + py);
-            return (h + px, g + py, ownTie, ownTie ? h : 0);
+            return (h + px, g + py, ownTie, ownTie ? h : 0, ownTie ? g : 0);
         }
-        if (!knockOut || h != g)
-            return (h, g, false, 0);
+        if (!knockOut || (h != g && !(debCup && debExtraRoll)))
+            return (h, g, false, 0, 0);
         int x, y;
         do
         {
             x = OriginalMatch.Rnd(random, 0, 2);
             y = OriginalMatch.Rnd(random, 0, 2);
         }
-        while (h + x == g + y);
-        return (h + x, g + y, true, h);
+        // [ORIGINAL] DEB-Pokal, eigener Gleichstand: ein Wurf, das Heimbyte trägt die Marke aus 0x32B9D (#925 (b)); ungleiches
+        // Ergebnis mit Zusatzwurf (RR-01): Heimbyte ohne Marke, 0x37748 schleift bis Heim + x ≠ Gast + y.
+        while (h + x == g + y && !(debCup && h == g));
+        return (h + x, g + y, true, h, g);
     }
 
     /// <summary>

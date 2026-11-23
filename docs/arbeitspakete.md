@@ -103,7 +103,11 @@ Modell der Spur, Fixläufe ohne Befund Sonnet 5.5. Plan-Review Sonnet 5.5. Gesam
   A003); #938 P3-3 Belastungszug 0x8C53 im Länderspiel zu stark?; A876 (Zähler Satz 5 über den Saisonwechsel) und A917 (HOK-Import
   0x18–0x1D nach Neuaufstellung, Datei 0x54D84–0x54DAA) nur bestätigen bzw. Klasse begründen; 2. belegte Abweichungen umsetzen (nach
   Merge von `v-rest`), sonst Vermerk K/E bzw. „nicht belegt“ im PR. Fixes #925.
-- **Dateien:** `docs/analyse/re-reste-23.md`, Stellen oben, Tests. **Erstreview:** Opus 5.5. **Status:** wartet auf Start.
+- **Dateien:** `docs/analyse/re-reste-23.md`, Stellen oben, Tests. **Erstreview:** Opus 5.5. **Status:** Teil 1 und 2 fertig
+  (PR #965, 23.11.2026): #925 (b) im DEB-Pokal umgesetzt (`FastCupResultWithTie` `debCup`, `CupMatch.FromReport` zwei Marken, Heimverein),
+  #938 P3-3 nicht belegt (Kommentar 0x8C53), A876/A917 K bestätigt – Review. Fixlauf RR-01/RR-02 (23.11.2026): Zusatzwurf des
+  schnellen Wegs auch für ungleiche Paarungen mit offener Paarung dahinter (`MatchEngine.DebCupExtraRoll`, nur die ersten zwei je
+  Termin – Beleg strittig zu „jede Paarung“), Wahrscheinlichkeiten im Bericht 1/3 – Leitstelle-Delta.
 
 ### Spur `abgleich-dosbox-22` – DOSBox-Aufnahme `runde-22` Sitzung 1 (Welle 1)
 

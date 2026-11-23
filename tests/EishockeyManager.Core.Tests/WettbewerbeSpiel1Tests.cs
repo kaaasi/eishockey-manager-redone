@@ -31,9 +31,14 @@ public class WettbewerbeSpiel1Tests
     }
 
     /// <summary>
-    /// Regressionstest (vorher rot): Kein Spiel des DEB-Pokals endet im Spielstand unentschieden – nach dem Penaltyschießen
-    /// steht der Endstand (Gleichstand + Tore). [ORIGINAL] Schneller Weg 0x37761: Heim = h + random(0, 2) + 30, Gast =
-    /// g + random(0, 2), bis ungleich; Minutenweg 0x39789/0x397B3: Gleichstand + Penaltytore 2 … 5.
+    /// Regressionstest (vorher rot): Nach dem Penaltyschießen steht der Endstand (Gleichstand + Tore). [ORIGINAL] Minutenweg
+    /// 0x39789/0x397B3: Gleichstand + Penaltytore 2 … 5, ungleich, eine Marke. Schneller Weg 0x37761: Heim = h + random(0, 2) + 30,
+    /// Gast = g + random(0, 2) – seit Spur re-reste Teil 2 (#925 (b), <c>docs/analyse/re-reste-23.md</c> §1) genau ein Wurf mit zwei
+    /// Marken (0x32B9D, 0x3775D); ein stehender Gleichstand zählt für den Heimverein (0x34C76). Vorher verlangte der Test auch dort
+    /// „bis ungleich“ und eine Marke (Rückschaltprobe: alter Code → rot, Marke 1 statt 2). Fixlauf RR-01 (Review #965, R15-E2 = C):
+    /// eine ungleiche Paarung mit offener Paarung dahinter bekommt den Zusatzwurf mit einer Marke (0x32B23/0x32B3F → 0x376F0,
+    /// 0x3775D; <c>MatchEngine.DebCupExtraRoll</c>) – im schnellen Weg sind deshalb Marken 0, 1 und 2 möglich; Marke 1 nur ungleich
+    /// mit Sieger = Penaltysieger (Rückschaltprobe: alter Code + dieser Test → grün, da nur gelockert; RR-01 prüft <c>ReResteTests</c>).
     /// </summary>
     [Theory]
     // Fixlauf wettbewerbe-rest nach Rebase auf main 3cd9169 (R15-E2 = C): Minutenweg mit Saat 4 statt 5 – mit #784 und dem Spielplan
@@ -50,13 +55,30 @@ public class WettbewerbeSpiel1Tests
         var cup = Assert.IsType<DebCup>(game.DebCup);
         var games = cup.Rounds.SelectMany(r => r).SelectMany(t => t.Games).ToList();
         Assert.NotEmpty(games);
-        Assert.All(games, m => Assert.NotEqual(m.HomeGoals, m.AwayGoals));
-        var marked = cup.Rounds.SelectMany(r => r).SelectMany(t => t.Games.Select((m, i) => (Match: m, Marks: t.MarksOf(i))))
-            .Where(x => x.Marks == 1).ToList();
+        var withMarks = cup.Rounds.SelectMany(r => r).SelectMany(t => t.Games.Select((m, i) => (Match: m, Marks: t.MarksOf(i)))).ToList();
+        // Spiele des Managervereins laufen auch ohne Anzeigeschalter durch die Minutenschleife (Vereinsfeld 0x16, MatchEngine.Live);
+        // die Prüfungen des schnellen Wegs gelten nur für die übrigen (Fixlauf RR-01: der geänderte Zufallsstrom brachte bei Saat 5
+        // ein Verlängerungstor des Managervereins, Marke 2 ohne Penaltysieger).
+        var managerClubs = game.ActiveManagers.Select(m => m.ClubIndex).ToHashSet();
+        var fast = withMarks.Where(x => minuteLoop || !(managerClubs.Contains(x.Match.Home) || managerClubs.Contains(x.Match.Away))).ToList();
+        if (minuteLoop)
+            Assert.All(games, m => Assert.NotEqual(m.HomeGoals, m.AwayGoals));
+        else
+            // #925 (b): stehender Gleichstand nur mit zwei Marken, Sieger der Heimverein (0x34C76 jnc).
+            Assert.All(withMarks.Where(x => x.Match.HomeGoals == x.Match.AwayGoals),
+                x => Assert.Equal((2, x.Match.Home), (x.Marks, x.Match.Winner)));
+        // Minutenweg: Marke 1 Penaltyschießen, 2 Tor in der Verlängerung; schneller Weg: 2 (Wurf bei Gleichstand) oder 1 (Wurf einer
+        // ungleichen Paarung mit offener Paarung dahinter, RR-01 – Endstand ungleich).
+        var expectedMarks = minuteLoop ? 1 : 2;
+        if (!minuteLoop)
+            Assert.All(fast.Where(x => x.Marks == 1),
+                x => Assert.NotEqual(x.Match.HomeGoals, x.Match.AwayGoals));
+        var marked = fast.Where(x => x.Marks == expectedMarks).ToList();
         Assert.True(marked.Count > 0, "Kein Penaltyschießen in der Saison – Test prüft nichts");
-        Assert.All(marked, x => Assert.Equal(x.Match.Winner, x.Match.PenaltyWinner));
-        // Schneller Weg: random(0, 2) je Seite → Abstand 1 oder 2; Minutenweg: Penaltytore 2 … 5 → Abstand 1 … 3.
-        Assert.All(marked, x => Assert.InRange(Math.Abs(x.Match.HomeGoals - x.Match.AwayGoals), 1, minuteLoop ? 3 : 2));
+        Assert.All(fast.Where(x => x.Marks == expectedMarks || (!minuteLoop && x.Marks == 1)),
+            x => Assert.Equal(x.Match.Winner, x.Match.PenaltyWinner));
+        // Schneller Weg: ein Wurf random(0, 2) je Seite → Abstand 0 … 2; Minutenweg: Penaltytore 2 … 5 → Abstand 1 … 3.
+        Assert.All(marked, x => Assert.InRange(Math.Abs(x.Match.HomeGoals - x.Match.AwayGoals), minuteLoop ? 1 : 0, minuteLoop ? 3 : 2));
     }
 
     /// <summary>
@@ -162,7 +184,9 @@ public class WettbewerbeSpiel1Tests
 
     /// <summary>
     /// Schneller Weg: Der Bericht trägt die Zusatztore random(0, 2) als <see cref="MatchReport.ShootoutGoals"/>; der Spielstand
-    /// des Berichts bleibt der Gleichstand (Spielerzähler nur für echte Tore).
+    /// des Berichts bleibt der Gleichstand (Spielerzähler nur für echte Tore). Seit Spur re-reste Teil 2 (#925 (b)) darf der Wurf im
+    /// DEB-Pokal gleich bleiben (x = y, <c>ShootoutHomeWins</c> = false, Wertung für den Heimverein in <see cref="CupMatch.FromReport"/>);
+    /// vorher verlangte der Test x ≠ y (Rückschaltprobe: alter Code → grün, da bis ungleich; die Umsetzung prüft <c>ReResteTests</c>).
     /// </summary>
     [Fact]
     public void FastPath_ReportCarriesExtraGoals()
@@ -182,7 +206,7 @@ public class WettbewerbeSpiel1Tests
             var (x, y) = Assert.IsType<(int, int)>(report.ShootoutGoals);
             Assert.InRange(x, 0, 2);
             Assert.InRange(y, 0, 2);
-            Assert.NotEqual(x, y);
+            Assert.True(report.FastCupPath);
             Assert.Equal(x > y, report.ShootoutHomeWins);
         }
         Assert.True(ties > 0);
