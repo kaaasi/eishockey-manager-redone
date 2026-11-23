@@ -43,13 +43,27 @@ public sealed class LineupScreen : Screen
     public static Rect BlockBox(int block) => new(246, 15 + 42 * block, 72, 38);
     public static readonly Rect GoalieBox = new(246, 183, 72, 38);
 
-    /// <summary>Knopf eines Aufstellungsplatzes.</summary>
-    public static Rect SlotButton(LineupSlot slot) => slot.Role switch
+    /// <summary>Knopf eines Aufstellungsplatzes bei geschlossenem sechsten Feldspielerplatz (dessen Knopf ist dann leer).</summary>
+    public static Rect SlotButton(LineupSlot slot) => SlotButton(slot, sixthOpen: false);
+
+    /// <summary>
+    /// Knopf eines Aufstellungsplatzes. [ORIGINAL] #939 (A937): Mit offenem sechsten Feldspielerplatz (<see cref="Lineup.SixthSkaterOpen"/>)
+    /// hat die Abwehrhälfte der Reihe 1 drei Knöpfe auf den x-Werten des Sturms (Original x 0x102 + 0x12 · i statt 0x10B, Datei
+    /// 0x40681–0x4068D und 0x413E8–0x414B4); geschlossen ist der sechste Platz unsichtbar (<see cref="Rect"/> der Breite 0).
+    /// </summary>
+    public static Rect SlotButton(LineupSlot slot, bool sixthOpen)
     {
-        PlayerRole.Goalkeeper => new Rect(276, 203, TeamUi.SmallButtonWidth, TeamUi.SmallButtonHeight),
-        PlayerRole.Defender => new Rect(267 + 18 * slot.Index, 35 + 42 * slot.Block, TeamUi.SmallButtonWidth, TeamUi.SmallButtonHeight),
-        _ => new Rect(258 + 18 * slot.Index, 22 + 42 * slot.Block, TeamUi.SmallButtonWidth, TeamUi.SmallButtonHeight),
-    };
+        if (slot.IsSixthSkater && !sixthOpen)
+            return default;
+        return slot.Role switch
+        {
+            PlayerRole.Goalkeeper => new Rect(276, 203, TeamUi.SmallButtonWidth, TeamUi.SmallButtonHeight),
+            PlayerRole.Defender when sixthOpen && slot.Block == 0 =>
+                new Rect(258 + 18 * slot.Index, 35, TeamUi.SmallButtonWidth, TeamUi.SmallButtonHeight),
+            PlayerRole.Defender => new Rect(267 + 18 * slot.Index, 35 + 42 * slot.Block, TeamUi.SmallButtonWidth, TeamUi.SmallButtonHeight),
+            _ => new Rect(258 + 18 * slot.Index, 22 + 42 * slot.Block, TeamUi.SmallButtonWidth, TeamUi.SmallButtonHeight),
+        };
+    }
 
     private readonly Screen _back;
     private readonly MessageBox _message;
@@ -268,14 +282,17 @@ public sealed class LineupScreen : Screen
             case LineupResult.NoRoom:
                 _message.ShowShort(ShortMessageTexts.NoRoom.Line1, ShortMessageTexts.NoRoom.Line2);
                 break;
+            case LineupResult.SixSkaters:
+                _message.ShowShort(ShortMessageTexts.SixSkaters.Line1, ShortMessageTexts.SixSkaters.Line2);
+                break;
         }
     }
 
-    private static bool OnSlot(int x, int y, out LineupSlot slot)
+    private bool OnSlot(int x, int y, out LineupSlot slot)
     {
         foreach (var s in LineupSlot.All)
         {
-            if (SlotButton(s).Contains(x, y))
+            if (SlotButton(s, Club.Lineup.SixthSkaterOpen).Contains(x, y))
             {
                 slot = s;
                 return true;
@@ -351,7 +368,9 @@ public sealed class LineupScreen : Screen
 
         foreach (var slot in LineupSlot.All)
         {
-            var r = SlotButton(slot);
+            var r = SlotButton(slot, club.Lineup.SixthSkaterOpen);
+            if (r.W == 0)
+                continue;
             var player = club.Lineup[slot];
             TeamUi.SmallButton(s, Assets, r.X, r.Y, player?.Number.ToString() ?? "", pressed: false);
         }

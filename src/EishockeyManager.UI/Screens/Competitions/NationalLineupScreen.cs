@@ -287,6 +287,8 @@ public sealed class NationalLineupScreen : Screen
         foreach (var slot in LineupSlot.All)
         {
             var r = LineupScreen.SlotButton(slot);
+            if (r.W == 0)
+                continue; // sechster Feldspielerplatz: Nationalaufstellung folgt in Teil 3 (#939, A875)
             var number = coach.Formation[slot] is { } player ? coach.NumberOf(player)?.ToString() ?? "" : "";
             TeamUi.SmallButton(s, Assets, r.X, r.Y, number, pressed: false);
         }

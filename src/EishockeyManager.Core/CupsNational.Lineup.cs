@@ -40,6 +40,12 @@ public enum LineupResult
 
     /// <summary>Spieler aus seinem Platz genommen (Klick auf einen Aufgestellten in der Kaderliste, Datei 0x40F7C–0x4116F).</summary>
     TakenOut,
+
+    /// <summary>
+    /// „Schon 6 Feldspieler / auf dem Eis !“ – Torhüter in die Torhüterreihe, während der sechste Feldspielerplatz offen ist (Datei
+    /// 0x40EF7, <see cref="Lineup.SixthSkaterOpen"/>).
+    /// </summary>
+    SixSkaters,
 }
 
 /// <summary>
@@ -308,7 +314,7 @@ public sealed partial class NationalCoach
     /// </summary>
     public void ClearFormation()
     {
-        foreach (var slot in LineupSlot.All)
+        foreach (var slot in LineupSlot.ClearOrder)
             ClearSlot(slot);
     }
 

@@ -107,9 +107,8 @@ public sealed class LiveSquad
                 Position = club.Lineup.PositionOf(p),
                 Dressed = p.Available && club.IsDressed(p),
                 Energy = MatchEngine.PreparedPlayerEnergy(p),
-                // A677: wie bisher die Aufstellung (CreditLineup), jetzt zu Spielbeginn festgehalten. [APPROX] Rebase auf main f7f0410:
-                // der Feldspieler im Tor (A672, Platz +0x15 = 1 ohne Aufstellungsplatz) zählt wie auf main nicht; ob 0x54910 ihn über
-                // +0x15 mitzählt, ist nicht gelesen.
+                // A677: wie bisher die Aufstellung (CreditLineup), jetzt zu Spielbeginn festgehalten. Der Feldspieler im Tor (A672) steht
+                // seit #939 auf dem sechsten Feldspielerplatz und zählt damit mit. [APPROX] Ob 0x54910 über +0x15 zählt, ist nicht gelesen.
                 Played = club.Lineup.FindSlot(p) is not null,
             });
         }

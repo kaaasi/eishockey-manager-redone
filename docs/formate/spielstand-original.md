@@ -417,7 +417,7 @@ jetzt eigens (vorher von der Regel 0x19–0x1C verdeckt, R727N2-01). Im Modus �
 Spiel dieses Modus setzt den Kader nicht in den Pool (`SeatManagerSquads`); für ihn gilt im Export die alte Ersatzregel
 (`AddUnseatedSquadPlayers`: Platz gleichen Namens beim eigenen Verein, sonst erster freier Ligaplatz seiner Art).
 
-## Feldkarte Remake-Spielstand (Schema 62) ↔ HOK
+## Feldkarte Remake-Spielstand (Schema 63) ↔ HOK
 
 Spur `hok-import`, Teil 1 (Runde 14, E14-1 C). Jedes Feld des Remake-Spielstands (`SaveGame.SchemaDescription()`, ohne die
 Hilfsfelder von Tupeln) steht hier genau einmal; der Test `OriginalImportFieldMapTests` prüft das gegen das Schema und wird
@@ -696,7 +696,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `Tactics._shownAutoEffort` | A | `far:9657+0x26` | nur Nationalteam: Vereinssatz +0x26–0x2B |
 | `Lineup._defenders` | A | `5DC3+0x15` | Reihe 1–3 ohne Sturm-Bit, Nationalteam Satz 5 |
 | `Lineup._forwards` | A | `5DC3+0x15` | Reihe 1–3 mit Bit 0x80 |
-| `Lineup._goalieStandIn` | U | `5DC3+0x15` | Feldspieler mit +0x15 = 1 ohne Torhüter in der Aufstellung (A672, Datei 0x42718–0x42777; Spur `einzelpunkte`, Schema 56); der Import legt ihn noch nicht an: niemand `[APPROX]` |
+| `Lineup._sixthSkater` | A | `5DC3+0x15` | Sechster Feldspielerplatz: dritter Spieler der Abwehrhälfte in Reihe 1 (+0x15 = 1), auch der Feldspieler im Tor (A672, Datei 0x42718–0x42777); Gitter Datei 0x40478–0x404D7, Spur `feldspieler-sechs` (#939, Schema 63, vorher `_goalieStandIn` U) |
 | `Lineup._goalkeeper` | A | `5DC3+0x15` | Torhüter mit Reihe 1 |
 
 ### Spieler, Pool, Transfermarkt

@@ -40,8 +40,7 @@ public static class ShortMessageTexts
 
     /// <summary>
     /// [ORIGINAL] Datei 0x40EF7, DGROUP 0x1231/0x1235: Torhüter in die Torhüterreihe, wenn Reihe 1 schon sechs Feldspieler und
-    /// keinen Torhüter hat. Ohne Entsprechung: Die Aufstellung des Remakes belegt feste Plätze (<c>LineupSlot</c>), einen sechsten
-    /// Feldspieler gibt es nicht. Nur als Text für eine spätere Umstellung.
+    /// keinen Torhüter hat. Aufrufer: Vereinsaufstellung (<c>LineupScreen</c>, <c>LineupResult.SixSkaters</c>, #939 A937).
     /// </summary>
     public static readonly ShortMessageText SixSkaters = new("Schon 6 Feldspieler", "auf dem Eis !");
 
