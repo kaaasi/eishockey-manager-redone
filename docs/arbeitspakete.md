@@ -74,7 +74,7 @@ Modell der Spur, Fixläufe ohne Befund Sonnet 5.5. Plan-Review Sonnet 5.5. Gesam
 - **Teile:** 1. #951 `pruefen.sh`-Punkte aus `docs/reviews/2026-11-22-test-zeitlimit.md` (#950): P3-1 Selbsttest prüft die Summen der
   Tabelle, P3-2 Tabellenzeile bei Hänger mit Fehlervermerk, P3-3 Kleinigkeiten; je Punkt roter Fall im Selbsttest. Fixes #951.
 - **Dateien:** `tools/pruefen.sh`, `tools/pruefen-selbsttest.sh`. **Prüfung:** alle drei Läufe und `tools/pruefen-selbsttest.sh`
-  (`AGENTS.md` §5). **Erstreview:** Sonnet 5.5. **Status:** wartet auf Start.
+  (`AGENTS.md` §5). **Erstreview:** Sonnet 5.5. **Status:** Teil 1 fertig, PR #966 (Ready for review).
 
 ### Spur `v-rest` – letzte V aus #948 (Welle 1)
 
