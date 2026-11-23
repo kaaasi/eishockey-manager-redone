@@ -84,7 +84,9 @@ zeile korrekt "Lauf ohne Daten mit Übersprungenen" "(\`EM_SKIP_GAMEDATA=1\`) | 
 zeile korrekt "Pflichtlauf" "(scheitert wie gewollt) | $((6*N)) | $N | 0 |"
 zeile gruen "Pflichtlauf grün: Summen und Fehlervermerk" "| $((7*N)) | 0 | 0 – **FEHLER"
 # Tabellenzeile bei Hänger (Review #950 P3-2): unvollständiger Lauf trägt den Vermerk und nur die Summe der fertigen Projekte.
-zeile haenger "Hänger gekennzeichnet" "$((5*(N-1))) | 0 | $((2*(N-1))) – **FEHLER: unvollständig**"
+# Das Muster trägt die Zeilenkennung, damit der Vermerk der richtigen Zeile geprüft wird (Review #967 P3-1, #969).
+[ -d "$ROOT/gamedata/kb" ] && zeile haenger "Hänger gekennzeichnet (Lauf mit Daten)" "(\`EM_REQUIRE_GAMEDATA=1\`) | $((7*(N-1))) | 0 | 0 – **FEHLER: unvollständig**"
+zeile haenger "Hänger gekennzeichnet (Lauf ohne Daten)" "(\`EM_SKIP_GAMEDATA=1\`) | $((5*(N-1))) | 0 | $((2*(N-1))) – **FEHLER: unvollständig**"
 # Hängeschutz (#935): jeder dotnet-test-Aufruf trägt Zeitlimit, kein Dump und Fortschrittslogger; EM_HANG_TIMEOUT überschreibt.
 for lim in "" 30s; do
   rm -f "$TMP/args.txt"
