@@ -15,6 +15,10 @@ namespace EishockeyManager.Core;
 ///   ein Wurf, Endstand h + x : g + y mit zwei Marken; bleibt es gleich (x = y), zählt die Wertung 0x34C76
 ///   (<c>cmp al,[bx+0x5c4c]; jnc</c>: Heim ≥ Gast → Sieg Platz 2k = Heimverein) das Spiel für den Heimverein. Beleg FILE44
 ///   D014: Endspiel 4:4 und 3:3 mit je zwei Marken ohne Managerverein.</item>
+/// <item>[ORIGINAL] Schneller Weg im DEB-Pokal, ungleiches Ergebnis mit offener Paarung dahinter (RR-01, Review #965,
+///   <see cref="MatchEngine.DebCupExtraRoll"/>): 0x32AA3 meldet die offene Paarung (0:0 → 30:0 → 60:0, 0x32B23/0x32B3F) als
+///   Gleichstand, 0x376F0 würfelt bis Heim + x ≠ Gast + y (0x37724–0x37748), 0x3775D eine Marke; Sieger nach der Summe (0x34C76).
+///   Nur die ersten beiden gerechneten Paarungen eines Termins (60:0 erkennt die Markierung nicht mehr).</item>
 /// <item>[ORIGINAL] Minutenweg, nach der Verlängerung noch Gleichstand: Penaltyschießen 0x3901B nimmt die Marke ab
 ///   (0x39088: Heimbyte − 30), Endstand = Gleichstand + Treffer, Heim + 30 (0x39789, 0x397B3) – eine Marke.</item>
 /// <item>Minutenweg, Tor in der Verlängerung: [ORIGINAL] 0x38402 schreibt den Spielstand mit Heim + 30 auf den schon
@@ -42,14 +46,24 @@ public static class CupMatch
     /// <summary>
     /// Endstand und Marken aus dem Spielbericht: 0 = reguläre Spielzeit (oder Spielwertung), 1 = Penaltyschießen (Endstand
     /// = Gleichstand + Penaltytore), 2 = in der Verlängerung entschieden oder (<paramref name="debCup"/>, schneller Weg
-    /// <see cref="MatchReport.FastCupPath"/>) Zusatzwurf des DEB-Pokals; dort zählt ein stehender Gleichstand für den Heimverein
-    /// (0x34C76, #925 (b)).
+    /// <see cref="MatchReport.FastCupPath"/>) Zusatzwurf des DEB-Pokals bei eigenem Gleichstand; dort zählt ein stehender
+    /// Gleichstand für den Heimverein (0x34C76, #925 (b)). Zusatzwurf des DEB-Pokals bei ungleichem Ergebnis (RR-01,
+    /// <see cref="MatchEngine.DebCupExtraRoll"/>): Endstand = Ergebnis + Wurf, eine Marke, Sieger nach der Summe.
     /// </summary>
     public static (KnockoutMatch Match, int Marks) FromReport(int day, Club home, Club away, MatchReport report,
         bool debCup = false)
     {
         var debFastPath = debCup && report.FastCupPath;
         var (hg, ag) = (report.HomeGoals, report.AwayGoals);
+        if (debFastPath && !report.Forfeit && hg != ag && report.ShootoutGoals is { } roll)
+        {
+            // RR-01 (Review #965): [ORIGINAL] Zusatzwurf für eine ungleiche Paarung, hinter der am Termin noch eine offene steht
+            // (0x32AA3 meldet 0:0 bzw. 30:0 als Gleichstand, 0x376F0 würfelt bis Heim + x ≠ Gast + y, 0x3775D eine Marke); der
+            // Sieger folgt der Summe (0x34C76 nach Abzug der Marke, 0x34C06–0x34C2A) und kann kippen.
+            var (sumHome, sumAway) = (hg + roll.Home, ag + roll.Away);
+            var rollWinner = sumHome > sumAway ? home.Index : away.Index;
+            return (new KnockoutMatch(day, home.Index, away.Index, sumHome, sumAway, rollWinner), 1);
+        }
         if (report.Forfeit || hg != ag)
         {
             var marks = !report.Forfeit && report.Overtime ? 2 : 0;

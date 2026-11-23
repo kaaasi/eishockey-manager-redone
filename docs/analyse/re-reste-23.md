@@ -26,7 +26,8 @@ der schnelle Weg übergibt 0.
 Danach würfelt 0x376F0 x = random(0, 2), y = random(0, 2) und vergleicht **Heimbyte + x** mit **Gastbyte + y** (0x37724–0x37748).
 Weil das Heimbyte der eben gerechneten Paarung schon die Marke trägt, ist der Vergleich nie gleich: **genau ein Wurf**. Dann
 Heimbyte := Heimbyte + x + 30 (0x3775D–0x37774, zweite Marke), Gastbyte := Gastbyte + y (0x37788–0x3779F). Bei x = y (Wahrscheinlichkeit
-1/2) bleibt der Gleichstand mit zwei Marken stehen – wie bei den Play-offs (#925 (b)).
+1/3: `random(0, 2)` ist inklusiv, drei Werte je Seite; RR-02) bleibt der Gleichstand mit zwei Marken stehen – wie bei den Play-offs
+(#925 (b)).
 
 **Wertung im DEB-Pokal** (anders als 0x3166E der Play-offs): Der Pokaltermin 0x34B76 zieht Marken ab, solange das Heimbyte > 29 ist
 (0x34C06–0x34C2A), trägt das Spiel über 0x50283 ein (0x34C5C) und zählt den Sieg: `cmp Heimtore, Gasttore; jnc` → **Heimtore ≥
@@ -34,13 +35,36 @@ Gasttore zählt für den Platz 2k** (0x34C76–0x34C83, Siege DGROUP 0xD075 + Pa
 Heimverein des Spiels (erster Parameter von 0x50283 = DGROUP 0x5CFB + Paarung; Tausch nach den Spielen 1 und 2). **Ein stehender
 Gleichstand zählt im DEB-Pokal also für den Heimverein**, bei den Play-offs für den Gast.
 
-**Folge für das Remake.** Original bei Gleichstand im schnellen Weg: Heim gewinnt mit 3/4 (x = y oder x > y), Gast mit 1/4; Endstand
+**Folge für das Remake.** Original bei Gleichstand im schnellen Weg: Heim gewinnt mit 2/3 (x = y 3/9 oder x > y 3/9), Gast mit 1/3
+(x < y; RR-02); Endstand
 Gleichstand + x : + y mit zwei Marken (Anzeige zwei Punkte, 0x338AB). Remake: bis ungleich, je 1/2, eine Marke, nie ein Gleichstand.
 Der HOK-Import (`OriginalImport.Cups.cs`, `KnockoutMatch.Winner` → `PenaltyWinner ?? Home`) wertet ein importiertes 4:4 mit zwei Marken
 schon für den Heimverein – stimmt mit 0x34C7A überein. Abweichung spielwirksam, Größe S, Klasse **V**; Umsetzung in Teil 2
 (`FastCupResultWithTie` für den DEB-Pokal wie `playoff`, aber Rückfall auf den Heimverein; `CupMatch.FromReport` Marken 2).
 Europapokal und WM-Endrunde laufen in 0x32AA3 nicht über Zeile 0 (Zeilen 2/3 nur für `[bp+0x6]` ≠ 1, 0x32C7F–0x32C8B) – hier nicht
 gelesen, unverändert lassen.
+
+**Zusatzwurf für ungleiche Paarungen (RR-01, Review #965, Fixlauf 23.11.2026).** Die Markierung 0x32AA3 läuft über **alle** Plätze
+der Zeile 0, nicht nur über die eben gerechnete Paarung. Noch nicht gerechnete Paarungen des Termins stehen auf 0:0 (0x34C94–0x34CAA
+setzt 5C4B/5C4C nach jedem gewerteten Spiel zurück, 0x34F7D zu Rundenbeginn; D014-Byte 0 ≤ 0x63 → offen), erfüllen also „Heim = Gast“
+(0x32B23) und werden mit markiert (30:0); der Rückgabewert 1 löst den Wurf für die **eben gerechnete** Paarung aus, auch wenn ihr
+Ergebnis ungleich ist (0x376E9 `or al,al; jnz 0x376F0`). Ihr Heimbyte trägt dann keine Marke, 0x37748 schleift bis Heim + x ≠ Gast + y,
+0x3775D setzt **eine** Marke; der Sieger folgt der Summe (0x34C76 nach Abzug der Marken 0x34C06–0x34C2A) und kann kippen (Abstand 1:
+x = 0, y = 2, einer von sieben ungleichen Würfen → 1/7). Beim nächsten Durchlauf stehen die offenen Paarungen auf 30:0 und erfüllen „Heim − 30 = Gast“ (0x32B3F–0x32B5A,
+`add ax,0xffe2` einmal) → 60:0. **Beleg strittig** gegenüber RR-01 („jede Paarung, hinter der eine offene aussteht“): Bei 60:0 greift
+keiner der beiden Vergleiche mehr (60 ≠ 0, 60 − 30 = 30 ≠ 0; es gibt keine Schleife über mehrere Marken, anders als bei der Wertung
+0x34C06), die Markierung meldet also nur nach der **ersten und zweiten** gerechneten Paarung eines Termins einen fremden „Gleichstand“.
+Remake: `MatchEngine.DebCupExtraRoll` (ersten zwei gerechnete Paarungen in Platzfolge mit offener Paarung dahinter; eine Paarung der
+Minutenschleife zählt als gerechnet, Markierung 0x37211), `FastCupResultWithTie(debExtraRoll)` würfelt bis ungleich, `CupMatch.FromReport`
+trägt Summe und eine Marke (`ReResteTests`). Spielstände unterscheiden beide Lesarten nicht (alle Mehrpaarungstermine in FILE01–FILE76
+sind Managertage → Minutenweg); ein Videobild eines DEB-Ergebnisbildschirms ohne Managerverein mit drei und mehr Paarungen (dritte
+Paarung ohne Punkt bei ungleichem Ergebnis) würde entscheiden.
+
+```bash
+ndisasm -b16 -o 0x32B3F -e 0x32B3F em.exe | head -1   # add ax,0xffe2   (einmal − 30, keine Schleife)
+ndisasm -b16 -o 0x32B58 -e 0x32B58 em.exe | head -3   # cmp ax,dx / jz 0x2b5f / jmp 0x2dfd   (sonst nächster Platz, keine Marke)
+ndisasm -b16 -o 0x376E9 -e 0x376E9 em.exe | head -2   # or al,al / jnz 0x76f0   (jede Meldung würfelt für die eben gerechnete Paarung)
+```
 
 **Beleg Spielstand:** FILE44 (14.04.1994, nach dem Endspiel), Block D014: Spiel 1 `40 04` = 4:4 mit zwei Marken (64 = 4 + 60),
 Spiel 2 `03 3F` = 3:3 mit zwei Marken beim Heimverein Platz 1, Spiel 3 `01 04`; Plätze 5CFB `01 09`, Runde 5CF3[0] = 5, Zähler

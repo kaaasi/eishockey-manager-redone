@@ -95,7 +95,11 @@ den Endstand mit Marke 1 (`CupMatch.FromReport`, `WorldCup.MarksOf`); der Berich
 Spielstand bleibt der Gleichstand. DEB-Pokal (Runde 23, Spur re-reste Teil 2, #925 (b), `docs/analyse/re-reste-23.md` §1) und
 Play-offs: 0x32AA3 markiert die eigene Paarung vor dem Wurf (Zeile 0: 0x32AF4/0x32B9D; Zeile 2: 0x32C8E), der Vergleich 0x37748
 ist nie gleich – genau ein Wurf, zwei Marken (0x3775D), ein stehender Gleichstand (x = y) zählt im DEB-Pokal für den Heimverein
-(0x34C76 `jnc`, `CupTie.Marks` = 2), in den Play-offs für den Gast (0x3166E, `Playoffs.cs`).
+(0x34C76 `jnc`, `CupTie.Marks` = 2), in den Play-offs für den Gast (0x3166E, `Playoffs.cs`). Weil 0x32AA3 über alle Plätze läuft,
+melden auch noch offene Paarungen des Termins (0:0, dann 30:0) einen Gleichstand: die ersten beiden gerechneten Paarungen eines
+DEB-Pokaltermins mit offener Paarung dahinter würfeln auch bei ungleichem Ergebnis bis ungleich, eine Marke, Sieger nach der Summe
+(RR-01, `MatchEngine.DebCupExtraRoll`; bei 60:0 greift kein Vergleich mehr, `re-reste-23.md` §1); in den Play-offs nur die erste
+Paarung (`FirstPlayoffPairingOfDate`).
 
 ## 4. Abschluss 0xA484 (`OriginalMinutes.Shot`)
 

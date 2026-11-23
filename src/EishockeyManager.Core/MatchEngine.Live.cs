@@ -174,24 +174,27 @@ public static partial class MatchEngine
         {
             var h = OriginalMinutes.Strengths(homeTeam, awayTeam, 0);
             var a = OriginalMinutes.Strengths(awayTeam, homeTeam, 0);
-            var (hg, ag, shootout, tie) = OriginalMinutes.FastCupResultWithTie(
+            var (hg, ag, shootout, tie, awayBefore) = OriginalMinutes.FastCupResultWithTie(
                 new MatchSide(h.Normal, homeTeam.Box.Skaters, homeTeam.AttackLevel),
                 new MatchSide(a.Normal, awayTeam.Box.Skaters, awayTeam.AttackLevel),
                 home.Index < FirstForeignClub, away.Index < FirstForeignClub,
                 rules.WorldCup, rules.Playoff, knockOut, random,
                 playoffExtraRoll: competition == MatchCompetition.Playoff && knockOut && FirstPlayoffPairingOfDate(game, home, away),
-                debCup: competition == MatchCompetition.DebCup);
+                debCup: competition == MatchCompetition.DebCup,
+                debExtraRoll: competition == MatchCompetition.DebCup && knockOut && DebCupExtraRoll(game, home, away));
             report = new MatchReport { HomeGoals = hg, AwayGoals = ag, FastCupPath = true };
             if (shootout)
             {
                 // [ORIGINAL] 0x376F0–0x377A3: random(0, 2) je Seite bis ungleich, Heim + 30 als Penaltymarke (Play-offs und
                 // DEB-Pokal: ein Wurf, Gleichstand bleibt und zählt für den Gast bzw. im DEB-Pokal für den Heimverein, #925 (b),
-                // Spur re-reste Teil 2).
-                // Der Bericht hält den Gleichstand (Spielerzähler nur für echte Tore) und die Zusatztore getrennt; den
+                // Spur re-reste Teil 2). DEB-Pokal mit offener Paarung dahinter (RR-01, Review #965): auch ein ungleiches Ergebnis
+                // bekommt den Wurf (bis ungleich, eine Marke) – dann ist der Stand vor dem Wurf kein Gleichstand.
+                // Der Bericht hält den Stand vor dem Wurf (Spielerzähler nur für echte Tore) und die Zusatztore getrennt; den
                 // Endstand mit Marke bildet CupMatch.FromReport (Spur wettbewerbe-spiel, Teil 1).
                 report.ShootoutHomeWins = hg > ag;
-                report.ShootoutGoals = (hg - tie, ag - tie);
-                report.HomeGoals = report.AwayGoals = tie;
+                report.ShootoutGoals = (hg - tie, ag - awayBefore);
+                report.HomeGoals = tie;
+                report.AwayGoals = awayBefore;
             }
         }
         return new MatchSetup
