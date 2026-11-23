@@ -246,3 +246,18 @@ Sitzungen sind unabhängig und einzeln aufnehmbar; Reihenfolge nach Lust.
 ### Sitzung 6 – KAPUTT.HOK (A599)
 
 1. `KAPUTT.HOK` laden, alles nach dem Bildschirm „Der kleine Mogelguru“ fotografieren (bis zum Hauptmenü bzw. Programmende).
+
+### Sitzung 7 – neue D aus Runde 22 (Plan Runde 23, R23-D3 = A, Nutzer 23.11.2026)
+
+Was je ID abzulesen ist: Feld „Beleg“ in `restliste-v1-klassen.csv`. Nummern ab **FILE86** (höchste vorhandene laut README).
+
+1. **Ohne eigene Aufnahme:** Sitzung 2 (FILE77/FILE78) belegt zusätzlich die Poolgruppen am Saisonwechsel (A713, A949) und den
+   verlorenen Poolplatz bei hohem Alter (A945); Pool und Transferliste vor und nach dem Wechsel fotografieren.
+2. Spieltag mit Pokalspiel bei „zusehen“ eines Managers; davor/danach sichern als **FILE86/FILE87** (A896).
+3. Verletzung während der Live-Anzeige abwarten (ggf. mehrere Spieltage), direkt danach sichern als **FILE88** (A912).
+4. Reihe 1 ohne Torhüter, einen Feldspieler ins Tor stellen, Spiel spielen; Spielerstatistik des Feldspielers vor/nach
+   fotografieren, danach sichern als **FILE89** (A899).
+5. Penaltyschießen im Live-Spiel (Pokal oder Play-off) ansehen, jeden Schuss fotografieren (A910).
+6. Modus „nur Weltkugel“ (Sitzung 4, FILE18): Freundschaftsspiel des Bundestrainers, davor/danach sichern als **FILE90/FILE91**
+   (A918). Stand mit Managerverein auf den letzten Oberligaplätzen kurz vor dem Saisonende (Leitstelle legt ihn auf Wunsch per
+   `hok-patch` ab); vor/nach dem Wechsel sichern als **FILE92/FILE93**, Konto fotografieren (A671).
