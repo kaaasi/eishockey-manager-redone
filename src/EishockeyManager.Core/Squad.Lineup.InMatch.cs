@@ -22,9 +22,12 @@ namespace EishockeyManager.Core;
 /// <item>A808: [ORIGINAL] Datei 0x40DAF–0x40E2A: ein Spieler auf der Strafbank (Status +0x09 &amp; 3 = 1, Datei 0x35C02) ergibt für
 ///   beide Tasten nur die Meldung „Spieler ist“ / „Gesperrt.“ (<see cref="LineupResult.Suspended"/>, Abfrage
 ///   <see cref="MatchEngine.PenaltyBoxMinutes"/>); er bleibt draußen, bis die Strafbank ihn freigibt.</item>
+/// <item>[ORIGINAL] #939 (A937): Der sechste Feldspielerplatz gilt im Spiel wie außerhalb. Die Abweisung „Schon 6 Feldspieler / auf
+///   dem Eis !“ (Datei 0x40EC4–0x40EFF: Torhüter, Torhüterreihe, Platz offen, linke Taste) prüft den Kennwert nicht, und das Öffnen
+///   (Datei 0x413C9–0x414B4) reicht ihn nur an das Aufstellen 0x41533 weiter (Datei 0x413E8). Danach zählt die Neuzählung 0x38A36
+///   den sechsten Feldspieler über +0x15 = 1 als dritten Verteidiger der Reihe 1 (<see cref="MatchEngine.RecountSkaters"/>).</item>
 /// <item>[APPROX] Bei Rechtsklick ohne gewählte Reihe meldet das Original nichts (Meldung „Keine Reihe“ nur für die linke Taste,
-///   Datei 0x40E63); Art-Prüfung und Plätze wie beim Linksklick (<see cref="ClickPlayer"/>, auch dessen Näherung zum sechsten
-///   Feldspielerplatz 0x413E8–0x414B4).</item>
+///   Datei 0x40E63); Art-Prüfung und Plätze wie beim Linksklick (<see cref="ClickPlayer"/>).</item>
 /// </list>
 /// </summary>
 public sealed partial class Club
@@ -42,6 +45,9 @@ public sealed partial class Club
         // A808: [ORIGINAL] Status 1 (Strafbank, +0x09 Bit 0) meldet nur „Gesperrt.“ und bricht ab (Datei 0x40DAF–0x40E2A).
         if (MatchEngine.PenaltyBoxMinutes(this, player) > 0)
             return LineupResult.Suspended;
+        // [ORIGINAL] Datei 0x40EC4–0x40EFF, ohne Blick auf den Kennwert (siehe Klasse).
+        if (!right && player.Role == PlayerRole.Goalkeeper && line == Lineup.GoalkeeperLine && Lineup.SixthSkaterOpen)
+            return LineupResult.SixSkaters;
         if (Lineup.FindSlot(player) is { } from)
         {
             if (right)
@@ -65,6 +71,13 @@ public sealed partial class Club
             TakeOverDressed();
             if (!(slot.Role == player.Role ? Lineup.Assign(slot, player) : Lineup.PlaceSkater(slot, player)))
                 return LineupResult.WrongRole;
+            _dressed.Add(player.Id);
+            return LineupResult.Assigned;
+        }
+        // [ORIGINAL] A937: sechster Feldspielerplatz (Datei 0x413C9–0x414B4), Kennwert an 0x41533 (Datei 0x413E8): eingesetzt.
+        if (Lineup.TryOpenSixthSkater(l, player))
+        {
+            TakeOverDressed();
             _dressed.Add(player.Id);
             return LineupResult.Assigned;
         }

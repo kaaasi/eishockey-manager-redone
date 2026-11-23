@@ -94,7 +94,7 @@ Modell der Spur, Fixläufe ohne Befund Sonnet 5.5. Plan-Review Sonnet 5.5. Gesam
   Bildschirmfoto gegen Videobild, falls vorhanden). Mehrsaisonprobe. Fixes #939.
 - **Dateien:** `Core/Squad.Lineup*.cs`, `Core/CupsNational.Lineup*.cs`, `Core/MatchEngine.National.cs`, Stellen oben,
   `Core/SaveGame.Migration.FeldspielerSechs.cs`, `UI/Screens/Team/LineupScreen.cs`, `UI/Screens/Competitions/NationalLineupScreen.cs`,
-  Tests. **Erstreview:** Opus 5.5. **Status:** Teil 1 fertig (#963, Draft), Teile 2–3 offen.
+  Tests. **Erstreview:** Opus 5.5. **Status:** Teile 1–2 fertig (#963, Draft), Teil 3 offen.
 
 ### Spur `re-reste` – Reste ohne Beleg per em.exe (Welle 1, R23-D2 = D)
 
