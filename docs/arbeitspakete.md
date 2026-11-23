@@ -8,7 +8,7 @@ Abgeschlossene Runden stehen in [archiv/](archiv/) und müssen beim Einstieg nic
 **Koordination:** Die Leitstelle verteilt Pakete, prüft und mergt Pull Requests und pflegt Fahrplan und Doku
 (Rollen: [prozess/zusammenarbeit.md](prozess/zusammenarbeit.md)).
 
-## Aktuelle Runde: Runde 23 – letzte V, Test-Infrastruktur, DOSBox `runde-22` Sitzung 1 (Plan 23.11.2026, Entscheidungen 23.11.2026, Go offen)
+## Aktuelle Runde: Runde 23 – letzte V, Test-Infrastruktur, DOSBox `runde-22` Sitzung 1 (Plan 23.11.2026, Go 23.11.2026)
 
 Runde 22 abgeschlossen am 22.11.2026: [archiv/runde-22.md](archiv/runde-22.md). Grundlage: Restliste
 [analyse/restliste-v1.md](analyse/restliste-v1.md) (V 5: A937/A875 → #939, A873, A913, A951 → #948; D 30), Issues #939, #948, #951
@@ -18,7 +18,7 @@ A614, A629, A117). **Ziel der Runde:** V = 0 nach dem Generatorlauf, `pruefen.sh
 bleiben bis v1.0 nur die übrigen D (Sitzungen 2–7 nach Lust), das Aufräumen (#936) und die Abschlussprüfung.
 **Entscheidungen Nutzer 23.11.2026** (Optionen im Plan-PR #958): R23-D1 = A, R23-D2 = D (eigene RE-Spur `re-reste`, Claude
 Fable 5.1), R23-D3 = A (Sitzung 7 in `vorlagen/dosbox-aufnahme.md`), R23-D4 = B; Referenz-PR #41 gemergt (23.11.2026).
-**Spuren starten erst nach Go des Nutzers.**
+**Go Nutzer 23.11.2026** (alle Spuren samt Folgeläufen, Modelle wie unten; Start nach Merge des Plans).
 
 **Regeln wie Runde 22** (Archiv): Base = aktueller `main` beim Start der Spur, tatsächlicher Base-SHA in den Draft-PR; ein Branch
 `paket/<spur>`, ein PR, Teile als Commits, höchstens drei Fortsetzungen; Befund reproduzieren, roter Regressionstest mit Fundstelle
@@ -70,7 +70,7 @@ Modell der Spur, Fixläufe ohne Befund Sonnet 5.5. Plan-Review Sonnet 5.5. Gesam
 - **Teile:** 1. #951 `pruefen.sh`-Punkte aus `docs/reviews/2026-11-22-test-zeitlimit.md` (#950): P3-1 Selbsttest prüft die Summen der
   Tabelle, P3-2 Tabellenzeile bei Hänger mit Fehlervermerk, P3-3 Kleinigkeiten; je Punkt roter Fall im Selbsttest. Fixes #951.
 - **Dateien:** `tools/pruefen.sh`, `tools/pruefen-selbsttest.sh`. **Prüfung:** alle drei Läufe und `tools/pruefen-selbsttest.sh`
-  (`AGENTS.md` §5). **Erstreview:** Sonnet 5.5. **Status:** wartet auf Go.
+  (`AGENTS.md` §5). **Erstreview:** Sonnet 5.5. **Status:** wartet auf Start.
 
 ### Spur `v-rest` – letzte V aus #948 (Welle 1)
 
@@ -79,7 +79,7 @@ Modell der Spur, Fixläufe ohne Befund Sonnet 5.5. Plan-Review Sonnet 5.5. Gesam
   R21-D2); 3. A873 WM-Kader „auto“ und Umschalten ohne Verletzungsprüfung (Datei 0x3CC01; Verletzung des Vereinsplatzes darf nicht
   mitgehen), Mehrsaisonprobe. Fixes #948.
 - **Dateien:** `Core/Transfer.Purchase.cs`, `Core/Player.Contract.cs`, `Core/MatchGate.cs`, `Core/CupsNational.cs`,
-  `Core/CupsNational.GameState.cs`, Tests. **Erstreview:** Opus 5.5. **Status:** wartet auf Go.
+  `Core/CupsNational.GameState.cs`, Tests. **Erstreview:** Opus 5.5. **Status:** wartet auf Start.
 
 ### Spur `feldspieler-sechs` – sechster Feldspielerplatz ohne Torhüter (Welle 1, R22-E2 = B)
 
@@ -90,7 +90,7 @@ Modell der Spur, Fixläufe ohne Befund Sonnet 5.5. Plan-Review Sonnet 5.5. Gesam
   Bildschirmfoto gegen Videobild, falls vorhanden). Mehrsaisonprobe. Fixes #939.
 - **Dateien:** `Core/Squad.Lineup*.cs`, `Core/CupsNational.Lineup*.cs`, `Core/MatchEngine.National.cs`, Stellen oben,
   `Core/SaveGame.Migration.FeldspielerSechs.cs`, `UI/Screens/Team/LineupScreen.cs`, `UI/Screens/Competitions/NationalLineupScreen.cs`,
-  Tests. **Erstreview:** Opus 5.5. **Status:** wartet auf Go.
+  Tests. **Erstreview:** Opus 5.5. **Status:** wartet auf Start.
 
 ### Spur `re-reste` – Reste ohne Beleg per em.exe (Welle 1, R23-D2 = D)
 
@@ -99,7 +99,7 @@ Modell der Spur, Fixläufe ohne Befund Sonnet 5.5. Plan-Review Sonnet 5.5. Gesam
   A003); #938 P3-3 Belastungszug 0x8C53 im Länderspiel zu stark?; A876 (Zähler Satz 5 über den Saisonwechsel) und A917 (HOK-Import
   0x18–0x1D nach Neuaufstellung, Datei 0x54D84–0x54DAA) nur bestätigen bzw. Klasse begründen; 2. belegte Abweichungen umsetzen (nach
   Merge von `v-rest`), sonst Vermerk K/E bzw. „nicht belegt“ im PR. Fixes #925.
-- **Dateien:** `docs/analyse/re-reste-23.md`, Stellen oben, Tests. **Erstreview:** Opus 5.5. **Status:** wartet auf Go.
+- **Dateien:** `docs/analyse/re-reste-23.md`, Stellen oben, Tests. **Erstreview:** Opus 5.5. **Status:** wartet auf Start.
 
 ### Spur `abgleich-dosbox-22` – DOSBox-Aufnahme `runde-22` Sitzung 1 (Welle 1)
 
@@ -109,14 +109,14 @@ Modell der Spur, Fixläufe ohne Befund Sonnet 5.5. Plan-Review Sonnet 5.5. Gesam
   `docs/analyse/abgleich-dosbox-22.md`, Klassenvorschlag je ID (V/X/K/E) für `pruefung-karte`; 2. belegte Abweichungen der Größe S
   umsetzen (nach Merge von `v-rest`, A117 an `ContractDialog.cs`/Kern); größere als Issue mit Vorschlag an die Leitstelle.
 - **Dateien:** `docs/analyse/abgleich-dosbox-22.md`, Stellen oben, eigene `OriginalImport.<Teil>.cs`, Tests mit FILE75/76.
-  **Erstreview:** Opus 5.5. **Status:** wartet auf Go.
+  **Erstreview:** Opus 5.5. **Status:** wartet auf Start.
 
 ### Spur `pruefung-karte` – P3 der Runde und Generatorlauf (Welle 2)
 
 - **Voraussetzung:** alle übrigen Spuren gemergt. **Teile:** 1. P3-Issues der Runde und #954 (Wortlaut `[ORIGINAL]` mit Fundstelle
   bzw. Aussage über das Remake-Datenmodell); 2. 24 X-Funktionszeilen (F-IDs ohne Markerzeile) umklassifizieren oder ausblenden;
   Klassen aus `abgleich-dosbox-22` übernehmen; 3. `markerliste.py --write`, `funktionskarte.py --write` (Ziel V = 0, X = 0).
-- **Erstreview:** Sonnet 5.5. **Status:** wartet auf Go.
+- **Erstreview:** Sonnet 5.5. **Status:** wartet auf Start.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
