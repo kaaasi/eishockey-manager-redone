@@ -414,11 +414,15 @@ def render(markers: list[Marker], gone: list[Gone], classes: dict, problems: lis
         cells = [m.ident, f"`{m.path}:{m.line}`", f"`{m.key}`", md_cell(normalise(m.text), 110),
                  md_cell(m.origin), md_cell(m.inventur, 90)] + [md_cell(c.get(k, "")) for k in CSV_COLUMNS[1:]]
         w("| " + " | ".join(cells) + " |")
-    funcs = sorted((i for i in classes if i.startswith("F")), key=id_num)
+    all_funcs = sorted((i for i in classes if i.startswith("F")), key=id_num)
+    # Klasse X (Code belegt gleich, „vorhanden ohne Marker“) ist keine Abweichung: ausgeblendet, die Zeilen und ihr Beleg bleiben in der CSV.
+    funcs = [i for i in all_funcs if classes[i].get("Klasse") != "X"]
+    hidden = len(all_funcs) - len(funcs)
     w("")
     w("### Funktionen")
     w("")
-    w("Funktionen „dokumentiert“ und „genähert“ der Funktionskarte (ohne Markerzeile), nur aus `restliste-v1-klassen.csv`.")
+    w("Funktionen „dokumentiert“ und „genähert“ der Funktionskarte (ohne Markerzeile), nur aus `restliste-v1-klassen.csv`."
+      + (f" Ausgeblendet: {hidden} Funktionen der Klasse X (Code belegt gleich, Beleg in der CSV)." if hidden else ""))
     w("")
     w("| ID | " + " | ".join(CSV_COLUMNS[1:]) + " |")
     w("|" + "---|" * len(CSV_COLUMNS))

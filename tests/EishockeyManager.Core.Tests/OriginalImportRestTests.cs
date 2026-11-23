@@ -192,6 +192,27 @@ public sealed class OriginalImportRestTests
         Assert.Equal(70_000L, sponsoring.MonthlyIncome);
     }
 
+    /// <summary>
+    /// A614 (Review #972 AD22-02, #974): Zwei Bandenverträge desselben Partners mit gleichem Betrag und gleicher Restlaufzeit,
+    /// aber verschiedenen Vertragsnummern (1 und 2), bleiben zwei Verträge – die Nummer gehört in den Gruppierschlüssel.
+    /// </summary>
+    [GameDataFact]
+    public void Import_Sponsoring_SameTermsOtherNumber_StaysTwoContracts()
+    {
+        var (save, database) = Load("FILE05.HOK");
+        var contracts = save.Block("C15B");
+        WriteContract(contracts.AsSpan(10 * 2), 60_000, number: 1, partner: 4, months: 11, option: 0x80 | 12, rating: 70);
+        WriteContract(contracts.AsSpan(10 * 3), 60_000, number: 1, partner: 4, months: 11, option: 0x80 | 12, rating: 70);
+        WriteContract(contracts.AsSpan(10 * 4), 60_000, number: 2, partner: 4, months: 11, option: 0x80 | 12, rating: 70);
+        WriteContract(contracts.AsSpan(10 * 5), 60_000, number: 2, partner: 4, months: 11, option: 0x80 | 12, rating: 70);
+        var game = GameState.ImportOriginal(save, database, Seed);
+        var sponsoring = game.Finance(game.Managers[0]).Sponsoring;
+
+        Assert.Equal(2, sponsoring.Contracts.Count);
+        Assert.Equal([2, 3], sponsoring.ContractAt(new AdSlot(AdSlotKind.Bande, 2))!.Boards);
+        Assert.Equal([4, 5], sponsoring.ContractAt(new AdSlot(AdSlotKind.Bande, 4))!.Boards);
+    }
+
     /// <summary>Bankkredit FILE08 (−2.103.000 Drittel-DM), Sparbuch und Darlehen zwischen Managern (FILE09, zwei Manager, gepatcht).</summary>
     [GameDataFact]
     public void Import_BankAndManagerLoans()

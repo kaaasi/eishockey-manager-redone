@@ -108,7 +108,8 @@ public sealed class LiveSquad
                 Dressed = p.Available && club.IsDressed(p),
                 Energy = MatchEngine.PreparedPlayerEnergy(p),
                 // A677: wie bisher die Aufstellung (CreditLineup), jetzt zu Spielbeginn festgehalten. Der Feldspieler im Tor (A672) steht
-                // seit #939 auf dem sechsten Feldspielerplatz und zählt damit mit. [APPROX] Ob 0x54910 über +0x15 zählt, ist nicht gelesen.
+                // seit #939 auf dem sechsten Feldspielerplatz und zählt damit mit. [ORIGINAL] Datei 0x54918–0x54927: Die Spielabrechnung zählt jeden Platz mit +0x15 ≠ 0
+                // (auch den sechsten, +0x15 = 1).
                 Played = club.Lineup.FindSlot(p) is not null,
             });
         }
