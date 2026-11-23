@@ -113,6 +113,7 @@ public static partial class MatchEngine
         {
             TrackPenaltyBox(home, null); // A808: Spielwertung ohne Strafbank
             TrackPenaltyBox(away, null);
+            game.PrepareForfeitGate(home, away, competition); // A913: [ORIGINAL] 0x544C0 bis zum nicht spielfähigen Manager (MatchGate.cs)
             var forfeit = game.HomeForfeits(home, away) // A191: Manager in Indexreihenfolge (0x544C0)
                 ? new MatchReport { HomeGoals = 0, AwayGoals = 2, Forfeit = true }
                 : new MatchReport { HomeGoals = 2, AwayGoals = 0, Forfeit = true };

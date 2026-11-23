@@ -337,6 +337,10 @@ public class GameModeTests
     /// Runde 22, Spur kader-regeln Teil 4 (A631): nur der Zufallszustand am Ende neu – der Nachfolger eines Ruheständlers im Pool
     /// behält Name, Talent und Form (Datei 0x27947–0x279D6), Namenswurf, Form- und Talentwurf im gemeinsamen Strom entfallen;
     /// Titel und Konten aller fünf Saisons unverändert.
+    /// Runde 23, Spur v-rest Teil 2 (A913): ab Saison 4 neu – Verein 2 (Manager 0) und Verein 30 (Manager 1) spielen dann in
+    /// derselben Liga; in den Spielwertungen 2–30 (Manager 1 nicht spielfähig) zieht Manager 0 jetzt vor dem Eintrag Zuschauer und
+    /// eingespielte Reihen (0x544C0 bis Datei 0x547AA) statt der Zuschauer erst in der Abrechnung. Saisons 1–3 unverändert;
+    /// Gegenprobe ohne <c>PrepareForfeitGate</c>: alter Abdruck.
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -494,7 +498,7 @@ public class GameModeTests
     // A553) zusammen mit kader-regeln, transfer-pool und einzelpunkte ändern Spielrechnung und Zufallsverlauf; kein Originalsollwert,
     // nur interner Abdruck. Rückschaltprobe: src/ von f7f0410 + dieser Test → rot (alte Werte), src/ von 3ca753a + dieser Test → rot.
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=13,GermanChampion=1,EuropeanCupWinner=2|1100320,400000|WorldChampion=52,CupWinner=1,GermanChampion=6,EuropeanCupWinner=1|2219424,400000|WorldChampion=53,CupWinner=4,GermanChampion=5,EuropeanCupWinner=1|2321675,400000|WorldChampion=54,CupWinner=1,GermanChampion=1,EuropeanCupWinner=5|2394415,400000|WorldChampion=55,CupWinner=5,GermanChampion=5,EuropeanCupWinner=5|2412395,500000|R1503688066";
+        "WorldChampion=52,CupWinner=13,GermanChampion=1,EuropeanCupWinner=2|1100320,400000|WorldChampion=52,CupWinner=1,GermanChampion=6,EuropeanCupWinner=1|2219424,400000|WorldChampion=53,CupWinner=4,GermanChampion=5,EuropeanCupWinner=1|2321675,400000|WorldChampion=55,CupWinner=6,GermanChampion=4,EuropeanCupWinner=5|2947255,400000|WorldChampion=52,CupWinner=6,GermanChampion=4,EuropeanCupWinner=4|2898339,400000|R606224042";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)
