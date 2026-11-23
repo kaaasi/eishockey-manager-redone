@@ -17,7 +17,7 @@ Runde 22 abgeschlossen am 22.11.2026: [archiv/runde-22.md](archiv/runde-22.md). 
 A614, A629, A117). **Ziel der Runde:** V = 0 nach dem Generatorlauf, `pruefen.sh`-Punkte erledigt, Sitzung 1 ausgewertet. Danach
 bleiben bis v1.0 nur die übrigen D (Sitzungen 2–7 nach Lust), das Aufräumen (#936) und die Abschlussprüfung.
 **Entscheidungen Nutzer 23.11.2026** (Optionen im Plan-PR #958): R23-D1 = A, R23-D2 = D (eigene RE-Spur `re-reste`, Claude
-Fable 5.2), R23-D3 = A (Sitzung 7 in `vorlagen/dosbox-aufnahme.md`), R23-D4 = B; Referenz-PR #41 gemergt (23.11.2026).
+Fable 5.1), R23-D3 = A (Sitzung 7 in `vorlagen/dosbox-aufnahme.md`), R23-D4 = B; Referenz-PR #41 gemergt (23.11.2026).
 **Spuren starten erst nach Go des Nutzers.**
 
 **Regeln wie Runde 22** (Archiv): Base = aktueller `main` beim Start der Spur, tatsächlicher Base-SHA in den Draft-PR; ein Branch
@@ -37,7 +37,7 @@ rebasen und ziehen erwartete Werte nach). Welle 2
 `pruefung-karte` nach Merge aller übrigen. Danach Gesamtreview eng über `feldspieler-sechs` und `v-rest` (R23-D4 = B).
 
 **Modelle (Nutzer 17.11.2026 „wenig Tokens für brauchbares Ergebnis“; 09.11.2026 keine Sonnet-Wahl mit Nacharbeit):** Opus 5.5 für
-Datenmodell, Spielrechnung, Zufallsstrom und em.exe; Claude Fable 5.2 nur `re-reste` (R23-D2 = D); Sonnet 5.5 für Skript- und Markerarbeit; Haiku nicht vorgesehen (jeder Lauf
+Datenmodell, Spielrechnung, Zufallsstrom und em.exe; Claude Fable 5.1 nur `re-reste` (R23-D2 = D); Sonnet 5.5 für Skript- und Markerarbeit; Haiku nicht vorgesehen (jeder Lauf
 baut, testet und liest Fundstellen). Erstreviews: Code-Spuren Opus 5.5, `pruefen-sh` und `pruefung-karte` Sonnet 5.5. Fixläufe im
 Modell der Spur, Fixläufe ohne Befund Sonnet 5.5. Plan-Review Sonnet 5.5. Gesamtreview ChatGPT GPT-6.1 Terra (Codex).
 
@@ -46,7 +46,7 @@ Modell der Spur, Fixläufe ohne Befund Sonnet 5.5. Plan-Review Sonnet 5.5. Gesam
 | `pruefen-sh` | 1 | #951: Review #950 P3-1 (Selbsttest prüft Summen), P3-2 (Tabellenzeile bei Hänger mit Fehlervermerk), P3-3 | Sonnet 5.5 | S, Skript, Fundstellen im Review |
 | `v-rest` | 1 | #948: A951, A913, A873 | Opus 5.5 | Zufallsstrom (A913), Datenmodell Wertesatz (A873), em.exe |
 | `feldspieler-sechs` | 1 | #939: A937 (Verein), A875 (Nationalteam), Rest A683/A490 | Opus 5.5 | L, Datenmodell `LineupSlot`, Spielrechnung, Migration |
-| `re-reste` | 1 | #925 (b), #938 P3-3, A876/A917 bestätigen | Fable 5.2 | Lesung em.exe ohne Beleg bisher (R23-D2 = D) |
+| `re-reste` | 1 | #925 (b), #938 P3-3, A876/A917 bestätigen | Fable 5.1 | Lesung em.exe ohne Beleg bisher (R23-D2 = D) |
 | `abgleich-dosbox-22` | 1 | Sitzung 1: A427, A065, A057, A402, A613, A614, A629, A117 | Opus 5.5 | Abgleich mit Originalständen, HOK-Felder, em.exe |
 | `pruefung-karte` | 2 | P3 der Runde, #954, 24 X-Funktionszeilen, Generatorlauf | Sonnet 5.5 | mechanisch, Einordnung nach PR-Angaben |
 
