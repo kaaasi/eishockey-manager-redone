@@ -98,6 +98,21 @@ public class AbgleichDosbox22Tests
     }
 
     /// <summary>
+    /// A065 (Review #972 AD22-01, #974): Ab dem zweiten Spieljahr steht vor dem ersten Spieltag der Endstand der Vorsaison im
+    /// Tabellenfeld; die Bestenliste nimmt ihn (nicht 0). [ORIGINAL] Datei 0x5D2CA–0x5D303 wie oben.
+    /// </summary>
+    [Fact]
+    public void Highscore_BeforeFirstMatchDay_UsesStoredRankOfPreviousSeason()
+    {
+        var game = TestGames.Create();
+        Assert.Equal(0, game.PlayedMatchDays);
+        var club = game.Clubs[game.Managers[0].ClubIndex];
+        Assert.NotNull(club.League);
+        club.StoreTableRank(7);
+        Assert.Equal(7, HighscoreRules.Inputs(game, 0).Rank0);
+    }
+
+    /// <summary>
     /// A402 (Export Bankseite): Satz 4 +0x18F (Konto der Bank) trägt den Bankeintrag des Managers mit gleichem Vorzeichen –
     /// FILE76 Sparbuch +300.000, FILE08 Kredit −2.103.000 Drittel-DM. Vorher schrieb der Export 0.
     /// </summary>
