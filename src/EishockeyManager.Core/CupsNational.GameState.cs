@@ -220,9 +220,12 @@ public sealed partial class GameState
     internal static int NationalCandidateSum(Player p) => p.Condition + p.Technique + (p.PoolForm ?? p.Form);
 
     /// <summary>
-    /// Klick auf einen Spieler in „Spieler in WM-Kader“ (Datei 0x3C928): Kaderspieler werden entlassen, andere
-    /// unverletzte Spieler aufgenommen, solange weniger als 29 im Kader stehen.
+    /// Klick auf einen Spieler in „Spieler in WM-Kader“ (Datei 0x3C928): Kaderspieler werden entlassen, andere Spieler
+    /// aufgenommen, solange weniger als 29 im Kader stehen.
     /// <list type="bullet">
+    /// <item>A873 (Spur v-rest): [ORIGINAL] Keine Prüfung der Verletzung: Datei 0x3C952–0x3C983 prüft nur Pool +0x13 (Ausländer) und
+    ///   Pool +0x1D (schon im Kader), dann nimmt 0x3CABF auf. Die Verletzung steht am Vereinsplatz (+0x09, +0x0D), der neue Platz im
+    ///   Satz 5 beginnt unverletzt (<see cref="NewNationalSlot"/>, 0x42CB1); die Verletzung des Vereinsplatzes bleibt dort.</item>
     /// <item>[ORIGINAL] A085 (Sitzung 5, Review #649): Bei vollem Kader bewirkt der Klick nichts (Datei 0x3C928–0x3C9C0, Platzsuche
     ///   über Satz 5 +0x0F; Angabe Nutzer). Herausnehmen rückt auf (Datei 0x3CA71 → 0x425B6, wie der Verkauf), Aufnehmen sortiert nach
     ///   Art ein (Datei 0x3CABF → 0x42CB1/0x42D55, wie der Kauf; <see cref="NationalCoach.Add"/>): ENGLBRECHT (TW) steht in FILE49A
@@ -239,8 +242,6 @@ public sealed partial class GameState
             coach.Remove(player);
             return NominationResult.Removed;
         }
-        if (player.InjuredGames > 0)
-            return NominationResult.Unavailable;
         if (coach.Squad.Count >= NationalCoach.MaxSquad)
             return NominationResult.SquadFull;
         var club = NationalCandidates().FirstOrDefault(c => c.Player == player)
@@ -259,8 +260,9 @@ public sealed partial class GameState
     /// <item>A487 (Spur national Teil 3): [ORIGINAL] Gleichstand in Poolfolge – die Kandidaten stehen in der Folge der Poolplätze
     ///   (<see cref="NationalCandidates"/>, A020), die Auswahl ist stabil. Summe aus den Grundstärken des Pools
     ///   (<see cref="NationalCandidateSum"/>). Bis Runde 22 nach <see cref="Player.Id"/>, bis Runde 13 nach dem Namen.</item>
-    /// <item>[APPROX] Verletzte überspringt das Remake: 0x3CC01 prüft keine Verletzung (der neue Kaderplatz des Satzes 5 ist
-    ///   unverletzt), das Remake führt aber einen Wertesatz je Spieler, die Verletzung des Vereinsplatzes ginge mit.</item>
+    /// <item>A873 (Spur v-rest): [ORIGINAL] Auch Verletzte: 0x3CC01 prüft nur die Summe (Pool +0x15–0x17), Pool +0x13 (Ausländer) und
+    ///   Pool +0x1D (Datei 0x3CC28–0x3CCAE), keine Verletzung. Der neue Kaderplatz des Satzes 5 ist unverletzt
+    ///   (<see cref="NewNationalSlot"/>); die Verletzung des Vereinsplatzes bleibt dort. Bis Runde 22 übersprang das Remake Verletzte.</item>
     /// </list>
     /// </summary>
     public void AutoNominate()
@@ -270,7 +272,7 @@ public sealed partial class GameState
         var candidates = NationalCandidates();
         PlayerRole[] roles = [PlayerRole.Goalkeeper, PlayerRole.Defender, PlayerRole.Forward];
         for (var r = 0; r < roles.Length; r++)
-            foreach (var c in candidates.Where(c => c.Player.Role == roles[r] && c.Player.InjuredGames == 0)
+            foreach (var c in candidates.Where(c => c.Player.Role == roles[r])
                          .OrderByDescending(c => NationalCandidateSum(c.Player)) // stabil: Poolfolge bei Gleichstand
                          .Take(NationalCoach.AutoSquad[r]))
                 coach.Add(c.Player, c.Club, NewNationalSlot(c.Player));

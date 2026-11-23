@@ -32,9 +32,6 @@ public enum NominationResult
 
     /// <summary>[ORIGINAL] Schon 29 Spieler im Kader (Datei 0x3CAD5: Zähler &gt; 28 → abgelehnt, ohne Meldung).</summary>
     SquadFull,
-
-    /// <summary>Verletzt und nicht im Kader: Das Original tut nichts.</summary>
-    Unavailable,
 }
 
 /// <summary>Ergebnis einer Vereinbarung in „WM Vorbereitung“.</summary>

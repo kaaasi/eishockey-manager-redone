@@ -99,13 +99,13 @@ public class NationalCoachTests
     // ---- WM-Kader ---------------------------------------------------------------------------------------------
 
     [Fact]
-    public void AutoNominate_Picks3_10_16_BestUninjuredGermans()
+    public void AutoNominate_Picks3_10_16_BestGermans_InjuredToo()
     {
         var game = Create();
         game.AppointNationalCoach(game.Managers[0]);
         var candidates = game.NationalCandidates();
         Assert.All(candidates, c => Assert.False(c.Player.IsForeigner));
-        var injured = candidates.First(c => c.Player.Role == PlayerRole.Forward).Player;
+        var injured = candidates.Where(c => c.Player.Role == PlayerRole.Forward).MaxBy(c => Sum(c.Player))!.Player; // A873: der stärkste
         injured.InjuredGames = 3;
 
         game.AutoNominate();
@@ -113,13 +113,16 @@ public class NationalCoachTests
         Assert.Equal(NationalCoach.MaxSquad, squad.Count);
         Assert.Equal([3, 10, 16], new[] { PlayerRole.Goalkeeper, PlayerRole.Defender, PlayerRole.Forward }
             .Select(r => squad.Count(m => m.Player.Role == r)));
-        Assert.DoesNotContain(squad, m => m.Source == injured);
+        // A873 (Spur v-rest): [ORIGINAL] 0x3CC01 prüft keine Verletzung; der Platz im Satz 5 beginnt unverletzt.
+        Assert.All(squad, m => Assert.Equal(0, m.Player.InjuredGames));
+        Assert.Contains(squad, m => m.Source == injured);
+        Assert.Equal(3, injured.InjuredGames);
         // A020/A412 (Spur national Teil 3): Kandidaten aus dem Pool (Verein = Poolverein, Datei 0x3C5C9), eigener Kaderplatz je
         // Mitglied; die Summe ist die der Grundstärken des Pools (Datei 0x3CC01). Bis Runde 22 Verein = Kader des Spielers.
         foreach (var role in Enum.GetValues<PlayerRole>())
         {
             var weakestIn = squad.Where(m => m.Source.Role == role).Min(m => Sum(m.Source));
-            var bestOut = candidates.Where(c => c.Player.Role == role && !game.NationalCoach.Contains(c.Player) && c.Player != injured)
+            var bestOut = candidates.Where(c => c.Player.Role == role && !game.NationalCoach.Contains(c.Player))
                 .Select(c => Sum(c.Player)).DefaultIfEmpty(0).Max();
             Assert.True(weakestIn >= bestOut, $"{role}: {weakestIn} < {bestOut}");
         }
@@ -139,8 +142,11 @@ public class NationalCoachTests
         Assert.Equal(NominationResult.Removed, game.ToggleNomination(first));
         Assert.Empty(game.NationalCoach!.Squad);
 
+        // A873 (Spur v-rest): [ORIGINAL] Datei 0x3C952–0x3C983 prüft keine Verletzung, 0x3CABF nimmt auf.
         candidates[1].Player.InjuredGames = 2;
-        Assert.Equal(NominationResult.Unavailable, game.ToggleNomination(candidates[1].Player));
+        Assert.Equal(NominationResult.Added, game.ToggleNomination(candidates[1].Player));
+        Assert.Equal(0, game.NationalCoach.SlotOf(candidates[1].Player).InjuredGames);
+        Assert.Equal(NominationResult.Removed, game.ToggleNomination(candidates[1].Player));
 
         game.AutoNominate();
         var outside = candidates.First(c => !game.NationalCoach.Contains(c.Player) && c.Player.InjuredGames == 0).Player;
