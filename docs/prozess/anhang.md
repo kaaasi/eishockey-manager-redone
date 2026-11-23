@@ -100,6 +100,14 @@ Dokumentieren, ob nur Codelesen oder auch Ausführung am nachgewiesenen Checkout
   zusätzlich offene PRs mit Head `review/*`; Intervall 60 s. Claude: Schleife im Hintergrund (`run_in_background`), Obergrenze
   rund zwei Stunden (z. B. `for i in $(seq 1 115)`), danach abbrechen und den Lauf prüfen; `send_later` stand nicht verlässlich
   bereit; nach einem Neustart der Arbeitsumgebung Schleifen neu anlegen.
+- **Integration (Erfahrung Runde 22):**
+  - Spuren mit Migration nacheinander mergen; den Rebase-Fixlauf der nächsten erst nach dem vorherigen Merge anlegen (sonst
+    doppelte Schemanummer).
+  - Nach jedem Merge die übrigen offenen PRs auf Konflikte prüfen; auch ohne Konflikt `tools/pruefen.sh --schnell` auf `main` + PR
+    (#922 wurde nach #923 rot).
+  - Hat ein Lauf nur einen Teil der Tests nachgeprüft, vor dem Merge selbst einen vollen `--schnell`-Lauf.
+  - Braucht eine Originalregel einen Aufruf beim Klicken oder Verlassen eines Bildschirms außerhalb der Dateigrenzen, entscheidet
+    die Leitstelle: minimaler Aufruf eines Kern-Ereignisses im Bildschirm (Muster A858/A553/A808); der Lauf blockiert dafür nicht.
 - **CI hängt (Erfahrung Runde 16):** Stehen `pull_request`-Läufe ohne Job auf `queued` (z. B. Actions-Budget), lassen sie sich
   weder abbrechen noch neu starten; Ersatz ist ein Lauf per `workflow_dispatch` auf dem Branch (`gh workflow run build.yml --ref
   <branch>`), der denselben Head baut und für §6 Nr. 3 zählt. Seit R16-E3 (12.11.2026) ist das Code-Repo öffentlich.

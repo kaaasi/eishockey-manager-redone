@@ -44,7 +44,7 @@ gepushte Stand; der Nachfolger schreibt zuerst einen Übernahmekommentar („üb
 
 - **Ein Branch – ein Bearbeiter.** Gleichzeitig am selben Paket: getrennte Branches `paket/<spur>-<teil>` mit getrennten PRs.
   Fortsetzungen einer Spur arbeiten **nacheinander** auf `paket/<spur>` mit einem PR (`spur-start.md` „Teile und Fortsetzung“).
-- Kein `git push --force` auf fremde Branches; auf eigenen nur `--force-with-lease` nach Rebase (abgelehnt: Merge-Commit,
+- Kein `git push --force` auf fremde Branches; auf eigenen nur `--force-with-lease` nach Rebase (gesperrt: `spur-wartet`,
   `spur-start.md` „Teile und Fortsetzung“ Schritt 2).
 - **Fremde Tests (R15-E2 = C, Nutzer 10.11.2026):** Bricht die eigene Verhaltensänderung einer Spur einen fremden Test, darf sie
   ihn anpassen – je Test Begründung mit Fundstelle und Rückschaltprobe im PR; das Erstreview prüft genau das.
