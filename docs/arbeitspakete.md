@@ -46,8 +46,8 @@ Plan-Review Sonnet 5.5.
   getrennt (warten auf DOSBox). Die Vollliste als Anhang derselben Datei (generiert, unverändert).
 - **Dateien:** `docs/analyse/abweichungen-v1.md` (neu). **Prüfung:** entfällt (nur Doku); Probe im PR: Anzahl IDs der
   Vollliste = Anzahl IDs in den Themen. **Erstreview:** Sonnet 5.5 (Stichprobe 20 Themen gegen Code/Fundstelle).
-- **Status:** Teil 1 fertig (PR #987, 23.11.2026): 100 Themen + 8 D-Themen, 581 IDs (A 573: K 224, E 323, D 26; F 8),
-  17 Themen mit Vorschlag „ändern“; wartet auf Erstreview.
+- **Status:** Teil 1 fertig (PR #987, 23.11.2026): 101 Themen + 8 D-Themen, 581 IDs (A 573: K 224, E 323, D 26; F 8),
+  15 Themen mit Vorschlag „ändern“; Erstreview #991 (P2-1…P2-5, 13 P3) im Fixlauf 23.11.2026 behoben, wartet auf Delta-Prüfung.
 
 ### Spur `aufraeum-konzept` – Konzept für #936 ohne Umbau (Welle 1, R24-D3)
 
