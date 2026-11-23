@@ -372,13 +372,17 @@ public static class HighscoreRules
         var wealth = marks * FinanceRules.ThirdsPerMark
             + club.Players.Sum(p => (long)(game.PlayerValueOf(p, club, PlayerValueKind.Price, valueRandom, m.Level) / 2));
 
-        // [APPROX] Ohne gespielte Tabelle (vor dem ersten Spieltag, Weltmodus) bleibt der Platzierungsterm 0; das Original
-        // verwendet dort das Platzbyte des Vereins.
+        // [ORIGINAL] A065 (Runde 23): Datei 0x5D2CA–0x5D303 liest den Platz aus dem Tabellenfeld DGROUP 0x8288 + 0x50 · Verein.
+        // Vor dem ersten Spieltag steht dort 0 im ersten Spieljahr bzw. der Endstand der Vorsaison (FILE75: alle 36 Ligavereine
+        // 0, Club.StoredTableRank); ab dem ersten Spieltag rechnet das Remake den Platz aus der Tabelle.
+        // [APPROX] Ohne Liga (Weltmodus) bleibt der Platzierungsterm 0.
         var rank0 = 35;
         var offset = 0;
-        if (club.League is { } league && game.PlayedMatchDays > 0)
+        if (club.League is { } league)
         {
-            rank0 = LeagueTable.Compute(game, league, TableView.Gesamt, game.PlayedMatchDays).First(r => r.Club.Index == club.Index).Rank - 1;
+            rank0 = game.PlayedMatchDays > 0
+                ? LeagueTable.Compute(game, league, TableView.Gesamt, game.PlayedMatchDays).First(r => r.Club.Index == club.Index).Rank - 1
+                : club.StoredTableRank;
             offset = 12 * (int)league;
         }
 

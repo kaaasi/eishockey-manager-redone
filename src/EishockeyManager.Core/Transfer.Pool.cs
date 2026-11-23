@@ -969,7 +969,8 @@ public sealed partial class TransferMarket
             // [ORIGINAL] #897: Datei 0x497A1 (call 0x118:0x70, Art 1) schreibt +0x28 = Wert(Gehalt) des neuen Platzes, ohne Zufall,
             // nach +0x2C = Wert(Preis) (0x4975C); Beleg: an allen Ständen FILE01–FILE49A ist +0x28 jedes Poolangebots ≠ 0
             // (HokImportWerteTests) und stimmt mit Wert(Gehalt) im Verein des Platzes und dem Level des ziehenden Managers überein.
-            // [APPROX] Level: Manager am Zug (ActiveManager), beim Spielstart der erste Manager; das Original liest DGROUP [0xA70D].
+            // [ORIGINAL] Level: Manager am Zug (ActiveManager), beim Spielstart der erste Manager; das Original liest DGROUP [0xA70D],
+            // und 0xA70D = 0xA70E (Manager am Zug) an allen 72 Originalständen (Spur abgleich-dosbox-22, Bericht §3).
             p.MonthlySalary = Math.Max(Contracts.MinSalary,
                 game.PlayerValueOf(p, game.Clubs[slot.Club], PlayerValueKind.Salary, random, ActorLevel(game)) / 3);
             slot.Owner = PoolOwner.Market;

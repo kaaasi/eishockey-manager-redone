@@ -25,6 +25,7 @@ public sealed partial class GameState
     private void WriteManagers(OriginalSaveWriter w, int[] slotOf)
     {
         var rec = w.Block("965B");
+        var bankAccount = 0L;
         for (var record = 0; record < 6; record++)
         {
             foreach (var o in new[] { 0xE6, 0xE7, 0xE8, 0xE9, 0xEA })
@@ -98,6 +99,7 @@ public sealed partial class GameState
             var bank = OriginalExport.Thirds(f.Bank.Balance);
             OriginalExport.Write32(rec, F(0x19B + 4 * 4), bank);
             OriginalExport.Write32(rec, ManagerField(OriginalImport.MarketRecord, 0x19B + 4 * m), -bank);
+            bankAccount += bank;
 
             OriginalExport.Write32(w.Block("020D"), 4 * m, OriginalExport.Thirds(f.TalentPrice));
             OriginalExport.Write32(w.Block("02A0"), 4 * m, f.InterestAccrualThirds);
@@ -121,6 +123,10 @@ public sealed partial class GameState
             for (var b = 0; b < Managers.Count && b < OriginalImport.MarketRecord; b++)
                 if (a != b)
                     OriginalExport.Write32(rec, ManagerField(a, 0x19B + 4 * b), OriginalExport.Thirds(ManagerLoanNet(a, b)));
+        // [ORIGINAL] A402 (Runde 23): Konto der Bank, Satz 4 +0x18F = Bankeintrag des Managers mit gleichem Vorzeichen (FILE76
+        // Sparbuch +300.000, FILE08 Kredit −2.103.000, Drittel-DM). [APPROX] Summe über die Manager: belegt ist nur je ein Manager
+        // mit Bankeintrag.
+        OriginalExport.Write32(rec, ManagerField(OriginalImport.MarketRecord, 0x18F), Math.Clamp(bankAccount, int.MinValue, int.MaxValue));
         // [ORIGINAL] Konto des Nationalteams: Satz 5 +0x18F (DGROUP 0xA055), Drittel-DM.
         OriginalExport.Write32(rec, ManagerField(OriginalImport.NationalRecord, 0x18F), OriginalExport.Thirds(NationalAccount));
     }

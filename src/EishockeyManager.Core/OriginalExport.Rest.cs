@@ -11,6 +11,7 @@ public sealed partial class GameState
     private void WriteOriginalRest(OriginalSaveWriter w, int[] slotOf)
     {
         WriteStocks(w);
+        var contractNumber = 1;
         for (var m = 0; m < Managers.Count; m++)
         {
             var manager = Managers[m];
@@ -21,7 +22,7 @@ public sealed partial class GameState
                 OriginalExport.Write32(holdings, 32 * m + 8 * i, OriginalExport.Thirds(f.Holdings[i].PurchaseCost));
                 OriginalExport.Write32(holdings, 32 * m + 8 * i + 4, f.Holdings[i].Count);
             }
-            WriteSponsoring(w, m, f.Sponsoring);
+            WriteSponsoring(w, m, f.Sponsoring, ref contractNumber);
             var units = w.Block("A8A1");
             for (var day = 0; day < TrainingPlan.Days; day++)
                 for (var unit = 0; unit < TrainingPlan.UnitsPerDay; unit++)
@@ -38,6 +39,8 @@ public sealed partial class GameState
                 w.Block("0375")[2 * m] = w.Block("0375")[2 * m + 1] = (byte)(club.AutoLineupEnabled ? 1 : 0);
             }
         }
+        // [ORIGINAL] A614: nächste Vertragsnummer der Banden DGROUP 0x17C (Spielstart 1, FILE76 nach zwei Bandenverträgen 3).
+        w.Block("017C")[0] = OriginalExport.Byte(contractNumber);
         if (Managers.Count > 0)
             OriginalExport.Write32(w.Block("02BC"), 0, Managers[0].Training.PriceIndex);
         else
@@ -69,19 +72,24 @@ public sealed partial class GameState
 
     /// <summary>
     /// Werbeverträge 0xC15B + 0x6E · m (11 Flächen zu 10 Byte) und Angebote 0xC313 + 0x1F4 · m + 0x64 · Art + 10 · Partner.
-    /// [APPROX] Logo +7 = Partner (FILE05); Option +6 mit Bit 0x80 = „Kündbar.“ (A582).
+    /// [ORIGINAL] Logo +7 = Partner (FILE05, FILE76); Option +6 mit Bit 0x80 = „Kündbar.“ (A582). [ORIGINAL] A614 (Runde 23): bei
+    /// Banden +4 = Vertragsnummer aus DGROUP 0x17C, danach 0x17C + 1 (Datei 0x2BB5B–0x2BB80, FILE76: Nummern 1 und 2, 0x17C = 3).
+    /// [APPROX] Nummern 1 … n in der Folge der Verträge (Manager, dann Abschluss), 0x17C = n + 1 – das Original zählt auch
+    /// abgelaufene Verträge; bei Trikot, Fernsehen und Eis ist +4 im Original die Bandenzahl des Angebots, die der Vertrag im Remake
+    /// nicht führt (Export: Partner wie bisher).
     /// </summary>
-    private static void WriteSponsoring(OriginalSaveWriter w, int m, Sponsoring sponsoring)
+    private static void WriteSponsoring(OriginalSaveWriter w, int m, Sponsoring sponsoring, ref int contractNumber)
     {
         var contracts = w.Block("C15B");
         foreach (var c in sponsoring.Contracts)
         {
             var areas = c.Kind == AdSlotKind.Bande ? c.Boards : [AreaOf(c.Kind)];
+            var number = c.Kind == AdSlotKind.Bande ? contractNumber++ : c.Sponsor;
             foreach (var area in areas)
             {
                 var at = 0x6E * m + 10 * area;
                 OriginalExport.Write32(contracts, at, OriginalExport.Thirds(c.MonthlyAmount));
-                contracts[at + 4] = OriginalExport.Byte(c.Sponsor);
+                contracts[at + 4] = OriginalExport.Byte(number);
                 contracts[at + 5] = OriginalExport.Byte(c.MonthsLeft);
                 contracts[at + 6] = (byte)(OriginalExport.Byte(c.OptionMonths & 0x7F) | (c.Cancellable ? 0x80 : 0)); // [ORIGINAL] Bit 0x80 = „Kündbar.“ (0x2713F)
                 contracts[at + 7] = OriginalExport.Byte(c.Sponsor);

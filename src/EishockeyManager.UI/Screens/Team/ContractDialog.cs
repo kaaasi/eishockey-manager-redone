@@ -60,6 +60,9 @@ public sealed class ContractDialog
     /// <summary>Gehalt im Feld, 0 = keine Eingabe.</summary>
     public int Salary { get; private set; }
 
+    /// <summary>Wurde 0 DM eingegeben (Anzeige „0 DM“, <see cref="Salary"/> = 1 DM)?</summary>
+    private bool _salaryZero;
+
     /// <summary>Versicherungsprämie im Fenster in DM, 0 = „keine“.</summary>
     public int Insurance { get; private set; }
 
@@ -148,12 +151,16 @@ public sealed class ContractDialog
         {
             Years = Math.Max(value, Contracts.MinYears);
             if (_demand(Years) is { } demand)
-                Salary = demand;
+                (Salary, _salaryZero) = (demand, false);
             DemandFilled = true;
         }
         else if (_edit == Field.Salary)
         {
-            Salary = empty ? _baseSalary : Math.Max(value, Contracts.MinSalary); // Video: 0 DM wird zu 1 DM
+            // [ORIGINAL] A117 (Runde 23, Bild file76_11): Eingabe 0 zeigt „0 DM“ und scheitert bei gleicher Laufzeit mit „nicht
+            // interessiert“. [APPROX] Der Kern wertet Gehalt 0 als „nicht eingegeben“; der Dialog gibt deshalb 1 DM weiter
+            // (Ergebnis gleich: weniger Gehalt bei gleicher Laufzeit → abgelehnt, Datei 0x49A3B).
+            Salary = empty ? _baseSalary : Math.Max(value, Contracts.MinSalary);
+            _salaryZero = !empty && value == 0;
             DemandFilled = false;
         }
         _edit = Field.None;
@@ -178,7 +185,7 @@ public sealed class ContractDialog
             s.Text(mini, 76, d.Y + 27 + 8 * i, ":", Colors.White);
 
         DrawValue(s, mini, Field.Years, d.Y + 27, Core.Player.YearsText(Years != 0 ? Years : _baseYears));
-        DrawValue(s, mini, Field.Salary, d.Y + 35, ContractsScreen.FormatMoney(Salary != 0 ? Salary : _baseSalary));
+        DrawValue(s, mini, Field.Salary, d.Y + 35, ContractsScreen.FormatMoney(_salaryZero ? 0 : Salary != 0 ? Salary : _baseSalary));
         // [ORIGINAL] 0x4AAD4–0x4AB1C: +0x30 = 0 → „keine“, sonst der Betrag mit „ DM“ (0x38:0x2D8).
         s.Text(mini, 81, d.Y + 43, Insured ? ContractsScreen.FormatMoney(Insurance) : "keine", Colors.White);
 

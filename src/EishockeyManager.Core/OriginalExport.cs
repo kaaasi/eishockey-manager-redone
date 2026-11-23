@@ -282,7 +282,6 @@ public sealed partial class GameState
 
         // [APPROX] Blöcke ohne Deutung, an allen Ständen FILE01–FILE49A gleich: Vorgabe des Spielstarts.
         w.Block("0120").AsSpan().Fill(1);
-        w.Block("017C")[0] = 1;
         w.Block("D0E4").AsSpan().Fill(1);
         new byte[] { 7, 6, 5, 4, 3, 2 }.CopyTo(w.Block("022D"), 0);
         new byte[] { 0xB0, 0xFF, 0xCE, 0xFF, 0x9C, 0xFF, 0xC4, 0xFF, 0x50, 0x00, 0x32, 0x00, 0x46, 0x00, 0x3C, 0x00 }.CopyTo(w.Block("0246"), 0);
@@ -293,10 +292,11 @@ public sealed partial class GameState
         // [ORIGINAL] DGROUP 0x178 + m: Managerkopf (WriteManagers), unbenutzte Plätze 0xFF (FILE01 06 FF FF FF, FILE09 03 0A FF FF).
         w.Block("0178").AsSpan().Fill(0xFF);
 
-        // [ORIGINAL] Zahl der Manager DGROUP 0x386, Manager am Zug 0xA70E (5 = Bundestrainer), 0xA70D letzter Zugteilnehmer
-        // [APPROX] (Stände: Managerzahl − 1, mit Bundestrainer 5).
+        // [ORIGINAL] Zahl der Manager DGROUP 0x386, Manager am Zug 0xA70E (5 = Bundestrainer). 0xA70D = 0xA70E an allen 72
+        // Originalständen (Spur abgleich-dosbox-22, Bericht §3; FILE73–FILE75: zwei Manager, Spieler1 am Zug → 0); vorher
+        // Managerzahl − 1 (Entscheidung Leitstelle, PR #964).
         w.Block("0386")[0] = (byte)Managers.Count;
         w.Block("A70E")[0] = (byte)(_nationalTurn ? OriginalImport.NationalRecord : CurrentManager);
-        w.Block("A70D")[0] = (byte)(NationalCoach is not null ? OriginalImport.NationalRecord : Managers.Count - 1);
+        w.Block("A70D")[0] = w.Block("A70E")[0];
     }
 }

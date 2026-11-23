@@ -7,8 +7,9 @@ namespace EishockeyManager.Core;
 /// Infoleiste: Lampe rot = noch nicht bereit (am Zug bzw. noch dran), grün = bereit.
 /// </summary>
 /// <remarks>
-/// [APPROX] Reihenfolge im Original nicht belegt: Ein neuer Tag beginnt beim ersten aktiven Manager,
-/// danach in Setup-Reihenfolge.
+/// [ORIGINAL] A057 (Runde 23, DOSBox-Aufnahme runde-22 Sitzung 1): Ein neuer Tag beginnt beim ersten Manager, danach in
+/// Setup-Reihenfolge – zwei Manager, an drei Spieltagen Spieler1 → Spieler2; FILE76 im Zug von Spieler2 gesichert
+/// (DGROUP 0xA70E = 1). [APPROX] Mit entlassenem ersten Manager (beginnt beim ersten aktiven) nicht aufgenommen.
 /// </remarks>
 public sealed partial class GameState
 {

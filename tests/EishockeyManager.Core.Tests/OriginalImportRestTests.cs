@@ -159,15 +159,18 @@ public sealed class OriginalImportRestTests
         Assert.Equal(10, game.Clubs[clubOf[0]].StoredRankSlot(2));
     }
 
-    /// <summary>Werbeangebote C313 an FILE05; ein Vertrag C15B über zwei Banden und einer fürs Trikot (gepatcht, an keinem Stand).</summary>
+    /// <summary>
+    /// Werbeangebote C313 an FILE05; ein Vertrag C15B über zwei Banden und einer fürs Trikot (gepatcht). Spur abgleich-dosbox-22
+    /// (A614, FILE76): Partner in +7, bei Banden +4 = Vertragsnummer (hier 1), beim Trikot die Bandenzahl des Angebots (hier 0).
+    /// </summary>
     [GameDataFact]
     public void Import_Sponsoring()
     {
         var (save, database) = Load("FILE05.HOK");
         var contracts = save.Block("C15B");
         foreach (var area in new[] { 2, 3 })
-            WriteContract(contracts.AsSpan(10 * area), 60_000, partner: 4, months: 11, option: 0x80 | 12, rating: 70);
-        WriteContract(contracts.AsSpan(10 * 7), 150_000, partner: 1, months: 5, option: 0, rating: 66);
+            WriteContract(contracts.AsSpan(10 * area), 60_000, number: 1, partner: 4, months: 11, option: 0x80 | 12, rating: 70);
+        WriteContract(contracts.AsSpan(10 * 7), 150_000, number: 0, partner: 1, months: 5, option: 0, rating: 66);
         var game = GameState.ImportOriginal(save, database, Seed);
         var sponsoring = game.Finance(game.Managers[0]).Sponsoring;
 
@@ -235,12 +238,13 @@ public sealed class OriginalImportRestTests
         Assert.Equal(expected, game.Managers[0].HasNewMessage);
     }
 
-    private static void WriteContract(Span<byte> c, int amountThirds, int partner, int months, int option, int rating)
+    private static void WriteContract(Span<byte> c, int amountThirds, int number, int partner, int months, int option, int rating)
     {
         BinaryPrimitives.WriteInt32LittleEndian(c, amountThirds);
-        c[4] = (byte)partner;
+        c[4] = (byte)number;
         c[5] = (byte)months;
         c[6] = (byte)option;
+        c[7] = (byte)partner;
         c[8] = (byte)rating;
     }
 
