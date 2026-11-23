@@ -78,7 +78,7 @@ public sealed partial class GameState
     /// fehlt einer, endet die Gruppe. Datei 0x5636D tauscht die beiden Vereinsplätze (0x36169). Ohne Zwangsabstieg ist das „die
     /// ersten beiden spielen oben“. [ORIGINAL] (K3, Disassembly Datei 0x56157–0x56235, Tausch 0x5636D mit call 0x36169, ohne DOSBox-Beleg) Mit Zwangsabstieg kann derselbe Platz zweimal vorkommen
     /// (Zwangsabsteiger auf Platz 3 und 4); dann wirken beide Tausche nacheinander auf die Plätze, wie in em.exe. Das Ergebnis
-    /// ist die Wanderung zwischen den Ligen. [ORIGINAL] Das Remake hält keine Vereinsplätze, bildet den Platztausch aber nach (A665, Spur einzelpunkte, <see cref="InnerMoves"/>); die Startordnung der Folgesaison
+    /// ist die Wanderung zwischen den Ligen. Das Remake hält keine Vereinsplätze, bildet den Platztausch aber nach (A665, Spur einzelpunkte, <see cref="InnerMoves"/>); die Startordnung der Folgesaison
     /// (<see cref="LeagueTable.SuccessorOrder"/>) paart Auf- und Absteiger in Listenreihenfolge. Nur im Fall mit doppeltem Platz
     /// verschiebt sie auch einen Verein innerhalb der unteren Liga (Datei 0x5636D, call 0x36169).
     /// </remarks>
