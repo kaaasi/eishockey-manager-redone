@@ -341,9 +341,34 @@ public static class Contracts
     {
         ArgumentNullException.ThrowIfNull(game);
         ArgumentNullException.ThrowIfNull(manager);
+        return Math.Max(MinSalary, SalaryThirds(game, manager, p, null) / 3);
+    }
+
+    /// <summary>
+    /// Startgehalt nach einem angenommenen Kauf in DM: Wert(Gehalt) des neuen Kaderplatzes im Verein des Käufers. [ORIGINAL] Datei
+    /// 0x42F11–0x42F65 rechnet am frisch angelegten Platz (0x42CB1, Aufruf Datei 0x477E7), also mit dessen Tendenz und ohne Spiele
+    /// beim Verein (<see cref="PlayerValue.NewSlotInputs"/>; A951, Spur v-rest). Ohne gezogenen Platz wie
+    /// <see cref="ValueSalary(GameState, Manager, Player)"/>.
+    /// </summary>
+    public static int ValueSalary(GameState game, TransferPurchase purchase)
+    {
+        ArgumentNullException.ThrowIfNull(game);
+        ArgumentNullException.ThrowIfNull(purchase);
+        return Math.Max(MinSalary, SalaryThirds(game, purchase.Buyer, purchase.Player, purchase) / 3);
+    }
+
+    /// <summary>
+    /// Wert(Gehalt) in Drittel-DM (0x118:0x70 Art 1) im Verein des Managers. Mit <paramref name="purchase"/> (gezogener neuer
+    /// Kaderplatz) am neuen Platz statt am Markt-Platz: [ORIGINAL] Datei 0x4786A ruft den Dialog 0x4A1DB mit dem neuen Kaderplatz
+    /// (A951), auch beim Kauf von einem Manager noch mit Strafen 0 (VR-01). Zieht keinen Zufall.
+    /// </summary>
+    private static int SalaryThirds(GameState game, Manager manager, Player p, TransferPurchase? purchase)
+    {
         var club = game.Clubs[manager.ClubIndex];
-        var value = game.PlayerValueOf(p, club, PlayerValueKind.Salary, NoRandom, manager.Level);
-        return Math.Max(MinSalary, value / 3);
+        if (purchase?.NewSlot is not { } start)
+            return game.PlayerValueOf(p, club, PlayerValueKind.Salary, NoRandom, manager.Level);
+        var inputs = PlayerValue.NewSlotInputs(p, start, club, manager.Level);
+        return PlayerValue.Compute(inputs, PlayerValueKind.Salary, (a, b) => NoRandom.Next(a, b + 1));
     }
 
     /// <summary>
@@ -395,10 +420,21 @@ public static class Contracts
     {
         ArgumentNullException.ThrowIfNull(game);
         ArgumentNullException.ThrowIfNull(manager);
-        var club = game.Clubs[manager.ClubIndex];
-        var value = game.PlayerValueOf(p, club, PlayerValueKind.Salary, NoRandom, manager.Level);
-        return (int)Math.Max(1, value / 2 / 3);
+        return InsuranceOffer(SalaryThirds(game, manager, p, null));
     }
+
+    /// <summary>
+    /// Prämie im Verhandlungsfenster nach einem Kauf: Wert(Gehalt) des neuen Kaderplatzes / 2 ([ORIGINAL] Datei 0x4786A → 0x4A1DB
+    /// mit dem neuen Platz, 0x4AA9C; A951). Nach dem Abschluss rechnet <see cref="ApplyInsurance"/> am angelegten Platz gleich.
+    /// </summary>
+    public static int InsuranceOffer(GameState game, TransferPurchase purchase)
+    {
+        ArgumentNullException.ThrowIfNull(game);
+        ArgumentNullException.ThrowIfNull(purchase);
+        return InsuranceOffer(SalaryThirds(game, purchase.Buyer, purchase.Player, purchase));
+    }
+
+    private static int InsuranceOffer(int valueThirds) => Math.Max(1, valueThirds / 2 / 3);
 
     /// <summary>
     /// Lässt sich die Versicherung im Verhandlungsfenster umschalten? [ORIGINAL] Datei 0x4AA74–0x4AA90: nicht nach einem Abschluss
@@ -455,9 +491,22 @@ public static class Contracts
     public static int? DemandAfterYears(GameState game, Manager manager, Player p, int years) =>
         DemandAfterYears(game, manager, p, years, p.MonthlySalary);
 
-    /// <summary>Wie oben mit ausdrücklichem bisherigem Gehalt (Kauf: Vertrag des neuen Kaderplatzes, <see cref="TransferPurchase"/>).</summary>
+    /// <summary>Wie oben mit ausdrücklichem bisherigem Gehalt.</summary>
     public static int? DemandAfterYears(GameState game, Manager manager, Player p, int years, int currentSalary) =>
-        manager.Level >= 5 ? null : ComputedDemand(game, manager, p, years, currentSalary);
+        manager.Level >= 5 ? null : ComputedDemand(game, manager, p, years, currentSalary, null);
+
+    /// <summary>
+    /// Forderung nach einem Kauf: bisheriger Vertrag und Wert(Gehalt) des neuen Kaderplatzes (<see cref="TransferPurchase"/>;
+    /// [ORIGINAL] Datei 0x4786A ruft 0x4A1DB mit dem neuen Platz, A951).
+    /// </summary>
+    public static int? DemandAfterYears(GameState game, TransferPurchase purchase, int years)
+    {
+        ArgumentNullException.ThrowIfNull(game);
+        ArgumentNullException.ThrowIfNull(purchase);
+        return purchase.Buyer.Level >= 5
+            ? null
+            : ComputedDemand(game, purchase.Buyer, purchase.Player, years, purchase.Salary, purchase);
+    }
 
     /// <summary>
     /// Forderung in DM unabhängig vom Level. [ORIGINAL] 0x4A81B–0x4A9A1 rechnet ohne Levelabfrage (einzige Abfrage von
@@ -465,10 +514,11 @@ public static class Contracts
     /// speichert Drittel-DM; das Remake speichert ganze DM und rundet die Forderung (und die Vergleichsforderung aus dem
     /// bisherigen Gehalt) ab – bis 2/3 DM je Monat.
     /// </summary>
-    private static int ComputedDemand(GameState game, Manager manager, Player p, int years, int currentSalary)
+    private static int ComputedDemand(GameState game, Manager manager, Player p, int years, int currentSalary,
+        TransferPurchase? purchase)
     {
         var club = game.Clubs[manager.ClubIndex];
-        var value = game.PlayerValueOf(p, club, PlayerValueKind.Salary, NoRandom, manager.Level);
+        var value = SalaryThirds(game, manager, p, purchase);
         // [ORIGINAL] Alter aus Kaderplatz 3 des Managers (0x4A93F). A125: Players ist die Platzfolge des Originals (Start
         // Torhüter/Abwehr/Sturm, Kauf nach Spielerart einsortiert Datei 0x42D55 (R13GN-01; Stürmer hinten FILE07), Verkauf rückt
         // auf FILE26 Datei 0x425B6, Saisonwechsel unverändert FILE22/FILE23: Platz 3 = DOLL p23 in beiden).
@@ -522,7 +572,7 @@ public static class Contracts
     /// von <see cref="Negotiate"/> und dem Kauf (<see cref="TransferMarket.Sign"/>, Datei 0x4786A ruft denselben Dialog).
     /// </summary>
     internal static (NegotiationResult Result, int Years, int Salary) NegotiateTerms(GameState game, Manager manager, Player p,
-        int current, int currentSalary, int years, int salary, bool demandFilled)
+        int current, int currentSalary, int years, int salary, bool demandFilled, TransferPurchase? purchase = null)
     {
         if (salary < 0 || years < 0)
             return (NegotiationResult.Unfair, 0, 0);
@@ -531,8 +581,8 @@ public static class Contracts
         // [ORIGINAL] 0x4AD3E→0x4AD54: Bei Ablehnung und Abbruch stellt das Original die beim Öffnen gesicherten Werte zurück
         // (0x4A239–0x4A25F) – das Remake ändert den Spieler dann gar nicht.
         if (game.AfterSeasonEnd && years != 0)
-            (current, currentSalary) = (years, ComputedDemand(game, manager, p, years, currentSalary));
-        var result = Decide(game, manager, p, current, currentSalary, years, salary, demandFilled);
+            (current, currentSalary) = (years, ComputedDemand(game, manager, p, years, currentSalary, purchase));
+        var result = Decide(game, manager, p, current, currentSalary, years, salary, demandFilled, purchase);
         return (result, years == 0 ? current : years, salary == 0 ? currentSalary : salary);
     }
 
@@ -548,7 +598,7 @@ public static class Contracts
         p.Notice == ContractNotice.Offered && p.ContractYears <= 1 ? p.NoticeYears : p.ContractYears;
 
     private static NegotiationResult Decide(GameState game, Manager manager, Player p, int current, int currentSalary, int years,
-        int salary, bool demandFilled)
+        int salary, bool demandFilled, TransferPurchase? purchase)
     {
         if (years > ContractRules.MaxYears)
             return NegotiationResult.TooLong;
@@ -561,8 +611,7 @@ public static class Contracts
             return NegotiationResult.TooShort;
         if (accept)
             return NegotiationResult.Accepted;
-        var club = game.Clubs[manager.ClubIndex];
-        var value = game.PlayerValueOf(p, club, PlayerValueKind.Salary, NoRandom, manager.Level);
+        var value = SalaryThirds(game, manager, p, purchase);
         return ContractRules.Accepts(current, currentSalary * 3, y, s * 3, value, game.ContractSeasonRemaining,
             game.AfterSeasonEnd, p.Age, game.Random)
             ? NegotiationResult.Accepted

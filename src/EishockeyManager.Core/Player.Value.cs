@@ -208,6 +208,37 @@ public static class PlayerValue
         ClubClass = club is null ? 1 : CupClass.Of(club),
         LevelValue = TrainingRules.LevelValue(level),
     };
+
+    /// <summary>
+    /// Eingänge eines Spielers auf einem neu angelegten Kaderplatz (Kauf, Datei 0x477E7 → 0x42CB1), bevor der Platz angelegt ist:
+    /// Startgehalt und Verhandlung des Kaufs rechnen damit (A951, Spur v-rest). [ORIGINAL] 0x4786A ruft den Dialog 0x4A1DB mit
+    /// dem neuen Kaderplatz; Wert 0x4A0A7 liest dessen Felder: Tendenz +0x0E aus <paramref name="start"/>, Spiele beim Verein
+    /// +0x1C/+0x1E/+0x20 = 0 (memset 0x42E3A), Ligatore +0x03 aus dem Pool (beim Torhüter 0), Pokal- und Europapokaltore 0,
+    /// Kondition und Technik aus dem Pool (0x42EC9), Strafen 0 – auch beim Kauf von einem Manager: Die Kopie von +0x00/+0x01 vom
+    /// Verkäuferplatz (Datei 0x47877, 0x4787D–0x478CB) liegt hinter dem Dialog 0x4786A (VR-01, Review #962). Wie
+    /// <see cref="Player.ApplyNewSlot"/> mit <c>fromManager: false</c>, ohne den Spieler zu ändern.
+    /// Kein Angebot (+0x09 Bit 0x80 geht nur in den Preis ein, 0x4A0C5).
+    /// </summary>
+    public static PlayerValueInputs NewSlotInputs(Player player, SlotStart start, Club? club, int level = 3)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+        var (condition, technique) = player.PoolStrengths;
+        var goalkeeper = player.Role == Formats.PlayerRole.Goalkeeper;
+        return Inputs(player, club, null, level) with
+        {
+            Penalties5 = 0,
+            Penalties2 = 0,
+            Goals0 = goalkeeper ? 0 : Math.Min(player.SeasonGoals(CompetitionSlot.League), SquadSlotRules.CounterMax),
+            Goals1 = 0,
+            Goals2 = 0,
+            Trend = start.TrendScore,
+            Condition = Math.Clamp(condition, 0, 255),
+            Technique = Math.Clamp(technique, 0, 255),
+            Games0 = 0,
+            Games1 = 0,
+            Games2 = 0,
+        };
+    }
 }
 
 public sealed partial class GameState

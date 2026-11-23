@@ -6,6 +6,7 @@ namespace EishockeyManager.Core;
 /// </summary>
 /// <remarks>
 /// [ORIGINAL] Laufzeit und Gehalt des neuen Kaderplatzes aus 0x42CB1 (Aufruf Datei 0x477E7): <see cref="Contracts.PurchaseYears"/>
+/// (Gehalt am neuen Platz, A951)
 /// und Wert(Gehalt) im Verein des Käufers (<see cref="Contracts.ValueSalary"/>, 0x42F11). [APPROX] Der Zustand lebt nur im
 /// Dialog (kein Spielstandsfeld); <see cref="TransferMarket.Sign"/> prüft vor dem Abschluss erneut.
 /// </remarks>
@@ -49,8 +50,9 @@ public sealed partial class TransferMarket
         if (!game.Managers.Contains(manager) || !_listings.Contains(listing) || !IsCurrentListing(game, listing)
             || purchase.Offer > manager.Money || IsSquadFull(game, manager, listing.From))
             return NegotiationResult.Unfair;
+        // [ORIGINAL] Datei 0x4786A: der Dialog 0x4A1DB rechnet am neuen Kaderplatz (Wert 0x4A0A7; A951, Spur v-rest).
         var (result, newYears, newSalary) = Contracts.NegotiateTerms(game, manager, listing.Player, purchase.Years,
-            purchase.Salary, years, salary, demandFilled);
+            purchase.Salary, years, salary, demandFilled, purchase);
         if (result != NegotiationResult.Accepted)
         {
             _ = ContractRules.LockDays(game.Random); // Spur zufallsstrom Teil 4: Wurf Datei 0x4AD3E aus dem gemeinsamen Strom

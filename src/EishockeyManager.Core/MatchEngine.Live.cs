@@ -113,6 +113,7 @@ public static partial class MatchEngine
         {
             TrackPenaltyBox(home, null); // A808: Spielwertung ohne Strafbank
             TrackPenaltyBox(away, null);
+            game.PrepareForfeitGate(home, away, competition); // A913: [ORIGINAL] 0x544C0 bis zum nicht spielfähigen Manager (MatchGate.cs)
             var forfeit = game.HomeForfeits(home, away) // A191: Manager in Indexreihenfolge (0x544C0)
                 ? new MatchReport { HomeGoals = 0, AwayGoals = 2, Forfeit = true }
                 : new MatchReport { HomeGoals = 2, AwayGoals = 0, Forfeit = true };
@@ -442,7 +443,8 @@ public static partial class MatchEngine
     ///   ([ORIGINAL] 0xA3F7: Torhüter auf dem Eis) und die Spielminuten 60/70 ([ORIGINAL] 0x874D zählt je Minute).
     ///   [ORIGINAL] Torschütze und Vorlage aus 0x541D9/0x386D1 im Spiel (<see cref="OriginalMinutes.ScoringPlayers"/>,
     ///   Teil 3); die Strafe bekommt der Spieler aus 0x378C5 (Managerverein und Nationalteam des Bundestrainers).
-    ///   Bei einer Spielwertung zählt nichts.</item>
+    ///   Bei einer Spielwertung zählt hier nichts; Spiele und Belastung der Manager mit kleinerem Index als der nicht spielfähige
+    ///   zählt die Vorbereitung (<c>GameState.PrepareForfeitGate</c>, A961).</item>
     /// </list>
     /// </summary>
     /// <param name="homeTeam">Spielkader des Spiels (A677: Kennzeichen „hat gespielt“, <see cref="LivePlayer.Played"/>); ohne

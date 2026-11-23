@@ -504,10 +504,10 @@ public sealed partial class TransferMarket
         if (!loan)
         {
             // [ORIGINAL] Datei 0x477E7: der neue Kaderplatz (0x42CB1) zieht Belastung und Tendenz vor der Verhandlung 0x4786A
-            // (Spur kaderplatz-werte, A674). [APPROX] Startgehalt und Verhandlung sehen noch den Markt-Platz (Tendenz, Vereinsspiele).
+            // (Spur kaderplatz-werte, A674); Startgehalt (0x42F11) und Verhandlung rechnen an diesem Platz (Wert 0x4A0A7; A951).
             var start = SquadSlotRules.Roll(game.Random);
-            purchase = new TransferPurchase(listing, manager, offer, Contracts.PurchaseYears,
-                Contracts.ValueSalary(game, manager, listing.Player)) { NewSlot = start };
+            purchase = new TransferPurchase(listing, manager, offer, Contracts.PurchaseYears, 0) { NewSlot = start };
+            purchase = purchase with { Salary = Contracts.ValueSalary(game, purchase) };
             return TransferResult.Accepted;
         }
         subsidy = Complete(game, listing, manager, offer, loan: true);

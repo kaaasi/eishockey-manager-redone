@@ -31,6 +31,9 @@ public sealed partial class GameState
         IReadOnlyList<(Manager Manager, int Spectators)> HomeSpectators)
     {
         public bool Settled { get; set; }
+
+        /// <summary>Spielwertung: der nicht spielfähige Manager, der die Strafe zahlt (Rückgabe 1/2 von 0x544C0), sonst null.</summary>
+        public Manager? ShortHanded { get; init; }
     }
 
     // Statisch über eine schwache Tabelle, kein Instanzfeld: Instanzfelder gehören zum Spielstand (SaveGame.Fields).
@@ -72,8 +75,8 @@ public sealed partial class GameState
     /// <summary>
     /// Vorbereitung der Spielabrechnung vor den Minuten (Aufruf aus <c>MatchEngine.BeginMatch</c>, nur ohne Spielwertung):
     /// Zuschauer für jeden Manager des Heimvereins, danach je Manager der Paarung die eingespielte Reihe
-    /// (<see cref="SquadSlotRules.RollPlayedLines"/>, A093). Ohne Manager in der Paarung nichts. [APPROX] Eine Spielwertung bereitet
-    /// nichts vor; im Original würfeln dort die Manager mit kleinerem Index als der nicht spielfähige noch (Datei 0x547AA).
+    /// (<see cref="SquadSlotRules.RollPlayedLines"/>, A093). Ohne Manager in der Paarung nichts. Spielwertung:
+    /// <see cref="PrepareForfeitGate"/>.
     /// </summary>
     internal void PrepareMatchGate(Club home, Club away, MatchCompetition competition)
     {
@@ -93,6 +96,83 @@ public sealed partial class GameState
         }
         Prepared.Add(new PreparedGate(home.Index, away.Index, tableMatchDay, importance, spectators));
         GateCounters.GetValue(this, _ => new GateCounter()).Prepared++;
+    }
+
+    /// <summary>
+    /// Vorbereitung einer Spielwertung (Aufruf aus <c>MatchEngine.BeginMatch</c>, Paarung mit nicht spielfähigem Managerverein).
+    /// [ORIGINAL] 0x544C0 läuft auch hier vor dem Eintrag 0:2/2:0 und prüft je Manager in Indexreihenfolge: Heimverein und
+    /// Managerwert 100 (Datei 0x54589) → Ende mit 1, sonst Zuschauer (Datei 0x5464A); Gastverein und Managerwert 100 (Datei
+    /// 0x547AA) → Ende mit 2; danach würfelt der Manager der Paarung die eingespielte Reihe (Datei 0x548A8–0x548E7). Die Manager mit
+    /// kleinerem Index als der nicht spielfähige ziehen also Zuschauer und Reihen wie vor einem Spiel (A913, Spur v-rest); der nicht
+    /// spielfähige und alle späteren ziehen nichts. Die Abrechnung bucht die Zuschauer und danach die Strafe
+    /// (<see cref="SettlePreparedGate"/>, wie bisher <see cref="SettleMatchGate"/>). Managerwert 100 = Verein mit
+    /// <see cref="Club.ForfeitsMatch"/> eines nicht entlassenen Managers (<see cref="MarkShortHandedClubs"/>).
+    /// Diese Manager zählen außerdem Spiele und begrenzen die Belastung wie vor einem Spiel (<see cref="CountForfeitGames"/>, A961).
+    /// </summary>
+    internal void PrepareForfeitGate(Club home, Club away, MatchCompetition competition)
+    {
+        if (!Managers.Any(m => m.ClubIndex == home.Index || m.ClubIndex == away.Index))
+            return;
+        var tableMatchDay = PlayedMatchDays + 1;
+        var importance = GateImportance(competition);
+        var spectators = new List<(Manager, int)>();
+        Manager? shortHanded = null;
+        foreach (var manager in Managers)
+        {
+            var forfeits = !manager.Dismissed && Clubs[manager.ClubIndex].ForfeitsMatch;
+            if (manager.ClubIndex == home.Index)
+            {
+                if (forfeits)
+                {
+                    shortHanded = manager; // Datei 0x54589–0x5459C
+                    break;
+                }
+                spectators.Add((manager, Spectators(home, away, Finance(manager).Stadium, tableMatchDay, Random, importance,
+                    manager.Level)));
+            }
+            if (manager.ClubIndex == away.Index && forfeits)
+            {
+                shortHanded = manager; // Datei 0x547AA–0x547BD
+                break;
+            }
+            if (manager.ClubIndex == home.Index || manager.ClubIndex == away.Index)
+            {
+                var club = Clubs[manager.ClubIndex];
+                SquadSlotRules.RollPlayedLines(club, Random); // Datei 0x548A8
+                CountForfeitGames(club, competition); // A961
+            }
+        }
+        Prepared.Add(new PreparedGate(home.Index, away.Index, tableMatchDay, importance, spectators)
+        {
+            ShortHanded = shortHanded,
+        });
+        GateCounters.GetValue(this, _ => new GateCounter()).Prepared++;
+    }
+
+    /// <summary>
+    /// Rest des Managerblocks von 0x544C0 vor einer Spielwertung für einen Manager mit kleinerem Index als der nicht spielfähige
+    /// (A961, R23-E1 = A, Nutzer 23.11.2026; im gespielten Spiel zählt <c>MatchEngine.Credit</c> dasselbe nach dem Spiel, das bei
+    /// der Spielwertung endet). Zieht keinen Zufall.
+    /// <list type="bullet">
+    /// <item>[ORIGINAL] Spiele: Kaderplatzschleife Datei 0x54918–0x5499E zählt jeden Aufgestellten (+0x0A ≠ 0 und +0x15 ≠ 0) im
+    ///   Feld des Wettbewerbs (+0x06/+0x1C + Wettbewerb; Argument 1 = Pokal, 8 = Europapokal, sonst Liga), Pool +0x1C nur bei
+    ///   Wettbewerb 0 (Datei 0x5492E–0x54948); wie <see cref="Player.CountGame"/> mit <see cref="CompetitionSlots.Of"/>.</item>
+    /// <item>[ORIGINAL] Belastung jedes Kaderplatzes auf 50 … 150 (Datei 0x549A2–0x549BB, <see cref="TrainingRules.ClampStrain"/>).</item>
+    /// <item>[ORIGINAL] Kennzeichen „im Spiel“ DGROUP 0x2D6 + Manager = 5 (Datei 0x54821): ohne Zustand im Remake, der Wert ist
+    ///   immer 5 (Startwert, einziger Schreiber; <see cref="MatchIntervention.InMatchFlag"/>).</item>
+    /// <item>[ORIGINAL] Strafenzähler +0x0D − 1 bei Status +0x09 Bit 0 für die Markt-Plätze des Managers (Satz 4, DGROUP 0x7623,
+    ///   Pool +0x1A = Manager, Datei 0x5483B–0x54897) und seine Kaderplätze (Datei 0x548EB–0x5490C), beide nur bei Wettbewerb
+    ///   0 (<c>[bp+0xA] = 0</c>): wie im gespielten Spiel ohne Zustand im Remake – Bit 0 und +0x0D gelten nur, solange der Spieler
+    ///   auf der Strafbank sitzt, und nach einem Spiel sitzt dort niemand (<c>MatchEngine.PenaltyBoxQuery.cs</c>, dortiges
+    ///   [APPROX]).</item>
+    /// </list>
+    /// </summary>
+    private static void CountForfeitGames(Club club, MatchCompetition competition)
+    {
+        var slot = CompetitionSlots.Of(competition);
+        foreach (var p in club.Lineup.Players)
+            p.CountGame(slot); // Datei 0x54918–0x5499E
+        TrainingRules.ClampStrain(club.Players); // Datei 0x549A2–0x549BB
     }
 
     /// <summary>
@@ -134,6 +214,8 @@ public sealed partial class GameState
                 $"abgerechnet {tableMatchDay}/{importance}.");
         foreach (var (manager, spectators) in gate.HomeSpectators)
             BookGate(manager, spectators, away, leagueMatch);
+        if (gate.ShortHanded is { } shortHanded)
+            PenalizeShortHanded(shortHanded);
         return true;
     }
 
