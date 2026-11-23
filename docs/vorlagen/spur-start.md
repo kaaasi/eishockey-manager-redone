@@ -38,7 +38,8 @@ Befunde, Soll-Modell nach „Modellwahl“), sonst – nur P2/P3 oder ohne Befun
 Heads `review-nein` entfernen. Widerspricht der Lauf einem Befund mit eigenem Beleg: `beleg-strittig`, beide Belege in der
 Übergabe, für diesen Punkt keine Nachprüfung.
 Base-Wechsel nur per Rebase und `git push --force-with-lease`, kein Merge-Commit; ist Force-Push gesperrt, Label `spur-wartet`
-mit genauer Fehlermeldung (wie „Teile und Fortsetzung“ Schritt 4).
+mit genauer Fehlermeldung (wie „Teile und Fortsetzung“ Schritt 4). Ist `main` seit dem Review neu: rebasen und die Schemanummer
+der eigenen Migration auf die nächste freie Nummer setzen.
 
 ## Ablauf für den Agenten
 

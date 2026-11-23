@@ -41,6 +41,8 @@ cd eishockey-manager-redone
 - Draft-Status: „Ready for review“ mit `gh api -X POST repos/kaaasi/eishockey-manager-redone/pulls/<nr>/ccr/ready_for_review`,
   zurück mit `…/ccr/convert_to_draft` (GraphQL-Ersatz der Sitzung, erprobt 04.11.2026).
 - Nur repository-bezogene Endpunkte sind erreichbar (keine Nutzer-, Billing- oder Projects-Endpunkte).
+- Branches über die REST-API prüfen (`gh api repos/kaaasi/eishockey-manager-redone/branches`), nicht über `git ls-remote` – der
+  Proxy zeigt dort nicht alle.
 - Releases lassen sich aus der Sitzung nicht anlegen, nur über Workflows.
 - Mergen (nur als Leitstelle, nach der Merge-Prüfung in `docs/prozess/zusammenarbeit.md`) immer mit dem geprüften
   Head-SHA: `gh api -X PUT repos/kaaasi/eishockey-manager-redone/pulls/<nr>/merge -f sha=<head> -f merge_method=merge`.

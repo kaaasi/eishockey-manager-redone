@@ -109,6 +109,12 @@ Dokumentieren, ob nur Codelesen oder auch Ausführung am nachgewiesenen Checkout
     `--schnell`-Lauf.
   - Braucht eine Originalregel einen Aufruf beim Klicken oder Verlassen eines Bildschirms außerhalb der Dateigrenzen, entscheidet
     die Leitstelle: minimaler Aufruf eines Kern-Ereignisses im Bildschirm (Muster A858/A553/A808); der Lauf blockiert dafür nicht.
+  - (Runde 23) Die Leitstelle darf in der Reihenfolge der Fertigstellung statt in der Planfolge integrieren; Grund im
+    Merge-Kommentar.
+  - (Runde 23) Setzt ein Fixlauf neben Befunden eine neue Regel um (z. B. nach einer Nutzerentscheidung), braucht er immer eine
+    Nachprüfung, auch wenn die Befunde nur P2/P3 sind.
+  - (Runde 23) Eigene Rückmeldungen per `send_later` nur so viele wie nötig anlegen; abschalten lassen sie sich nicht (scheitert an
+    der automatischen Freigabe).
 - **CI hängt (Erfahrung Runde 16):** Stehen `pull_request`-Läufe ohne Job auf `queued` (z. B. Actions-Budget), lassen sie sich
   weder abbrechen noch neu starten; Ersatz ist ein Lauf per `workflow_dispatch` auf dem Branch (`gh workflow run build.yml --ref
   <branch>`), der denselben Head baut und für §6 Nr. 3 zählt. Seit R16-E3 (12.11.2026) ist das Code-Repo öffentlich.
