@@ -10,6 +10,9 @@
 #   3. Pflichtlauf ohne Daten (beide Variablen) – MUSS scheitern; sonst laufen Originaldaten-Tests still leer
 # Hängeschutz (Issue #935): Jeder Testlauf bricht nach EM_HANG_TIMEOUT (Standard 20m) ohne Fortschritt eines Tests ab und nennt die
 # hängenden Tests (--blame-hang-timeout, ohne Dump); Fortschritt je Test steht in der Logdatei des Laufs (console;verbosity=normal).
+# Hinweis: vstest meldet mit --blame-hang-dump-type none trotzdem „Collecting hang dumps …“; es entsteht kein Dump (nur
+# tests/*/TestResults/Sequence_*.xml, von .gitignore abgedeckt). Fehlt der Ergebnisblock eines Projekts, steht an der Tabellenzeile
+# „FEHLER: unvollständig“.
 # Exit-Code 0 nur, wenn Build ohne Warnungen, Lauf 1 (falls Daten da) und Lauf 2 grün sind und Lauf 3 scheitert.
 set -uo pipefail
 
@@ -54,8 +57,9 @@ ROWS=()
 if [ $HAVE_DATA = 1 ]; then
   echo "== Tests mit Originaldaten"
   EM_REQUIRE_GAMEDATA=1 dotnet test "$SLN" -c Release --no-build -nologo -v q "${TESTOPT[@]}" > "$LOG/mit.txt" 2>&1
-  rc=$?; ergebnisse_da "$LOG/mit.txt" "Lauf mit Originaldaten"; read -r p f s <<< "$(summe "$LOG/mit.txt")"
-  ROWS+=("| Mit Originaldaten (\`EM_REQUIRE_GAMEDATA=1\`) | $p | $f | $s |")
+  rc=$?; vermerk=""; ergebnisse_da "$LOG/mit.txt" "Lauf mit Originaldaten" || vermerk=" – **FEHLER: unvollständig**"
+  read -r p f s <<< "$(summe "$LOG/mit.txt")"
+  ROWS+=("| Mit Originaldaten (\`EM_REQUIRE_GAMEDATA=1\`) | $p | $f | $s$vermerk |")
   [ $rc -ne 0 ] && STATUS=1
   # Übersprungene Tests im Lauf mit Daten sind erklärungsbedürftig (bekannte offene Befunde).
   [ "$s" != "0" ] && echo "Hinweis: $s Tests trotz Originaldaten übersprungen – im PR begründen."
@@ -67,8 +71,9 @@ fi
 if [ $QUICK = 0 ] || [ $HAVE_DATA = 0 ]; then
   echo "== Tests ohne Originaldaten"
   EM_SKIP_GAMEDATA=1 dotnet test "$SLN" -c Release --no-build -nologo -v q "${TESTOPT[@]}" > "$LOG/ohne.txt" 2>&1
-  rc=$?; ergebnisse_da "$LOG/ohne.txt" "Lauf ohne Originaldaten"; read -r p f s <<< "$(summe "$LOG/ohne.txt")"
-  ROWS+=("| Ohne Originaldaten (\`EM_SKIP_GAMEDATA=1\`) | $p | $f | $s |")
+  rc=$?; vermerk=""; ergebnisse_da "$LOG/ohne.txt" "Lauf ohne Originaldaten" || vermerk=" – **FEHLER: unvollständig**"
+  read -r p f s <<< "$(summe "$LOG/ohne.txt")"
+  ROWS+=("| Ohne Originaldaten (\`EM_SKIP_GAMEDATA=1\`) | $p | $f | $s$vermerk |")
   [ $rc -ne 0 ] && STATUS=1
 fi
 
