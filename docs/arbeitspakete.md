@@ -83,7 +83,7 @@ Modell der Spur, Fixläufe ohne Befund Sonnet 5.5. Plan-Review Sonnet 5.5. Gesam
   R21-D2); 3. A873 WM-Kader „auto“ und Umschalten ohne Verletzungsprüfung (Datei 0x3CC01; Verletzung des Vereinsplatzes darf nicht
   mitgehen), Mehrsaisonprobe. Fixes #948.
 - **Dateien:** `Core/Transfer.Purchase.cs`, `Core/Player.Contract.cs`, `Core/MatchGate.cs`, `Core/CupsNational.cs`,
-  `Core/CupsNational.GameState.cs`, Tests. **Erstreview:** Opus 5.5. **Status:** Teile 1–3 fertig, PR #962 wartet auf Erstreview (Opus 5.5).
+  `Core/CupsNational.GameState.cs`, Tests. **Erstreview:** Opus 5.5. **Status:** Teile 1–3 fertig; Fixlauf VR-01, VR-02 und A961 (R23-E1 = A) gepusht, PR #962 wartet auf Nachprüfung (Opus 5.5).
 
 ### Spur `feldspieler-sechs` – sechster Feldspielerplatz ohne Torhüter (Welle 1, R22-E2 = B)
 
