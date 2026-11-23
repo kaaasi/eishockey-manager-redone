@@ -103,4 +103,39 @@ public class KaufNeuerKaderplatzTests
             game.TransferMarket.Sign(game, purchase, years, salary, insured: false, demandFilled: false));
         Assert.Equal((years, salary), (listing.Player.ContractYears, listing.Player.MonthlySalary));
     }
+
+    /// <summary>
+    /// VR-01 (Review #962, P2): Auch beim Kauf vom Platz eines anderen Managers rechnen Startgehalt, Forderung und Prämie am neuen
+    /// Platz mit Strafen 0. [ORIGINAL] Datei 0x477E7 → 0x42CB1/0x42F11 und der Dialog 0x4786A (Aufruf 0xA1DB) laufen vor der Kopie
+    /// der Strafen +0x00/+0x01 vom Verkäuferplatz (Datei 0x47877 Kauf von einem Manager, 0x4787D–0x478CB). Vorher rot: Die Strafen
+    /// des Verkäuferplatzes gingen ein (Probe des Reviews: 16500 statt 11500). Erwartung: Zwilling mit Strafen 0.
+    /// </summary>
+    [Fact]
+    public void PurchaseFromManager_IgnoresSellerSlotPenalties()
+    {
+        var (withPenalties, plain) = (FromManager(5, 4), FromManager(0, 0));
+        Assert.NotEqual(withPenalties.OldThirds, plain.OldThirds); // die Strafen gehen in den Wert ein
+        Assert.Equal(plain.Salary, withPenalties.Salary);
+        Assert.Equal(plain.Demand, withPenalties.Demand);
+        Assert.Equal(plain.Insurance, withPenalties.Insurance);
+        Assert.Equal((5, 4), withPenalties.PenaltiesAfterSign); // Datei 0x4787D–0x478CB: nach dem Abschluss übernommen
+    }
+
+    private static (int OldThirds, int Salary, int? Demand, int Insurance, (int, int) PenaltiesAfterSign) FromManager(
+        int penalties5, int penalties2)
+    {
+        var (game, buyer, _, listing) = KaderTransferTeil4Tests.TwoManagers();
+        var p = listing.Player;
+        (p.Penalties5, p.Penalties2) = (penalties5, penalties2);
+        var oldThirds = SalaryThirds(game, buyer, p);
+        var market = game.TransferMarket;
+        Assert.Equal(TransferResult.SellerAsked,
+            market.Bid(game, buyer, listing, listing.Price, loan: false, out _, out _, out var question));
+        Assert.Equal(TransferResult.Accepted, market.AnswerSeller(game, question!, true, out var purchase, out _));
+        var demand = Contracts.DemandAfterYears(game, purchase!, 3);
+        var insurance = Contracts.InsuranceOffer(game, purchase!);
+        var salary = purchase!.Salary;
+        Assert.Equal(NegotiationResult.Accepted, market.Sign(game, purchase, 0, 0, insured: false, demandFilled: false));
+        return (oldThirds, salary, demand, insurance, (p.Penalties5, p.Penalties2));
+    }
 }

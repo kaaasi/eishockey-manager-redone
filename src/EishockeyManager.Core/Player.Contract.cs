@@ -360,14 +360,14 @@ public static class Contracts
     /// <summary>
     /// Wert(Gehalt) in Drittel-DM (0x118:0x70 Art 1) im Verein des Managers. Mit <paramref name="purchase"/> (gezogener neuer
     /// Kaderplatz) am neuen Platz statt am Markt-Platz: [ORIGINAL] Datei 0x4786A ruft den Dialog 0x4A1DB mit dem neuen Kaderplatz
-    /// (A951). Zieht keinen Zufall.
+    /// (A951), auch beim Kauf von einem Manager noch mit Strafen 0 (VR-01). Zieht keinen Zufall.
     /// </summary>
     private static int SalaryThirds(GameState game, Manager manager, Player p, TransferPurchase? purchase)
     {
         var club = game.Clubs[manager.ClubIndex];
         if (purchase?.NewSlot is not { } start)
             return game.PlayerValueOf(p, club, PlayerValueKind.Salary, NoRandom, manager.Level);
-        var inputs = PlayerValue.NewSlotInputs(p, start, fromManager: purchase.Listing.Seller is not null, club, manager.Level);
+        var inputs = PlayerValue.NewSlotInputs(p, start, club, manager.Level);
         return PlayerValue.Compute(inputs, PlayerValueKind.Salary, (a, b) => NoRandom.Next(a, b + 1));
     }
 
