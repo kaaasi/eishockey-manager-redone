@@ -122,11 +122,11 @@ public class TransferVertraegeKomplettTeil2bTests
                         && l.From.Index != manager.ClubIndex) is { } listing)
                 {
                     var p = listing.Player;
-                    var expected = Contracts.ValueSalary(game, manager, p);
                     if (game.TransferMarket.Buy(game, manager, listing, listing.Price * 2, loan: false) == TransferResult.Accepted)
                     {
                         Assert.Contains(p, club.Players);
-                        Assert.Equal(expected, p.MonthlySalary);
+                        // A951 (Spur v-rest): Wert(Gehalt) des neuen Kaderplatzes (Datei 0x42F11 nach 0x42CB1), nicht des Markt-Platzes.
+                        Assert.Equal(Contracts.ValueSalary(game, manager, p), p.MonthlySalary);
                         bought++;
                         boughtThisSeason = true;
                     }
