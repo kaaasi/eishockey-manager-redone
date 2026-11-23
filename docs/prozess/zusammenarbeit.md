@@ -66,7 +66,8 @@ gepushte Stand; der Nachfolger schreibt zuerst einen Übernahmekommentar („üb
      Bei Tests zu Befunden „Original zieht endlos / endet nur unter Bedingung“ prüft es zusätzlich, dass der Test eine
      Machbarkeitsprüfung im Aufbau oder einen Abbruchzähler hat (`AGENTS.md` §5, Hängeschutz).
   2. **Fixlauf:** `tools/pruefen.sh --schnell` (den Lauf ohne Daten übernimmt die CI).
-  3. **Nachprüfung** nur, wenn der Fixlauf **P0/P1** behebt: nur Delta, Gegenbeispiele und Rückmutationen dieser Befunde (keine
+  3. **Nachprüfung** nur, wenn der Fixlauf **P0/P1** behebt oder eine neue Regel umsetzt (Verhalten, das kein Befund verlangt,
+     z. B. nach einer Nutzerentscheidung; `anhang.md` F): nur Delta, Gegenbeispiele und Rückmutationen dieser Befunde (keine
      erneute Vollprüfung, kein Pixelvergleich außerhalb der Befunde).
   4. **Delta-Prüfung der Leitstelle** statt Nachprüfung, wenn das Delta **nur P2/P3** behebt oder nur Rebase ohne Konflikt samt
      vom Plan verlangter Anpassung ist (`git range-diff`): Delta (`compare`/`--stat`, betroffene Dateien), CI auf dem Head,
@@ -79,7 +80,8 @@ gepushte Stand; der Nachfolger schreibt zuerst einen Übernahmekommentar („üb
      behauptet, nennt einen **ausführbaren Beleg** (roter Test oder Probe: Befehl, Spielstand, Ergebnis; bei „fehlt“ zusätzlich
      die erfolglose Codesuche). Ohne Beleg höchstens P3 „Verdacht“. Widerspricht ein Fixlauf mit eigenem Beleg: Label
      `beleg-strittig`, **keine** Nachprüfung für diesen Punkt; die Leitstelle führt beide Belege aus und entscheidet, nur wenn das
-     nicht gelingt, gibt es eine Nachprüfung allein dieses Punkts.
+     nicht gelingt, gibt es eine Nachprüfung allein dieses Punkts. Bei Lesarten von em.exe ist Beleg eine Nachbildung des
+     Originalablaufs (Skript über die Bytes von em.exe, mit Ausgabe), nicht die Lesart einzelner Befehle (Beispiel #975).
   8. **Verkettung und Labels (Nutzer 10.11.2026; R15-E4):** Läufe legen keine geplanten Aufgaben an. Der Fixlauf setzt bei
      behobenem P0/P1 `spur-wartet` und schreibt den Startaufruf der Nachprüfung in den Übergabekommentar (Kurzaufruf aus
      `review-anfrage.md`, Modell nach „Modellwahl“); die Leitstelle legt sie an (etwa 5 Minuten später). Die Leitstelle wartet auf Labels bzw. Review-PRs, nicht auf Kommentare, legt

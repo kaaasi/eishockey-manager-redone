@@ -34,11 +34,13 @@ Startaufruf (Name, Prompt, Soll-Modell) im Übergabekommentar, dazu Label `spur-
 #`<nr>` beheben, Head vorher `<sha>`“ – ohne Befund (nur Rebase/Planpflicht): „PR #`<nr>` auf `main` rebasen, `<Anpassung laut
 Plan>`, Head vorher `<sha>`“ (#712/N3). Am Ende (`zusammenarbeit.md` §5 Punkt 8): bei behobenem P0/P1 Label `spur-wartet` und im
 Übergabekommentar der fertige Startaufruf der Nachprüfung (Kurzaufruf aus `review-anfrage.md`, Delta alter..neuer Head, nur diese
-Befunde, Soll-Modell nach „Modellwahl“), sonst – nur P2/P3 oder ohne Befund – Label `leitstelle-delta`. Mit dem Push des neuen
+Befunde, Soll-Modell nach „Modellwahl“) – ebenso, wenn der Lauf eine neue Regel umsetzt (`zusammenarbeit.md` §5 Punkt 3) –,
+sonst – nur P2/P3 oder ohne Befund – Label `leitstelle-delta`. Mit dem Push des neuen
 Heads `review-nein` entfernen. Widerspricht der Lauf einem Befund mit eigenem Beleg: `beleg-strittig`, beide Belege in der
 Übergabe, für diesen Punkt keine Nachprüfung.
 Base-Wechsel nur per Rebase und `git push --force-with-lease`, kein Merge-Commit; ist Force-Push gesperrt, Label `spur-wartet`
-mit genauer Fehlermeldung (wie „Teile und Fortsetzung“ Schritt 4).
+mit genauer Fehlermeldung (wie „Teile und Fortsetzung“ Schritt 4). Ist `main` seit dem Review neu: rebasen und die Schemanummer
+der eigenen Migration auf die nächste freie Nummer setzen.
 
 ## Ablauf für den Agenten
 
