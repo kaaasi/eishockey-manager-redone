@@ -4,9 +4,9 @@ using EishockeyManager.Tests.Support;
 namespace EishockeyManager.Core.Tests;
 
 /// <summary>
-/// Spur abgleich-dosbox-22 (Runde 23), Teil 1: DOSBox-Aufnahme `runde-22` Sitzung 1 (Referenz-Repo, FILE75/FILE76). Belegt hier
-/// nur, was Original und Remake schon gleich behandeln; Abweichungen stehen im Bericht <c>docs/analyse/abgleich-dosbox-22.md</c>
-/// und werden in Teil 2 mit eigenem Regressionstest behoben.
+/// Spur abgleich-dosbox-22 (Runde 23): DOSBox-Aufnahme `runde-22` Sitzung 1 (Referenz-Repo, FILE75/FILE76). Teil 1 belegt, was
+/// Original und Remake schon gleich behandeln; Teil 2 behebt die Abweichungen aus dem Bericht
+/// <c>docs/analyse/abgleich-dosbox-22.md</c> (je ein Regressionstest unten).
 /// </summary>
 public class AbgleichDosbox22Tests
 {
@@ -68,5 +68,21 @@ public class AbgleichDosbox22Tests
             Assert.Equal(0, table[OriginalImport.TableField(0x8288, slot)]);
         Assert.Equal(0, game.PlayedMatchDays);
         Assert.All(game.Managers, m => Assert.Equal(0, game.Clubs[m.ClubIndex].StoredTableRank));
+    }
+
+    /// <summary>
+    /// A065 (Teil 2): Vor dem ersten Spieltag rechnet die Bestenliste mit dem Tabellenfeld (0 im ersten Spieljahr), nicht mit
+    /// Platzterm 0. [ORIGINAL] Datei 0x5D2CA–0x5D303: 25 · (36 − (Feld + Versatz + 1)); FILE75: beide Manager in der 2. Liga
+    /// (Versatz 12) → 25 · 23 = 575 Rohpunkte.
+    /// </summary>
+    [GameDataFact]
+    public void File75_HighscoreBeforeFirstMatchDay_UsesTableField()
+    {
+        var (_, game) = Import("FILE75.HOK");
+        for (var manager = 0; manager < game.Managers.Count; manager++)
+        {
+            var input = HighscoreRules.Inputs(game, manager);
+            Assert.Equal((0, 12), (input.Rank0, input.LeagueOffset));
+        }
     }
 }
