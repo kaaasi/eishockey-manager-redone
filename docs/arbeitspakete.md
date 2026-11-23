@@ -30,7 +30,7 @@ Original“, sonst `[APPROX]` mit Begründung, die Leitstelle bündelt. N2 = B, 
 (ab 63) beim Rebase in Integrationsfolge. **Rebase:** Base-Wechsel nur per Rebase und `git push --force-with-lease`, kein
 Merge-Commit; ist Force-Push gesperrt, Label `spur-wartet` mit genauer Fehlermeldung (`vorlagen/spur-start.md`, PR #959). **Entwickler und Erstreviews sind Claude-Sitzungen;** ChatGPT nur fürs Gesamtreview.
 
-**Folge (Vorschlag R23-D1 = A):** Welle 1 parallel `pruefen-sh`, `v-rest`, `feldspieler-sechs`, `re-reste` (Teil 1),
+**Folge (R23-D1 = A):** Welle 1 parallel `pruefen-sh`, `v-rest`, `feldspieler-sechs`, `re-reste` (Teil 1),
 `abgleich-dosbox-22` (Teil 1; Referenz-PR #41 gemergt); Teil 2 von `re-reste` und `abgleich-dosbox-22` jeweils nach Merge von
 `v-rest`. Integration in der Folge `pruefen-sh` → `v-rest` → `feldspieler-sechs` → `re-reste` → `abgleich-dosbox-22` (Spätere
 rebasen und ziehen erwartete Werte nach). Welle 2
@@ -38,7 +38,8 @@ rebasen und ziehen erwartete Werte nach). Welle 2
 
 **Modelle (Nutzer 17.11.2026 „wenig Tokens für brauchbares Ergebnis“; 09.11.2026 keine Sonnet-Wahl mit Nacharbeit):** Opus 5.5 für
 Datenmodell, Spielrechnung, Zufallsstrom und em.exe; Claude Fable 5.1 nur `re-reste` (R23-D2 = D); Sonnet 5.5 für Skript- und Markerarbeit; Haiku nicht vorgesehen (jeder Lauf
-baut, testet und liest Fundstellen). Erstreviews: Code-Spuren Opus 5.5, `pruefen-sh` und `pruefung-karte` Sonnet 5.5. Fixläufe im
+baut, testet und liest Fundstellen). Erstreviews: Code-Spuren Opus 5.5, `pruefen-sh` und `pruefung-karte` Sonnet 5.5 (bewusste Abweichung von „Im Zweifel Opus“:
+Skript klein, Befunde mit Fundstelle im Review #950). `re-reste` und `abgleich-dosbox-22` nur mit Erstreview (R23-D4 = B). Fixläufe im
 Modell der Spur, Fixläufe ohne Befund Sonnet 5.5. Plan-Review Sonnet 5.5. Gesamtreview ChatGPT GPT-6.1 Terra (Codex).
 
 | Spur | Welle | Inhalt | Modell | Grund |
@@ -54,9 +55,12 @@ Modell der Spur, Fixläufe ohne Befund Sonnet 5.5. Plan-Review Sonnet 5.5. Gesam
 
 - `Core/CupsNational.cs`, `Core/CupsNational.GameState.cs` nur `v-rest` (A873); `Core/CupsNational.Lineup*.cs`,
   `Core/MatchEngine.National.cs` nur `feldspieler-sechs`. `Core/MatchEngine.Managed.cs`: `feldspieler-sechs` nur die
-  Aufstellungsstellen (`LineupSlot`), `re-reste` nur 0x8C53 (wie in `Core/CupsNational.GameState.cs`, dort nach `v-rest`).
-  `Core/MatchEngine.Minutes.cs`, `Core/MatchEngine.PlayoffFastPath.cs`, `Core/Cups.Tiebreak.cs`, `Core/OriginalImport.Playoffs.cs` nur
-  `re-reste`. `Core/MatchGate.cs` nur `v-rest` (A913).
+  Aufstellungsstellen (`LineupSlot`), `re-reste` nur 0x8C53; in `Core/CupsNational.GameState.cs` darf `re-reste` nur den Kommentar zu 0x8C53 pflegen, nach Merge
+  von `v-rest`.
+  `Core/MatchEngine.Minutes.cs`, `Core/MatchEngine.PlayoffFastPath.cs`, `Core/Cups.Tiebreak.cs`, `Core/OriginalImport.Playoffs.cs`,
+  `Core/OriginalImport.Rest.cs` (A917) nur `re-reste`. `Squad.AutoLineup.cs`, `OriginalImport.National.cs` (`LineupSlot`) und
+  `UI/ShortMessageTexts.cs` (nur Meldung 0x40EF7, gemeinsame Datei, Begründung im PR) nur `feldspieler-sechs`.
+  `Core/Player.Value.cs`, `Core/Player.Slot.cs` (Wert 0x4A0A7) nur `v-rest`, falls nötig. `Core/MatchGate.cs` nur `v-rest` (A913).
 - `Core/Transfer.Purchase.cs`, `Core/Player.Contract.cs` (A951) erst `v-rest`; `abgleich-dosbox-22` Teil 2 (A117 Verhandlung) rebased
   danach. `UI/Screens/Team/ContractDialog.cs` nur `abgleich-dosbox-22` (A117), Kernänderung A951 ohne Bildschirm.
 - `Core/OriginalImport.cs` und `Core/OriginalExport*.cs`: `feldspieler-sechs` nur Aufstellungsbelegung, `abgleich-dosbox-22` nur
