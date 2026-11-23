@@ -66,7 +66,8 @@ gepushte Stand; der Nachfolger schreibt zuerst einen Übernahmekommentar („üb
      Bei Tests zu Befunden „Original zieht endlos / endet nur unter Bedingung“ prüft es zusätzlich, dass der Test eine
      Machbarkeitsprüfung im Aufbau oder einen Abbruchzähler hat (`AGENTS.md` §5, Hängeschutz).
   2. **Fixlauf:** `tools/pruefen.sh --schnell` (den Lauf ohne Daten übernimmt die CI).
-  3. **Nachprüfung** nur, wenn der Fixlauf **P0/P1** behebt: nur Delta, Gegenbeispiele und Rückmutationen dieser Befunde (keine
+  3. **Nachprüfung** nur, wenn der Fixlauf **P0/P1** behebt oder eine neue Regel umsetzt (Verhalten, das kein Befund verlangt,
+     z. B. nach einer Nutzerentscheidung; `anhang.md` F): nur Delta, Gegenbeispiele und Rückmutationen dieser Befunde (keine
      erneute Vollprüfung, kein Pixelvergleich außerhalb der Befunde).
   4. **Delta-Prüfung der Leitstelle** statt Nachprüfung, wenn das Delta **nur P2/P3** behebt oder nur Rebase ohne Konflikt samt
      vom Plan verlangter Anpassung ist (`git range-diff`): Delta (`compare`/`--stat`, betroffene Dateien), CI auf dem Head,

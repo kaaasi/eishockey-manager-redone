@@ -112,7 +112,7 @@ Dokumentieren, ob nur Codelesen oder auch Ausführung am nachgewiesenen Checkout
   - (Runde 23) Die Leitstelle darf in der Reihenfolge der Fertigstellung statt in der Planfolge integrieren; Grund im
     Merge-Kommentar.
   - (Runde 23) Setzt ein Fixlauf neben Befunden eine neue Regel um (z. B. nach einer Nutzerentscheidung), braucht er immer eine
-    Nachprüfung, auch wenn die Befunde nur P2/P3 sind.
+    Nachprüfung, auch wenn die Befunde nur P2/P3 sind (`zusammenarbeit.md` §5 Punkt 3).
   - (Runde 23) Eigene Rückmeldungen per `send_later` nur so viele wie nötig anlegen; abschalten lassen sie sich nicht (scheitert an
     der automatischen Freigabe).
 - **CI hängt (Erfahrung Runde 16):** Stehen `pull_request`-Läufe ohne Job auf `queued` (z. B. Actions-Budget), lassen sie sich
