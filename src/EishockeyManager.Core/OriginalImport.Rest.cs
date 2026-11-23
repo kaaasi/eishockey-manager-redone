@@ -176,25 +176,29 @@ public sealed partial class GameState
     /// Werbung: Verträge DGROUP 0xC15B + 0x6E · Manager (11 Flächen zu 10 Byte: +0 Betrag Drittel-DM, +4 Partner, +5 Restmonate,
     /// +6 Option, Bit 0x80 = „Kündbar.“ nach Aufstieg (A582, finanzen-rekonstruktion.md); +7 Logo, +8 Bewertung), Angebote 0xC313 + 0x1F4 · Manager + 0x64 · Art + 10 · Partner (+0 Betrag, +4 Banden,
     /// +5 Laufzeit, +6 Option, +7 Logo, +8 Bewertung). [ORIGINAL] Aufbau em.exe 0x3FB47/0x3FD52, 0x2A9AD (FinanceSponsors.cs), Angebote an
-    /// FILE05 (Logo +7 = Partnerindex, Fernsehen nur Partner 0–4). [APPROX] Ein Angebot mit Betrag 0 gilt als gelöscht; Bandenflächen
-    /// desselben Partners mit gleichem Betrag und gleicher Restlaufzeit bilden einen Vertrag. Verträge an keinem Stand belegt.
+    /// FILE05 (Logo +7 = Partnerindex, Fernsehen nur Partner 0–4). [APPROX] Ein Angebot mit Betrag 0 gilt als gelöscht.
+    /// [ORIGINAL] A614 (Runde 23, FILE76): Der Werbebildschirm kopiert das Angebot über die Fläche, der Partner steht damit in +7
+    /// (Logo); bei Banden ist +4 die Vertragsnummer DGROUP 0x17C (Datei 0x2BB5B–0x2BB5E, nach allen Banden <c>inc byte [0x17C]</c>
+    /// Datei 0x2BB80), bei Trikot, Fernsehen und Eis die Bandenzahl des Angebots. Bandenflächen mit gleicher Nummer (und gleichem
+    /// Partner, Betrag, Restlaufzeit) bilden einen Vertrag; Bandenverträge stehen in der Folge ihrer Nummern.
     /// </summary>
     private void ApplySponsoring(OriginalSaveGame save, int m)
     {
         var sponsoring = Finance(Managers[m]).Sponsoring;
-        var contracts = save.Block("C15B").AsSpan(0x6E * m, 0x6E);
+        var block = save.Block("C15B");
+        var contracts = block.AsSpan(0x6E * m, 0x6E);
         sponsoring.Contracts.Clear();
         // Bandenflächen desselben Vertrags: Schlüssel aus dem Rohbetrag (Drittel-DM), nicht aus dem gerundeten Monatsbetrag –
         // 1.000.001 / 3 · 3 = 999.999 fand den Schlüssel nicht (Review R14HI-03, KeyNotFoundException).
-        var boards = new Dictionary<(int Sponsor, int Amount, int Months), List<int>>();
-        var keys = new List<(int Sponsor, int Amount, int Months)>(); // Schlüssel je Vertrag in sponsoring.Contracts
-        for (var area = 0; area < 11; area++)
+        var boards = new Dictionary<(int Number, int Sponsor, int Amount, int Months), List<int>>();
+        var keys = new List<(int Number, int Sponsor, int Amount, int Months)>(); // Schlüssel je Vertrag in sponsoring.Contracts
+        foreach (var area in Enumerable.Range(0, 11).OrderBy(a => a < Sponsoring.BoardCount ? block[0x6E * m + 10 * a + 4] : 0x100).ThenBy(a => a))
         {
             var c = contracts.Slice(10 * area, 10);
             var amount = BinaryPrimitives.ReadInt32LittleEndian(c);
             if (amount == 0)
                 continue;
-            var key = (c[4], amount, (int)c[5]);
+            var key = (area < Sponsoring.BoardCount ? c[4] : -1, (int)c[7], amount, (int)c[5]);
             if (area < Sponsoring.BoardCount)
             {
                 if (!boards.TryGetValue(key, out var list))
@@ -207,7 +211,7 @@ public sealed partial class GameState
             sponsoring.Contracts.Add(new SponsorContract
             {
                 Kind = OriginalImport.AreaKind(area),
-                Sponsor = c[4],
+                Sponsor = c[7],
                 Boards = [],
                 MonthlyAmount = amount / 3,
                 MonthsLeft = c[5],

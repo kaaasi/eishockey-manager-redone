@@ -90,6 +90,8 @@ public sealed class OriginalExportRoundTripTests(ITestOutputHelper output)
         new("021D", 0, 15, 15, "ungedeutet (nur Weltkugel)"),
         new("A8A0", 0, 0, 0, "ungedeutet (meist der Monat)"),
         new("A70E", 0, 0, 0, "Zug des Bundestrainers: Import setzt Manager 0 (Feldkarte, OriginalImport.ApplyOriginal)"),
+        new("A70D", 0, 0, 0, "Zug des Bundestrainers: 0xA70D = 0xA70E (Runde 23, abgleich-dosbox-22), Import setzt Manager 0",
+            If: (stand, _, _) => stand.Original.Block("A70E")[0] == OriginalImport.NationalRecord),
         new("0375", 0, 0, 11, "„automatisch aufstellen“ gesichert 0x376 + 2 · m: das Remake führt einen Wert (Feldkarte Club._autoLineup)"),
         new("07A9", 0, 4, 4, "ungedeutet (0x7AD, laufende Pokalrunde?)"),
         // Titelträger der Vorsaison und Tabellenfolge vor dem ersten Spieltag: im Remake nur in History (Feldkarte N)
@@ -104,7 +106,8 @@ public sealed class OriginalExportRoundTripTests(ITestOutputHelper output)
         // Managersatz
         new("965B", 0x1AF, 0xF0, 0xF0, "ungedeutet"),
         new("965B", 0x1AF, 0xF3, 0xF3, "ungedeutet"),
-        new("965B", 0x1AF, 0x18F, 0x192, "Konto: Rundung Drittel-DM → DM (Regel 4)"),
+        // A402 (Runde 23): Satz 4 (Bank) +0x18F schreibt der Export als Summe der Bankeinträge – die Regel deckt nur die übrigen Sätze.
+        new("965B", 0x1AF, 0x18F, 0x192, "Konto: Rundung Drittel-DM → DM (Regel 4)", Records: [0, 1, 2, 3, 5]),
         new("965B", 0x1AF, 0x197, 0x19A, "zuletzt berechnete Einnahmen (Feldkarte U, LastHomeGame)"),
         // Vereinssätze
         new("far:9657", 0x3D, 0x1E, 0x25, "ungedeutet (Zufallswert 45–55, Folgebytes)"),
@@ -154,6 +157,7 @@ public sealed class OriginalExportRoundTripTests(ITestOutputHelper output)
         new("5C4B", 0, 0, 0x7F, "Pokaltore des laufenden Tages (Reste)"),
         // Rest
         new("C313", 10, 0, 3, "Werbeangebote: Rundung Drittel-DM"),
+        new("C15B", 10, 0, 3, "Werbeverträge: Rundung Drittel-DM (FILE76: 34.468 → 11.489 DM → 34.467)"),
         new("C313", 10, 4, 9, "Werbeangebote mit Betrag 0 gelten als gelöscht (Import)"),
         new("D294", 0x71, 0, 0x70, "Reste gelöschter Nachrichten hinter freiem Satz"),
         new("AB7B", 0, 0, 0x1593, "Serien, Rekorde, Ewige Tabelle: Vorsaison und ungedeutete Teile"),
@@ -200,7 +204,7 @@ public sealed class OriginalExportRoundTripTests(ITestOutputHelper output)
                      "FILE14", "FILE15", "FILE16", "FILE16A", "FILE17", "FILE18", "FILE19", "FILE20", "FILE21", "FILE22", "FILE23", "FILE24",
                      "FILE25", "FILE26", "FILE27", "FILE28", "FILE29", "FILE30", "FILE31", "FILE32", "FILE33", "FILE34", "FILE35", "FILE36",
                      "FILE37", "FILE37A", "FILE38", "FILE39", "FILE40", "FILE41", "FILE43", "FILE43A", "FILE44", "FILE44A", "FILE44B",
-                     "FILE46", "FILE47", "FILE48", "FILE49", "FILE49A",
+                     "FILE46", "FILE47", "FILE48", "FILE49", "FILE49A", "FILE75", "FILE76",
                  })
             data.Add(file + ".HOK");
         return data;

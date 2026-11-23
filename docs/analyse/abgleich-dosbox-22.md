@@ -137,3 +137,17 @@ FILE76, Darlehensliste `965B` + 0x1AF · Satz + 0x19B (+4 · i, Drittel-DM):
 
 `OriginalExportRoundTripTests` mit FILE75/FILE76 in der Liste: FILE75 eine Abweichung außerhalb der Regeln (0xA70D, §3), FILE76
 fünf (0x17C und C15B +0x2F/+0x39/+0x3C aus §5, Pool 100 +0x1A aus §6). Teil 2 nimmt beide Stände mit den Korrekturen auf.
+
+## Teil 2 – Umsetzung (Fortsetzung 1)
+
+| ID | Änderung | Regressionstest (rot → grün) |
+|---|---|---|
+| A065 | `HighscoreRules.Inputs`: vor dem ersten Spieltag Platz = `Club.StoredTableRank` (Tabellenfeld 0x8288) statt Platzterm 0 | `File75_HighscoreBeforeFirstMatchDay_UsesTableField` |
+| A402 | Export Satz 4 +0x18F = Summe der Bankeinträge (`[APPROX]` Summe); Rundreise-Regel „Konto: Rundung“ nur noch Sätze 0–3, 5 | `Export_BankRecordAccount_LikeOriginal` (FILE76, FILE08) |
+| A614 | Import: Partner aus +7, Bandenvertrag = Flächen mit gleicher Nummer +4, Folge nach Nummer; Export: +4 = Nummer 1 … n, 0x17C = n + 1 (`[APPROX]` Folge); Rundungsregel C15B +0–3 | `File76_BoardContracts_NumberAndPartnerLikeOriginal`; fremder Test `Import_Sponsoring` angepasst (Partner +7) |
+| A629 | Export Pool +0x1A eines an einen Mitmanager geliehenen Spielers = Verleiher | `File76_LoanedPlayer_PoolOwnerIsLender` (mit zweitem Import) |
+| A117 | Verhandlungsfenster zeigt bei Eingabe 0 „0 DM“; Kern bekommt weiter 1 DM (`[APPROX]`, Ergebnis gleich) | `ContractDialog_SalaryZero_ShowsZeroDm` (UI) |
+| – | Export 0xA70D = 0xA70E (Entscheidung Leitstelle); Marker `Transfer.Pool.cs` Level → `[ORIGINAL]` | `File75_Export_TurnByteA70D_EqualsA70E`; Rundreise-Regel A70D nur bei Bundestrainer-Zug |
+| A057, A427 | nur Markertext (`GameState.HotSeat.cs` → `[ORIGINAL]` für zwei Manager; `Player.Factory.cs` Beleg FILE75) | – |
+
+FILE75 und FILE76 stehen jetzt in `OriginalExportRoundTripTests` (keine Abweichung außerhalb der Regeln).

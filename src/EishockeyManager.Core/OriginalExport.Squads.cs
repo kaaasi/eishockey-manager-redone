@@ -44,7 +44,8 @@ public sealed partial class GameState
             {
                 PoolOwner.Market => OriginalImport.PoolOwnerMarket,
                 // Spur pool, Teil 3: ohne Spieler im Managerkader der gemerkte Manager (verloren, „nur Weltkugel“), sonst 6.
-                PoolOwner.Taken => (byte)(ManagerOf(slot.Player) ?? (slot.Manager is >= 0 and < 4 ? slot.Manager : 6)),
+                PoolOwner.Taken => (byte)(ManagerOf(slot.Player) is { } holder ? LoanPoolOwner(slot.Player, holder)
+                    : slot.Manager is >= 0 and < 4 ? slot.Manager : 6),
                 _ => (byte)6,
             };
             var club = slot.Owner == PoolOwner.Taken && ClubOf(slot.Player) is { } c ? c.Index : slot.Club;
@@ -66,7 +67,7 @@ public sealed partial class GameState
                     continue; // [APPROX] kein Poolplatz mehr frei
                 // Ein Marktsatz gleichen Namens bleibt Marktsatz (FILE41: Pool 179 Besitzer 4 zugleich Kaderplatz 24).
                 if (!marketTwins.Contains(index))
-                    WritePoolEntry(pool, index, p, (byte)m, slotOf[club.Index]);
+                    WritePoolEntry(pool, index, p, (byte)LoanPoolOwner(p, m), slotOf[club.Index]);
                 var at = m * 0x618 + i * OriginalSaveGame.SquadSlotLength;
                 WriteSlot(squad.AsSpan(at, OriginalSaveGame.SquadSlotLength), p, index, slotOf, club);
                 var s = squad.AsSpan(at, OriginalSaveGame.SquadSlotLength);
@@ -178,6 +179,22 @@ public sealed partial class GameState
             map[p] = index;
             used.Add(index);
         }
+    }
+
+    /// <summary>
+    /// Pool-Besitzer +0x1A eines Spielers im Kader von Manager <paramref name="holder"/>. [ORIGINAL] A629 (Runde 23, FILE76): ein an
+    /// einen Mitmanager geliehener Spieler gehört weiter dem Verleiher (Pool 100: +0x1A = 0, +0x1D = Verein des Entleihers); die
+    /// Rückkehr am Saisonende richtet sich nach diesem Besitzer (Datei 0x27547–0x27665). [APPROX] Leihe von einem Computerverein:
+    /// Besitzer = Entleiher (nicht aufgenommen).
+    /// </summary>
+    private int LoanPoolOwner(Player player, int holder)
+    {
+        if (player.Loan?.Origin is not { } origin)
+            return holder;
+        for (var m = 0; m < Managers.Count && m < OriginalImport.MarketRecord; m++)
+            if (Managers[m].ClubIndex == origin.Index)
+                return m;
+        return holder;
     }
 
     private int? ManagerOf(Player player)

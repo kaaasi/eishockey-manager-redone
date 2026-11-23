@@ -40,7 +40,9 @@ public static class PlayerFactory
     /// random(80, 120) wie jeder neue Kaderplatz (Datei 0x42E4C–0x42E5E; A130, Gegenprobe FILE01/FILE09/FILE12: alle 80–120);
     /// das Gehalt setzt danach <see cref="GameState.ApplyStartSalaries"/> (Datei 0x29EE4).
     /// [APPROX] Computervereine haben im Original keine Kaderplätze (Spieler nur im Pool, Teamwerte aus der Datenbank): ±2 um
-    /// den Teamwert, Form 40–60, Energie 50–80, Gehalt aus der Stärke bleiben dort Remake-Werte.
+    /// den Teamwert, Form 40–60, Energie 50–80, Gehalt aus der Stärke bleiben dort Remake-Werte ohne Spielwirkung – A427 (Runde 23,
+    /// FILE75): die Poolplätze der Computervereine (Besitzer 6) tragen die Startwerte 0x5AFB2 unabhängig von den Teamwerten, ein
+    /// Wechsel zu einem Manager übernimmt sie (PlayerFactory.Join).
     /// Die Reihenfolge der Zufallszahlen ist festgelegt (Alter, Talent, Kondition, Technik, Form, Energie bzw. Belastung).
     /// </summary>
     public static void RollSquadValues(Player p, int teamCondition, int teamTechnique, Random random, bool managed = false)

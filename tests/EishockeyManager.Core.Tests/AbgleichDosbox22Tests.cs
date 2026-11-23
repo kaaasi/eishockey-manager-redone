@@ -12,6 +12,17 @@ public class AbgleichDosbox22Tests
 {
     private const int Seed = 4711;
 
+    private static (OriginalSaveGame Original, OriginalSaveGame Exported, GameState Game) RoundTrip(string file)
+    {
+        var raw = OriginalExportTests.RawDatabase();
+        var original = OriginalSaveGame.Read(File.ReadAllBytes(OriginalImportTests.OriginalSave(file)));
+        var game = GameState.ImportOriginal(original, ClubDatabase.Parse(raw), Seed);
+        return (original, OriginalSaveGame.Read(OriginalExport.Export(game, raw)), game);
+    }
+
+    private static int Int32(OriginalSaveGame save, string block, int offset) =>
+        System.Buffers.Binary.BinaryPrimitives.ReadInt32LittleEndian(save.Block(block).AsSpan(offset));
+
     private static (OriginalSaveGame Save, GameState Game) Import(string file)
     {
         var save = OriginalSaveGame.Read(File.ReadAllBytes(OriginalImportTests.OriginalSave(file)));
@@ -84,5 +95,68 @@ public class AbgleichDosbox22Tests
             var input = HighscoreRules.Inputs(game, manager);
             Assert.Equal((0, 12), (input.Rank0, input.LeagueOffset));
         }
+    }
+
+    /// <summary>
+    /// A402 (Export Bankseite): Satz 4 +0x18F (Konto der Bank) trägt den Bankeintrag des Managers mit gleichem Vorzeichen –
+    /// FILE76 Sparbuch +300.000, FILE08 Kredit −2.103.000 Drittel-DM. Vorher schrieb der Export 0.
+    /// </summary>
+    [GameDataTheory]
+    [InlineData("FILE76.HOK", 300_000)]
+    [InlineData("FILE08.HOK", -2_103_000)]
+    public void Export_BankRecordAccount_LikeOriginal(string file, int expected)
+    {
+        var (original, exported, _) = RoundTrip(file);
+        var at = OriginalImport.MarketRecord * OriginalSaveGame.ManagerRecordLength + 0x18F;
+        Assert.Equal(expected, Int32(original, "965B", at));
+        Assert.Equal(expected, Int32(exported, "965B", at));
+    }
+
+    /// <summary>
+    /// A614 (Bandenwerbung): FILE76 Spieler1 – Flächen 4 und 5 Vertrag Nr. 2 von JWE Service (Partner 0), Fläche 6 Nr. 1 von CCH
+    /// (Partner 1); DGROUP 0x17C = 3. Der Import liest den Partner aus +7 (vorher +4: JWE-Banden als Partner 2), der Export schreibt
+    /// +4 = Nummer, +7 = Partner und 0x17C (vorher +4 = +7 = Partner, 0x17C = 1).
+    /// </summary>
+    [GameDataFact]
+    public void File76_BoardContracts_NumberAndPartnerLikeOriginal()
+    {
+        var (original, exported, game) = RoundTrip("FILE76.HOK");
+        var contracts = game.Finance(game.Managers[0]).Sponsoring.Contracts;
+        Assert.Equal([(1, new[] { 6 }), (0, new[] { 4, 5 })], contracts.Select(c => (c.Sponsor, c.Boards)).ToArray());
+        Assert.Equal(3, original.Block("017C")[0]);
+        Assert.Equal(3, exported.Block("017C")[0]);
+        foreach (var area in new[] { 4, 5, 6 })
+            foreach (var field in new[] { 4, 5, 6, 7, 8 })
+                Assert.Equal(original.Block("C15B")[10 * area + field], exported.Block("C15B")[10 * area + field]);
+    }
+
+    /// <summary>
+    /// A629 (Export der Leihe): LOTH (Pool 100) gehört im Original weiter dem Verleiher Spieler1 (+0x1A = 0), steht aber beim
+    /// Verein des Entleihers (+0x1D). Vorher schrieb der Export den Entleiher (1). Ein zweiter Import behält die Leihe.
+    /// </summary>
+    [GameDataFact]
+    public void File76_LoanedPlayer_PoolOwnerIsLender()
+    {
+        var (original, exported, _) = RoundTrip("FILE76.HOK");
+        Assert.Equal(0, OriginalImport.PoolEntry(original, 100)[0x1A]);
+        Assert.Equal(0, OriginalImport.PoolEntry(exported, 100)[0x1A]);
+        Assert.Equal(OriginalImport.PoolEntry(original, 100)[0x1D], OriginalImport.PoolEntry(exported, 100)[0x1D]);
+
+        var again = GameState.ImportOriginal(exported, ClubDatabase.Parse(OriginalExportTests.RawDatabase()), Seed);
+        var loth = Assert.Single(again.Clubs[again.Managers[1].ClubIndex].Players, p => p.Name == "LOTH");
+        Assert.Same(again.Clubs[again.Managers[0].ClubIndex], loth.Loan!.Origin);
+    }
+
+    /// <summary>
+    /// Zugfolge im Export (Entscheidung Leitstelle, PR #964): DGROUP 0xA70D = 0xA70E an allen Originalständen; FILE75 (zwei
+    /// Manager, Spieler1 am Zug) 0. Vorher Managerzahl − 1 = 1.
+    /// </summary>
+    [GameDataFact]
+    public void File75_Export_TurnByteA70D_EqualsA70E()
+    {
+        var (original, exported, _) = RoundTrip("FILE75.HOK");
+        Assert.Equal(0, original.Block("A70D")[0]);
+        Assert.Equal(original.Block("A70D")[0], exported.Block("A70D")[0]);
+        Assert.Equal(exported.Block("A70E")[0], exported.Block("A70D")[0]);
     }
 }
