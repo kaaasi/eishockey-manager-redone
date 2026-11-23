@@ -113,7 +113,8 @@ Modell der Spur, Fixläufe ohne Befund Sonnet 5.5. Plan-Review Sonnet 5.5. Gesam
   `docs/analyse/abgleich-dosbox-22.md`, Klassenvorschlag je ID (V/X/K/E) für `pruefung-karte`; 2. belegte Abweichungen der Größe S
   umsetzen (nach Merge von `v-rest`, A117 an `ContractDialog.cs`/Kern); größere als Issue mit Vorschlag an die Leitstelle.
 - **Dateien:** `docs/analyse/abgleich-dosbox-22.md`, Stellen oben, eigene `OriginalImport.<Teil>.cs`, Tests mit FILE75/76.
-  **Erstreview:** Opus 5.5. **Status:** wartet auf Start.
+  **Erstreview:** Opus 5.5. **Status:** Teil 1 fertig (PR #964, Bericht `analyse/abgleich-dosbox-22.md`: V A065, A402, A614,
+  A629-Export; X A057, A613; K A427, A117; A629-Leihende bleibt D); Teil 2 wartet auf Merge von `v-rest`.
 
 ### Spur `pruefung-karte` – P3 der Runde und Generatorlauf (Welle 2)
 
