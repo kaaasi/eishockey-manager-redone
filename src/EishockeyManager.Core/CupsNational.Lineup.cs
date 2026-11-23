@@ -163,6 +163,31 @@ public sealed partial class NationalCoach
     }
 
     /// <summary>
+    /// Platz aus dem HOK (Satz 5 +0x15) setzen, eingesetzt wie <see cref="Assign"/>, aber ohne Prüfung der Art für Feldspieler:
+    /// [ORIGINAL] +0x15 bestimmt den Platz, nicht die Rolle (andere Hälfte Datei 0x414D3–0x414ED, sechster Feldspielerplatz auch für
+    /// einen Stürmer Datei 0x413C9–0x414B4; R963-01). Ein Torhüter nur auf den Torhüterplatz. Schaltet „automatisch aufstellen“ nicht
+    /// ab (der Import setzt die Einstellung danach aus dem HOK).
+    /// </summary>
+    internal LineupResult PlaceFromSave(LineupSlot slot, Player player)
+    {
+        player = SlotOf(player);
+        if (!Contains(player))
+            return LineupResult.NotInSquad;
+        if (player.InjuredGames > 0)
+            return LineupResult.Injured;
+        if (player.SuspendedGames > 0)
+            return LineupResult.Suspended;
+        if (!IsDressed(player) && DressedCount >= MaxDressed)
+            return LineupResult.RosterFull;
+        if (Formation[slot] is not null)
+            return LineupResult.NoRoom;
+        if (!(slot.Role == player.Role ? Formation.Assign(slot, player) : Formation.PlaceSkater(slot, player)))
+            return LineupResult.WrongRole;
+        _dressed.Add(player);
+        return LineupResult.Assigned;
+    }
+
+    /// <summary>
     /// Platz leeren; der Spieler ist danach nicht mehr eingesetzt (Datei 0x40CF8–0x40D0D). [ORIGINAL] Der Klick auf einen besetzten
     /// Platz schaltet „automatisch aufstellen“ ab (Datei 0x40AC7–0x40ADE, A009); ein leerer Platz ändert nichts (Datei 0x40AC4).
     /// </summary>

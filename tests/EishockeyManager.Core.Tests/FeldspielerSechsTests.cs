@@ -266,6 +266,43 @@ public class FeldspielerSechsTests
         Assert.True(importedClub.Lineup.SixthSkaterOpen);
     }
 
+    /// <summary>
+    /// R963-01: Nationalaufstellung ohne Torhüter mit sechstem Feldspieler (Verteidiger oder Stürmer) übersteht HOK-Export und
+    /// -Import. Der Export schreibt +0x15 = 1 (Abwehr, ohne Bit 0x80); der Import des Satzes 5 ordnete vorher nach
+    /// <see cref="Player.Role"/> mit zwei Abwehrplätzen und verwarf den Spieler (Formation 16 → 15, nur eingesetzt).
+    /// </summary>
+    [GameDataTheory]
+    [InlineData(PlayerRole.Defender)]
+    [InlineData(PlayerRole.Forward)]
+    public void OriginalExportImport_National_KeepsSixthSkater(PlayerRole role)
+    {
+        var raw = OriginalExportTests.RawDatabase();
+        var database = ClubDatabase.Parse(raw);
+        var game = OriginalExportTests.NewGameForExport(database);
+        game.AppointNationalCoach(game.Managers[0]);
+        game.AutoNominate();
+        var coach = game.NationalCoach!;
+        coach.AutoFormation();
+        coach.ClearSlot(LineupSlot.Goalkeeper);
+        int? line = 0;
+        var sixth = coach.Squad.Select(m => m.Player).First(p => p.Role == role && p.Available && !coach.Formation.Contains(p));
+        Assert.Equal(LineupResult.Assigned, coach.ClickPlayer(sixth, ref line, right: false));
+        Assert.Same(sixth, coach.Formation.SixthSkater);
+        var count = coach.Formation.Count;
+
+        var again = GameState.ImportOriginal(OriginalSaveGame.Read(OriginalExport.Export(game, raw)), database, 4711);
+
+        var imported = again.NationalCoach!;
+        Assert.Equal(count, imported.Formation.Count);
+        Assert.Equal(sixth.Name, imported.Formation.SixthSkater?.Name);
+        Assert.Null(imported.Formation.Goalkeeper);
+        Assert.True(imported.Formation.SixthSkaterOpen);
+        static IEnumerable<string> Line1(Lineup l) =>
+            Lineup.SlotsOfLine(0, PlayerRole.Forward).Concat(Lineup.SlotsOfLine(0, PlayerRole.Defender)).Append(LineupSlot.SixthSkater)
+                .Select(s => l[s]?.Name ?? "").Order();
+        Assert.Equal(Line1(coach.Formation), Line1(imported.Formation));
+    }
+
     private static int Rename(JsonNode? node, string from, string to)
     {
         var n = 0;

@@ -100,6 +100,7 @@ public class FeldspielerSechsTeil3Tests
         var manager = game.ActiveManager;
         var club = game.Clubs[manager.ClubIndex];
         Assert.True(Open(club), "sechster Platz vor Saison 1 nicht zu öffnen");
+        var keptSteps = 0;
         for (var change = 0; change < 4; change++)
         {
             var pulled = false;
@@ -111,12 +112,17 @@ public class FeldspielerSechsTeil3Tests
                     manager.Money = 2_000_000; // keine Entlassung im Testlauf
                 if (active)
                     Open(club);
+                var before = club.Lineup.SixthSkater;
                 game.Continue();
                 pulled |= club.Tactics.GoaliePulledAtEnd;
                 AssertConsistent(club);
+                if (!active)
+                    keptSteps += AssertKeptOrClosedForReason(club, before, $"Saison {change + 1}, Schritt {guard}");
             }
             if (active)
                 Assert.True(pulled, $"Saison {change + 1}: nie ohne Torhüter gespielt");
+            else if (change == 0)
+                Assert.True(keptSteps > 0, "passiv: sechster Platz schon nach dem ersten Schritt geschlossen");
             var loaded = SaveGame.Load(SaveGame.Save(game)).Game!.Clubs[club.Index];
             Assert.Equal(club.Lineup.SixthSkater?.Id, loaded.Lineup.SixthSkater?.Id);
             game.StartNextSeason();
@@ -139,6 +145,23 @@ public class FeldspielerSechsTeil3Tests
                 return true;
         }
         return false;
+    }
+
+    /// <summary>
+    /// R963-02: Passiv darf der sechste Platz nur aus einem Grund schließen – der Spieler ist nicht mehr einsatzfähig oder nicht mehr
+    /// im Kader (Lineup.RemoveUnavailable), oder er ist in eine frei gewordene Abwehrzelle der Reihe 1 nachgerückt (Datei
+    /// 0x40B95/0x41043, Lineup.MoveSixthSkaterInto). Liefert 1, wenn derselbe Spieler den Platz behalten hat.
+    /// </summary>
+    private static int AssertKeptOrClosedForReason(Club club, Player? before, string step)
+    {
+        if (before is null)
+            return 0;
+        if (ReferenceEquals(club.Lineup.SixthSkater, before))
+            return 1;
+        var movedUp = club.Lineup.FindSlot(before) is { Role: PlayerRole.Defender, Block: 0 } slot && !slot.IsSixthSkater;
+        Assert.True(!before.Available || !club.Players.Contains(before) || movedUp,
+            $"{step}: sechster Feldspieler {before.Name} ohne Grund vom Platz genommen");
+        return 0;
     }
 
     private static void AssertConsistent(Club club)
