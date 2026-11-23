@@ -8,14 +8,104 @@ Abgeschlossene Runden stehen in [archiv/](archiv/) und müssen beim Einstieg nic
 **Koordination:** Die Leitstelle verteilt Pakete, prüft und mergt Pull Requests und pflegt Fahrplan und Doku
 (Rollen: [prozess/zusammenarbeit.md](prozess/zusammenarbeit.md)).
 
-## Aktuelle Runde: Runde 23 – Planung offen (neue Leitstellen-Sitzung, `docs/vorlagen/leitstelle-start.md`)
+## Aktuelle Runde: Runde 23 – letzte V, Test-Infrastruktur, DOSBox `runde-22` Sitzung 1 (Plan 23.11.2026, Go offen)
 
-Runde 22 abgeschlossen am 22.11.2026: [archiv/runde-22.md](archiv/runde-22.md). Grundlage für den Plan: Restliste
-[analyse/restliste-v1.md](analyse/restliste-v1.md) (V 5: A875/A937 → #939, A873, A913, A951 → #948; D 21), Issues #939, #948, #951,
-#954, #925, Vormerkungen unten. **Vorschlag Leitstelle Runde 22:** #939 als eigene Spur (Opus 5.5, R22-E2 = B), #948 als kleine
-Spur (je S–M), Auswertung der DOSBox-Aufnahme `runde-22`, sobald sie vorliegt; danach Abschlussprüfung und Aufräumen (#936).
-**Modellwahl (Nutzer 17.11.2026):** je Lauf möglichst wenig Tokens für ein brauchbares Ergebnis – Haiku, Sonnet, Opus; Fable nur
-in Ausnahmefällen. **Läufe melden ihr Ende** per Push-Benachrichtigung (Nutzer 22.11.2026, `prozess/anhang.md` F).
+Runde 22 abgeschlossen am 22.11.2026: [archiv/runde-22.md](archiv/runde-22.md). Grundlage: Restliste
+[analyse/restliste-v1.md](analyse/restliste-v1.md) (V 5: A937/A875 → #939, A873, A913, A951 → #948; D 30), Issues #939, #948, #951
+(nur noch die `pruefen.sh`-Punkte; die Markerliste-Punkte hat `marker-x` #952 erledigt), #954, #925, Reste #938/#930, DOSBox-Aufnahme
+`runde-22` Sitzung 1 (Referenz-PR kaaasi/eishockey-manager-referenz#41: FILE75, FILE76, 20 Bilder; A427, A065, A057, A402, A613,
+A614, A629, A117). **Ziel der Runde:** V = 0 nach dem Generatorlauf, `pruefen.sh`-Punkte erledigt, Sitzung 1 ausgewertet. Danach
+bleiben bis v1.0 nur die übrigen D (Sitzungen 2–7 nach Lust), das Aufräumen (#936) und die Abschlussprüfung.
+**Entscheidungen** (Optionen im Plan-PR): R23-D1 … R23-D4 offen. **Spuren starten erst nach Go des Nutzers.**
+
+**Regeln wie Runde 22** (Archiv): Base = aktueller `main` beim Start der Spur, tatsächlicher Base-SHA in den Draft-PR; ein Branch
+`paket/<spur>`, ein PR, Teile als Commits, höchstens drei Fortsetzungen; Befund reproduzieren, roter Regressionstest mit Fundstelle
+`Datei 0x…`, dann grün; Mehrsaisonprobe (4 Wechsel, passiv/aktiv) bei Saisonwechsel, Kader oder Geld; `[ORIGINAL]`/`[APPROX]`;
+fremde Tests nach R15-E2 = C, erwartete Werte nach R21-D2 = A; keine geplanten Aufgaben aus Läufen (R15-E4). Bei Unklarheit „wie im
+Original“, sonst `[APPROX]` mit Begründung, die Leitstelle bündelt. N2 = B, N6 = A, R21-E1 = A gelten. **Markerliste:** kein
+`markerliste.py --write` außer in `pruefung-karte`; jede Spur nennt im PR die geänderten, neuen und entfallenen Markerzeilen
+(Datei, alte ID, neue Klasse). Neue Spielstandfelder: Migration in eigener Datei `Core/SaveGame.Migration.<Spur>.cs`, Schemanummer
+(ab 63) beim Rebase in Integrationsfolge. **Rebase:** vor dem Push `git rebase origin/main` und `git push --force-with-lease`; ein
+Merge-Commit von `main` ist nur zulässig, wenn der Force-Push nachweislich abgelehnt wird (Fehlermeldung in der Übergabe;
+Erfahrung Runde 22). **Entwickler und Erstreviews sind Claude-Sitzungen;** ChatGPT nur fürs Gesamtreview.
+
+**Folge (Vorschlag R23-D1 = A):** Welle 1 parallel `pruefen-sh`, `v-rest`, `feldspieler-sechs`; `abgleich-dosbox-22` startet, sobald
+der Nutzer den Referenz-PR #41 gemergt hat (Teil 1 parallel zu Welle 1, Teil 2 nach Merge von `v-rest`). Integration in der Folge
+`pruefen-sh` → `v-rest` → `feldspieler-sechs` → `abgleich-dosbox-22` (Spätere rebasen und ziehen erwartete Werte nach). Welle 2
+`pruefung-karte` nach Merge aller übrigen. Danach Gesamtreview (R23-D4).
+
+**Modelle (Nutzer 17.11.2026 „wenig Tokens für brauchbares Ergebnis“; 09.11.2026 keine Sonnet-Wahl mit Nacharbeit):** Opus 5.5 für
+Datenmodell, Spielrechnung, Zufallsstrom und em.exe; Sonnet 5.5 für Skript- und Markerarbeit; Haiku nicht vorgesehen (jeder Lauf
+baut, testet und liest Fundstellen). Erstreviews: Code-Spuren Opus 5.5, `pruefen-sh` und `pruefung-karte` Sonnet 5.5. Fixläufe im
+Modell der Spur, Fixläufe ohne Befund Sonnet 5.5. Plan-Review Sonnet 5.5. Gesamtreview ChatGPT GPT-6.1 Terra (Codex).
+
+| Spur | Welle | Inhalt | Modell | Grund |
+|---|---|---|---|---|
+| `pruefen-sh` | 1 | #951: Review #950 P3-1 (Selbsttest prüft Summen), P3-2 (Tabellenzeile bei Hänger mit Fehlervermerk), P3-3 | Sonnet 5.5 | S, Skript, Fundstellen im Review |
+| `v-rest` | 1 | #948: A951, A913, A873; Teil 4 nach R23-D2 | Opus 5.5 | Zufallsstrom (A913), Datenmodell Wertesatz (A873), em.exe |
+| `feldspieler-sechs` | 1 | #939: A937 (Verein), A875 (Nationalteam), Rest A683/A490 | Opus 5.5 | L, Datenmodell `LineupSlot`, Spielrechnung, Migration |
+| `abgleich-dosbox-22` | 1 (nach Referenz-PR #41) | Sitzung 1: A427, A065, A057, A402, A613, A614, A629, A117 | Opus 5.5 | Abgleich mit Originalständen, HOK-Felder, em.exe |
+| `pruefung-karte` | 2 | P3 der Runde, #954, 24 X-Funktionszeilen, Generatorlauf | Sonnet 5.5 | mechanisch, Einordnung nach PR-Angaben |
+
+### Zuständigkeit für gemeinsame Dateien
+
+- `Core/CupsNational.cs`, `Core/CupsNational.GameState.cs` nur `v-rest` (A873); `Core/CupsNational.Lineup*.cs`,
+  `Core/MatchEngine.National.cs` nur `feldspieler-sechs`. `Core/MatchEngine.Managed.cs`: `feldspieler-sechs` nur die
+  Aufstellungsstellen (`LineupSlot`), `v-rest` nur Teil 4 (0x8C53, falls R23-D2 = A). `Core/MatchGate.cs` nur `v-rest` (A913).
+- `Core/Transfer.Purchase.cs`, `Core/Player.Contract.cs` (A951) erst `v-rest`; `abgleich-dosbox-22` Teil 2 (A117 Verhandlung) rebased
+  danach. `UI/Screens/Team/ContractDialog.cs` nur `abgleich-dosbox-22` (A117), Kernänderung A951 ohne Bildschirm.
+- `Core/OriginalImport.cs` und `Core/OriginalExport*.cs`: `feldspieler-sechs` nur Aufstellungsbelegung, `abgleich-dosbox-22` nur
+  Felder aus A402/A613/A614/A629; je eigene `OriginalImport.<Teil>.cs`, wo möglich. `Core/SaveGame.cs` nur Schemanummer und
+  Migrationstabelle.
+- `tools/pruefen.sh`, `tools/pruefen-selbsttest.sh` nur `pruefen-sh`. `docs/analyse/restliste-v1.md` (generierter Block, Zahlen),
+  `restliste-v1-klassen.csv`, `markerliste.py --write`, `funktionskarte.py --write` allein `pruefung-karte`.
+
+### Spur `pruefen-sh` – Test-Infrastruktur (Welle 1)
+
+- **Teile:** 1. #951 `pruefen.sh`-Punkte aus `docs/reviews/2026-11-22-test-zeitlimit.md` (#950): P3-1 Selbsttest prüft die Summen der
+  Tabelle, P3-2 Tabellenzeile bei Hänger mit Fehlervermerk, P3-3 Kleinigkeiten; je Punkt roter Fall im Selbsttest. Fixes #951.
+- **Dateien:** `tools/pruefen.sh`, `tools/pruefen-selbsttest.sh`. **Prüfung:** alle drei Läufe und `tools/pruefen-selbsttest.sh`
+  (`AGENTS.md` §5). **Erstreview:** Sonnet 5.5. **Status:** wartet auf Go.
+
+### Spur `v-rest` – letzte V aus #948 (Welle 1)
+
+- **Teile:** 1. A951 Kauf vom Markt: Startgehalt und Verhandlung nach neuem Kaderplatz (Wert 0x4A0A7; Datei 0x477E7, 0x4786A);
+  2. A913 Spielwertung: Manager mit kleinerem Index würfeln die Vorbereitung (Datei 0x547AA; Zufallsstrom, erwartete Werte nach
+  R21-D2); 3. A873 WM-Kader „auto“ und Umschalten ohne Verletzungsprüfung (Datei 0x3CC01; Verletzung des Vereinsplatzes darf nicht
+  mitgehen), Mehrsaisonprobe; 4. nur bei R23-D2 = A: em.exe-Prüfung #925 (b) DEB-Pokal (0x3166E/0x32B5F, FILE44 `D014`) und #938
+  P3-3 (Belastungszug 0x8C53 im Länderspiel) – umsetzen nur mit Beleg, sonst Vermerk als K/E bzw. „nicht belegt“ im PR; A876 und A917
+  bleiben K (nur bestätigen). Fixes #948 (Teile 1–3).
+- **Dateien:** `Core/Transfer.Purchase.cs`, `Core/Player.Contract.cs`, `Core/MatchGate.cs`, `Core/CupsNational.cs`,
+  `Core/CupsNational.GameState.cs`, Teil 4 zusätzlich `Core/MatchEngine.Minutes.cs`, `Core/MatchEngine.PlayoffFastPath.cs`, `Core/Cups.Tiebreak.cs`,
+  `Core/MatchEngine.Managed.cs` (nur 0x8C53), Tests. **Erstreview:** Opus 5.5. **Status:** wartet auf Go.
+
+### Spur `feldspieler-sechs` – sechster Feldspielerplatz ohne Torhüter (Welle 1, R22-E2 = B)
+
+- **Teile:** 1. em.exe Datei 0x413E8–0x414B4, 0x412CF–0x412DB, 0x40EF7, 0x414D3–0x414ED lesen; Datenmodell (neuer Platz in
+  `LineupSlot`, Abwehrhälfte Platz 3–5 der Reihe 1), Aufstellen im Verein (andere Hälfte, Meldung „Schon 6 Feldspieler“), Migration,
+  HOK-Import/-Export der Belegung (A937, A683 Rest); 2. Spielrechnung ohne Torhüter mit sechs Feldspielern (Spiel und Eingriff im
+  Live-Spiel); 3. Nationalaufstellung (A875, A490 Rest) und Aufstellungsbilder (`LineupScreen.cs`, `NationalLineupScreen.cs`,
+  Bildschirmfoto gegen Videobild, falls vorhanden). Mehrsaisonprobe. Fixes #939.
+- **Dateien:** `Core/Squad.Lineup*.cs`, `Core/CupsNational.Lineup*.cs`, `Core/MatchEngine.National.cs`, Stellen oben,
+  `Core/SaveGame.Migration.FeldspielerSechs.cs`, `UI/Screens/Team/LineupScreen.cs`, `UI/Screens/Competitions/NationalLineupScreen.cs`,
+  Tests. **Erstreview:** Opus 5.5. **Status:** wartet auf Go.
+
+### Spur `abgleich-dosbox-22` – DOSBox-Aufnahme `runde-22` Sitzung 1 (Welle 1, nach Referenz-PR #41)
+
+- **Voraussetzung:** Nutzer hat kaaasi/eishockey-manager-referenz#41 gemergt (FILE75, FILE76, Bilder `file75_*`, `file76_*`).
+- **Teile:** 1. Auswertung je ID mit Beleg (Spielstand, Bild, em.exe): A427 Startwerte der Computervereinsspieler, A065 Bestenliste,
+  A057 Zugfolge, A402/A613/A614/A629 (Sparbuch, Darlehen, Leihe, Bandenwerbung im HOK), A117 Gehalt 0 und sehr hoch; Bericht
+  `docs/analyse/abgleich-dosbox-22.md`, Klassenvorschlag je ID (V/X/K/E) für `pruefung-karte`; 2. belegte Abweichungen der Größe S
+  umsetzen (nach Merge von `v-rest`, A117 an `ContractDialog.cs`/Kern); größere als Issue mit Vorschlag an die Leitstelle.
+- **Dateien:** `docs/analyse/abgleich-dosbox-22.md`, Stellen oben, eigene `OriginalImport.<Teil>.cs`, Tests mit FILE75/76.
+  **Erstreview:** Opus 5.5. **Status:** wartet auf Go und Referenz-PR #41.
+
+### Spur `pruefung-karte` – P3 der Runde und Generatorlauf (Welle 2)
+
+- **Voraussetzung:** alle übrigen Spuren gemergt. **Teile:** 1. P3-Issues der Runde und #954 (Wortlaut `[ORIGINAL]` mit Fundstelle
+  bzw. Aussage über das Remake-Datenmodell); 2. 24 X-Funktionszeilen (F-IDs ohne Markerzeile) umklassifizieren oder ausblenden;
+  Klassen aus `abgleich-dosbox-22` übernehmen; 3. `markerliste.py --write`, `funktionskarte.py --write` (Ziel V = 0, X = 0).
+- **Erstreview:** Sonnet 5.5. **Status:** wartet auf Go.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
@@ -23,9 +113,8 @@ in Ausnahmefällen. **Läufe melden ihr Ende** per Push-Benachrichtigung (Nutzer
 
 ### Vormerkungen
 
-- **Runde 23:** #939, #948, #951 (`pruefen.sh`: Selbsttest ohne Summen, Tabellenzeile bei Hänger), #954, #925 (DEB-Pokal-Rest,
-  nur mit Beleg Video/0x32B5F), Reste #938 (A876 Zähler Satz 5 über den Saisonwechsel, P3-3 Verdacht Belastungszug) und #930 (A917).
-- **DOSBox-Aufnahme `runde-22`** (21 D, `vorlagen/dosbox-aufnahme.md`): Aufnahme nach Lust des Nutzers, Auswertung in der Runde danach.
+- **DOSBox-Aufnahme `runde-22` Sitzungen 2–6** und **Sitzung 7** (neue D aus Runde 22: A671, A713/A949, A896, A899, A910, A912,
+  A918, A945; Liste nach R23-D3 in `vorlagen/dosbox-aufnahme.md`): Aufnahme nach Lust, Auswertung in der Runde danach.
 - **Abschlussprüfung:** 24 X-Funktionszeilen (F-IDs ohne Markerzeile) umklassifizieren oder ausblenden.
 - **Letzter Schritt vor v1.0 (Nutzer 17.11.2026, #936):** Aufräumen des gesamten Repos, danach nur noch die Abschlussprüfung.
 - **Testlücke Gesamtreview #848:** Speichern/Laden mitten in einer angehaltenen Live-Paarung (über die Oberfläche nicht
