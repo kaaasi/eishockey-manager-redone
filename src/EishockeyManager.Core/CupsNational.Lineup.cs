@@ -40,6 +40,12 @@ public enum LineupResult
 
     /// <summary>Spieler aus seinem Platz genommen (Klick auf einen Aufgestellten in der Kaderliste, Datei 0x40F7C–0x4116F).</summary>
     TakenOut,
+
+    /// <summary>
+    /// „Schon 6 Feldspieler / auf dem Eis !“ – Torhüter in die Torhüterreihe, während der sechste Feldspielerplatz offen ist (Datei
+    /// 0x40EF7, <see cref="Lineup.SixthSkaterOpen"/>).
+    /// </summary>
+    SixSkaters,
 }
 
 /// <summary>
@@ -157,6 +163,31 @@ public sealed partial class NationalCoach
     }
 
     /// <summary>
+    /// Platz aus dem HOK (Satz 5 +0x15) setzen, eingesetzt wie <see cref="Assign"/>, aber ohne Prüfung der Art für Feldspieler:
+    /// [ORIGINAL] +0x15 bestimmt den Platz, nicht die Rolle (andere Hälfte Datei 0x414D3–0x414ED, sechster Feldspielerplatz auch für
+    /// einen Stürmer Datei 0x413C9–0x414B4; R963-01). Ein Torhüter nur auf den Torhüterplatz. Schaltet „automatisch aufstellen“ nicht
+    /// ab (der Import setzt die Einstellung danach aus dem HOK).
+    /// </summary>
+    internal LineupResult PlaceFromSave(LineupSlot slot, Player player)
+    {
+        player = SlotOf(player);
+        if (!Contains(player))
+            return LineupResult.NotInSquad;
+        if (player.InjuredGames > 0)
+            return LineupResult.Injured;
+        if (player.SuspendedGames > 0)
+            return LineupResult.Suspended;
+        if (!IsDressed(player) && DressedCount >= MaxDressed)
+            return LineupResult.RosterFull;
+        if (Formation[slot] is not null)
+            return LineupResult.NoRoom;
+        if (!(slot.Role == player.Role ? Formation.Assign(slot, player) : Formation.PlaceSkater(slot, player)))
+            return LineupResult.WrongRole;
+        _dressed.Add(player);
+        return LineupResult.Assigned;
+    }
+
+    /// <summary>
     /// Platz leeren; der Spieler ist danach nicht mehr eingesetzt (Datei 0x40CF8–0x40D0D). [ORIGINAL] Der Klick auf einen besetzten
     /// Platz schaltet „automatisch aufstellen“ ab (Datei 0x40AC7–0x40ADE, A009); ein leerer Platz ändert nichts (Datei 0x40AC4).
     /// </summary>
@@ -215,8 +246,11 @@ public sealed partial class NationalCoach
     ///   Feldspieler nicht dorthin → „Der darf da / nicht rein !“ (Datei 0x40E77–0x40EB9); dann der erste freie Platz der Art in
     ///   der Reihe (Sturm Plätze 0–2, Abwehr 3–4, Datei 0x412A1–0x41381), eingesetzt (Datei 0x415B2). [ORIGINAL] Ist die eigene
     ///   Hälfte voll, die andere Hälfte (Verteidiger in den Sturm und umgekehrt, Datei 0x414D3–0x414ED; A490,
-    ///   <see cref="Core.Lineup.SearchSlots"/>), sonst „Kein / Platz mehr !“. [APPROX] Den sechsten Feldspielerplatz in Reihe 1
-    ///   ohne Torhüter (Datei 0x413E8–0x414B4) hat das Remake nicht (wie <see cref="Club.ClickPlayer"/>).</item>
+    ///   <see cref="Core.Lineup.SearchSlots"/>), sonst „Kein / Platz mehr !“.</item>
+    /// <item>[ORIGINAL] #939 (A875): Der Bildschirm ist derselbe wie beim Verein (Datei 0x40364), also auch der sechste
+    ///   Feldspielerplatz in Reihe 1 ohne Torhüter (Datei 0x413C9–0x414B4, <see cref="Core.Lineup.TryOpenSixthSkater"/>) und die Abweisung
+    ///   „Schon 6 Feldspieler / auf dem Eis !“ für einen Torhüter bei offenem Platz (Datei 0x40EC4–0x40EFF); wie
+    ///   <see cref="Club.ClickPlayer"/>.</item>
     /// </list>
     /// </summary>
     /// <param name="player">angeklickter Spieler (muss im Kader stehen).</param>
@@ -235,6 +269,9 @@ public sealed partial class NationalCoach
             return LineupResult.Suspended;
         if (!IsDressed(player) && DressedCount >= MaxDressed)
             return LineupResult.RosterFull;
+        // [ORIGINAL] Datei 0x40EC4–0x40EFF: Torhüter, Torhüterreihe gewählt, sechster Platz offen, Linksklick (A875).
+        if (!right && player.Role == PlayerRole.Goalkeeper && line == GoalkeeperLine && Formation.SixthSkaterOpen)
+            return LineupResult.SixSkaters;
         if (TakeOut(player, keepDressed: right) is { } from)
         {
             line = from;
@@ -254,6 +291,12 @@ public sealed partial class NationalCoach
                 return Assign(slot, player);
             // [ORIGINAL] andere Hälfte der Reihe (Datei 0x414D3–0x414ED), eingesetzt wie bei Assign (Datei 0x415B2).
             Formation.PlaceSkater(slot, player);
+            _dressed.Add(player);
+            return LineupResult.Assigned;
+        }
+        // [ORIGINAL] A875: sechster Feldspielerplatz (Datei 0x413C9–0x414B4), eingesetzt wie sonst (Datei 0x41533/0x415B2).
+        if (Formation.TryOpenSixthSkater(l, player))
+        {
             _dressed.Add(player);
             return LineupResult.Assigned;
         }
@@ -308,7 +351,7 @@ public sealed partial class NationalCoach
     /// </summary>
     public void ClearFormation()
     {
-        foreach (var slot in LineupSlot.All)
+        foreach (var slot in LineupSlot.ClearOrder)
             ClearSlot(slot);
     }
 
@@ -323,7 +366,13 @@ public sealed partial class NationalCoach
         return (formation, dressed);
     }
 
-    /// <summary>Wirksame Aufstellung aus einer Formation (Reihen 1–3 und Torhüter, nur einsatzfähige Spieler).</summary>
+    /// <summary>
+    /// Wirksame Aufstellung aus einer Formation (Reihen 1–3 und Torhüter, nur einsatzfähige Spieler). Der sechste Feldspieler (#939,
+    /// A875; auch der Feldspieler im Tor der Neuaufstellung, A672) steht als siebter Eintrag hinter den drei Abwehrreihen in
+    /// <see cref="NationalLineup.Defenders"/>: er zählt in <see cref="NationalLineup.Players"/> (Länderspiele, +0x15 ≠ 0), nicht in
+    /// <see cref="NationalLineup.LineValue"/>. [APPROX] Die Reihenwerte der Anzeige bleiben Remake-Werte je zwei Verteidiger; das Spiel
+    /// rechnet über +0x15 (<see cref="MatchEngine.NationalSquad"/>, Datei 0x98F8).
+    /// </summary>
     private NationalLineup FormationLineup(Core.Lineup formation)
     {
         Player? Playing(LineupSlot slot) => formation[slot] is { Available: true } p && Contains(p) ? p : null;
@@ -336,6 +385,8 @@ public sealed partial class NationalCoach
             for (var i = 0; i < Core.Lineup.ForwardsPerBlock; i++)
                 forwards.Add(Playing(LineupSlot.Forward(b, i)));
         }
+        if (Playing(LineupSlot.SixthSkater) is { } sixth)
+            defenders.Add(sixth);
         return new NationalLineup(Playing(LineupSlot.Goalkeeper), defenders, forwards);
     }
 

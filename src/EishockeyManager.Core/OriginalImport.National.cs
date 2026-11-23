@@ -50,7 +50,7 @@ public sealed partial class GameState
             coach.AddFriendly(new FriendlyMatch(clubOf[home], clubOf[away], save.Block("D0CB")[i], save.Block("D0C3")[i], 0));
         }
         coach.ClearSquad();
-        var lines = new List<(Player Player, int Line, bool Dressed)>();
+        var lines = new List<(Player Player, int Line, bool Forward, bool Dressed)>();
         for (var i = 0; i < NationalCoach.MaxSquad; i++)
         {
             var s = OriginalImport.SquadSlot(save, OriginalImport.NationalRecord, i);
@@ -69,26 +69,35 @@ public sealed partial class GameState
             AssignPlayerId(slot);
             coach.Add(player, club, slot);
             player = slot;
-            lines.Add((player, s[0x15] & 0x0F, s[0x0A] != 0));
+            lines.Add((player, s[0x15] & 0x0F, (s[0x15] & 0x80) != 0, s[0x0A] != 0));
         }
 
+        // R963-01 (#939, A875): [ORIGINAL] +0x15 bestimmt den Platz, nicht die Rolle – wie beim Verein (ApplyLineup, Datei 0x40478):
+        // Sturm nach Bit 0x80, sonst Abwehr; ein Torhüter mit Reihe 1 ohne Bit auf den freien Torhüterplatz. Der dritte Spieler der
+        // Abwehrhälfte in Reihe 1 steht auf dem sechsten Feldspielerplatz (Export OriginalExport.Cups.cs: +0x15 = 1 über FindSlot).
+        // Vorher nach Player.Role mit zwei Abwehrplätzen: der sechste Feldspieler fiel beim Import heraus (nur eingesetzt), ein
+        // Stürmer dort zählte als Stürmer der Reihe 1.
         var used = new Dictionary<(int Block, PlayerRole Role), int>();
-        foreach (var (player, line, _) in lines)
+        foreach (var (player, line, forward, _) in lines)
         {
             if (line is < 1 or > 3)
                 continue;
-            used.TryGetValue((line - 1, player.Role), out var n);
-            LineupSlot? slot = player.Role switch
+            if (player.Role == PlayerRole.Goalkeeper && !forward && line == 1 && coach.Formation.Goalkeeper is null)
             {
-                PlayerRole.Goalkeeper when line == 1 && coach.Formation.Goalkeeper is null => LineupSlot.Goalkeeper,
-                PlayerRole.Defender when n < Lineup.DefendersPerBlock => LineupSlot.Defender(line - 1, n),
-                PlayerRole.Forward when n < Lineup.ForwardsPerBlock => LineupSlot.Forward(line - 1, n),
-                _ => null,
-            };
-            if (slot is { } target && coach.Assign(target, player) == LineupResult.Assigned)
-                used[(line - 1, player.Role)] = n + 1;
+                coach.PlaceFromSave(LineupSlot.Goalkeeper, player);
+                continue;
+            }
+            var half = (line - 1, forward ? PlayerRole.Forward : PlayerRole.Defender);
+            used.TryGetValue(half, out var n);
+            LineupSlot? slot = forward
+                ? n < Lineup.ForwardsPerBlock ? LineupSlot.Forward(line - 1, n) : null
+                : n < Lineup.DefendersPerBlock ? LineupSlot.Defender(line - 1, n)
+                : n == Lineup.DefendersPerBlock && line == 1 ? LineupSlot.SixthSkater
+                : null; // [APPROX] kein dritter Abwehrplatz in den Reihen 2–3 (wie OriginalImport.ApplyLineup)
+            if (slot is { } target && coach.PlaceFromSave(target, player) == LineupResult.Assigned)
+                used[half] = n + 1;
         }
-        foreach (var (player, _, dressed) in lines)
+        foreach (var (player, _, _, dressed) in lines)
             if (dressed && !coach.Formation.Contains(player))
                 coach.Dress(player);
         ApplyTacticValues(save, coach.Tactics, OriginalImport.NationalRecord);

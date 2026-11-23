@@ -51,7 +51,10 @@ public class EinzelpunkteTests
 
         Assert.Null(club.Lineup.Goalkeeper);
         var squad = LiveSquad.Create(club, 1, null);
-        var standIn = Assert.Single(squad.Players, p => p.Position == 1 && !p.Goalie && club.Lineup.FindSlot(p.Player) is null);
+        // #939 (feldspieler-sechs, R15-E2 = C): Der Feldspieler im Tor ist im Original ein dritter Spieler der Abwehrhälfte in Reihe 1
+        // (Gitter Datei 0x40478–0x404D7) und steht jetzt auf dem sechsten Feldspielerplatz statt ohne Platz.
+        var standIn = Assert.Single(squad.Players, p => p.Position == 1 && !p.Goalie && club.Lineup.FindSlot(p.Player) is not null
+            && club.Lineup.Block(0).All(b => !ReferenceEquals(b, p.Player)));
         Assert.True(club.IsDressed(standIn.Player));
         Assert.Same(standIn.Player, club.Lineup.GoalieStandIn);
         // Nach einem Eingriff von Hand ist er wieder Reserve.
@@ -217,7 +220,7 @@ public class EinzelpunkteTests
         Assert.Equal(SaveGame.SchemaVersion, (int)root["schema"]!);
         var removed = new Dictionary<string, int>();
         Strip(root, removed);
-        Assert.All(new[] { "OneSeasonFlag", "_goalieStandIn", "Cancellable", "InnerMoves" }, k => Assert.True(removed.GetValueOrDefault(k) > 0, k));
+        Assert.All(new[] { "OneSeasonFlag", "_sixthSkater", "Cancellable", "InnerMoves" }, k => Assert.True(removed.GetValueOrDefault(k) > 0, k));
         root["schema"] = 58;
 
         var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
@@ -240,7 +243,7 @@ public class EinzelpunkteTests
         switch (node)
         {
             case System.Text.Json.Nodes.JsonObject obj:
-                foreach (var key in new[] { "OneSeasonFlag", "_goalieStandIn", "Cancellable", "InnerMoves" })
+                foreach (var key in new[] { "OneSeasonFlag", "_sixthSkater", "Cancellable", "InnerMoves" })
                     if (obj.Remove(key))
                         removed[key] = removed.GetValueOrDefault(key) + 1;
                 foreach (var child in obj.Select(kv => kv.Value).ToList())

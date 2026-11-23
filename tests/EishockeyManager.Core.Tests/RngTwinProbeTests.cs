@@ -312,10 +312,14 @@ public class RngTwinProbeTests
     // #925/A873, A838, A105/A836, A071; Teil 2 Jugend nach den Menüs A384/A670, Ligamischung aus dem Strom #897; Teil 3 A101, A677,
     // A553) zusammen mit kader-regeln, transfer-pool und einzelpunkte ändern Spielrechnung und Zufallsverlauf; kein Originalsollwert,
     // nur interner Abdruck. Rückschaltprobe: src/ von f7f0410 + dieser Test → rot (alte Werte), src/ von 3ca753a + dieser Test → rot.
+    // Runde 23, Spur feldspieler-sechs Teil 1 (#939, R21-D2 = A, R15-E2 = C): neu nur Saat 11 – der Feldspieler im Tor (A672) steht jetzt
+    // auf dem sechsten Feldspielerplatz (Gitter Datei 0x40478–0x404D7: dritter Spieler der Abwehrhälfte in Reihe 1) und zählt damit wie
+    // jeder Aufgestellte (Lineup.Players/Contains); +0x15 bleibt 1. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe:
+    // PlaceGoalieStandIn wie vorher außerhalb der Plätze (nur +0x15 = 1) + dieser Test → alte Werte 6AEE65C74DC93257 / EEC117151416D579.
     [InlineData(false, 3, "01B6261E9CBBCE94")]
     [InlineData(true, 3, "F2FEEB9FFBD324CA")]
-    [InlineData(false, 11, "6AEE65C74DC93257")]
-    [InlineData(true, 11, "EEC117151416D579")]
+    [InlineData(false, 11, "C6D9D5194BFD0979")]
+    [InlineData(true, 11, "450183E60BB97E84")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);

@@ -11,7 +11,8 @@ namespace EishockeyManager.Core;
 ///   0x2D6–0x2DB = 05 05 05 05 05 05, Datei 0x170A6; Schreiber nur Datei 0x54821, ebenfalls 5), also „im Spiel“.</item>
 /// <item>[ORIGINAL] Der Aufstellungsbildschirm ist derselbe wie beim Verein (Datei 0x40364), nur auf den Kaderplätzen des
 ///   Satzes 5: es gelten die Regeln „im Spiel“ von <see cref="Club.ClickPlayerInMatch"/> (Datei 0x40E2A keine Grenze 22,
-///   0x4115F/0x40CFD herausgenommen bleibt eingesetzt, 0x40F35/0x41287 Rechtsklick auf einen Aufgestellten ändert nichts).</item>
+///   0x4115F/0x40CFD herausgenommen bleibt eingesetzt, 0x40F35/0x41287 Rechtsklick auf einen Aufgestellten ändert nichts), auch der
+///   sechste Feldspielerplatz (#939, A875: Datei 0x40EC4–0x40EFF und 0x413C9–0x414B4 ohne Blick auf den Kennwert).</item>
 /// <item>[APPROX] Wie dort zählt das Remake die Länderspiele am Spielende aus der Aufstellung (<c>MatchEngine.CreditWorldCupSquad</c>),
 ///   nicht beim Aufstellen im Spiel (Datei 0x415B7–0x41622).</item>
 /// </list>
@@ -29,6 +30,9 @@ public sealed partial class NationalCoach
             return LineupResult.Injured;
         if (player.SuspendedGames > 0)
             return LineupResult.Suspended;
+        // [ORIGINAL] Datei 0x40EC4–0x40EFF (A875).
+        if (!right && player.Role == PlayerRole.Goalkeeper && line == GoalkeeperLine && Formation.SixthSkaterOpen)
+            return LineupResult.SixSkaters;
         if (Formation.FindSlot(player) is not null)
         {
             if (right)
@@ -48,6 +52,12 @@ public sealed partial class NationalCoach
             // Reihe wie beim Linksklick (Datei 0x414D3, A683/A490).
             if (!(slot.Role == player.Role ? Formation.Assign(slot, player) : Formation.PlaceSkater(slot, player)))
                 return LineupResult.WrongRole;
+            _dressed.Add(player);
+            return LineupResult.Assigned;
+        }
+        // [ORIGINAL] A875: sechster Feldspielerplatz (Datei 0x413C9–0x414B4), Kennwert an 0x41533 (Datei 0x413E8): eingesetzt.
+        if (Formation.TryOpenSixthSkater(l, player))
+        {
             _dressed.Add(player);
             return LineupResult.Assigned;
         }

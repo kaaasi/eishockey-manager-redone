@@ -217,7 +217,7 @@ public static class HokCompareClasses
         Set(NotInHok, "Manager.OneSeasonFlag");
         Set(InSeason, "Club.League");
         Set(Random, "Club.ForfeitsMatch", "Club.LeaguePenaltyMinutes", "Club.Lineup", "Club.SeriesCurrent", "Club._dressed",
-            "Club._rankSlots", "Club._tableRank", "Lineup._defenders", "Lineup._forwards", "Lineup._goalkeeper", "Lineup._goalieStandIn"); // A672: Platz +0x15 = 1 (Aufstellung, Zufall)
+            "Club._rankSlots", "Club._tableRank", "Lineup._defenders", "Lineup._forwards", "Lineup._goalkeeper", "Lineup._sixthSkater"); // A672/#939: Platz +0x15 = 1 (Aufstellung, Zufall)
         Set(Range(15), "ClubTeamValues.AttackForm", "ClubTeamValues.DayForm", "ClubTeamValues.DefenseForm");
         Set(TeamStrength, "ClubTeamValues.AttackCondition", "ClubTeamValues.AttackTechnique", "ClubTeamValues.DefenseCondition",
             "ClubTeamValues.DefenseTechnique");

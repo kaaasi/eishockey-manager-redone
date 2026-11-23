@@ -2,16 +2,39 @@ using EishockeyManager.Formats;
 
 namespace EishockeyManager.Core;
 
-/// <summary>Platz in der Aufstellung: Block 0–3 mit drei Stürmern und zwei Verteidigern, dazu der Torhüter.</summary>
+/// <summary>
+/// Platz in der Aufstellung: Block 0–3 mit drei Stürmern und zwei Verteidigern, dazu der Torhüter und der sechste Feldspielerplatz
+/// in der Abwehrhälfte von Block 0 (<see cref="SixthSkater"/>).
+/// </summary>
 public readonly record struct LineupSlot(int Block, PlayerRole Role, int Index)
 {
     public static LineupSlot Goalkeeper => new(0, PlayerRole.Goalkeeper, 0);
+
+    /// <summary>
+    /// Sechster Feldspielerplatz (#939, A937): dritter Platz der Abwehrhälfte in Reihe 1. [ORIGINAL] Das Gitter der Aufstellung hat je
+    /// Reihe sechs Zellen, die Abwehrhälfte die Zellen 3–5 (Datei 0x40478–0x404D7: Einordnen nach +0x15 in die erste freie Zelle der
+    /// Hälfte); sichtbar und belegbar ist Zelle 5 nur in Reihe 1 ohne Torhüter (Datei 0x404E8–0x404FD, 0x412CF–0x412DB, 0x413E8).
+    /// Kaderplatz +0x15 = 1 wie die übrigen Verteidiger der Reihe 1 (<see cref="LiveSquad.PositionOf"/>).
+    /// </summary>
+    public static LineupSlot SixthSkater => new(0, PlayerRole.Defender, Lineup.DefendersPerBlock);
+
+    /// <summary>Ist das der <see cref="SixthSkater"/>-Platz?</summary>
+    public bool IsSixthSkater => this == SixthSkater;
+
+    /// <summary>
+    /// <see cref="All"/> mit dem sechsten Feldspielerplatz zuerst: zum Leeren aller Plätze, damit der sechste Feldspieler nicht in einen
+    /// eben geleerten Abwehrplatz nachrückt (<see cref="Lineup.Clear"/>).
+    /// </summary>
+    public static IEnumerable<LineupSlot> ClearOrder => All.OrderByDescending(s => s.IsSixthSkater);
 
     public static LineupSlot Forward(int block, int index) => new(block, PlayerRole.Forward, index);
 
     public static LineupSlot Defender(int block, int index) => new(block, PlayerRole.Defender, index);
 
-    /// <summary>Alle 21 Plätze: je Block erst die Stürmer, dann die Verteidiger, zuletzt der Torhüter.</summary>
+    /// <summary>
+    /// Alle 22 Plätze: je Block erst die Stürmer, dann die Verteidiger (in Block 0 danach der <see cref="SixthSkater"/>), zuletzt der
+    /// Torhüter.
+    /// </summary>
     public static IEnumerable<LineupSlot> All
     {
         get
@@ -22,6 +45,8 @@ public readonly record struct LineupSlot(int Block, PlayerRole Role, int Index)
                     yield return Forward(b, i);
                 for (var i = 0; i < Lineup.DefendersPerBlock; i++)
                     yield return Defender(b, i);
+                if (b == 0)
+                    yield return SixthSkater;
             }
             yield return Goalkeeper;
         }
@@ -64,25 +89,41 @@ public sealed class Lineup
     private readonly Player?[,] _forwards = new Player?[Blocks, ForwardsPerBlock];
     private readonly Player?[,] _defenders = new Player?[Blocks, DefendersPerBlock];
     private Player? _goalkeeper;
-    private Player? _goalieStandIn;
+    private Player? _sixthSkater;
+
+    /// <summary>Spieler auf dem sechsten Feldspielerplatz (<see cref="LineupSlot.SixthSkater"/>).</summary>
+    public Player? SixthSkater => _sixthSkater;
 
     /// <summary>
     /// Feldspieler im Tor. [ORIGINAL] A672: Ohne freien Torhüter schreibt die Auto-Aufstellung dem Feldspieler aus der Torhütersuche
-    /// +0x15 = 1 (Datei 0x42718–0x42777): er steht in der ersten Abwehrreihe, hat aber keinen Platz der Aufstellung.
+    /// +0x15 = 1 (Datei 0x42718–0x42777): er steht in der Abwehrhälfte der Reihe 1. [ORIGINAL] #939: Das Original unterscheidet ihn
+    /// nicht von einem dritten Verteidiger der Reihe 1 (Gitteraufbau nach +0x15, Datei 0x40478–0x404D7); er steht deshalb auf dem
+    /// sechsten Feldspielerplatz (<see cref="LineupSlot.SixthSkater"/>), solange kein Torhüter aufgestellt ist.
     /// </summary>
-    public Player? GoalieStandIn => _goalieStandIn;
+    public Player? GoalieStandIn => _goalkeeper is null ? _sixthSkater : null;
 
-    internal void PlaceGoalieStandIn(Player player) => _goalieStandIn = player;
+    /// <summary>A672: Feldspieler aus der Torhütersuche der Auto-Aufstellung auf den sechsten Feldspielerplatz (+0x15 = 1).</summary>
+    internal void PlaceGoalieStandIn(Player player) => _sixthSkater = player;
 
-    /// <summary>Kaderplatz +0x15 des Spielers: Platz der Aufstellung (<see cref="LiveSquad.PositionOf"/>), Feldspieler im Tor 1, sonst 0 (Reserve).</summary>
-    public int PositionOf(Player player) =>
-        FindSlot(player) is { } slot ? LiveSquad.PositionOf(slot) : ReferenceEquals(player, _goalieStandIn) ? 1 : 0;
+    /// <summary>
+    /// Ist der sechste Feldspielerplatz offen (drei Abwehrplätze in Reihe 1)? [ORIGINAL] Kennzeichen <c>[bp−0xE]</c> des
+    /// Aufstellungsbildschirms: beim Aufbau gesetzt, wenn Reihe 1 sechs Spieler hat und die Torhüterzelle leer ist (Datei
+    /// 0x404E8–0x404FD), beim Öffnen durch einen Klick (Datei 0x414B4), gelöscht beim Leeren eines Platzes der Abwehrhälfte (Datei
+    /// 0x40B69–0x40C98, 0x41032–0x41049). [APPROX] Das Remake leitet es aus dem Zustand ab (Platz belegt, kein Torhüter) statt es je
+    /// Bildschirmaufbau zu führen; verschieden nur, wenn in Reihe 1 nach dem Öffnen ein Stürmer herausgenommen wird (Original: offen
+    /// bis zum nächsten Aufbau, dann geschlossen mit dem Spieler unsichtbar in Zelle 5; Remake: offen).
+    /// </summary>
+    public bool SixthSkaterOpen => _sixthSkater is not null && _goalkeeper is null;
+
+    /// <summary>Kaderplatz +0x15 des Spielers: Platz der Aufstellung (<see cref="LiveSquad.PositionOf"/>), sonst 0 (Reserve).</summary>
+    public int PositionOf(Player player) => FindSlot(player) is { } slot ? LiveSquad.PositionOf(slot) : 0;
 
     public Player? this[LineupSlot slot]
     {
         get => slot.Role switch
         {
             PlayerRole.Goalkeeper => _goalkeeper,
+            PlayerRole.Defender when slot.IsSixthSkater => _sixthSkater,
             PlayerRole.Defender => _defenders[slot.Block, slot.Index],
             _ => _forwards[slot.Block, slot.Index],
         };
@@ -91,6 +132,7 @@ public sealed class Lineup
             switch (slot.Role)
             {
                 case PlayerRole.Goalkeeper: _goalkeeper = value; break;
+                case PlayerRole.Defender when slot.IsSixthSkater: _sixthSkater = value; break;
                 case PlayerRole.Defender: _defenders[slot.Block, slot.Index] = value; break;
                 default: _forwards[slot.Block, slot.Index] = value; break;
             }
@@ -137,17 +179,58 @@ public sealed class Lineup
     {
         if (!Fits(slot, player))
             return false;
-        if (ReferenceEquals(player, _goalieStandIn))
-            _goalieStandIn = null;
         var previous = FindSlot(player);
         var occupant = this[slot];
         if (previous is { } p)
             this[p] = occupant is not null && Fits(p, occupant) ? occupant : null;
         this[slot] = player;
+        if (previous is { } q && this[q] is null)
+            MoveSixthSkaterInto(q);
         return true;
     }
 
-    public void Clear(LineupSlot slot) => this[slot] = null;
+    public void Clear(LineupSlot slot)
+    {
+        this[slot] = null;
+        MoveSixthSkaterInto(slot);
+    }
+
+    /// <summary>
+    /// Ein Abwehrplatz der Reihe 1 ist frei geworden: der sechste Feldspieler rückt hinein, der sechste Platz schließt. [ORIGINAL]
+    /// Datei 0x40B95–0x40B9B (Platz geleert) und 0x41043–0x41049 (aus der Kaderliste herausgenommen): Zelle 5 wandert in die frei
+    /// gewordene Zelle, <c>[bp−0xE]</c> = 0; +0x15 bleibt 1. Ohne offenen Platz baut der nächste Aufbau das Gitter nach +0x15 in
+    /// Kaderfolge neu (Datei 0x40478), auch dann rückt der dritte Spieler der Abwehrhälfte in die freie Zelle.
+    /// [APPROX] Leert man in Reihe 1 einen Sturmplatz, zeigt das Original den sechsten Feldspieler in der Sturmzelle (Datei 0x40B95
+    /// für jede Zelle der Reihe 1), sein +0x15 bleibt aber Abwehr; das Remake lässt ihn auf seinem Platz.
+    /// </summary>
+    private void MoveSixthSkaterInto(LineupSlot freed)
+    {
+        if (_sixthSkater is null || freed.Role != PlayerRole.Defender || freed.Block != 0 || freed.IsSixthSkater
+            || this[freed] is not null)
+            return;
+        this[freed] = _sixthSkater;
+        _sixthSkater = null;
+    }
+
+    /// <summary>
+    /// Öffnet den sechsten Feldspielerplatz für einen Feldspieler (#939, A937). [ORIGINAL] Datei 0x413C9–0x414B4: nur nach dem
+    /// zweiten vergeblichen Versuch (beide Hälften der Reihe voll), nur in Reihe 1, nur wenn der Platz nicht schon offen ist
+    /// (<c>[bp−0xE]</c> = 0) und die Torhüterzelle leer ist (<c>[bp−0x2A]</c> = 0); dann Zelle 5 (x 0x12A, y 0x2A) und die Abwehrhälfte
+    /// mit drei Zellen neu zeichnen. Die Art des Spielers zählt nicht: auch ein Stürmer kommt dorthin (+0x15 = 1, Abwehr).
+    /// </summary>
+    /// <returns>false, wenn der Platz nicht geöffnet werden kann.</returns>
+    public bool TryOpenSixthSkater(int line, Player player)
+    {
+        ArgumentNullException.ThrowIfNull(player);
+        if (line != 0 || player.Role == PlayerRole.Goalkeeper || _goalkeeper is not null || _sixthSkater is not null || !player.Available)
+            return false;
+        foreach (var slot in SlotsOfLine(0, PlayerRole.Forward).Concat(SlotsOfLine(0, PlayerRole.Defender)))
+            if (this[slot] is null)
+                return false;
+        Remove(player);
+        _sixthSkater = player;
+        return true;
+    }
 
     /// <summary>
     /// Reihe des Torhüterplatzes bei der Auswahl nach Reihe (im Original Block 4 neben den Reihen 0–3, Datei 0x40E8F);
@@ -175,7 +258,8 @@ public sealed class Lineup
     /// Plätze, die ein Klick in Reihe <paramref name="line"/> nacheinander versucht (A683, A490). [ORIGINAL] Datei 0x412A1–0x41386:
     /// erst die eigene Hälfte (Sturm Plätze 0–2, Abwehr 3–4); ist sie voll, Hälfte = 3 − Hälfte und ein zweiter Versuch (Datei
     /// 0x414D3–0x414ED): Ein Stürmer kommt auf einen freien Verteidigerplatz und umgekehrt. Die Torhüterreihe hat keine andere
-    /// Hälfte (Datei 0x413C0). Der sechste Feldspielerplatz in Reihe 1 fehlt hier (<see cref="Club.ClickPlayer"/>).
+    /// Hälfte (Datei 0x413C0). Der sechste Feldspielerplatz in Reihe 1 ist nie ein freier Platz der Suche: offen ist er nur belegt
+    /// (<see cref="SixthSkaterOpen"/>), geöffnet wird er erst nach beiden Versuchen (<see cref="TryOpenSixthSkater"/>).
     /// </summary>
     public static IEnumerable<LineupSlot> SearchSlots(int line, PlayerRole role)
     {
@@ -211,15 +295,12 @@ public sealed class Lineup
 
     public void Remove(Player player)
     {
-        if (ReferenceEquals(player, _goalieStandIn))
-            _goalieStandIn = null;
         if (FindSlot(player) is { } slot)
-            this[slot] = null;
+            Clear(slot);
     }
 
     public void ClearAll()
     {
-        _goalieStandIn = null;
         foreach (var slot in LineupSlot.All)
             this[slot] = null;
     }
@@ -286,6 +367,8 @@ public sealed class Lineup
         foreach (var slot in LineupSlot.All)
             if (this[slot] is { } p && (!p.Available || !squad.Contains(p)))
                 this[slot] = null;
+        foreach (var slot in SlotsOfLine(0, PlayerRole.Defender))
+            MoveSixthSkaterInto(slot);
     }
 }
 
@@ -411,7 +494,7 @@ public sealed partial class Club
     /// <summary>Alle Plätze leeren („C“); die Aufgestellten sind danach nicht eingesetzt.</summary>
     public void ClearLineup()
     {
-        foreach (var slot in LineupSlot.All)
+        foreach (var slot in LineupSlot.ClearOrder)
             ClearLineupSlot(slot);
     }
 
@@ -506,11 +589,11 @@ public sealed partial class Club
     /// <item>[ORIGINAL] Ist die eigene Hälfte der Reihe voll, versucht das Original die andere Hälfte (Hälfte = 3 − Hälfte, Datei
     ///   0x414D3–0x414ED; A683): ein Stürmer auf einen freien Verteidigerplatz und umgekehrt (<see cref="Lineup.SearchSlots"/>,
     ///   <see cref="Lineup.PlaceSkater"/>). Sonst „Kein / Platz mehr !“ (Datei 0x414BC–0x414C6).</item>
-    /// <item>[APPROX] Sind in Reihe 1 beide Hälften voll und ist kein Torhüter aufgestellt (Gitter Torhüterreihe Platz 4 = 0,
-    ///   <c>[bp−0x2A]</c>, Datei 0x413DD), öffnet das Original einen sechsten Feldspielerplatz (Abwehrhälfte Plätze 3–5, Datei
-    ///   0x413E8–0x414B4 und 0x412CF–0x412DB; Meldung „Schon 6 Feldspieler“ Datei 0x40EF7 beim Torhüter). Das Remake hat diesen
-    ///   Platz nicht (<see cref="LineupSlot"/>: zwei Verteidigerplätze je Reihe; das Spiel ohne Torhüter mit sechs Feldspielern
-    ///   bräuchten Spielrechnung und Aufstellungsbild) und meldet „Kein / Platz mehr !“.</item>
+    /// <item>[ORIGINAL] A937 (#939): Sind in Reihe 1 beide Hälften voll und ist kein Torhüter aufgestellt (Gitter Torhüterreihe Platz 4
+    ///   = 0, <c>[bp−0x2A]</c>, Datei 0x413DD), öffnet das Original den sechsten Feldspielerplatz (Abwehrhälfte Plätze 3–5, Datei
+    ///   0x413E8–0x414B4 und 0x412CF–0x412DB; <see cref="Lineup.TryOpenSixthSkater"/>), auch für einen Stürmer; eingesetzt wie sonst
+    ///   (Datei 0x41533). Ist er offen, weist ein Linksklick auf einen Torhüter bei gewählter Torhüterreihe mit „Schon 6 Feldspieler /
+    ///   auf dem Eis !“ ab (Datei 0x40EC4–0x40EFF, vor dem Herausnehmen).</item>
     /// </list>
     /// </summary>
     /// <param name="player">angeklickter Spieler (muss im Kader stehen).</param>
@@ -528,6 +611,9 @@ public sealed partial class Club
             return LineupResult.Suspended;
         if (!IsDressed(player) && DressedCount >= MaxDressed)
             return LineupResult.RosterFull;
+        // [ORIGINAL] Datei 0x40EC4–0x40EFF: Torhüter (+0x0F), Torhüterreihe gewählt, sechster Platz offen, Linksklick.
+        if (!right && player.Role == PlayerRole.Goalkeeper && line == Lineup.GoalkeeperLine && Lineup.SixthSkaterOpen)
+            return LineupResult.SixSkaters;
         if (Lineup.FindSlot(player) is { } from)
         {
             TakeOverDressed();
@@ -554,6 +640,13 @@ public sealed partial class Club
             // [ORIGINAL] andere Hälfte der Reihe (Datei 0x414D3–0x414ED), sonst wie AssignToLineup: eingesetzt (Datei 0x415B2).
             TakeOverDressed();
             Lineup.PlaceSkater(slot, player);
+            _dressed.Add(player.Id);
+            return LineupResult.Assigned;
+        }
+        // [ORIGINAL] A937: sechster Feldspielerplatz (Datei 0x413C9–0x414B4), eingesetzt wie sonst (Datei 0x41533/0x415B2).
+        if (Lineup.TryOpenSixthSkater(l, player))
+        {
+            TakeOverDressed();
             _dressed.Add(player.Id);
             return LineupResult.Assigned;
         }

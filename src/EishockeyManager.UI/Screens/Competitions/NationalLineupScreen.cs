@@ -131,7 +131,7 @@ public sealed class NationalLineupScreen : Screen
     {
         if (LineAt(x, y) is { } line)
             _selectedLine = line;
-        if (!OnSlot(x, y, out var slot) || coach.Formation[slot] is not { } placed)
+        if (!OnSlot(coach, x, y, out var slot) || coach.Formation[slot] is not { } placed)
             return;
         var wasAuto = coach.AutoLineupEnabled;
         if (placed.InjuredGames > 0 || placed.SuspendedGames > 0)
@@ -194,6 +194,9 @@ public sealed class NationalLineupScreen : Screen
             case LineupResult.NoRoom:
                 _message.ShowShort(ShortMessageTexts.NoRoom.Line1, ShortMessageTexts.NoRoom.Line2);
                 break;
+            case LineupResult.SixSkaters: // [ORIGINAL] Datei 0x40EF7 (#939, A875)
+                _message.ShowShort(ShortMessageTexts.SixSkaters.Line1, ShortMessageTexts.SixSkaters.Line2);
+                break;
         }
     }
 
@@ -206,11 +209,11 @@ public sealed class NationalLineupScreen : Screen
         return LineupScreen.GoalieBox.Contains(x, y) ? NationalCoach.GoalkeeperLine : null;
     }
 
-    private static bool OnSlot(int x, int y, out LineupSlot slot)
+    private static bool OnSlot(NationalCoach coach, int x, int y, out LineupSlot slot)
     {
         foreach (var s in LineupSlot.All)
         {
-            if (LineupScreen.SlotButton(s).Contains(x, y))
+            if (LineupScreen.SlotButton(s, coach.Formation.SixthSkaterOpen).Contains(x, y))
             {
                 slot = s;
                 return true;
@@ -286,7 +289,9 @@ public sealed class NationalLineupScreen : Screen
 
         foreach (var slot in LineupSlot.All)
         {
-            var r = LineupScreen.SlotButton(slot);
+            var r = LineupScreen.SlotButton(slot, coach.Formation.SixthSkaterOpen); // #939 (A875): wie beim Verein
+            if (r.W == 0)
+                continue;
             var number = coach.Formation[slot] is { } player ? coach.NumberOf(player)?.ToString() ?? "" : "";
             TeamUi.SmallButton(s, Assets, r.X, r.Y, number, pressed: false);
         }
@@ -303,7 +308,7 @@ public sealed class NationalLineupScreen : Screen
     /// </summary>
     private string? HoverText(NationalCoach coach, IReadOnlyList<Player> rows)
     {
-        if (OnSlot(_mouseX, _mouseY, out var slot))
+        if (OnSlot(coach, _mouseX, _mouseY, out var slot))
             return coach.Formation[slot] is { } sp ? $"Name: {sp.Name} ({sp.Age} Jahre)" : null;
         var layout = PlayerListLayout.Lineup(rows.Count);
         var row = PlayerHintLine.Row(layout, _mouseY);

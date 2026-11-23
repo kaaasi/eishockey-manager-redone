@@ -518,7 +518,7 @@ public sealed partial class GameState
                 ? LineupSlot.Goalkeeper
                 : forward
                     ? NextSlot(line - 1, PlayerRole.Forward, Lineup.ForwardsPerBlock)
-                    : NextSlot(line - 1, PlayerRole.Defender, Lineup.DefendersPerBlock);
+                    : NextSlot(line - 1, PlayerRole.Defender, line == 1 ? Lineup.DefendersPerBlock + 1 : Lineup.DefendersPerBlock);
             if (target is { } t)
                 club.Lineup.Place(t, player);
         }
@@ -539,7 +539,12 @@ public sealed partial class GameState
             if (n >= capacity)
                 return null;
             used[(block, role)] = n + 1;
-            return role == PlayerRole.Defender ? LineupSlot.Defender(block, n) : LineupSlot.Forward(block, n);
+            // [ORIGINAL] #939 (A937): Die Abwehrhälfte hat im Gitter drei Zellen (Datei 0x40478–0x404D7); der dritte Spieler der Reihe 1
+            // mit +0x15 = 1 (auch der Feldspieler im Tor, A672) steht auf dem sechsten Feldspielerplatz. [APPROX] In den Reihen 2–3 hat
+            // das Remake keinen dritten Abwehrplatz; das Original führt ihn dort unsichtbar in Zelle 5 (nicht beobachtet).
+            return role == PlayerRole.Defender
+                ? n == Lineup.DefendersPerBlock ? LineupSlot.SixthSkater : LineupSlot.Defender(block, n)
+                : LineupSlot.Forward(block, n);
         }
     }
 
