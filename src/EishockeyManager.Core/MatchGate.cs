@@ -107,9 +107,7 @@ public sealed partial class GameState
     /// spielfähige und alle späteren ziehen nichts. Die Abrechnung bucht die Zuschauer und danach die Strafe
     /// (<see cref="SettlePreparedGate"/>, wie bisher <see cref="SettleMatchGate"/>). Managerwert 100 = Verein mit
     /// <see cref="Club.ForfeitsMatch"/> eines nicht entlassenen Managers (<see cref="MarkShortHandedClubs"/>).
-    /// [APPROX] Die übrigen Schritte der Vorbereitung für diese Manager (Spiele zählen Datei 0x54918–0x5499E, Strafenzähler
-    /// 0x548EB–0x5490C, Belastung 50 … 150 Datei 0x549A2–0x549BB) bildet das Remake bei einer Spielwertung nicht nach (keine
-    /// Zufallszüge; <c>MatchEngine.Credit</c> endet bei der Spielwertung).
+    /// Diese Manager zählen außerdem Spiele und begrenzen die Belastung wie vor einem Spiel (<see cref="CountForfeitGames"/>, A961).
     /// </summary>
     internal void PrepareForfeitGate(Club home, Club away, MatchCompetition competition)
     {
@@ -138,13 +136,43 @@ public sealed partial class GameState
                 break;
             }
             if (manager.ClubIndex == home.Index || manager.ClubIndex == away.Index)
-                SquadSlotRules.RollPlayedLines(Clubs[manager.ClubIndex], Random); // Datei 0x548A8
+            {
+                var club = Clubs[manager.ClubIndex];
+                SquadSlotRules.RollPlayedLines(club, Random); // Datei 0x548A8
+                CountForfeitGames(club, competition); // A961
+            }
         }
         Prepared.Add(new PreparedGate(home.Index, away.Index, tableMatchDay, importance, spectators)
         {
             ShortHanded = shortHanded,
         });
         GateCounters.GetValue(this, _ => new GateCounter()).Prepared++;
+    }
+
+    /// <summary>
+    /// Rest des Managerblocks von 0x544C0 vor einer Spielwertung für einen Manager mit kleinerem Index als der nicht spielfähige
+    /// (A961, R23-E1 = A, Nutzer 23.11.2026; im gespielten Spiel zählt <c>MatchEngine.Credit</c> dasselbe nach dem Spiel, das bei
+    /// der Spielwertung endet). Zieht keinen Zufall.
+    /// <list type="bullet">
+    /// <item>[ORIGINAL] Spiele: Kaderplatzschleife Datei 0x54918–0x5499E zählt jeden Aufgestellten (+0x0A ≠ 0 und +0x15 ≠ 0) im
+    ///   Feld des Wettbewerbs (+0x06/+0x1C + Wettbewerb; Argument 1 = Pokal, 8 = Europapokal, sonst Liga), Pool +0x1C nur bei
+    ///   Wettbewerb 0 (Datei 0x5492E–0x54948); wie <see cref="Player.CountGame"/> mit <see cref="CompetitionSlots.Of"/>.</item>
+    /// <item>[ORIGINAL] Belastung jedes Kaderplatzes auf 50 … 150 (Datei 0x549A2–0x549BB, <see cref="TrainingRules.ClampStrain"/>).</item>
+    /// <item>[ORIGINAL] Kennzeichen „im Spiel“ DGROUP 0x2D6 + Manager = 5 (Datei 0x54821): ohne Zustand im Remake, der Wert ist
+    ///   immer 5 (Startwert, einziger Schreiber; <see cref="MatchIntervention.InMatchFlag"/>).</item>
+    /// <item>[ORIGINAL] Strafenzähler +0x0D − 1 bei Status +0x09 Bit 0 für die Markt-Plätze des Managers (Satz 4, DGROUP 0x7623,
+    ///   Pool +0x1A = Manager, Datei 0x5483B–0x54897) und seine Kaderplätze (Datei 0x548EB–0x5490C), beide nur bei Wettbewerb
+    ///   0 (<c>[bp+0xA] = 0</c>): wie im gespielten Spiel ohne Zustand im Remake – Bit 0 und +0x0D gelten nur, solange der Spieler
+    ///   auf der Strafbank sitzt, und nach einem Spiel sitzt dort niemand (<c>MatchEngine.PenaltyBoxQuery.cs</c>, dortiges
+    ///   [APPROX]).</item>
+    /// </list>
+    /// </summary>
+    private static void CountForfeitGames(Club club, MatchCompetition competition)
+    {
+        var slot = CompetitionSlots.Of(competition);
+        foreach (var p in club.Lineup.Players)
+            p.CountGame(slot); // Datei 0x54918–0x5499E
+        TrainingRules.ClampStrain(club.Players); // Datei 0x549A2–0x549BB
     }
 
     /// <summary>

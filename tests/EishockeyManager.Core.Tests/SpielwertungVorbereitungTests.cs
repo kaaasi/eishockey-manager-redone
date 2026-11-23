@@ -92,4 +92,71 @@ public class SpielwertungVorbereitungTests
         Assert.Equal(0, m1.Money - money1);
         Assert.Equal(0, game.UnsettledGates);
     }
+
+    /// <summary>
+    /// A961 (R23-E1 = A, Nutzer 23.11.2026): Die Manager mit kleinerem Index als der nicht spielfähige durchlaufen in 0x544C0 vor
+    /// dem Abbruch den ganzen Managerblock. [ORIGINAL] Kaderplatzschleife Datei 0x548A8–0x549BB: Aufgestellte (+0x0A ≠ 0, +0x15 ≠ 0)
+    /// zählen ein Spiel im Feld des Wettbewerbs (Datei 0x54918–0x5499E; 1 = Pokal, 8 = Europapokal, sonst Liga), danach Belastung
+    /// aller Kaderplätze auf 50 … 150 (Datei 0x549A2–0x549BB). Der nicht spielfähige Manager zählt nichts (Ende 0x547BD).
+    /// Vorher rot: Bei einer Spielwertung zählte kein Manager Spiele oder begrenzte die Belastung (<c>MatchEngine.Credit</c> endet).
+    /// </summary>
+    [Theory]
+    [InlineData(MatchCompetition.League)]
+    [InlineData(MatchCompetition.DebCup)]
+    public void AwayShortHanded_LowerIndexHomeManager_CountsGamesAndClampsStrain(MatchCompetition competition)
+    {
+        var game = TwoManagers(2, 3);
+        var (m0, m1) = (game.Managers[0], game.Managers[1]);
+        var (home, away) = (game.Clubs[m0.ClubIndex], game.Clubs[m1.ClubIndex]);
+        away.ForfeitsMatch = true;
+        var lineup = home.Lineup.Players.ToHashSet();
+        Assert.NotEmpty(lineup);
+        var bench = home.Players.Where(p => !lineup.Contains(p)).ToList();
+        Assert.NotEmpty(bench);
+        var (low, high) = (home.Players.First(lineup.Contains), bench[0]);
+        (low.Strain, high.Strain) = (10, 200);
+        foreach (var p in away.Players)
+            p.Strain = 10;
+        var homeBefore = home.Players.ToDictionary(p => p, p => (p.Games, p.CupGames, p.EuropeGames));
+        var awayBefore = away.Players.Select(p => (p.Games, p.CupGames, p.EuropeGames)).ToList();
+
+        var report = MatchEngine.PlayWithEvents(game, home, away, competition, knockOut: false, new Random(1));
+        Assert.True(report.Forfeit);
+
+        var cup = competition == MatchCompetition.DebCup ? 1 : 0;
+        foreach (var p in home.Players)
+        {
+            var (games, cupGames, europeGames) = homeBefore[p];
+            var counted = lineup.Contains(p) ? 1 : 0;
+            Assert.Equal((games + counted, cupGames + counted * cup, europeGames), (p.Games, p.CupGames, p.EuropeGames));
+            Assert.InRange(p.Strain, TrainingRules.MinStrain, TrainingRules.MaxStrain);
+        }
+        Assert.Equal((TrainingRules.MinStrain, TrainingRules.MaxStrain), (low.Strain, high.Strain));
+        Assert.Equal(awayBefore, away.Players.Select(p => (p.Games, p.CupGames, p.EuropeGames)).ToList());
+        Assert.All(away.Players, p => Assert.Equal(10, p.Strain));
+    }
+
+    /// <summary>
+    /// A961: Hat der nicht spielfähige Manager den kleineren Index, endet 0x544C0 bei ihm (Datei 0x54589 bzw. 0x547AA): Kein Verein
+    /// der Paarung zählt Spiele oder begrenzt die Belastung.
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void LowerIndexShortHanded_NoGamesNoStrainClamp(bool firstManagerAway)
+    {
+        var game = TwoManagers(2, 3);
+        var (first, second) = (game.Clubs[game.Managers[0].ClubIndex], game.Clubs[game.Managers[1].ClubIndex]);
+        first.ForfeitsMatch = true;
+        var (home, away) = firstManagerAway ? (second, first) : (first, second);
+        var players = home.Players.Concat(away.Players).ToList();
+        foreach (var p in players)
+            p.Strain = 10;
+        var before = players.Select(p => p.Games).ToList();
+
+        var report = MatchEngine.PlayWithEvents(game, home, away, MatchCompetition.League, knockOut: false, new Random(1));
+        Assert.True(report.Forfeit);
+        Assert.Equal(before, players.Select(p => p.Games).ToList());
+        Assert.All(players, p => Assert.Equal(10, p.Strain));
+    }
 }
