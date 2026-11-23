@@ -126,7 +126,7 @@ Modell der Spur, Fixläufe ohne Befund Sonnet 5.5. Plan-Review Sonnet 5.5. Gesam
 - **Voraussetzung:** alle übrigen Spuren gemergt. **Teile:** 1. P3-Issues der Runde und #954 (Wortlaut `[ORIGINAL]` mit Fundstelle
   bzw. Aussage über das Remake-Datenmodell); 2. 24 X-Funktionszeilen (F-IDs ohne Markerzeile) umklassifizieren oder ausblenden;
   Klassen aus `abgleich-dosbox-22` übernehmen; 3. `markerliste.py --write`, `funktionskarte.py --write` (Ziel V = 0, X = 0).
-- **Erstreview:** Sonnet 5.5. **Status:** wartet auf Start.
+- **Erstreview:** Sonnet 5.5. **Status:** in Arbeit (Bearbeiter Claude Code, Branch `paket/pruefung-karte`, Base `4ae1735`).
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
