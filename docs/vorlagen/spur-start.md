@@ -37,6 +37,8 @@ Plan>`, Head vorher `<sha>`“ (#712/N3). Am Ende (`zusammenarbeit.md` §5 Punkt
 Befunde, Soll-Modell nach „Modellwahl“), sonst – nur P2/P3 oder ohne Befund – Label `leitstelle-delta`. Mit dem Push des neuen
 Heads `review-nein` entfernen. Widerspricht der Lauf einem Befund mit eigenem Beleg: `beleg-strittig`, beide Belege in der
 Übergabe, für diesen Punkt keine Nachprüfung.
+Base-Wechsel nur per Rebase und `git push --force-with-lease`, kein Merge-Commit; ist Force-Push gesperrt, Label `spur-wartet`
+mit genauer Fehlermeldung (wie „Teile und Fortsetzung“ Schritt 4).
 
 ## Ablauf für den Agenten
 
@@ -68,11 +70,11 @@ oder einen einzelnen Folgeteil nennt (dann ohne Schritt 5).
 2. **Ein Branch, ein PR (ab Runde 15):** Teil 1 legt `paket/<spur>` von aktuellem `main` an und öffnet den Draft-PR (Base `main`)
    mit der Teilliste als Aufgabenliste. Jeder Teil sind Commits auf diesem Branch; eine Fortsetzung übernimmt ihn nach der
    Übergabe (Übernahmekommentar, `zusammenarbeit.md` §3) – nacheinander, nie gleichzeitig. Vor dem Push auf `origin/main`
-   rebasen, dann `git push --force-with-lease`; wird der Force-Push abgelehnt (geplante Läufe, beobachtet Runde 15), `origin/main`
-   per Merge-Commit einbringen und normal pushen.
+   rebasen. Base-Wechsel nur per Rebase und `git push --force-with-lease`, kein Merge-Commit;
+   ist Force-Push gesperrt, Label `spur-wartet` mit genauer Fehlermeldung (Teil blockiert, Schritt 4).
 3. **Teil abschließen:** grünes `--schnell`, gepusht, Teil im PR abgehakt, Übergabe mit „Fortsetzungen verbraucht: n von 3“.
    Der PR bleibt Draft, bis alle Teile fertig sind; dann den nächsten Teil im selben Lauf beginnen, solange Zeit bleibt.
-4. **Teil blockiert** (kein grünes `--schnell`, Beleg fehlt, Referenz-Repo unerreichbar, fremde Datei nötig): Draft mit
+4. **Teil blockiert** (kein grünes `--schnell`, Beleg fehlt, Referenz-Repo unerreichbar, fremde Datei nötig, Force-Push gesperrt): Draft mit
    Übergabe, Label `spur-wartet`, in der Übergabe „blockiert – Entscheidung Nutzer“ und Grund. **Keine Fortsetzung**, den Teil
    nicht erneut versuchen.
 5. **Fortsetzung anfordern** (nur wenn Teile offen sind, nichts blockiert und n < 3; R15-E4): `spur-wartet`, in der Übergabe
