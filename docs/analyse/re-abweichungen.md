@@ -438,4 +438,60 @@ Play-Off Spiele (Art 2): Kopfzeile bis y 28, Zeilen (Grundlinie) [55, 62, 69, 76
 
 ## Teil 2 – Kern
 
-(offen)
+### Aufräumkonzept K2 – Strafbank-Abfrage beim Bundestrainer (`Squad.Lineup.InMatch.cs` ↔ `CupsNational.Lineup.InMatch.cs`)
+
+`python3 tools/reverse-engineering/abweichungen/k2_strafbank_bundestrainer.py` (Aufstellung 0x40364 wie in b13, Status
++0x09 & 3 des Kaderplatzes 0, ein Klick in seine Zeile):
+
+```
+Verein (Manager 0)        Status 0 links : Meldung „Keine Reihe“ / „ausgew{hlt !“
+Verein (Manager 0)        Status 0 rechts: Meldung -
+Verein (Manager 0)        Status 1 links : Meldung „Spieler ist“ / „Gesperrt.“
+Verein (Manager 0)        Status 1 rechts: Meldung -
+Verein (Manager 0)        Status 2 links : Meldung „Spieler ist“ / „Verletzt.“
+Verein (Manager 0)        Status 2 rechts: Meldung -
+Nationalteam (Manager 5)  Status 0 links : Meldung „Keine Reihe“ / „ausgew{hlt !“
+Nationalteam (Manager 5)  Status 0 rechts: Meldung -
+Nationalteam (Manager 5)  Status 1 links : Meldung „Spieler ist“ / „Gesperrt.“
+Nationalteam (Manager 5)  Status 1 rechts: Meldung -
+Nationalteam (Manager 5)  Status 2 links : Meldung „Spieler ist“ / „Verletzt.“
+Nationalteam (Manager 5)  Status 2 rechts: Meldung -
+```
+
+- **Urteil: Abweichung bestätigt.** Die Abfrage Datei 0x40DAF–0x40E27 liest den Status des Kaderplatzes des Managers am Zug
+  (DGROUP 0x5DC3 + 0x618 · DGROUP 0xA70E + 0x34 · Platz, +0x09 & 3) und meldet bei 1 „Spieler ist / Gesperrt.“, bei 2
+  „Spieler ist / Verletzt.“ (Linksklick) – für Manager 5 genauso wie für einen Verein. Den Status 1 setzt die Strafe
+  0x35818 im Satz des Managers der Mannschaft (Teamfeld +0x16 = Manager + 1, beim Land des Bundestrainers 6 → Satz 5;
+  Datei 0x35AB8–0x35AC6, Kaderplatz Datei 0x35B3C–0x35B5F, `or [es:bx+0x09],1` Datei 0x35C02; gelesen, nicht
+  nachgebildet). Ein Rechtsklick in die Namensspalte meldet nichts (dort öffnet das Original die Spielerinfo, B13).
+- **Vorgabe (`aufstellung`):** `NationalCoach.ClickPlayerInMatch` prüft die Strafbank wie `Club.ClickPlayerInMatch`
+  (`MatchEngine.PenaltyBoxMinutes` für das Land) und gibt `LineupResult.Suspended` zurück. Roter Test: Bundestrainer im
+  Live-Spiel, Spieler seines Landes auf der Strafbank, Linksklick → „Gesperrt.“, Aufstellung unverändert.
+
+### Aufräumkonzept K11 – Rollenwert +0x18 (`OriginalExport.Squads.cs` 0/30/70 ↔ `MatchEngine.Statistics.cs` 0/33/83)
+
+`python3 tools/reverse-engineering/abweichungen/k11_rollenwert.py` (Poolaufbau Datei 0x5B391–0x5B4A9, Zufall 0x0C037 einmal
+auf die untere, einmal auf die obere Grenze gesetzt):
+
+```
+Zufallsaufrufe 0x0C037: 175, Grenzen [(0, 16)]
+   Plätze   0–  0: nicht geschrieben min 238 max 238  Beispiel [238]
+   Plätze   1– 20: 0 (Torhüter)      min   0 max   0  Beispiel [0, 0, 0, 0]
+   Plätze  21– 96: Abwehr            min  25 max  41  Beispiel [28, 41, 25, 34]
+   Plätze  97–179: Sturm             min  75 max  91  Beispiel [78, 91, 75, 84]
+   Plätze 180–183: 0 (Torhüter)      min   0 max   0  Beispiel [0, 0, 0, 0]
+   Plätze 184–190: Abwehr            min  25 max  41  Beispiel [34, 28, 41, 25]
+   Plätze 191–199: Sturm             min  75 max  91  Beispiel [75, 84, 78, 91]
+```
+
+- **Urteil: Abweichung bestätigt (beide Werte).** Der Rollenwert ist eine Zahl je Poolplatz, einmal beim Poolaufbau
+  gewürfelt und danach nie geändert: Torhüter 0, Abwehr 25 + random(0, 16) = 25 … 41, Sturm 75 + random(0, 16) = 75 … 91
+  (Platz 0 bleibt unbeschrieben). Einziger Schreiber im Spielcode; die übrigen Treffer von `+0x18` sind Kaderplätze
+  (Verhandlungssperre). Leser: Torschützen/Vorlagen 0x5077–0x52CB (Rollenwert + random(5, 25) > random(10, 99)) und die
+  Gruppe 0x04180 (Rollenwert / 25). Das Remake würfelt den Wert schon (`TransferPoolRules.RollRoleValue`, verbraucht nur
+  den Zufall), führt ihn aber nicht; Export (30/70) und Statistik (33/83) nehmen verschiedene feste Werte.
+- **Vorgabe (Aufräumen #936, Verhaltensänderung):** ein Feld `Player.RoleValue`, gesetzt in `RollRoleValue` (Poolplätze)
+  bzw. mit derselben Regel für Spieler außerhalb des Pools; Export `e[0x18]` und Statistik lesen das Feld. Braucht eine
+  Spielstandmigration. Roter Test: Poolaufbau mit festem Startwert → Rollenwerte der Verteidiger in 25 … 41, Stürmer in
+  75 … 91, Export Byte +0x18 = Feld, Statistik-Kandidatenwurf mit dem Feld.
+
