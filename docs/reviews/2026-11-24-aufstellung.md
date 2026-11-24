@@ -29,15 +29,11 @@ Speichern/Laden und Mehrsaisonprobe halten. Alle drei Läufe von `tools/pruefen.
   gehören zur parallelen Spur `saison-geld`. Hier ändert sich je eine Zeile. Die Leitstelle sollte das beim Rebase von
   `saison-geld` beachten.
 
-Außerhalb der Dateigrenzen geprüft und minimal:
-
-- `MatchEngine.Live.cs`: zwei Aufrufe `CountAtKickOff`, zwei Bedingungen (Freigabe der Leitstelle).
-- `MatchEngine.National.cs`: Parameter `countGames`.
-- `SaveGame.cs`/`SaveGame.Reader.cs`: Schema 64, Bindung nach dem Laden.
-- `OriginalImport*`/`OriginalExport*`: je eine Zeile.
-- `CupsNational.GameState.cs`, `MatchEngine.PenaltyBoxQuery.cs`: nur Kommentare.
-- Neue Dateien: `MatchEngine.LiveCredit.cs`, `Squad.Lineup.Grid.cs`, `Squad.LastLine.cs`, `Squad.AutoLineup.Manager.cs`,
-  `SaveGame.Migration.Aufstellung.cs`.
+Außerhalb der Dateigrenzen geprüft und minimal: `MatchEngine.Live.cs` (zwei Aufrufe `CountAtKickOff`, zwei Bedingungen;
+Freigabe der Leitstelle), `MatchEngine.National.cs` (Parameter `countGames`), `SaveGame.cs`/`SaveGame.Reader.cs` (Schema 64,
+Bindung nach dem Laden), `OriginalImport*`/`OriginalExport*` (je eine Zeile), `CupsNational.GameState.cs` und
+`MatchEngine.PenaltyBoxQuery.cs` (nur Kommentare); dazu fünf neue Dateien (`MatchEngine.LiveCredit.cs`, `Squad.Lineup.Grid.cs`,
+`Squad.LastLine.cs`, `Squad.AutoLineup.Manager.cs`, `SaveGame.Migration.Aufstellung.cs`).
 
 **B31 / AGENTS.md §4:** `LineupScreen.Enter` baut nur das Gitter (`LineupGrid.Build`, nur lesend). Das Kern-Ereignis kommt nur
 beim Verlassen: `Leave` → `OnLineupLeft`, `TacticsScreen.Close` → `Leave` vor der Neuaufstellung (Reihenfolge A960).
