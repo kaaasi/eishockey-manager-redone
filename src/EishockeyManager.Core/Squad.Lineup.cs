@@ -307,7 +307,11 @@ public sealed class Lineup
 
     /// <summary>
     /// Auto-Aufstellung („A“): bester Torhüter, dann je Block die stärksten freien Verteidiger und Stürmer.
-    /// [APPROX] Reihenfolge nach Spielwert (Stärke und Energie); die Auswahlregel des Originals ist nicht rekonstruiert.
+    /// [ORIGINAL] A165: Für Managervereine folgt nach dem Kaderaufbau die Neuaufstellung 0x426BC (Spielvorbereitung 0x28165, Aufruf
+    /// Datei 0x2A067; 0x426BC setzt zuerst +0x0A aller 29 Plätze auf 0, Datei 0x426E7–0x42706), das Ergebnis hängt also nicht von
+    /// dieser Reihenfolge ab (Beleg `k07_automatik.py`). [APPROX] Computervereine: Ergänzung des Remakes – das Original führt für
+    /// sie keine Kaderplätze (Sätze nur für die Manager 0–3, Markt 4, Bundestrainer 5); Reihenfolge nach Spielwert (Stärke und
+    /// Energie).
     /// </summary>
     public void AutoFill(IEnumerable<Player> squad, int blocks = AutoBlocks)
     {

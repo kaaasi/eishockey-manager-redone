@@ -129,8 +129,8 @@ public sealed class LineupScreen : Screen
         HandleInput(input);
         // [ORIGINAL] em.exe Datei 0x40ADE (Integration Runde 11, wettbewerbe-spiel Teil 8): Ein Eingriff von Hand schaltet die
         // Einstellung „automatisch aufstellen“ ab und meldet „Auto-Aufstellung / ist deaktiviert !“ (DGROUP 0x124D; Texte
-        // Datei 0x1AE4B/0x1AE5C). [APPROX] Trifft der Eingriff mit einer anderen Meldung zusammen, gewinnt diese Meldung.
-        // [ORIGINAL] Kommt eine zweite Meldung hinzu (Datei 0x40B55, 0x40EB9), steht „ist deaktiviert !“ vorn, die zweite danach.
+        // Datei 0x1AE4B/0x1AE5C). [ORIGINAL] Kommt eine zweite Meldung hinzu (Datei 0x40B55, 0x40EB9), steht „ist deaktiviert !“
+        // vorn, die zweite danach – auch wenn der Klick nichts ändert (A807, Beleg `k07_meldung.py`, Datei 0x40ACF–0x40B55).
         if (wasAuto && !Club.AutoLineupEnabled)
         {
             if (_message.Short is { } second)

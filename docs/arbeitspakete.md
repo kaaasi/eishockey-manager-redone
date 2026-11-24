@@ -119,7 +119,7 @@ Gesamtreview ChatGPT (GPT-6.2 Astra) mit Claude-Auswertung.
 - **Dateien:** `Core/Squad.Lineup*.cs`, `Squad.AutoLineup.cs`, `Squad.SlotValues.cs`, `CupsNational.Lineup.InMatch.cs`,
   `MatchEngine.LiveLineup.cs`, `GameState.TacticsLeft.cs`, `GameState.DailyRun.cs` (minimal); `UI/Screens/Team/LineupScreen.cs`,
   `TacticsScreen.cs`, `Competitions/NationalLineupScreen.cs`; Tests. **Prüfung:** `--schnell`; Mehrsaisonprobe (Kader).
-- **Status:** in Arbeit (Claude Code, geplanter Lauf 24.11.2026), Branch `paket/aufstellung`, Base `0c1811f`.
+- **Status:** PR #1004 (Draft), Base `0c1811f`. Teil 1 (B31) fertig; Teil 3: K2 und B13 fertig, S07 blockiert (braucht `MatchEngine.Live.cs` `CreditLineup`, außerhalb der Dateigrenzen); Teil 2: nur Marker A807/A165, Rest blockiert (K07 (1)/(2)/(4) brauchen Spielstandfelder je Manager bzw. je Spieler +0x15 – Migration und `SaveGame*` nicht in Plan und Dateigrenzen, keine Schemanummer zugeteilt) – Entscheidung Nutzer/Leitstelle.
 
 ### Spur `saison-geld` – Saisonwechsel, Geld, Platzwahl (Welle 1)
 
