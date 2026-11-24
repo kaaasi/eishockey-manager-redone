@@ -36,7 +36,7 @@ public sealed partial class GameState
                 var club = Clubs[manager.ClubIndex];
                 WriteTacticValues(w, club.Tactics, m);
                 // [ORIGINAL] 0x375 + 2 · m aktuell, 0x376 + 2 · m gesichert (gleich außerhalb der Spiele des Tages).
-                w.Block("0375")[2 * m] = w.Block("0375")[2 * m + 1] = (byte)(club.AutoLineupEnabled ? 1 : 0);
+                w.Block("0375")[2 * m] = w.Block("0375")[2 * m + 1] = (byte)(manager.AutoLineupEnabled ? 1 : 0); // A936
             }
         }
         // [ORIGINAL] A614: nächste Vertragsnummer der Banden DGROUP 0x17C (Spielstart 1, FILE76 nach zwei Bandenverträgen 3).

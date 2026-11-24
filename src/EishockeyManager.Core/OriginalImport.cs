@@ -467,6 +467,7 @@ public sealed partial class GameState
         var pool = save.Block("far:8253");
         var old = club.Players.ToList();
         var players = new List<(Player Player, int Line, bool Forward, bool Dressed)>();
+        var lastLines = new Dictionary<Player, int>();
         var places = Enumerable.Range(0, OriginalSaveGame.SquadSlotsPerManager)
             .Select(i => (Offset: record * 0x618 + i * OriginalSaveGame.SquadSlotLength, Listed: false))
             .Concat(Enumerable.Range(0, OriginalSaveGame.SquadSlotsPerManager)
@@ -493,6 +494,7 @@ public sealed partial class GameState
             if (listed)
                 continue; // A380: nur auf dem Markt-Platz
             players.Add((player, slot[0x15] & 0x0F, (slot[0x15] & 0x80) != 0, slot[0x0A] != 0));
+            lastLines[player] = slot[0x15];
         }
 
         club.ClearLineup();
@@ -531,6 +533,10 @@ public sealed partial class GameState
         foreach (var (player, _, _, dressed) in players)
             if (dressed && !club.Lineup.Contains(player) && club.DressedCount < Club.MaxDressed)
                 club.Dress(player);
+        // A939: +0x15 der Plätze ohne Platz in der Aufstellung (Verletzte, nicht Ausgewählte der Neuaufstellung) bleibt erhalten
+        // (Player.LastLine, Squad.LastLine.cs); der Export schreibt es zurück (Club.SlotLine).
+        foreach (var (player, line) in lastLines)
+            player.LastLine = club.Lineup.Contains(player) ? 0 : line;
         return;
 
         LineupSlot? NextSlot(int block, PlayerRole role, int capacity)

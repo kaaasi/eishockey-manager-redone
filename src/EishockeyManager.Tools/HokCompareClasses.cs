@@ -215,6 +215,8 @@ public static class HokCompareClasses
         Set(NotInHok, "Club.WatchMode", "GameState._worldCupOptionBackup"); // Teil 2: DGROUP 0x22C (021D+15), Feldkarte U
         // A847 (Spur einzelpunkte): Managerbyte 0x9744; Export und Import behandeln es noch nicht.
         Set(NotInHok, "Manager.OneSeasonFlag");
+        // Spur aufstellung (Runde 25, A936): 0x375 + 2 · m am Manager; gleich dem Wert des Vereins.
+        Set(Exact, "Manager.AutoLineupEnabled");
         Set(InSeason, "Club.League");
         Set(Random, "Club.ForfeitsMatch", "Club.LeaguePenaltyMinutes", "Club.Lineup", "Club.SeriesCurrent", "Club._dressed",
             "Club._rankSlots", "Club._tableRank", "Lineup._defenders", "Lineup._forwards", "Lineup._goalkeeper", "Lineup._sixthSkater"); // A672/#939: Platz +0x15 = 1 (Aufstellung, Zufall)
@@ -231,7 +233,7 @@ public static class HokCompareClasses
             "Player.ClubGoalsCarry", "Player.ClubCupGoalsCarry", "Player.ClubEuropeGoalsCarry", "Player.CupGames",
             "Player.EuropeGames", "Player.CupGoals", "Player.EuropeGoals", "Player.Games", "Player.GoalieMinutes", "Player.Goals",
             "Player.GoalsAgainst", "Player.InjuredGames", "Player.InjuryKind", "Player.Penalties2", "Player.Penalties5", "Player.PoolForm",
-            "Player.PoolCondition", "Player.PoolTechnique", "Player.PlayedLine",
+            "Player.PoolCondition", "Player.PoolTechnique", "Player.PlayedLine", "Player.LastLine",
             "Player.Trend", "Player.TrendControl", "Player.TrendScore", "Player.UnsolicitedOffer");
         Set(Range(15), "Player.Condition", "Player.Form");
         Set(Range(10), "Player.Technique");
@@ -281,7 +283,7 @@ public static class HokCompareClasses
         // 0x5C3E3/0x5B9DD; #733). Folgen der Handaufstellung: Konto (Strafen 0:2 und 200.000 DM je Spiel mit weniger als neun,
         // Platz 12; mit dieser Aufstellung im Bereich, AbgleichFixMoneyTests), Automatik, Teamwerte und verdeckte Werte des
         // Managervereins. Die Belastung der Spieler bleibt verglichen (#730, Spur abgleich-rest).
-        ["FILE13→FILE14"] = ["Managers[0].Money", "Clubs[6 KREFELDER EV]._autoLineup", "Clubs[6 KREFELDER EV].TeamValues.*",
+        ["FILE13→FILE14"] = ["Managers[0].Money", "Clubs[6 KREFELDER EV]._autoLineup", "Managers[0].AutoLineupEnabled", "Clubs[6 KREFELDER EV].TeamValues.*",
             "Clubs[6 KREFELDER EV].Players[*].HiddenSkill*"],
         // FILE46: „Saisonende und Vertragsverhandlung am 30.04.1994 mit Nichtverlängerung von KJELLBERG“.
         ["FILE44→FILE46"] = ["Clubs[*].Players[KJELLBERG]*", "Clubs[*].Players.Count", "Clubs[*].Lineup*"],

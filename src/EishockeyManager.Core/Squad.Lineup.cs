@@ -63,7 +63,7 @@ public sealed partial class GameState
     {
         foreach (var club in Clubs)
         {
-            club.Lineup.RemoveUnavailable(club.Players);
+            club.RemoveUnavailableFromLineup();
             if (!Managers.Any(m => m.ClubIndex == club.Index))
                 club.Lineup.FillGaps(club.Players);
         }
@@ -403,9 +403,11 @@ public sealed class Lineup
 ///   DAFFNER) – nach der ersten Änderung von Hand bleibt er nicht eingesetzt. Aufgestellte zählen immer als eingesetzt
 ///   (Aufstellen setzt ein, Datei 0x415B2; Platz leeren nimmt heraus, FILE06). [ORIGINAL] Auch bei ausgeschalteter
 ///   Einstellung (DGROUP 0x375 = 0): Kauf KJELLBERG (FILE35) und Leihe VALLIERE (FILE41) ohne „eingesetzt“ und ohne Reihe.
-///   A091: Kauf und Leihe hinten in der Art-Gruppe, Verkauf und Transferliste rücken auf (FILE35/37A/41). Bewusste Modellabweichung: Ein Verletzter behält im Original seine Reihe +0x15 und verliert nur +0x0A
-///   (Datei 0x5C50, FILE24 STEFAN); das Remake nimmt ihn aus der Aufstellung (<see cref="RefillLineup"/>). Gleichwertig,
-///   solange kein Leser +0x15 ohne +0x0A auswertet; betrifft auch Export und Import von Spielständen.</item>
+///   A091: Kauf und Leihe hinten in der Art-Gruppe, Verkauf und Transferliste rücken auf (FILE35/37A/41). Ein Verletzter behält im Original seine Reihe +0x15 und verliert nur +0x0A
+///   (Datei 0x5C50, FILE24 STEFAN); das Remake nimmt ihn aus der Aufstellung (<see cref="RefillLineup"/>) und führt +0x15 in
+///   <see cref="Player.LastLine"/> weiter ([ORIGINAL] A939: Spielabrechnung, Export und Import lesen <see cref="SlotLine"/>).
+///   [APPROX] Setzt man einen solchen Spieler von Hand ein (Rechtsklick, +0x0A = 1), zählt ihn das Original in seiner alten
+///   Reihe mit (Datei 0x54918, +0x0A ≠ 0 und +0x15 ≠ 0); im Remake bleibt er Ersatz.</item>
 /// <item>Eingesetzt wirkt seit PR #440 im Spiel (<c>LiveSquad.Create</c>).</item>
 /// </list>
 /// </remarks>
@@ -455,6 +457,7 @@ public sealed partial class Club
     /// <summary>Erste Änderung von Hand: die bisher automatisch Eingesetzten festhalten.</summary>
     private void TakeOverDressed()
     {
+        ForgetLastLinesOfLineup(); // A939: von Hand Herausgenommene +0x15 = 0 (Squad.LastLine.cs)
         if (_dressedByHand)
             return;
         var current = Dressed;
@@ -510,7 +513,7 @@ public sealed partial class Club
     /// </summary>
     public void AutoLineup()
     {
-        _autoLineup = true;
+        AutoSetting = true;
         ApplyAutoLineup();
     }
 
@@ -518,7 +521,7 @@ public sealed partial class Club
     /// Taktikbildschirm, Knopf 0 (oben links, „AUTOM.“/„MANUELL“): schaltet die Einstellung um. [ORIGINAL] A673/A681: Datei
     /// 0x47CA0–0x47CE5 (Zeiger DGROUP 0x375 + 2 · Manager), Aufruf der Neuaufstellung erst beim Verlassen (<see cref="CloseTactics"/>).
     /// </summary>
-    public void SetAutoLineup(bool on) => _autoLineup = on;
+    public void SetAutoLineup(bool on) => AutoSetting = on;
 
     /// <summary>
     /// Verlassen des Taktikbildschirms (Datei 0x48E62 Schritt 5): wurde „automatisch aufstellen“ dort eingeschaltet
@@ -526,7 +529,7 @@ public sealed partial class Club
     /// </summary>
     public void CloseTactics(bool autoAtOpen)
     {
-        if (_autoLineup && !autoAtOpen)
+        if (AutoSetting && !autoAtOpen)
             ApplyAutoLineup();
     }
 
@@ -555,7 +558,9 @@ public sealed partial class Club
     public void RefillLineup()
     {
         var removed = Lineup.Players.Where(p => !p.Available || !Players.Contains(p)).ToList();
+        var before = LineupPositions();
         Lineup.RemoveUnavailable(Players);
+        KeepLastLines(before, reservesZero: false); // A939: der Verletzte behält +0x15 (Datei 0x5C50 löscht nur +0x0A)
         if (ApplyAutoLineup())
             return;
         foreach (var p in removed)
