@@ -82,7 +82,15 @@ public sealed class SponsorContract
     /// <summary>Belegte Bandenfelder (nur bei <see cref="AdSlotKind.Bande"/>).</summary>
     public required int[] Boards { get; init; }
 
+    /// <summary>
+    /// Monatsbetrag – bei Banden je Feld. [ORIGINAL] F06/A888 (Datei 0x2BAD4–0x2BB80, docs/analyse/re-abweichungen.md F06): Jede
+    /// Bande ist ein eigener Satz mit dem Betrag des Angebots; ein Vertrag über n Banden bringt n · Betrag.
+    /// </summary>
     public required long MonthlyAmount { get; init; }
+
+    /// <summary>Monatseinnahme des Vertrags: Betrag · Zahl der Felder (Banden), sonst Betrag. [ORIGINAL] 0x3E657 (Datei 0x3E70C–0x3E734).</summary>
+    public long MonthlyIncome => MonthlyAmount * (Kind == AdSlotKind.Bande ? Boards.Length : 1);
+
     public int MonthsLeft { get; set; }
 
     /// <summary>Verlängerungsoption in Monaten (0 = keine). [ORIGINAL] Vertragsfeld +6 (0x3FD52); nach der Verhandlung 0.</summary>
@@ -113,7 +121,8 @@ public sealed class Sponsoring
     /// <summary>Angebote je Art der Werbefläche, Schlüssel = Partnerindex.</summary>
     public Dictionary<AdSlotKind, Dictionary<int, SponsorOffer>> Offers { get; } = [];
 
-    public long MonthlyIncome => Contracts.Sum(c => c.MonthlyAmount);
+    /// <summary>[ORIGINAL] 0x3E657: Summe +0 aller elf Felder (Datei 0x3E70C–0x3E734), bei Banden also Betrag je Feld (F06/A888).</summary>
+    public long MonthlyIncome => Contracts.Sum(c => c.MonthlyIncome);
 
     public SponsorContract? ContractAt(AdSlot slot) => Contracts.FirstOrDefault(c => c.Covers(slot));
 
@@ -291,10 +300,16 @@ public sealed partial class GameState
         if (!SponsorRules.IsOfferDay(date))
             return;
         foreach (var manager in Managers)
-        {
-            RefreshSponsorOffers(manager, noDice: false);
-            RollTalentSearchPrice(manager); // [ORIGINAL] Datei 0x3EEAB, direkt nach 0x3FB47(0) (Spur geld, Teil 6)
-        }
+            DailySponsorOffers(date, manager);
+    }
+
+    /// <summary>Werbeangebote eines Managers im Tagesabschluss 0x3EE6B (Sommerpause je Manager verschränkt, Spur saison-geld A526).</summary>
+    private void DailySponsorOffers(DateOnly date, Manager manager)
+    {
+        if (!SponsorRules.IsOfferDay(date))
+            return;
+        RefreshSponsorOffers(manager, noDice: false);
+        RollTalentSearchPrice(manager); // [ORIGINAL] Datei 0x3EEAB, direkt nach 0x3FB47(0) (Spur geld, Teil 6)
     }
 
     /// <summary>
@@ -324,28 +339,30 @@ public sealed partial class GameState
     }
 
     /// <summary>
-    /// Nimmt ein Angebot für eine Werbefläche an. Bei Banden mit mehreren Feldern werden das gewählte und die nächsten
-    /// freien Felder belegt. Liefert den Vertrag oder null, wenn die Fläche belegt, gesperrt oder nicht genug Felder frei sind.
+    /// Nimmt ein Angebot für eine Werbefläche an. Liefert den Vertrag oder null, wenn die Fläche belegt oder gesperrt ist bzw.
+    /// nicht genug Bandenfelder frei sind.
+    /// [ORIGINAL] F06/A888 (docs/analyse/re-abweichungen.md F06): Bei Banden prüft das Original nur die Zahl der freien oder kündbaren
+    /// Felder 0 … 6 (Knopf „annehmen“ Datei 0x2BF86–0x2BFD2, Zählung 0x2BEAF–0x2BEFD), nicht das angeklickte Feld (Klick Datei
+    /// 0x2BA9D–0x2BAD1), und kopiert das Angebot je Bande in das erste freie oder kündbare Feld ab Feld 0 (Datei 0x2BAD9, Suche
+    /// 0x2BADE–0x2BB6D) – ohne Rücksicht auf das angeklickte Feld.
     /// </summary>
     public SponsorContract? AcceptOffer(Manager manager, AdSlot slot, int sponsor)
     {
         var sponsoring = Ads(manager);
         var offer = sponsoring.OfferFrom(slot.Kind, sponsor);
-        if (offer is null || !sponsoring.IsFree(slot) || !IsAdSlotAvailable(manager, slot))
+        if (offer is null || !IsAdSlotAvailable(manager, slot) || slot.Kind != AdSlotKind.Bande && !sponsoring.IsFree(slot))
             return null;
 
         int[] boards = [];
         if (slot.Kind == AdSlotKind.Bande)
         {
-            var free = sponsoring.FreeBoards().ToList();
-            var ordered = free.Where(b => b >= slot.Index).Concat(free.Where(b => b < slot.Index)).Take(offer.Boards).ToArray();
-            if (ordered.Length < offer.Boards)
+            boards = sponsoring.FreeBoards().Take(offer.Boards).ToArray();
+            if (boards.Length < offer.Boards)
                 return null;
-            boards = ordered;
         }
 
-        // [ORIGINAL] 0x2BB3E: Das Angebot überschreibt die Flächen eines kündbaren Vertrags. Das Remake führt eine Bande mit mehreren
-        // Feldern als einen Vertrag ([APPROX]); der Rest bleibt mit den übrigen Feldern bestehen.
+        // [ORIGINAL] 0x2BB3E: Das Angebot überschreibt die Flächen eines kündbaren Vertrags feldweise. Das Remake führt eine Bande mit
+        // mehreren Feldern als einen Vertrag; der Rest bleibt mit den übrigen Feldern und seinem Betrag je Feld bestehen (F06/A888).
         OverwriteCancellable(sponsoring, slot.Kind == AdSlotKind.Bande ? boards.Select(b => new AdSlot(slot.Kind, b)) : [slot]);
 
         var contract = new SponsorContract

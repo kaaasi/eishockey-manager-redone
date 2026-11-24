@@ -16,9 +16,10 @@ namespace EishockeyManager.Core;
 /// <item>[ORIGINAL] „Weniger als neun Spieler“ prüft 0x544C0 ebenfalls vor dem Spiel (Managerwert 0x974B aus 0x952C am
 ///   Tagesanfang, <see cref="MarkShortHandedClubs"/>): Ein vorbereitetes Spiel war nicht gewertet, also keine Strafe, auch
 ///   wenn sich im Spiel jemand verletzt (vorher als Näherung „Stand nach dem Spiel“).</item>
-/// <item>[APPROX] Die gemerkten Werte sind kein Spielstand (das Original rechnet Abrechnung und Spiel ohne Unterbrechung
-///   für die Sicherung); sie verfallen am nächsten Tagesanfang. Fehlt ein Wert (Spielwertung, direkter Aufruf ohne Spiel),
-///   rechnet die Abrechnung wie bisher.</item>
+/// <item>[ORIGINAL] A468 (docs/analyse/re-abweichungen.md F08, f08_abrechnung.py): Die gemerkten Werte sind kein Spielstand – 0x36B5D
+///   rechnet 0x544C0 für alle sechs Paarungen des Tages (Datei 0x36DBD), dann erst die Minutenschleife 0x37A62, dazwischen kein
+///   Hauptmenü und keine Sicherung; gemerkte Zuschauer über einen Spielstand hinweg kommen im Original nicht vor. Sie verfallen am
+///   nächsten Tagesanfang. Fehlt ein Wert (Spielwertung, direkter Aufruf ohne Spiel), rechnet die Abrechnung wie bisher.</item>
 /// </list>
 /// </summary>
 public sealed partial class GameState

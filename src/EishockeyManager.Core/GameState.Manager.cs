@@ -210,6 +210,12 @@ public sealed partial class GameState
     private void MonthlyFinances()
     {
         foreach (var manager in Managers)
+            MonthlyFinances(manager);
+    }
+
+    /// <summary>Monatsabschluss 0x3F02C eines Managers (Sommerpause je Manager verschränkt, Spur saison-geld A526).</summary>
+    private void MonthlyFinances(Manager manager)
+    {
         {
             var club = Clubs[manager.ClubIndex];
             Book(manager, FinanceCategory.Gehaelter, -FinanceRules.MonthlyWages(this, club)); // A380: samt eigener Transferliste

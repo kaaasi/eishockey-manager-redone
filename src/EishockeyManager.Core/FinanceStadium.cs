@@ -307,20 +307,20 @@ public sealed class Stadium
                 continue;
             if (p < FeatureCount)
             {
-                // [APPROX] Ohne Ziel (Restwochen ohne Baustelle, im Original nicht erreichbar) bleibt die Stufe.
-                if (_targets[p] == 0)
-                    continue;
+                // [ORIGINAL] A509 (Datei 0x3D316, Meldung 0x4B2BA aus Datei 0x3D447; f08_stadionbau.py): bei Restwoche 0 Stufe = Ziel
+                // ohne Prüfung, auch ohne Ziel (dann Stufe 0) – nur über einen fremden Spielstand erreichbar (ImportConstruction).
                 _levels[p] = _targets[p];
                 done.Add(new StadiumConstruction(StadiumProject.Feature, (StadiumFeature)p, _targets[p], 0));
                 _targets[p] = 0;
             }
-            else if (p == SeatsProject && SeatsTarget != 0)
+            else if (p == SeatsProject)
             {
+                // [ORIGINAL] A509: Plätze = Zielplätze ohne Prüfung (siehe oben).
                 Seats = SeatsTarget;
                 done.Add(new StadiumConstruction(StadiumProject.Sitzplaetze, default, SeatsTarget, 0));
                 SeatsTarget = 0;
             }
-            else if (p == StandingProject && StandingTarget != 0)
+            else if (p == StandingProject)
             {
                 Standing = StandingTarget;
                 done.Add(new StadiumConstruction(StadiumProject.Stehplaetze, default, StandingTarget, 0));
@@ -527,21 +527,16 @@ public sealed partial class GameState
 
     /// <summary>
     /// Tagesabschluss: „beleidigte“ Baufirmen je Projekt mit random(0, 10) = 0 wieder frei (im Mittel nach 11 Tagen).
-    /// [ORIGINAL] Datei 0x3ED19–0x3ED48. [APPROX] Das Original zieht für alle 11 Projekte jeden Tag; hier nur für
-    /// gesetzte Merker, damit der gemeinsame Finanzzufall sonst unverändert bleibt (Verteilung gleich).
+    /// [ORIGINAL] Datei 0x3ED19–0x3ED48 (A512, Beleg docs/analyse/re-abweichungen.md F08, f08_baufirma.py): random(0, 10) für
+    /// alle 11 Projekte des Managers in Projektfolge, auch ohne gesetzten Merker; bei 0 wird der Merker DGROUP 0xCC09 +
+    /// 11 · Manager + Projekt gelöscht.
     /// </summary>
     private void ForgiveBuilders(Manager manager)
     {
         var stadium = Finance(manager).Stadium;
         for (var p = 0; p < Stadium.ProjectCount; p++)
         {
-            var (project, feature) = p switch
-            {
-                Stadium.SeatsProject => (StadiumProject.Sitzplaetze, default(StadiumFeature)),
-                Stadium.StandingProject => (StadiumProject.Stehplaetze, default),
-                _ => (StadiumProject.Feature, (StadiumFeature)p),
-            };
-            if (stadium.IsOffended(project, feature) && SquadSetup.Between(Random, 0, 10) == 0)
+            if (SquadSetup.Between(Random, 0, 10) == 0)
                 stadium.SetOffended(p, false);
         }
     }

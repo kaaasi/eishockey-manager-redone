@@ -386,38 +386,46 @@ public sealed partial class GameState
     /// nach dem Tageswechsel 0x55204): Nach dem Laden läuft dieser Tageswechsel erneut (Datei 0x54D41 → 0x55073 → 0x55204, Zähler
     /// 218 = 15. April, Bild <c>file46_1</c>), die WM-Schleife steht dann einen Tag später und schließt zuletzt den 30. April ab.
     /// Der HOK-Import spielt diese Eigenheit des Ladens nach (Entscheidung Nutzer 09.11.2026, C; <c>GameState.LoadQuirk.cs</c>).
-    /// [APPROX] Ohne eigenen Kalendertag des Remakes (die Bücher führen die Beträge in der neuen Saison, Datei 0x56476 zählt die
-    /// Saison vor der Schleife weiter); Bau, Tagesabschluss und Heilung je Tag für alle Manager nacheinander statt je Manager
-    /// verschränkt (sie wirken je Manager getrennt; die Börse rechnet wie im Hauptweg einmal je Tag, Entscheidung #188).
+    /// [ORIGINAL] A526 (docs/analyse/re-abweichungen.md F08, f08_sommerpause.py): je Kalendertag (0x367B1) und je Manager verschränkt
+    /// Bau, Tagesabschluss und Heilung, dann der nächste Manager; die Bücher führen die Beträge in der neuen Saison (Datei 0x56476
+    /// zählt die Saison vor der Schleife weiter, 3 → 4 vor der ersten Buchung). [APPROX] Die Börse rechnet wie im Hauptweg einmal
+    /// je Tag nach dem letzten Manager (Entscheidung #188).
     /// [ORIGINAL] Auch im Modus „nur Weltkugel“ (Schleife ohne Modusprüfung, Aufruf 0x56512; #732, abgleich-rest Teil 3):
     /// Satz 0 bucht Gehälter, Unterhalt, Zinsen usw. (FILE20 → FILE21: 500.000 → −1.530.327 DM).
     /// </summary>
     private void RunSummerBreak()
     {
         foreach (var counter in SummerBreakCounters())
-        {
-            var date = SeasonCalendar.LayoutDate(counter - 1);
-            if (counter % 7 == 0)
-                WeeklyFinances();
-            SummerDayClose(date);
-            if (PlayerInjuries.IsHealingDay(counter))
-                foreach (var club in ManagedClubs())
-                    HealSquad(club);
-        }
+            RunSummerDay(counter);
     }
 
-    /// <summary>Tagesabschluss 0x3ED01 eines Tages der Sommerpause (siehe <see cref="RunSummerBreak"/>; Teile wie <see cref="AdvanceFinance"/>).</summary>
-    private void SummerDayClose(DateOnly date)
+    /// <summary>Ein Kalendertag der Sommerpause (Zähler <paramref name="counter"/>), je Manager verschränkt (A526, siehe <see cref="RunSummerBreak"/>).</summary>
+    private void RunSummerDay(int counter)
     {
-        DailyStadium();
-        AccrueDailyInterest(date);
-        DailySponsorOffers(date);
-        if (date.Day == 1)
-            foreach (var manager in Managers)
-                CountDownSponsorContracts(manager);
-        if (date.Day == DateTime.DaysInMonth(date.Year, date.Month))
-            MonthlyFinances();
+        var date = SeasonCalendar.LayoutDate(counter - 1);
+        for (var i = 0; i < Managers.Count; i++)
+        {
+            var manager = Managers[i];
+            if (counter % 7 == 0)
+                WeeklyManagerFinances(manager);
+            SummerDayClose(date, i);
+            if (PlayerInjuries.IsHealingDay(counter) && !manager.Dismissed)
+                HealSquad(Clubs[manager.ClubIndex]);
+        }
         AdvanceStocks();
+    }
+
+    /// <summary>Tagesabschluss 0x3ED01 eines Managers an einem Tag der Sommerpause (siehe <see cref="RunSummerBreak"/>; Teile wie <see cref="AdvanceFinance"/>).</summary>
+    private void SummerDayClose(DateOnly date, int i)
+    {
+        var manager = Managers[i];
+        ForgiveBuilders(manager);
+        AccrueDailyInterest(date, i);
+        DailySponsorOffers(date, manager);
+        if (date.Day == 1)
+            CountDownSponsorContracts(manager);
+        if (date.Day == DateTime.DaysInMonth(date.Year, date.Month))
+            MonthlyFinances(manager);
     }
 }
 
