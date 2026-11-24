@@ -562,9 +562,21 @@ DGROUP 0x5CF4 = 0 und leere Zeilen, „Zug“ = Hinzufügen nach der Europapokal
   je Vertrag **einmal**, der Export (`OriginalExport.Rest.cs`) schreibt ihn je Feld. Das Aufteilen beim Überschreiben
   (`OverwriteCancellable`, Rest mit vollem Betrag) stimmt dann nur, wenn der Betrag als „je Feld“ gilt.
 - **Vorgabe (`saison-geld`):** `MonthlyAmount` als Betrag je Feld festschreiben; `Sponsoring.MonthlyIncome` = Σ Betrag ·
-  Zahl der Felder (Banden), übrige Arten · 1; Überschreiben wie bisher feldweise. Roter Test: Bandenvertrag über zwei
-  Felder zu je 300 → Werbeanteil der Monatseinnahme 600 (Werte wie oben in Drittel-DM); kündbarer Vertrag über zwei Felder,
-  Angebot über eine Bande → ein Feld neu, ein Feld alt, Einnahme alt + neu. Mehrsaisonprobe (Geld).
+  Zahl der Felder (Banden), übrige Arten · 1; Überschreiben feldweise, und zwar je Bande in das **erste freie oder
+  kündbare Feld ab Feld 0**, ohne Rücksicht auf das angeklickte Feld (Datei 0x2BAD9 `mov word [bp-0x2a],0x0`, Suche
+  0x2BADE–0x2BB6D; das Remake beginnt dagegen beim angeklickten Feld, `FinanceSponsors.cs` `free.Where(b => b >= slot.Index)…`).
+  Roter Test: Bandenvertrag über zwei Felder zu je 300 → Werbeanteil der Monatseinnahme 600 (Werte wie oben in Drittel-DM);
+  kündbarer Vertrag über zwei Felder, Angebot über eine Bande → ein Feld neu, ein Feld alt, Einnahme alt + neu; Felder wie
+  im Ablauf oben (0/1 kündbar Nr 1, 2 belegt, 3 … 6 frei), Klick auf Feld 3, Angebot über eine Bande → Feld 0 neu, Feld 1
+  alt, Feld 3 frei. Mehrsaisonprobe (Geld).
+- **Klick (Datei 0x2BA9D–0x2BAD1):** Die Stelle prüft nur, dass der Knopf „annehmen“ aktiv ist ([bp−0x34] Bit 0x02), dass
+  der Klick diesen Knopf traf (Kennung [bp−0x37] = Rückgabe von 0x4BEBD) und dass die Auswahl [bp−0x2D] ein Bandenfeld ist
+  (< 7, sonst 0x2BC93). Ob das angeklickte Feld frei ist, prüft das Original **nicht**. Den Knopf baut 0x2BF86–0x2BFD2 bei
+  einem Bandenfeld nur, wenn die Zahl der Banden des Angebots (+4) ≤ [bp−0x36] ist, der Zahl der freien oder kündbaren
+  Felder 0 … 6 (Zählung 0x2BEAF–0x2BEFD). Ein angeklicktes Feld mit festem Vertrag lässt die Annahme also zu, solange genug
+  Felder frei oder kündbar sind. Das Remake verlangt dafür `sponsoring.IsFree(slot)` (`FinanceSponsors.cs`, Prüfung vor
+  der Annahme); Vorgabe: bei Banden nur die Zahl prüfen. Roter Test: Klick auf ein fest belegtes Feld, zwei Felder frei,
+  Angebot über eine Bande → angenommen in das erste freie Feld.
 
 ### K07 – Aufstellung: Automatik je Manager, Verletzte, Meldung, sechster Feldspieler (A165, A807, A936, A939, A971, A972)
 
@@ -663,8 +675,9 @@ Einstellung 0x375 vorher 0, Status 2, rechts: Meldungen -; 0x375 nachher 0
     Torhüter wird mit „Schon 6 Feldspieler / auf dem Eis !“ abgewiesen (`Squad.Lineup.cs`, Prüfung vor `TryOpenSixthSkater`).
   - **A972 – Anzeige:** Nach (a) zeigt das Original den sechsten Feldspieler in Sturmzelle 0; beim nächsten Aufbau (d) baut es das
     Gitter nach +0x15 neu: zwei Stürmer, drei Abwehrspieler in den Zellen 3–5, [bp−0x0F] = 5 → Kennzeichen 0, nur zwei
-    Abwehrzellen gezeichnet (x 0x10F/0x121) – der Spieler in Zelle 5 ist unsichtbar, spielt aber (+0x15 = 1, Abrechnung zählt
-    jeden Platz mit +0x15 ≠ 0, Datei 0x54918–0x54927). Das Remake lässt ihn sichtbar auf dem sechsten Platz, die Sturmzelle
+    Abwehrzellen gezeichnet (x 0x10F/0x121) – der Spieler in Zelle 5 ist unsichtbar, spielt aber (+0x15 = 1; die Abrechnung zählt
+    einen Platz nur mit +0x0A ≠ 0 **und** +0x15 ≠ 0: Datei 0x54918 `cmp byte [es:bx+0xa],0`, bei 0 weiter nach 0x549A2,
+    danach 0x54922 `+0x15`). Das Remake lässt ihn sichtbar auf dem sechsten Platz, die Sturmzelle
     bleibt leer; +0x15 aller Plätze ist gleich.
 - **Vorgabe (`aufstellung`):** (1) Einstellung „automatisch aufstellen“ als Feld des Managers (Migration), Lesen und
   Abschalten über den Manager am Zug; roter Test: Manager wechselt den Verein → Einstellung kommt mit. (2) Je Spieler die
@@ -677,7 +690,8 @@ Einstellung 0x375 vorher 0, Status 2, rechts: Meldungen -; 0x375 nachher 0
   geleerte Zelle (auch Sturm, Reihe +0x15 bleibt Abwehr). Danach ist ein Torhüter einsetzbar. Rote Tests: (a) Reihe 1 voll mit
   sechstem Feldspieler, Sturmplatz leeren → Kennzeichen aus, Spieler in der Sturmzelle angezeigt, `PositionOf` = 1;
   (c) danach Torhüter in die Torhüterreihe → eingesetzt, keine Meldung „Schon 6 Feldspieler“; (d) neuer Aufbau →
-  Kennzeichen aus, sechster Feldspieler nicht angezeigt, spielt weiter (Reihe 1). Fehlt Spielraum im Datenmodell für (d), als
+  Kennzeichen aus, sechster Feldspieler nicht angezeigt, spielt weiter (Reihe 1) und bleibt eingesetzt (+0x0A ≠ 0, sonst
+  zählt ihn die Abrechnung 0x54918 nicht). Fehlt Spielraum im Datenmodell für (d), als
   `[APPROX]` mit dieser Fundstelle festhalten.
 
 ### T03 – Saisonwechsel: Zeitpunkt und Reihenfolge der Würfe (A661, A829, A843, A935)
