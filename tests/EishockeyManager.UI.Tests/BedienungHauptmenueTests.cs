@@ -1,6 +1,7 @@
 using EishockeyManager.Core;
 using EishockeyManager.Tests.Support;
 using EishockeyManager.UI.Screens;
+using EishockeyManager.UI.Screens.Competitions;
 using EishockeyManager.UI.Testing;
 
 namespace EishockeyManager.UI.Tests;
@@ -50,6 +51,26 @@ public class BedienungHauptmenueTests
         var (ex, ey) = Center(MainMenuScreen.SmallTile(entry));
         d.RightClick(ex, ey);
         Assert.IsNotType<MainMenuScreen>(d.Host.Current);
+    }
+
+    /// <summary>
+    /// B12 / Befund #1014 (BD-01): Vereins- und Gegnername in der Infoleiste öffnen ihr Fenster nur mit links (Datei
+    /// 0x45375–0x453DF, nur linke Maustaste DGROUP 0x5A16 = 1). Rückschaltprobe: <c>Clicked</c> → <c>Clicked || RightClicked</c> macht rot.
+    /// </summary>
+    [GameDataFact]
+    public void InfoBarNames_OpenOnlyWithLeftClick()
+    {
+        var (d, game, menu) = Start();
+        var own = Center(InfoBarWindows.OwnClubName);
+        d.RightClick(own.X, own.Y);
+        Assert.False(menu.InfoWindows.Visible);
+        var next = game.UpcomingMatch(NationalMenu.Team(game));
+        Assert.NotNull(next); // Machbarkeit: sonst prüfte der Gegnername nichts
+        var opp = Center(InfoBarWindows.OpponentName);
+        d.RightClick(opp.X, opp.Y);
+        Assert.False(menu.InfoWindows.Visible);
+        d.Click(opp.X, opp.Y);
+        Assert.True(menu.InfoWindows.Visible); // Gegenprobe: links öffnet
     }
 
     /// <summary>Escape wählt als Komfort weiter ab (B11 = A).</summary>

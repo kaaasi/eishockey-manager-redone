@@ -187,6 +187,97 @@ public class WettbewerbeAnzeigeTests
         window.Update(Click(TeamInfoWindow.WatchButton), game);
         Assert.NotEqual(mode, game.Clubs[nation].WatchMode);
     }
+
+    /// <summary>
+    /// Befund #1010 (R25-W1): Knopf zum Zusehen und Gesicht im Vereinsfenster über die Zeichnung abgesichert (B15/B16, Datei 0x4BFF2,
+    /// 0x51AAF): Der dritte Knopf steht nur bei Wettbewerbscode 0, das Gesicht folgt der Bilanz (nicht immer gelb). Rückschaltprobe:
+    /// <c>FormMood(form)</c> → <c>Mood.Same</c> bzw. <c>IsMainMenu</c> → <c>true</c> in <c>ClubInfoWindow.Draw</c> macht rot.
+    /// </summary>
+    [GameDataFact]
+    public void ClubInfoWindow_DrawsWatchButtonOnlyInMainMenuCode_AndFaceOfRecord()
+    {
+        var d = ScreenDriver.Create(TestGameData.Load());
+        d.StartNewGame();
+        for (var i = 0; i < 6; i++)
+            d.PlayMatchDay();
+        var game = d.Host.Game!;
+        var menu = Assert.IsType<MainMenuScreen>(d.Host.Current);
+        var club = Enumerable.Range(0, NewGame.SelectableClubs)
+            .First(c => TeamInfoWindow.FormMood(ClubInfoWindow.Form(game, c)) != Widgets.Mood.Same);
+        var mood = TeamInfoWindow.FormMood(ClubInfoWindow.Form(game, club));
+        Assert.True(CompetitionCode.IsMainMenu(game));
+
+        menu.InfoWindows.Club.Show(club);
+        d.Frame();
+        var assets = d.Host.Assets;
+        var button = TeamInfoWindow.WatchButton;
+        var expected = new Surface { Palette = d.Surface.Palette };
+        expected.Fill(new Rect(0, 0, 320, 240), 4);
+        expected.Blit(assets.Image(2), new Rect(17, 179, Widgets.ButtonWidth, Widgets.ButtonHeight), button.X, button.Y, transparent: 0);
+        expected.Blit(assets.Image(TeamInfoWindow.WatchSymbolImage), TeamInfoWindow.WatchSymbol(game.Clubs[club].WatchMode),
+            button.X + 23, button.Y + 1);
+        var face = new Surface { Palette = d.Surface.Palette };
+        face.Fill(new Rect(0, 0, 320, 240), 4);
+        Widgets.Smiley(face, assets, mood, TeamInfoWindow.MoodX, TeamInfoWindow.MoodY);
+
+        int Diff(Surface reference, int x0, int y0, int w, int h)
+        {
+            var n = 0;
+            for (var y = y0; y < y0 + h; y++)
+                for (var x = x0; x < x0 + w; x++)
+                    if (reference.Pixels[y * 320 + x] != 4 && reference.Pixels[y * 320 + x] != d.Surface.Pixels[y * 320 + x])
+                        n++;
+            return n;
+        }
+
+        Assert.Equal(0, Diff(face, TeamInfoWindow.MoodX, TeamInfoWindow.MoodY, 6, 5));
+        Assert.Equal(0, Diff(expected, button.X, button.Y, button.W, button.H));
+        // Das Gesicht des Gegenteils unterscheidet sich (sonst prüfte der Vergleich nichts).
+        var other = new Surface { Palette = d.Surface.Palette };
+        other.Fill(new Rect(0, 0, 320, 240), 4);
+        Widgets.Smiley(other, assets, mood == Widgets.Mood.Up ? Widgets.Mood.Down : Widgets.Mood.Up, TeamInfoWindow.MoodX, TeamInfoWindow.MoodY);
+        Assert.NotEqual(0, Diff(other, TeamInfoWindow.MoodX, TeamInfoWindow.MoodY, 6, 5));
+
+        // Nach einem Freundschaftsspiel (Code ≠ 0) fehlt der Knopf: dort bleibt das Fensterbild.
+        CompetitionCode.FriendlyPlayed(game);
+        Assert.False(CompetitionCode.IsMainMenu(game));
+        d.Frame();
+        Assert.NotEqual(0, Diff(expected, button.X, button.Y, button.W, button.H));
+    }
+
+    /// <summary>Befund #1010, Länderfenster: Der dritte Knopf wird nach einem Freundschaftsspiel (Code ≠ 0) nicht gezeichnet.</summary>
+    [GameDataFact]
+    public void TeamInfoWindow_DrawsWatchButtonOnlyInMainMenuCode()
+    {
+        var d = ScreenDriver.Create(TestGameData.Load());
+        d.StartNewGame();
+        var game = d.Host.Game!;
+        var screen = new WorldCupScreen(d.Host, new MainMenuScreen(d.Host));
+        d.Host.Show(screen);
+        screen.Info.Show(55);
+        var button = TeamInfoWindow.WatchButton;
+        var expected = new Surface { Palette = d.Surface.Palette };
+        expected.Fill(new Rect(0, 0, 320, 240), 4);
+        expected.Blit(d.Host.Assets.Image(2), new Rect(17, 179, Widgets.ButtonWidth, Widgets.ButtonHeight), button.X, button.Y, transparent: 0);
+        expected.Blit(d.Host.Assets.Image(TeamInfoWindow.WatchSymbolImage), TeamInfoWindow.WatchSymbol(game.Clubs[55].WatchMode),
+            button.X + 23, button.Y + 1);
+        int Diff()
+        {
+            var n = 0;
+            for (var y = button.Y; y < button.Y + button.H; y++)
+                for (var x = button.X; x < button.X + button.W; x++)
+                    if (expected.Pixels[y * 320 + x] != 4 && expected.Pixels[y * 320 + x] != d.Surface.Pixels[y * 320 + x])
+                        n++;
+            return n;
+        }
+
+        d.Frame();
+        Assert.Equal(0, Diff());
+        CompetitionCode.FriendlyPlayed(game);
+        d.Frame();
+        Assert.NotEqual(0, Diff());
+    }
+
     // ---- Teil 3: C07 Klick auf einen Verein ---------------------------------------------------------------------------
 
     private static InputState LeftAt(int x, int y) => new() { MouseX = x, MouseY = y, LeftClick = true };

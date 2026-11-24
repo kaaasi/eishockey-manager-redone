@@ -144,6 +144,30 @@ public class AufstellungK07Tests
         Assert.True(manager.AutoLineupEnabled);
     }
 
+    /// <summary>
+    /// Befund #1016: Ein im laufenden Spiel hinzugekommener Manager ist an seinen Verein gebunden (<c>BindLineupOwners</c> in
+    /// <c>AddManager</c>, A936). Ohne die Bindung schriebe das Umschalten nur das Vereinsfeld, und das nächste Laden setzte es auf den
+    /// Wert des Managers zurück. Rückschaltprobe: Aufruf in <c>GameState.AddManager.cs</c> entfernen → rot.
+    /// </summary>
+    [Fact]
+    public void AddManager_MidGame_BindsNewcomerToClub_SwitchSurvivesSaveLoad()
+    {
+        var game = TestGames.Create(3);
+        TestSeason.PlayMatchDay(game);
+        var manager = game.AddManager(new ManagerSetup { Name = "Neu", Head = 4, ClubIndex = 7 });
+        var club = game.Clubs[manager.ClubIndex];
+        Assert.True(manager.AutoLineupEnabled);
+
+        club.SetAutoLineup(false);
+        Assert.False(manager.AutoLineupEnabled); // ohne Bindung bliebe der Manager auf true
+
+        var g = SaveGame.Load(SaveGame.Save(game)).Game!;
+        var m = g.Managers.Single(x => x.Name == "Neu");
+        Assert.False(g.Clubs[m.ClubIndex].AutoLineupEnabled);
+        g.Clubs[m.ClubIndex].SetAutoLineup(true);
+        Assert.True(m.AutoLineupEnabled);
+    }
+
     /// <summary>Speichern und Laden halten beide Felder (Schema 64).</summary>
     [Fact]
     public void SaveLoad_KeepsManagerSettingAndLastLine()
