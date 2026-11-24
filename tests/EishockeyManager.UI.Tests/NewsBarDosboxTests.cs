@@ -1,6 +1,7 @@
 using EishockeyManager.Core;
 using EishockeyManager.Tests.Support;
 using EishockeyManager.UI.Screens.ManagerArea;
+using EishockeyManager.UI.Testing;
 
 namespace EishockeyManager.UI.Tests;
 
@@ -41,7 +42,8 @@ public class NewsBarDosboxTests
         var game = d.Host.Game!;
         var me = game.ActiveManager;
         game.Finance(me).Inbox.Clear();
-        game.Notify(me, "EC HEDOS MÜNCHEN ist an", "SCHIFFL interessiert.");
+        // B07: Text wie die Meldung des Originals („$ ist an $^interessiert.^“, Datei 0x19787), ohne Umbruch des Remakes.
+        game.Notify(me, UnsolicitedOfferRules.MessageText(game.Clubs.First(c => c.Name == "EC HEDOS MÜNCHEN"), new Player { Name = "SCHIFFL", Role = Formats.PlayerRole.Forward }));
         var s = new Surface();
         s.Palette = d.Host.Assets.Palette;
         NewsBar.Draw(s, d.Host.Assets, game);
@@ -77,6 +79,63 @@ public class NewsBarDosboxTests
         // dritte Zeile (Grundlinie 238, Rand der Leiste y 234–236) wird nicht gezeichnet: Zeilen 234–236 wie ohne Nachricht (232–233 können Unterlängen der zweiten Zeile tragen)
         for (var y = 234; y <= 236; y++)
             for (var x = 3; x < 317; x++)
+                Assert.True(empty.Pixels[y * Surface.Width + x] == s.Pixels[y * Surface.Width + x], $"Pixel ({x} | {y})");
+    }
+
+    private static Surface Draw(ScreenDriver d)
+    {
+        var s = new Surface();
+        s.Palette = d.Host.Assets.Palette;
+        NewsBar.Draw(s, d.Host.Assets, d.Host.Game!);
+        return s;
+    }
+
+    /// <summary>
+    /// B07 (A779): Das Original bricht nicht um – jede Zeile der Nachricht steht ungeteilt zentriert (Datei 0x4B6F0–0x4B76D,
+    /// Trennung nur an „^“). Eine einzeilige Nachricht belegt nur die erste Textzeile. Vorher rot: Umbruch auf 128 Pixel
+    /// verteilte sie auf zwei Zeilen.
+    /// </summary>
+    [GameDataFact]
+    public void SingleLine_IsNotWrapped()
+    {
+        var d = FlowTests.CreateDriver();
+        d.StartNewGame();
+        var game = d.Host.Game!;
+        var me = game.ActiveManager;
+        game.Finance(me).Inbox.Clear();
+        game.Notify(me, "EC HEDOS MÜNCHEN ist an SCHIFFL interessiert.");
+        var s = Draw(d);
+        var mini = d.Host.Assets.Mini;
+        var width = mini.Measure("EC HEDOS MÜNCHEN ist an SCHIFFL interessiert.");
+        var cols = Cols(s, 3, 299, 217, 226)!.Value;
+        Assert.InRange(cols.Last - cols.First + 1, width - 2, width);
+        Assert.Null(Rows(s, 20, 299, 227, 234)); // keine zweite Zeile
+    }
+
+    /// <summary>
+    /// B07 (A778, A780): Kein Hinweis „(Klicken)“ bei einer Frage und kein Zähler „n/m“ bei mehreren Nachrichten – die Schleife
+    /// Datei 0x4B6F0–0x4B76D zeichnet nur Datum und Zeilen (`file37a_1`, `file46_6`). Rechts neben den Zeilen (x 240–298) bleibt die
+    /// Leiste wie ohne Nachricht. Vorher rot: Hinweis rechts unten, Zähler „2/2“.
+    /// </summary>
+    [GameDataFact]
+    public void Question_WithSeveralMessages_ShowsNoHintAndNoCounter()
+    {
+        var d = FlowTests.CreateDriver();
+        d.StartNewGame();
+        var game = d.Host.Game!;
+        var me = game.ActiveManager;
+        game.Finance(me).Inbox.Clear();
+        var empty = Draw(d);
+        game.Notify(me, "Kurz.");
+        game.Finance(me).Inbox.Add(new Message
+        {
+            Kind = MessageKind.LoanRequest, Day = game.Day, Lines = ["Kurz.", "Frage ?"], Borrower = 0, Amount = 10_000,
+        });
+        Assert.Equal(2, game.Inbox(me).Count);
+        Assert.True(game.Inbox(me)[^1].IsQuestion);
+        var s = Draw(d);
+        for (var y = 202; y <= 236; y++)
+            for (var x = 240; x < 299; x++)
                 Assert.True(empty.Pixels[y * Surface.Width + x] == s.Pixels[y * Surface.Width + x], $"Pixel ({x} | {y})");
     }
 }

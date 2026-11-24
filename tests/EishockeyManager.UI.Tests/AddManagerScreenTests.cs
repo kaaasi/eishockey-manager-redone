@@ -123,10 +123,4 @@ public class AddManagerScreenTests
 
         Assert.Null(setup.Setup.Managers[0].ClubIndex);
     }
-
-    [Fact]
-    public void QuestionHint_PointsToTheNewsBar()
-    {
-        Assert.Equal("(Klicken)", NewsBar.QuestionHint(null!));
-    }
 }
