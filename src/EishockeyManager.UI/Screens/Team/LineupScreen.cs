@@ -47,7 +47,7 @@ public sealed class LineupScreen : Screen
     public static Rect SlotButton(LineupSlot slot) => SlotButton(slot, sixthOpen: false);
 
     /// <summary>
-    /// Knopf eines Aufstellungsplatzes. [ORIGINAL] #939 (A937): Mit offenem sechsten Feldspielerplatz (<see cref="Lineup.SixthSkaterOpen"/>)
+    /// Knopf eines Aufstellungsplatzes. [ORIGINAL] #939 (A937): Mit offenem sechsten Feldspielerplatz (<see cref="LineupGrid.SixthOpen"/>)
     /// hat die Abwehrhälfte der Reihe 1 drei Knöpfe auf den x-Werten des Sturms (Original x 0x102 + 0x12 · i statt 0x10B, Datei
     /// 0x40681–0x4068D und 0x413E8–0x414B4); geschlossen ist der sechste Platz unsichtbar (<see cref="Rect"/> der Breite 0).
     /// </summary>
@@ -96,6 +96,18 @@ public sealed class LineupScreen : Screen
     public bool InMatch { get; init; }
 
     private Club Club => TeamUi.OwnClub(Host);
+
+    private LineupGrid? _grid;
+
+    /// <summary>
+    /// Gitter des Bildschirms (K07, A971/A972): Kennzeichen „sechster Platz offen“ und Anzeige des sechsten in einer Sturmzelle.
+    /// [ORIGINAL] Bildschirmzustand der Aufstellung 0x40364 (<c>[bp−0x0E]</c>, <c>[bp−0x46]</c>), gesetzt beim Aufbau (Datei
+    /// 0x403DB–0x404FD, <see cref="Enter"/>); nur lesend aus dem Spielzustand, AGENTS.md §4.
+    /// </summary>
+    public LineupGrid Grid => _grid ??= LineupGrid.Build(Club.Lineup);
+
+    /// <summary>Aufbau: Gitter neu aus der Aufstellung (Datei 0x403DB–0x404FD).</summary>
+    public override void Enter() => _grid = LineupGrid.Build(Club.Lineup);
 
     /// <summary>Gewählte Reihe 0–3 bzw. <see cref="Lineup.GoalkeeperLine"/>, null = keine (DGROUP [bp−9] = 0xFF beim Aufbau).</summary>
     public int? SelectedLine => _selectedLine;
@@ -189,8 +201,8 @@ public sealed class LineupScreen : Screen
             return;
         var line = _selectedLine;
         var result = InMatch
-            ? Club.ClickPlayerInMatch(player, ref line, right: input.RightClick)
-            : Club.ClickPlayer(player, ref line, right: input.RightClick);
+            ? Club.ClickPlayerInMatch(player, ref line, right: input.RightClick, Grid)
+            : Club.ClickPlayer(player, ref line, right: input.RightClick, Grid);
         _selectedLine = line;
         Report(result);
     }
@@ -207,7 +219,7 @@ public sealed class LineupScreen : Screen
     {
         if (LineAt(x, y) is { } line)
             _selectedLine = line;
-        if (!OnSlot(x, y, out var slot) || Club.Lineup[slot] is not { } placed)
+        if (!OnSlot(x, y, out var slot) || Grid.PlayerAt(Club.Lineup, slot) is not { } placed)
             return;
         if (placed.InjuredGames > 0 || placed.SuspendedGames > 0 || PenaltyMinutes(placed) > 0) // A808: Strafbank im Spiel
         {
@@ -216,9 +228,9 @@ public sealed class LineupScreen : Screen
             return;
         }
         if (InMatch)
-            Club.ClearLineupSlotInMatch(slot);
+            Club.ClearLineupSlotInMatch(slot, Grid);
         else
-            Club.ClearLineupSlot(slot);
+            Club.ClearLineupSlot(slot, Grid);
     }
 
     /// <summary>Reihe unter der Maus: Block 0–3 oder Torhüterkasten (<see cref="Lineup.GoalkeeperLine"/>).</summary>
@@ -282,7 +294,7 @@ public sealed class LineupScreen : Screen
     {
         foreach (var s in LineupSlot.All)
         {
-            if (SlotButton(s, Club.Lineup.SixthSkaterOpen).Contains(x, y))
+            if (SlotButton(s, Grid.SixthOpen).Contains(x, y))
             {
                 slot = s;
                 return true;
@@ -358,10 +370,10 @@ public sealed class LineupScreen : Screen
 
         foreach (var slot in LineupSlot.All)
         {
-            var r = SlotButton(slot, club.Lineup.SixthSkaterOpen);
+            var r = SlotButton(slot, Grid.SixthOpen);
             if (r.W == 0)
                 continue;
-            var player = club.Lineup[slot];
+            var player = Grid.PlayerAt(club.Lineup, slot); // A972: der sechste in der geleerten Sturmzelle
             TeamUi.SmallButton(s, Assets, r.X, r.Y, player?.Number.ToString() ?? "", pressed: false);
         }
 
@@ -377,7 +389,7 @@ public sealed class LineupScreen : Screen
     private string? HoverText(IReadOnlyList<Player> rows)
     {
         if (OnSlot(_mouseX, _mouseY, out var slot))
-            return Club.Lineup[slot] is { } sp ? $"Name: {sp.Name} ({sp.Age} Jahre)" : null;
+            return Grid.PlayerAt(Club.Lineup, slot) is { } sp ? $"Name: {sp.Name} ({sp.Age} Jahre)" : null;
         var layout = PlayerListLayout.Lineup(rows.Count);
         var row = PlayerHintLine.Row(layout, _mouseY);
         var column = PlayerHintLine.Column(layout, _mouseX);

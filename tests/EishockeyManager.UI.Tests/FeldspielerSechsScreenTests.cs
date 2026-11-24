@@ -82,6 +82,9 @@ public sealed class FeldspielerSechsScreenTests
         var sixth = club.Players.First(p => p.Role == PlayerRole.Defender && p.Available && !club.Lineup.Contains(p));
         Assert.Equal(LineupResult.Assigned, club.ClickPlayer(sixth, ref line, right: false));
         var second = club.Lineup[LineupSlot.Defender(0, 1)];
+        // A971: Das Kennzeichen ist Bildschirmzustand und entsteht beim Aufbau (Datei 0x403DB–0x404FD); der Klick oben lief am
+        // Bildschirm vorbei, also neu aufbauen.
+        d.Host.Show(new LineupScreen(d.Host, new MainMenuScreen(d.Host)));
         d.Frame();
         Assert.NotEqual(closed, Region(d, Sixth));
 

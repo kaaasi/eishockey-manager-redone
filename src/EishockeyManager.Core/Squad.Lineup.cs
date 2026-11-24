@@ -74,7 +74,7 @@ public sealed partial class GameState
 /// Aufstellung wie im Original: vier Blöcke (3 Stürmer, 2 Verteidiger) und ein Torhüter (TW).
 /// Ein Spieler steht höchstens auf einem Platz; Plätze nehmen nur Spieler der passenden Art an.
 /// </summary>
-public sealed class Lineup
+public sealed partial class Lineup
 {
     public const int Blocks = 4;
     public const int ForwardsPerBlock = 3;
@@ -109,9 +109,11 @@ public sealed class Lineup
     /// Ist der sechste Feldspielerplatz offen (drei Abwehrplätze in Reihe 1)? [ORIGINAL] Kennzeichen <c>[bp−0xE]</c> des
     /// Aufstellungsbildschirms: beim Aufbau gesetzt, wenn Reihe 1 sechs Spieler hat und die Torhüterzelle leer ist (Datei
     /// 0x404E8–0x404FD), beim Öffnen durch einen Klick (Datei 0x414B4), gelöscht beim Leeren eines Platzes der Abwehrhälfte (Datei
-    /// 0x40B69–0x40C98, 0x41032–0x41049). [APPROX] Das Remake leitet es aus dem Zustand ab (Platz belegt, kein Torhüter) statt es je
-    /// Bildschirmaufbau zu führen; verschieden nur, wenn in Reihe 1 nach dem Öffnen ein Stürmer herausgenommen wird (Original: offen
-    /// bis zum nächsten Aufbau, dann geschlossen mit dem Spieler unsichtbar in Zelle 5; Remake: offen).
+    /// 0x40B69–0x40C98, 0x41032–0x41049). [ORIGINAL] A971: Die Vereinsaufstellung führt es als Bildschirmzustand
+    /// (<see cref="LineupGrid"/>, Beleg <c>k07_sechster.py</c>). Dieser Wert ist die Ableitung aus dem Zustand (Platz belegt, kein
+    /// Torhüter) für Aufrufe ohne Gitter. [APPROX] Die Nationalaufstellung (<c>CupsNational.Lineup.cs</c>, außerhalb der Dateigrenze
+    /// der Spur <c>aufstellung</c>) nutzt weiter die Ableitung; verschieden nur, wenn in Reihe 1 nach dem Öffnen ein Stürmer
+    /// herausgenommen wird (Original: Kennzeichen 0, Spieler in der Sturmzelle; Remake: offen).
     /// </summary>
     public bool SixthSkaterOpen => _sixthSkater is not null && _goalkeeper is null;
 
@@ -200,8 +202,9 @@ public sealed class Lineup
     /// Datei 0x40B95–0x40B9B (Platz geleert) und 0x41043–0x41049 (aus der Kaderliste herausgenommen): Zelle 5 wandert in die frei
     /// gewordene Zelle, <c>[bp−0xE]</c> = 0; +0x15 bleibt 1. Ohne offenen Platz baut der nächste Aufbau das Gitter nach +0x15 in
     /// Kaderfolge neu (Datei 0x40478), auch dann rückt der dritte Spieler der Abwehrhälfte in die freie Zelle.
-    /// [APPROX] Leert man in Reihe 1 einen Sturmplatz, zeigt das Original den sechsten Feldspieler in der Sturmzelle (Datei 0x40B95
-    /// für jede Zelle der Reihe 1), sein +0x15 bleibt aber Abwehr; das Remake lässt ihn auf seinem Platz.
+    /// [ORIGINAL] A972: Leert man in Reihe 1 bei offenem Platz einen Sturmplatz, zeigt das Original den sechsten Feldspieler in der
+    /// Sturmzelle (Datei 0x40B95 für jede Zelle der Reihe 1), sein +0x15 bleibt Abwehr; das führt das Gitter des Bildschirms
+    /// (<see cref="Clear(LineupSlot, LineupGrid?)"/>), der Spieler bleibt auf dem sechsten Platz.
     /// </summary>
     private void MoveSixthSkaterInto(LineupSlot freed)
     {
@@ -487,13 +490,16 @@ public sealed partial class Club
         return LineupResult.Assigned;
     }
 
-    /// <summary>Platz leeren; der Spieler ist danach nicht mehr eingesetzt (Datei 0x40CF8–0x40D0D).</summary>
-    public void ClearLineupSlot(LineupSlot slot)
+    /// <summary>
+    /// Platz leeren; der Spieler ist danach nicht mehr eingesetzt (Datei 0x40CF8–0x40D0D). <paramref name="grid"/>: Gitter des
+    /// Bildschirms (A971/A972, <see cref="LineupGrid"/>); ohne Gitter wie bisher.
+    /// </summary>
+    public void ClearLineupSlot(LineupSlot slot, LineupGrid? grid = null)
     {
-        if (Lineup[slot] is not { } player)
+        if ((grid?.PlayerAt(Lineup, slot) ?? Lineup[slot]) is not { } player)
             return;
         TakeOverDressed();
-        Lineup.Clear(slot);
+        Lineup.Clear(slot, grid);
         _dressed.Remove(player.Id);
         DisableAutoLineup();
     }
@@ -609,7 +615,9 @@ public sealed partial class Club
     /// <param name="line">gewählte Reihe 0–3, <see cref="Lineup.GoalkeeperLine"/> oder null (keine, DGROUP [bp−9] = 0xFF);
     /// nach dem Herausnehmen die Reihe des Spielers.</param>
     /// <param name="right">Rechtsklick (Ereignis 3) statt Linksklick (Ereignis 1).</param>
-    public LineupResult ClickPlayer(Player player, ref int? line, bool right)
+    /// <param name="grid">Gitter des Bildschirms (Kennzeichen „sechster Platz offen“, A971/A972, <see cref="LineupGrid"/>); ohne
+    /// Gitter gilt <see cref="Lineup.SixthSkaterOpen"/>.</param>
+    public LineupResult ClickPlayer(Player player, ref int? line, bool right, LineupGrid? grid = null)
     {
         if (!Players.Contains(player))
             return LineupResult.NotInSquad;
@@ -621,12 +629,12 @@ public sealed partial class Club
         if (!IsDressed(player) && DressedCount >= MaxDressed)
             return LineupResult.RosterFull;
         // [ORIGINAL] Datei 0x40EC4–0x40EFF: Torhüter (+0x0F), Torhüterreihe gewählt, sechster Platz offen, Linksklick.
-        if (!right && player.Role == PlayerRole.Goalkeeper && line == Lineup.GoalkeeperLine && Lineup.SixthSkaterOpen)
+        if (!right && player.Role == PlayerRole.Goalkeeper && line == Lineup.GoalkeeperLine && Lineup.SixthOpen(grid))
             return LineupResult.SixSkaters;
         if (Lineup.FindSlot(player) is { } from)
         {
             TakeOverDressed();
-            Lineup.Clear(from);
+            Lineup.Remove(from, grid);
             if (right)
                 _dressed.Add(player.Id);
             else
@@ -642,7 +650,7 @@ public sealed partial class Club
             return LineupResult.WrongRole;
         foreach (var slot in Lineup.SearchSlots(l, player.Role))
         {
-            if (Lineup[slot] is not null)
+            if (!Lineup.IsFreeCell(slot, grid))
                 continue;
             if (slot.Role == player.Role)
                 return AssignToLineup(slot, player);
@@ -653,7 +661,7 @@ public sealed partial class Club
             return LineupResult.Assigned;
         }
         // [ORIGINAL] A937: sechster Feldspielerplatz (Datei 0x413C9–0x414B4), eingesetzt wie sonst (Datei 0x41533/0x415B2).
-        if (Lineup.TryOpenSixthSkater(l, player))
+        if (Lineup.TryOpenSixthSkater(l, player, grid))
         {
             TakeOverDressed();
             _dressed.Add(player.Id);

@@ -32,8 +32,11 @@ namespace EishockeyManager.Core;
 /// </summary>
 public sealed partial class Club
 {
-    /// <summary>Klick auf einen Spieler der Kaderliste im Spiel (siehe Klasse; ohne Spiel <see cref="ClickPlayer"/>).</summary>
-    public LineupResult ClickPlayerInMatch(Player player, ref int? line, bool right)
+    /// <summary>
+    /// Klick auf einen Spieler der Kaderliste im Spiel (siehe Klasse; ohne Spiel <see cref="ClickPlayer"/>, dort auch
+    /// <paramref name="grid"/>).
+    /// </summary>
+    public LineupResult ClickPlayerInMatch(Player player, ref int? line, bool right, LineupGrid? grid = null)
     {
         if (!Players.Contains(player))
             return LineupResult.NotInSquad;
@@ -46,14 +49,14 @@ public sealed partial class Club
         if (MatchEngine.PenaltyBoxMinutes(this, player) > 0)
             return LineupResult.Suspended;
         // [ORIGINAL] Datei 0x40EC4–0x40EFF, ohne Blick auf den Kennwert (siehe Klasse).
-        if (!right && player.Role == PlayerRole.Goalkeeper && line == Lineup.GoalkeeperLine && Lineup.SixthSkaterOpen)
+        if (!right && player.Role == PlayerRole.Goalkeeper && line == Lineup.GoalkeeperLine && Lineup.SixthOpen(grid))
             return LineupResult.SixSkaters;
         if (Lineup.FindSlot(player) is { } from)
         {
             if (right)
                 return LineupResult.Unchanged; // [ORIGINAL] Datei 0x41287–0x4129E
             TakeOverDressed();
-            Lineup.Clear(from);
+            Lineup.Remove(from, grid);
             _dressed.Add(player.Id); // [ORIGINAL] Datei 0x4115F: +0x0A = Kennwert ≠ 0
             line = Lineup.LineOf(from);
             return LineupResult.TakenOut;
@@ -64,7 +67,7 @@ public sealed partial class Club
             return LineupResult.WrongRole;
         foreach (var slot in Lineup.SearchSlots(l, player.Role))
         {
-            if (Lineup[slot] is not null)
+            if (!Lineup.IsFreeCell(slot, grid))
                 continue;
             // [ORIGINAL] Datei 0x41533: Platz +0x15 und eingesetzt +0x0A = 1, ohne Grenze 22 (Datei 0x40E2A); andere Hälfte der
             // Reihe wie beim Linksklick (Datei 0x414D3, A683).
@@ -76,7 +79,7 @@ public sealed partial class Club
             return LineupResult.Assigned;
         }
         // [ORIGINAL] A937: sechster Feldspielerplatz (Datei 0x413C9–0x414B4), Kennwert an 0x41533 (Datei 0x413E8): eingesetzt.
-        if (Lineup.TryOpenSixthSkater(l, player))
+        if (Lineup.TryOpenSixthSkater(l, player, grid))
         {
             TakeOverDressed();
             _dressed.Add(player.Id);
@@ -86,13 +89,13 @@ public sealed partial class Club
         return LineupResult.NoRoom;
     }
 
-    /// <summary>Platz leeren im Spiel: der Spieler bleibt eingesetzt ([ORIGINAL] Datei 0x40CFD).</summary>
-    public void ClearLineupSlotInMatch(LineupSlot slot)
+    /// <summary>Platz leeren im Spiel: der Spieler bleibt eingesetzt ([ORIGINAL] Datei 0x40CFD); Gitter wie <see cref="ClearLineupSlot"/>.</summary>
+    public void ClearLineupSlotInMatch(LineupSlot slot, LineupGrid? grid = null)
     {
-        if (Lineup[slot] is not { } player)
+        if ((grid?.PlayerAt(Lineup, slot) ?? Lineup[slot]) is not { } player)
             return;
         TakeOverDressed();
-        Lineup.Clear(slot);
+        Lineup.Clear(slot, grid);
         _dressed.Add(player.Id);
         DisableAutoLineup();
     }
