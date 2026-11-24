@@ -60,12 +60,10 @@ def one(manager, status, button):
     c.hooks[0x0C068] = event
     c.hooks[0x0C097] = wait
     c.hooks[0x0C0B8] = msg
-    mark = 0
     try:
         c.call(0x40364, 0)
     except emu16.Stop:
         pass
-    _ = mark
     return msgs, c.calls
 
 

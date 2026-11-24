@@ -16,10 +16,7 @@ PATH = sys.argv[1] if len(sys.argv) > 1 else None
 
 def run(league, m, clubs, rolls, cup_round=0, line1=(), line2=()):
     c = emu16.load(PATH)
-    o110 = next(r for r in c.regions if r.stub == 0x110)
-    oe8 = next(r for r in c.regions if r.stub == 0xE8)
     c.allowed = [(0x29C3B, 0x29CFA), (0x34FD5, 0x34FF9), (0x45CD0, 0x45D46)]
-    _ = o110, oe8
     c.sdb(0xA70E, m)
     for i, v in enumerate(clubs):
         c.sdb(0x966F + 0x1AF * i, v)

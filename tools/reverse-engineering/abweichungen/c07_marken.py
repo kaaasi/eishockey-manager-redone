@@ -23,11 +23,8 @@ NAME = {0: "DEB-Pokal (Zeile 0)", 2: "Play-off (Zeile 2)", 3: "WM-Endrunde (Zeil
 
 def cpu():
     c = emu16.load(PATH)
-    ov_f0 = next(r for r in c.regions if r.stub == 0xF0)
-    ov_e8 = next(r for r in c.regions if r.stub == 0xE8)
     c.allowed = [(0x369C7, 0x36B5D), (0x37A62, 0x386D1), (0x32AA3, 0x32E23), (0x3901B, 0x397BB),
                  (emu16.HEADER, emu16.HEADER + 0x46E * 16)]
-    _ = ov_f0, ov_e8
     c.int_hook = lambda cpu_, n: (cpu_.r.__setitem__("ax", 0), True)[1]
     c.sdw(0x9657, 0)
     c.sdw(0x9659, emu16.FAR_HEAP_SEG)                  # team table: all fields 0 (no national coach, not watched)
@@ -50,10 +47,8 @@ def run(row, h, g, goal_minute=None, side=1):
     c.sdb(0xCCA3, 0)
     c.sdb(0xA968, 0)
     log, shoot = [], []
-    minute = {"m": 0}
 
     def chance(cc):
-        minute["m"] += 0
         m = c.db(0xE19E)
         return side if goal_minute is not None and m == goal_minute else 0
     c.hooks[0x09F5C] = chance
