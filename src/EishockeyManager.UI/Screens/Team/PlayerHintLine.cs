@@ -85,7 +85,9 @@ public static class PlayerHintLine
     /// A808: [ORIGINAL] Die Sperre in Minuten (+0x0D mit +0x09 Bit 0) ist die Strafbank im laufenden Spiel (Strafe 0x35C02:
     /// +0x0D = 2 bzw. 5, Ende 0x35795; die Abzüge 0x5488C/0x5490C laufen erst in der Spielabrechnung nach dem Spiel), im Remake
     /// <see cref="PlayerHintInfo.PenaltyMinutes"/>. [APPROX] Außerhalb davon zeigt das Remake die verbleibenden Spiele aus
-    /// <see cref="Player.SuspendedGames"/> (im Original kommt Status 1 ohne Strafbank nicht vor). Unbekannte Art (ältere
+    /// <see cref="Player.SuspendedGames"/> (im Original kommt Status 1 ohne Strafbank nicht vor). Der Zweig ist im Spiel nicht
+    /// erreichbar: kein Schreiber setzt <see cref="Player.SuspendedGames"/> über 0 (nur Aufbauten in Tests; Spur statistik-anzeige,
+    /// B33/A958 – keine sichtbare Abweichung). Unbekannte Art (ältere
     /// Spielstände): „Verletzt.“ ohne Klammer.
     /// </summary>
     public static string? Text(Player p, int column, PlayerHintInfo info, bool showExhaustion)

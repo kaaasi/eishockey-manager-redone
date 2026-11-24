@@ -19,10 +19,10 @@ namespace EishockeyManager.UI.Screens.Statistics;
 ///   211; ab x = 66 drei Zeilen (211, 219, 227): „n. Platz der Liga“ / „Play-Off VIERTELFINALE …“ / „Deutscher Meister“,
 ///   „DEB-Pokal: Runde“ / „SIEGER“, „Europacup: Gruppe / Endrunde / SIEGER / Nicht im Wettbewerb“; Farbe 11,
 ///   Titel 7. Ohne Saison: „Im ersten Jahr gibt's hier noch keine Einträge...“.</item>
-/// <item>[APPROX] Balken je Saison (3 Pixel Abstand, 2 Pixel breit ab Achse + 2): Höhe aus dem Abschneiden; das
-///   Original stapelt 12er-Blöcke nach einer Kodierung, die hier nicht vollständig gelesen ist. Video: 8. der
-///   Oberliga ≈ 10 Pixel, DEB-Pokal „Erste Runde“ ≈ 4 Pixel. Unter jeder Achse eine rote Markierung der
-///   angezeigten Saison.</item>
+/// <item>[ORIGINAL] Balken je Saison (3 Pixel Abstand, 2 Pixel breit ab Achse + 2) aus den Saisonbytes des Managers (Schreiber
+///   Datei 0x55B36–0x55DBD, Bildschirm 0x2C1EE, Füllungen 0x0B620; Abweichung B28, Beleg
+///   <c>tools/reverse-engineering/abweichungen/b28_historie_balken.py</c>): siehe <see cref="Bars"/>. Unter jeder Achse eine rote
+///   Markierung der angezeigten Saison.</item>
 /// </list>
 /// </remarks>
 public sealed class HistoryScreen : Screen
@@ -124,9 +124,9 @@ public sealed class HistoryScreen : Screen
             s.HLine(AxisX[g], AxisBottom[g], 0x98 + 1, 6);
             for (var i = 0; i < seasons.Count && i < 50; i++)
             {
-                var height = BarHeight(g, seasons[i], AxisBottom[g] - AxisTop[g]);
-                if (height > 0)
-                    s.Fill(new Rect(AxisX[g] + 2 + 3 * i, AxisBottom[g] - height, 2, height), BarColor(g, seasons[i]));
+                foreach (var (y1, y2, color) in Bars(g, seasons[i], AxisBottom[g]))
+                    if (y1 <= y2)
+                        s.Fill(new Rect(AxisX[g] + 2 + 3 * i, y1, 2, y2 - y1 + 1), color);
             }
             if (seasons.Count > 0)
                 Marker(s, AxisX[g] + 2 + 3 * Math.Min(Index, 49), AxisBottom[g] + 1);
@@ -163,29 +163,79 @@ public sealed class HistoryScreen : Screen
     public const byte MarkerColor = 16;
 
     /// <summary>
-    /// Balkenfarbe je Grafik: Liga Index 29 (32 | 48 | 81), DEB-Pokal Index 27 (97 | 65 | 48). [ORIGINAL] DOSBox-Sitzung 2,
-    /// `file14_5` (A357). Europapokal nicht belegt (nicht im Wettbewerb aufgenommen): [APPROX] wie der DEB-Pokal.
+    /// Balkenfarbe je Grafik: Liga Index 29 (32 | 48 | 81, unterster Block), DEB-Pokal und Europacup Index 27 (97 | 65 | 48).
+    /// [ORIGINAL] DOSBox-Sitzung 2, `file14_5` (A357); Europacup Farbe 27 (Datei 0x2C1EE, A805: keine Abweichung).
     /// </summary>
     public static byte BarColorNormal(int graph) => graph == 2 ? (byte)29 : (byte)27;
 
-    /// <summary>
-    /// Balkenhöhe: Liga nach Gesamtplatz (2 · (37 − …) Pixel mit 1-basiertem Rang, wie ihn <c>StatisticsHistory</c> speichert; „12. Platz der Oberliga“ = 2 Pixel, [ORIGINAL] `file14_5`; R14UR-02),
-    /// Pokale nach erreichter Runde. [APPROX] DEB-Pokal 3 Pixel je Runde („Erste Runde“ = 3 Pixel, `file14_5`; Formel in em.exe
-    /// nicht gelesen, zweiter Messpunkt fehlt), Europapokal wie bisher geschätzt.
-    /// </summary>
-    private static int BarHeight(int graph, ManagerSeasonHistory h, int range) => graph switch
-    {
-        0 => h.Europe switch { CupOutcome.Winner => range, CupOutcome.Eliminated => h.EuropeFinalRound ? range * 2 / 3 : range / 3, _ => 0 },
-        1 => h.Deb switch { CupOutcome.Winner => range, CupOutcome.Eliminated => Math.Min(range, 3 * (h.DebRound + 1)), _ => 0 },
-        _ => Math.Min(range, 2 * (37 - (h.Rank + 12 * (int)h.League))),
-    };
+    /// <summary>[ORIGINAL] Farben der drei Liga-Blöcke von unten nach oben und Farbe der Titel (Sieger, Meister).</summary>
+    public const byte LeagueMiddleColor = 22, LeagueTopColor = 23, TitleColor = 30;
 
-    private static byte BarColor(int graph, ManagerSeasonHistory h) =>
-        graph switch
+    /// <summary>
+    /// Saisonbytes des Originals (Manager + 0x18 + 4 · Saison, Schreiber Datei 0x55B36–0x55DBD).
+    /// <list type="bullet">
+    /// <item>[ORIGINAL] Liga: Platz in der Liga + DGROUP 0x7C0[Liga] (0, 12, 24; Datei 0x55C24–0x55C52); in der Bundesliga ersetzen
+    ///   Plätze 1–8 die Play-off-Stufe (0x35 Endspiel, 0x34 Halbfinale, 0x33 Viertelfinale; Suche in DGROUP 0x5D3B + 8 … 13, Datei
+    ///   0x55B76–0x55BD2), Meister setzt Bit 7 (Datei 0x55BEA).</item>
+    /// <item>[ORIGINAL] DEB-Pokal: erreichte Runde, Sieger Bit 7 (Datei 0x55C87–0x55CC4).</item>
+    /// <item>Europacup: 8 + Stufe, Sieger 0x8D (Datei 0x55D58–0x55D9D); [APPROX] Stufe Gruppe 1, Endrunde 2 wie
+    ///   <see cref="SeasonCodes.Of"/>.</item>
+    /// </list>
+    /// </summary>
+    public static (int League, int Deb, int Europe) Codes(ManagerSeasonHistory h)
+    {
+        var codes = SeasonCodes.Of(h);
+        var league = h.LeagueOutcome == LeagueOutcome.Rank ? h.Rank + 12 * (int)h.League : codes.League;
+        return (league, codes.Deb, codes.Europe);
+    }
+
+    /// <summary>
+    /// Füllungen (y1, y2 einschließlich, Farbe) eines Balkens in der Zeichenfolge des Originals; <paramref name="bottom"/> = Achse.
+    /// <list type="bullet">
+    /// <item>[ORIGINAL] Liga, Byte v (Play-off 0x33/0x34/0x35 zählt als 6/4/2): drei gestapelte Blöcke zu je 12 Plätzen à 2 Pixel,
+    ///   unten Farbe 29 (Achse − 25 … Achse − 1, ab v = 25 nur 2 · (37 − v) Pixel), Mitte Farbe 22 (bis v = 24, ab v = 13 gekürzt),
+    ///   oben Farbe 23 (bis v = 12); die Blockgrenzen werden doppelt gezeichnet, der obere Block gewinnt. Bit 7 (Meister) oder
+    ///   v = 1: alle drei Blöcke voll in Farbe 30. Beispiele (Achse 173): v = 6 → 148–172/29, 124–148/22, 111–124/23.</item>
+    /// <item>[ORIGINAL] DEB-Pokal: 3 · Byte Pixel Farbe 27, Sieger 18 Pixel Farbe 30.</item>
+    /// <item>[ORIGINAL] Europacup: nur bei Bit 3–6 ≠ 0, 3 · (Byte &amp; 7) Pixel Farbe 27, Sieger 18 Pixel Farbe 30.</item>
+    /// <item>Byte 0 bzw. Runde 0 ergibt im Original eine umgekehrte Füllung (y1 = y2 + 1), hier kein Balken.
+    ///   [APPROX] DEB-Pokal „nicht im Wettbewerb“ (0x1E) zeichnet hier keinen Balken; das Original würde 90 Pixel über die
+    ///   Achse hinaus füllen (Nachbildung y1 = −14), der Fall ist im Spiel nicht beobachtet.</item>
+    /// </list>
+    /// </summary>
+    public static IReadOnlyList<(int Y1, int Y2, byte Color)> Bars(int graph, ManagerSeasonHistory h, int bottom)
+    {
+        var (league, deb, europe) = Codes(h);
+        var bars = new List<(int, int, byte)>();
+        switch (graph)
         {
-            0 when h.Europe == CupOutcome.Winner => 7,
-            1 when h.Deb == CupOutcome.Winner => 7,
-            2 when h.LeagueOutcome == LeagueOutcome.GermanChampion => 7,
-            _ => BarColorNormal(graph),
-        };
+            case 0:
+                if ((europe & 0x78) == 0)
+                    break;
+                if ((europe & 0x80) != 0)
+                    bars.Add((bottom - 18, bottom - 1, TitleColor));
+                else if ((europe & 7) > 0)
+                    bars.Add((bottom - 3 * (europe & 7), bottom - 1, BarColorNormal(0)));
+                break;
+            case 1:
+                if (h.Deb == CupOutcome.NotParticipating)
+                    break;
+                if ((deb & 0x80) != 0)
+                    bars.Add((bottom - 18, bottom - 1, TitleColor));
+                else if (deb > 0)
+                    bars.Add((bottom - 3 * deb, bottom - 1, BarColorNormal(1)));
+                break;
+            default:
+                var full = (league & 0x80) != 0 || league == 1;
+                var v = full ? 1 : league is >= 0x33 and <= 0x35 ? 2 * (0x36 - league) : league;
+                byte Color(byte c) => full ? TitleColor : c;
+                bars.Add((v >= 25 ? bottom - 2 * (37 - v) : bottom - 25, bottom - 1, Color(BarColorNormal(2))));
+                if (v <= 24)
+                    bars.Add((v >= 13 ? bottom - 24 - 2 * (25 - v) : bottom - 49, bottom - 25, Color(LeagueMiddleColor)));
+                if (v <= 12)
+                    bars.Add((bottom - 48 - 2 * (13 - v), bottom - 49, Color(LeagueTopColor)));
+                break;
+        }
+        return bars;
+    }
 }

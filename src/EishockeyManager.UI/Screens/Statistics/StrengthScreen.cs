@@ -18,8 +18,10 @@ namespace EishockeyManager.UI.Screens.Statistics;
 /// <item>[ORIGINAL] Smiley bei (240 | 36 + 15 n); Trendbalken zwei Zeilen (37/38 + 15 n) von x = 250 bis 204 + Wert,
 ///   Farbe 12 (über 50), 24 (= 50), 18 (unter 50).</item>
 /// <item>[ORIGINAL] Knöpfe „Gesamt“, „Abwehr“, „Sturm“ bei x = 43 + 80 i, y = 212.</item>
-/// <item>[APPROX] Smiley: Das Original zeichnet ihn aus einem Wertverlauf je Verein (zu Saisonbeginn leer → gelb);
-///   das Remake führt diesen Verlauf nicht und zeigt immer das gelbe Gesicht.</item>
+/// <item>[ORIGINAL] Je Zeile ruft 0x51206 die Funktion 0x51AAF des Gegnerfensters mit dem Teamsatz (Datei 0x518AB–0x518ED):
+///   die acht Bilanzzeichen als Gesichter aus kb\33 bei (80 + 8 i | 36 + 15 n), leere Zeichen frei, und das Gesicht bei
+///   (240 | 36 + 15 n) nach <see cref="GameState.FormMood"/> (Abweichung B29/A361, Nachbildung <c>b29_staerken.py</c>; Video
+///   <c>folge08_01735</c> „STÄRKEN Oberliga - Gesamt“). Vorher: keine Zeichen, Gesicht immer gelb.</item>
 /// </list>
 /// </remarks>
 public sealed class StrengthScreen : Screen
@@ -31,6 +33,12 @@ public sealed class StrengthScreen : Screen
     public const int ValuesX = 142;
     public const int ButtonY = 212;
     public static Rect ButtonRect(int i) => Widgets.ButtonRect(43 + 80 * i, ButtonY);
+
+    /// <summary>[ORIGINAL] x des ersten Bilanzzeichens (0x51AAF mit x 0x50, Datei 0x518AB–0x518ED).</summary>
+    public const int MarksX = 0x50;
+
+    /// <summary>Gesicht zu Zeichen bzw. Stimmung: 3 grün, 2 gelb, 1 rot (0x51AAF).</summary>
+    public static Widgets.Mood Mood(int value) => value switch { 3 => Widgets.Mood.Up, 1 => Widgets.Mood.Down, _ => Widgets.Mood.Same };
 
     private readonly Screen _back;
     private readonly League? _league;
@@ -133,7 +141,14 @@ public sealed class StrengthScreen : Screen
             CompetitionWidgets.Left(s, mini, ValuesX, y, N(row.Condition) + gap + N(row.Technique) + gap + N(row.Form) + gap + N(row.Average), color);
             s.HLine(43, 43 + RowPitch * n, 261 - 43 + 1, Colors.Black);
 
-            Widgets.Smiley(s, Assets, Widgets.Mood.Same, 240, 36 + RowPitch * n);
+            if (Host.Game is { } g)
+            {
+                var form = g.TeamForm(row.Club.Index);
+                for (var i = 0; i < form.Count; i++)
+                    if (form[i] != 0)
+                        Widgets.Smiley(s, Assets, Mood(form[i]), MarksX + 8 * i, 36 + RowPitch * n);
+                Widgets.Smiley(s, Assets, Mood(GameState.FormMood(form)), 240, 36 + RowPitch * n);
+            }
             var barColor = row.Trend > 50 ? (byte)12 : row.Trend == 50 ? Colors.Yellow : Colors.Red;
             var end = 204 + row.Trend;
             for (var k = 0; k < 2; k++)

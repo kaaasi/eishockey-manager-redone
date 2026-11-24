@@ -82,8 +82,9 @@ public static class PlayerDataWindow
     /// Text der Zeile „Tore:“/„Spiele:“ je Spalte: <c>Zahl( n)</c>. [ORIGINAL] A367, em.exe Datei 0x4651–0x469B (Tore: Byte +0x03 + i,
     /// in Klammern Wort +0x22 + 2 i) und 0x4753/0x4793 (Spiele: +0x06 + i, +0x1C + 2 i); die Zahlenfunktion schreibt für 0 „-“. Spalte
     /// 0 Liga, 1 DEB-Pokal, 2 Europapokal (<see cref="CompetitionSlot"/>); in Klammern der Zähler beim jetzigen Verein
-    /// (<see cref="Player.ClubGames"/>, <see cref="Player.ClubGoals"/>). [APPROX] Torhüter: Gegentore in der Saison
-    /// (<see cref="Player.GoalsAgainst"/>); einen Zähler der Gegentore beim Verein führt das Remake nicht („-“).
+    /// (<see cref="Player.ClubGames"/>, <see cref="Player.ClubGoals"/>). [ORIGINAL] Torhüter: Gegentore in der Saison
+    /// (<see cref="Player.GoalsAgainst"/>), in Klammern immer „-“: Gegentore zählt nur Datei 0xA3F7 in +0x03, den Vereinswert +0x22
+    /// schreibt nur der Torschütze (Datei 0x542F4–0x54333) und 0x42E9A beim Anlegen nur +0x03 (Abweichung B33/A957: keine Abweichung).
     /// </summary>
     public static string CompetitionCell(Player p, int column, bool goals)
     {

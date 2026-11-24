@@ -35,8 +35,12 @@ public sealed record StrengthRow(Club Club, int Condition, int Technique, int Fo
 ///   WM neu ausgewürfelt), Form und Tagesform aus den Feldern des Vereinsplatzes (<see cref="GameState.NationalTeamValues"/>).
 ///   Land des Bundestrainers: dieselben Felder, geschrieben von 0x952C aus seiner Aufstellung (A009,
 ///   <c>GameState.UpdateNationalTeamValues</c>).</item>
-/// <item>[APPROX] Vor dem ersten Spiel eines Spielstands sind die Teamwerte noch nicht gezogen
-///   (<see cref="MatchEngine.LoadTeamValues"/>): Streuung 0, Form und Tagesform 50 (<see cref="MatchEngine.TeamValuesOf"/>).</item>
+/// <item>[ORIGINAL] Vor dem ersten Spiel: die Werte des Laders 0x2EF1B, der beim Programmstart läuft (Datei 0x439BB vor 0x43A61);
+///   das Remake zieht sie in <see cref="NewGame.Create"/> (<see cref="MatchEngine.LoadTeamValues(GameState)"/>). DOSBox
+///   <c>nur-weltkugel/27</c> zeigt vor dem ersten WM-Spiel Form 46 … 54 (Abweichung B29/A700, Probe
+///   <c>StatistikAnzeigeTeil2Tests.Strength_BeforeFirstMatch_ShowsLoadedForm</c>). Nur Aufbauten ohne
+///   <see cref="NewGame.Create"/> zeigen bis zum ersten Bedarf Streuung 0, Form und Tagesform 50
+///   (<see cref="MatchEngine.TeamValuesOf"/>).</item>
 /// </list>
 /// </remarks>
 public static class StrengthTable

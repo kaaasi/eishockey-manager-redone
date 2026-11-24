@@ -35,7 +35,8 @@ public class SeasonEndStatusUiTests
         Assert.Equal(new Rect(24, 0, 24, 21), SeasonEndSummaryScreen.EventIcon(SeasonEvent.Relegation));  // Bit 1 → 1
         Assert.Equal(new Rect(96, 0, 24, 21), SeasonEndSummaryScreen.EventIcon(SeasonEvent.CupWinner));   // Bit 4 → 4
         Assert.Equal(new Rect(0, 21, 24, 21), SeasonEndSummaryScreen.EventIcon(SeasonEvent.EuropeanCupWinner)); // Bit 5 → 6
-        Assert.Equal(new Rect(72, 0, 24, 21), SeasonEndSummaryScreen.EventIcon(SeasonEvent.GermanChampion)); // [APPROX]
+        // Bit 3 → 5 (Tabelle DGROUP 0x4B2E, Datei 0x2714F; Spur statistik-anzeige B25/A342, vorher Puck 72 | 0)
+        Assert.Equal(new Rect(120, 0, 24, 21), SeasonEndSummaryScreen.EventIcon(SeasonEvent.GermanChampion));
     }
 
     /// <summary>
