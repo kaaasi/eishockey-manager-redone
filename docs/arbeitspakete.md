@@ -68,7 +68,7 @@ Gesamtreview ChatGPT (GPT-6.2 Astra) mit Claude-Auswertung.
 - **Dateien:** `docs/analyse/re-abweichungen.md` (neu), `tools/reverse-engineering/abweichungen/*.py` (neu). **Prüfung:** Skripte
   laufen mit `~/referenz/original/gamedata/EM.EXE`, Ausgaben im Bericht; `--schnell` entfällt (kein Code unter `src/`).
   **Erstreview:** Opus 5.5 (Skripte ausführen, Stichprobe der Lesarten).
-- **Status:** Teil 1 belegt (mit C07); Teil 2: K2, K11, K13, F06, T03, F08 belegt, K07 bis auf A971/A972 (sechster Feldspieler) – PR #998 (Draft), Fortsetzung 3.
+- **Status:** Teil 1 und Teil 2 belegt (B12–B29, C07, K07 mit A971/A972, K2, K11, K13, T03, F06, F08) – PR #998, Erstreview ausstehend.
 
 ### Spur `bedienung` – Bedienung und Hauptmenü (Welle 1)
 

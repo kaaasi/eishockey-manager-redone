@@ -566,7 +566,7 @@ DGROUP 0x5CF4 = 0 und leere Zeilen, „Zug“ = Hinzufügen nach der Europapokal
   Felder zu je 300 → Werbeanteil der Monatseinnahme 600 (Werte wie oben in Drittel-DM); kündbarer Vertrag über zwei Felder,
   Angebot über eine Bande → ein Feld neu, ein Feld alt, Einnahme alt + neu. Mehrsaisonprobe (Geld).
 
-### K07 – Aufstellung: Automatik je Manager, Verletzte, Meldung (A165, A807, A936, A939; A971/A972 offen)
+### K07 – Aufstellung: Automatik je Manager, Verletzte, Meldung, sechster Feldspieler (A165, A807, A936, A939, A971, A972)
 
 `python3 tools/reverse-engineering/abweichungen/k07_automatik.py` (Neuaufstellung 0x426BC mit Auswahl 0x42838 und Rolle
 0x04180 echt; Kader von Manager 1: 3 Torhüter, 9 Verteidiger, 12 Stürmer, Werte 40 + Platz, Platz 4 verletzt und vorher
@@ -625,14 +625,60 @@ Einstellung 0x375 vorher 0, Status 2, rechts: Meldungen -; 0x375 nachher 0
   genau das (`LineupScreen` stellt die zweite Meldung hinter „ist deaktiviert !“, `DisableAutoLineup` vor den Prüfungen in
   `Squad.Lineup.cs`/`Squad.Lineup.InMatch.cs`); nur der `[APPROX]`-Satz in `LineupScreen.cs` („gewinnt diese Meldung“) ist
   überholt.
-- **A971/A972 (sechster Feldspieler): offen** – Bildschirmfeld [bp−0x0E]/[bp−0x0B] der Aufstellung (Datei 0x40B69–0x40C98,
-  0x41032–0x41049) noch nicht nachgebildet; Fortsetzung 3.
+- **A971/A972 – sechster Feldspieler: Abweichung bestätigt.** Nachbildung:
+
+  `python3 tools/reverse-engineering/abweichungen/k07_sechster.py` (Aufstellung 0x40364, Manager 0, Automatik aus; Reihe 1
+  mit drei Stürmern +0x15 = 0x81 und drei Verteidigern +0x15 = 1, Platz 5 = sechster Feldspieler, Platz 6 Torhüter
+  außerhalb; Rolle über 0x04180 echt; Gitter [bp−0x46] = 5 Blöcke × 6 Zellen, Zelle = Platz + 1, Zellen 0–2 Sturm, 3–5
+  Abwehr, Block 4 Zelle 4 Torhüter):
+
+  ```
+  a) Klick auf Sturmzelle 0 der Reihe 1
+    nach dem Aufbau            Reihe 1 Zellen 0–5:  1  2  3  4  5  6 | Torhüterzelle 0 | [bp-0x0E] 1 | +0x15 Plätze 0–6: 0x81 0x81 0x81 0x01 0x01 0x01 0x00
+    nach dem Klick             Reihe 1 Zellen 0–5:  6  2  3  4  5  0 | Torhüterzelle 0 | [bp-0x0E] 0 | +0x15 Plätze 0–6: 0x00 0x81 0x81 0x01 0x01 0x01 0x00
+    Meldungen: -
+  b) Klick auf Abwehrzelle 3 der Reihe 1
+    nach dem Aufbau            Reihe 1 Zellen 0–5:  1  2  3  4  5  6 | Torhüterzelle 0 | [bp-0x0E] 1 | +0x15 Plätze 0–6: 0x81 0x81 0x81 0x01 0x01 0x01 0x00
+    nach dem Klick             Reihe 1 Zellen 0–5:  1  2  3  6  5  0 | Torhüterzelle 0 | [bp-0x0E] 0 | +0x15 Plätze 0–6: 0x81 0x81 0x81 0x00 0x01 0x01 0x00
+    Meldungen: -
+  c) wie a), dann Reihe 5 (Torhüter) und Torhüter (Platz 6) aus der Liste
+    nach dem Sturmklick        Reihe 1 Zellen 0–5:  6  2  3  4  5  0 | Torhüterzelle 0 | [bp-0x0E] 0 | +0x15 Plätze 0–6: 0x00 0x81 0x81 0x01 0x01 0x01 0x00
+    nach dem Torhüterklick     Reihe 1 Zellen 0–5:  6  2  3  4  5  0 | Torhüterzelle 7 | [bp-0x0E] 0 | +0x15 Plätze 0–6: 0x00 0x81 0x81 0x01 0x01 0x01 0x01
+    Meldungen: -
+  d) wie a), Bildschirm neu aufgebaut
+    Zellen mit Nummer beim ersten Aufbau (0x0B651, x/y): 0x106/0x1d, 0x118/0x1d, 0x12a/0x1d, 0x106/0x2a, 0x118/0x2a, 0x12a/0x2a
+    nach dem neuen Aufbau      Reihe 1 Zellen 0–5:  2  3  0  4  5  6 | Torhüterzelle 0 | [bp-0x0E] 0 | +0x15 Plätze 0–6: 0x00 0x81 0x81 0x01 0x01 0x01 0x00
+    Zellen mit Nummer beim neuen Aufbau (0x0B651, x/y): 0x106/0x1d, 0x118/0x1d, 0x10f/0x2a, 0x121/0x2a
+  ```
+
+  - Aufbau (Datei 0x403DB–0x404FD): [bp−0x0E] = 1 genau dann, wenn Block 0 sechs Plätze zählt ([bp−0x0F], vor der
+    Zellsuche gezählt) und die Torhüterzelle [bp−0x2A] leer ist; dann drei Abwehrzellen (x 0x106/0x118/0x12A).
+  - Leeren eines Platzes der Reihe 1 bei gesetztem Kennzeichen (Datei 0x40B69–0x40C98): **jede** Zelle der Reihe 1 – auch eine
+    Sturmzelle (a) – bekommt Zelle 5, Zelle 5 = 0, [bp−0x0E] = 0; der Herausgenommene +0x15 = 0, der sechste Feldspieler
+    behält +0x15 = 1 (Abwehr). Bei einer Abwehrzelle (b) wie im Remake (`MoveSixthSkaterInto`).
+  - **A971 – Kennzeichen ist Bildschirmzustand:** Nach (a) ist der Platz sofort geschlossen, obwohl Reihe 1 weiter sechs
+    Feldspieler mit +0x15 ≠ 0 hat und kein Torhüter steht; ein Torhüter wird danach ohne Meldung eingesetzt (c: +0x15 = 1,
+    Torhüterzelle belegt) – Reihe 1 hat dann sechs Feldspieler **und** Torhüter. Das Remake leitet `SixthSkaterOpen` aus dem
+    Zustand ab (`Squad.Lineup.cs` `SixthSkaterOpen`, sechster belegt und kein Torhüter): nach (a) bleibt es offen, der
+    Torhüter wird mit „Schon 6 Feldspieler / auf dem Eis !“ abgewiesen (`Squad.Lineup.cs`, Prüfung vor `TryOpenSixthSkater`).
+  - **A972 – Anzeige:** Nach (a) zeigt das Original den sechsten Feldspieler in Sturmzelle 0; beim nächsten Aufbau (d) baut es das
+    Gitter nach +0x15 neu: zwei Stürmer, drei Abwehrspieler in den Zellen 3–5, [bp−0x0F] = 5 → Kennzeichen 0, nur zwei
+    Abwehrzellen gezeichnet (x 0x10F/0x121) – der Spieler in Zelle 5 ist unsichtbar, spielt aber (+0x15 = 1, Abrechnung zählt
+    jeden Platz mit +0x15 ≠ 0, Datei 0x54918–0x54927). Das Remake lässt ihn sichtbar auf dem sechsten Platz, die Sturmzelle
+    bleibt leer; +0x15 aller Plätze ist gleich.
 - **Vorgabe (`aufstellung`):** (1) Einstellung „automatisch aufstellen“ als Feld des Managers (Migration), Lesen und
   Abschalten über den Manager am Zug; roter Test: Manager wechselt den Verein → Einstellung kommt mit. (2) Je Spieler die
   zuletzt zugewiesene Reihe (+0x15) führen: gesetzt nur, wenn die Neuaufstellung bzw. der Eingriff ihn aufstellt, nicht
   gelöscht beim Herausnehmen; `RollPlayedLines` liest sie. Roter Test: aufgestellter Verteidiger (Reihe 2) verletzt sich,
   Neuaufstellung, Wurf 0 → `PlayedLine` = 2. (3) A807, A165: nur Marker nachziehen (`[ORIGINAL]` mit diesen Fundstellen;
-  A165 Computervereine `[APPROX]` „Ergänzung, Original ohne Kaderplätze“).
+  A165 Computervereine `[APPROX]` „Ergänzung, Original ohne Kaderplätze“). (4) A971/A972: Kennzeichen „sechster Platz offen“
+  als Zustand der Aufstellung führen – gesetzt beim Öffnen (`TryOpenSixthSkater`) und beim Aufbau des Bildschirms (Reihe 1
+  sechs Plätze, kein Torhüter), gelöscht beim Leeren **jedes** Platzes der Reihe 1; dabei rückt der sechste Feldspieler in die
+  geleerte Zelle (auch Sturm, Reihe +0x15 bleibt Abwehr). Danach ist ein Torhüter einsetzbar. Rote Tests: (a) Reihe 1 voll mit
+  sechstem Feldspieler, Sturmplatz leeren → Kennzeichen aus, Spieler in der Sturmzelle angezeigt, `PositionOf` = 1;
+  (c) danach Torhüter in die Torhüterreihe → eingesetzt, keine Meldung „Schon 6 Feldspieler“; (d) neuer Aufbau →
+  Kennzeichen aus, sechster Feldspieler nicht angezeigt, spielt weiter (Reihe 1). Fehlt Spielraum im Datenmodell für (d), als
+  `[APPROX]` mit dieser Fundstelle festhalten.
 
 ### T03 – Saisonwechsel: Zeitpunkt und Reihenfolge der Würfe (A661, A829, A843, A935)
 
