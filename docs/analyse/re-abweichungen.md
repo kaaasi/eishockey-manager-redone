@@ -563,5 +563,5 @@ DGROUP 0x5CF4 = 0 und leere Zeilen, „Zug“ = Hinzufügen nach der Europapokal
   (`OverwriteCancellable`, Rest mit vollem Betrag) stimmt dann nur, wenn der Betrag als „je Feld“ gilt.
 - **Vorgabe (`saison-geld`):** `MonthlyAmount` als Betrag je Feld festschreiben; `Sponsoring.MonthlyIncome` = Σ Betrag ·
   Zahl der Felder (Banden), übrige Arten · 1; Überschreiben wie bisher feldweise. Roter Test: Bandenvertrag über zwei
-  Felder zu je 300 → Monatseinnahme 600 (Drittel: 1800 bei 900 je Feld, siehe oben); kündbarer Vertrag über zwei Felder,
+  Felder zu je 300 → Werbeanteil der Monatseinnahme 600 (Werte wie oben in Drittel-DM); kündbarer Vertrag über zwei Felder,
   Angebot über eine Bande → ein Feld neu, ein Feld alt, Einnahme alt + neu. Mehrsaisonprobe (Geld).
