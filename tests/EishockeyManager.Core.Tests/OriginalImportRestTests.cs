@@ -189,7 +189,9 @@ public sealed class OriginalImportRestTests
         Assert.Equal([2, 3], board.Boards);
         var shirt = sponsoring.ContractAt(new AdSlot(AdSlotKind.Trikot))!;
         Assert.Equal((1, 50_000L, 5, 0), (shirt.Sponsor, shirt.MonthlyAmount, shirt.MonthsLeft, shirt.OptionMonths));
-        Assert.Equal(70_000L, sponsoring.MonthlyIncome);
+        // Spur saison-geld Teil 2 (F06/A888, R15-E2 = C): [ORIGINAL] 0x3E657 zählt +0 aller Felder (Datei 0x3E70C–0x3E734), die Bande über
+        // zwei Felder also zweimal 20.000 (vorher 70.000).
+        Assert.Equal(90_000L, sponsoring.MonthlyIncome);
     }
 
     /// <summary>

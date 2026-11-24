@@ -77,7 +77,10 @@ public class SeasonEndStatusTests
         // 0x07215), Oberliga-Zug und Wanderung am 29. April ändern den Zufallsverlauf ab dem ersten Takttag; unter 92–159 stehen nur
         // bei 101, 116, 117, 125, 128, 133 beide Managervereine unter den ersten fünf. Die Probe hängt an der Saat (Vorbedingung
         // ausdrücklich geprüft).
-        var game = GameModeTests.Create(101, true, true, 2, 1); // kader-start U15-a/R-K5 (L13): Saat 3 → 17; #675 (Tageszähler 0x3B7, anderer Zufallsverlauf): 17 → 56; #678 (Tagestakt 0x07169): 56 → 71; #784 (Gast nach dem Heimverein, Runde 17; Saaten 71–83 ohne Vorbedingung): 71 → 84, Vorbedingung beide unter den ersten fünf; Spur start-lader (Lader beim Spielstart, Datei 0x439BB, anderer Zufallsverlauf): 84 → 24
+        // Spur saison-geld Teil 2 (Runde 25, F08 A512/A526, R21-D2 = A, R15-E2 = C): Saat 122 statt 101 – die Baufirmen ziehen im
+        // Tagesabschluss 11 Würfe je Manager (Datei 0x3ED19–0x3ED48), die Sommerpause läuft je Manager verschränkt (0x564D2–0x56593);
+        // unter 101–140 stehen nur bei 122, 125, 128, 133 beide Managervereine unter den ersten fünf. Die Probe hängt an der Saat.
+        var game = GameModeTests.Create(122, true, true, 2, 1); // kader-start U15-a/R-K5 (L13): Saat 3 → 17; #675 (Tageszähler 0x3B7, anderer Zufallsverlauf): 17 → 56; #678 (Tagestakt 0x07169): 56 → 71; #784 (Gast nach dem Heimverein, Runde 17; Saaten 71–83 ohne Vorbedingung): 71 → 84, Vorbedingung beide unter den ersten fünf; Spur start-lader (Lader beim Spielstart, Datei 0x439BB, anderer Zufallsverlauf): 84 → 24
         ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToSeasonEnd(game);
         var record = game.History[^1];

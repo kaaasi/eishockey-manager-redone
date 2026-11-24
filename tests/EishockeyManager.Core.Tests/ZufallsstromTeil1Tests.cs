@@ -33,7 +33,9 @@ public class ZufallsstromTeil1Tests
     [Fact]
     public void DailyRun_ContractsAndOffers_DrawFromSharedStreamInOriginalOrder()
     {
-        var game = Create(3, 2, 15);
+        // Spur saison-geld Teil 2 (A512, R21-D2 = A): Saat 4 statt 3 – die Baufirmen ziehen im Tagesabschluss 11 Würfe je Manager
+        // (Datei 0x3ED19–0x3ED48), mit Saat 3 träfe jetzt der Verletzungswurf.
+        var game = Create(4, 2, 15);
         foreach (var manager in game.Managers)
             foreach (var p in game.Clubs[manager.ClubIndex].Players)
             {
@@ -66,7 +68,7 @@ public class ZufallsstromTeil1Tests
                 if (R(sim, 0, 200) < w && R(sim, 0, 450) == 0)
                     rolled++;
             }
-            Assert.Equal(0, rolled); // Saat 3: kein Angebot, die Folge endet je Platz nach den Würfen oben
+            Assert.Equal(0, rolled); // Saat 4: kein Angebot, die Folge endet je Platz nach den Würfen oben
 
             game.AnnounceContractEnds(game.CurrentDay, manager);
             Assert.Equal(sim.Capture(), game.Random.Capture());

@@ -351,6 +351,9 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // Runde 25, Spur saison-geld Teil 1 (T03, R21-D2 = A, R15-E2 = C): neu ab 1993 – der Markt-Takt würfelt random(0, 3) je
     // Markt-Platz (A829, Datei 0x07215), Oberliga-Zug und große Wanderung am 29. April (A661, A843/A935); mit und ohne Anzeige
     // weiter gleich. Rückschaltprobe: src/ von 0c1811f → alte Referenz.
+    // Runde 25, Spur saison-geld Teil 2 (F06/F08, R21-D2 = A, R15-E2 = C): neu – Baufirmen 11 Würfe je Manager und Tag (A512, Datei
+    // 0x3ED19–0x3ED48), Sommerpause je Manager verschränkt (A526), Banden je Feld (A888); mit und ohne Anzeige weiter gleich.
+    // Rückschaltprobe: src/ von eaf8621 → alte Referenz.
     private const string Reference =
-        "1993: DEB 6, DM 5, Tab 15671 | 1994: DEB 6, DM 6, Tab 15790 | 1995: DEB 10, DM 2, Tab 15510 | 1996: DEB 5, DM 5, Tab 15795";
+        "1993: DEB 8, DM 1, Tab 15504 | 1994: DEB 1, DM 0, Tab 16012 | 1995: DEB 6, DM 1, Tab 16044 | 1996: DEB 5, DM 5, Tab 16048";
 }

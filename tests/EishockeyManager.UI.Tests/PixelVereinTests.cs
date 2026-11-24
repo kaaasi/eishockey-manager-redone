@@ -160,7 +160,10 @@ public class PixelVereinTests
     public void CoachInfoBar_BeforeWorldCupMatch_ShowsGlobeWithoutVenue()
     {
         // Modus 4: Saison bis zum ersten Zug des Bundestrainers
-        var d = FlowTests.CreateDriver();
+        // Spur saison-geld Teil 2 (Runde 25, F08 A512/A526, R21-D2 = A, R15-E2 = C): Saat 1994 statt 1993 – mit 11 Würfen der Baufirmen je
+        // Manager und Tag (Datei 0x3ED19–0x3ED48) und der verschränkten Sommerpause erreicht der Managerverein bei 1993 den Zug des
+        // Bundestrainers nicht (1994–1996 ja). Die Probe hängt an der Saat.
+        var d = FlowTests.CreateDriver(1994);
         d.StartNewGame(clubIndex: 2);
         var game = d.Host.Game!;
         // Integration Runde 8, Welle 3 (R8W3I-01): Vorbedingung „Bundestrainer nach der ersten Saison“ wie in NationalCoachMode4MenuTests –

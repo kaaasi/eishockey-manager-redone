@@ -290,9 +290,11 @@ public class EinzelpunkteTests
 
         ads.Offers[AdSlotKind.Bande] = new() { [5] = new SponsorOffer(AdSlotKind.Bande, 5, 12, 1, 700) };
         Assert.NotNull(game.AcceptOffer(manager, new AdSlot(AdSlotKind.Bande, 1), 5));
-        // Feld 1 ist überschrieben, Feld 0 gehört weiter dem kündbaren Vertrag, Feld 2 dem festen.
-        Assert.Equal(5, ads.ContractAt(new AdSlot(AdSlotKind.Bande, 1))!.Sponsor);
-        Assert.Equal(2, ads.ContractAt(new AdSlot(AdSlotKind.Bande, 0))!.Sponsor);
+        // Spur saison-geld Teil 2 (F06/A888, R15-E2 = C): [ORIGINAL] das Angebot geht in das erste freie oder kündbare Feld ab Feld 0
+        // (Datei 0x2BAD9, 0x2BADE–0x2BB6D), nicht in das angeklickte Feld 1: Feld 0 ist überschrieben, Feld 1 gehört weiter dem
+        // kündbaren Vertrag, Feld 2 dem festen.
+        Assert.Equal(5, ads.ContractAt(new AdSlot(AdSlotKind.Bande, 0))!.Sponsor);
+        Assert.Equal(2, ads.ContractAt(new AdSlot(AdSlotKind.Bande, 1))!.Sponsor);
         Assert.Equal(3, ads.ContractAt(new AdSlot(AdSlotKind.Bande, 2))!.Sponsor);
     }
 

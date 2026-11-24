@@ -262,7 +262,10 @@ public class TeamwertAufstellungTests(ITestOutputHelper output)
         // Spur saison-geld Teil 1 (Runde 25, T03, R21-D2 = A, R15-E2 = C): Saat 33 statt 30 – anderer Zufallsverlauf ab dem ersten Takttag
         // (A829, Datei 0x07215); bei Saat 30 zählt der passive Lauf nur 182 Schritte (Schwelle 200), 31, 32 ebenfalls zu kurz, 33 passiv 242,
         // aktiv 243. Die Probe hängt an der Saat.
-        var game = TestGames.Create(33);
+        // Spur saison-geld Teil 2 (Runde 25, F08 A512/A526, R21-D2 = A, R15-E2 = C): Saat 34 statt 33 – 11 Würfe der Baufirmen je Manager
+        // und Tag (Datei 0x3ED19–0x3ED48), Sommerpause je Manager verschränkt; bei Saat 33 hält der passive Lauf nur 148 Schritte
+        // (Schwelle 200), 34–36 passiv und aktiv darüber. Die Probe hängt an der Saat.
+        var game = TestGames.Create(34);
         var changes = 0;
         var steps = 0;
         var values = new HashSet<int>();

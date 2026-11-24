@@ -80,7 +80,10 @@ public class NationalCoachMode4MenuTests
         var database = Formats.ClubDatabase.Load(TestGameData.Load());
         var setup = new GameSetup();
         setup.Managers.Add(new ManagerSetup { Name = "LetsShow", Head = 3, ClubIndex = StrongestBundesligaClub(database) });
-        var game = NewGame.Create(database, setup, 1993);
+        // Spur saison-geld Teil 2 (Runde 25, F08 A512/A526, R21-D2 = A, R15-E2 = C): Saat 1994 statt 1993 – mit 11 Würfen der Baufirmen je
+        // Manager und Tag (Datei 0x3ED19–0x3ED48) und der verschränkten Sommerpause erreicht der Managerverein bei 1993 den Zug des
+        // Bundestrainers nicht (1994–1996 ja). Die Probe hängt an der Saat.
+        var game = NewGame.Create(database, setup, 1994);
         // Integration Runde 8, Welle 3 (R8W3I-01): Vorbedingung „stärkster Verein wird Bundestrainer“ mit Datenbankstärke
         // wie Synthetic() (ManagedSquadsUi); seit R8W3I-01 erreichte der Verein mit den Werten seiner Spieler den Zug nicht mehr.
         ManagedSquadsUi.PlayAtTopStrength(game); // #204: seit der Wanderung der Teamwerte Spielerwerte 99

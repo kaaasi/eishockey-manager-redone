@@ -81,7 +81,10 @@ public sealed class PlayoffSemifinalTests
         // Saisons kein schlechter Platzierter Heimrecht (gleicher Grund wie oben; Saat 9, 11, 13 ohne, 8, 10, 12, 14, 15 mit Fall).
         // Spur wettbewerbe-regeln Fixlauf Rebase auf main f7f0410 (Runde 22, R15-E2 = C): Saat 10 → 8. Bei Saat 10 (auch 11, 12) hat in fünf Saisons kein
         // schlechter Platzierter Heimrecht (gleicher Grund wie oben; 8, 13, 14, 15 mit Fall). Rückschaltprobe: src/ von f7f0410 mit Saat 8 grün.
-        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 8);
+        // Spur saison-geld Teil 2 (Runde 25, F08 A512/A526, R15-E2 = C): Saat 8 → 9. Mit 11 Würfen der Baufirmen je Manager und Tag
+        // (Datei 0x3ED19–0x3ED48) und der verschränkten Sommerpause hat bei Saat 8 in fünf Saisons kein schlechter Platzierter Heimrecht
+        // (gleicher Grund wie oben; 9, 10, 11, 14, 15 mit Fall, 12, 13 ohne).
+        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 9);
         var active = game.Managers[1];
         var upsets = 0;
         var transfers = 0;

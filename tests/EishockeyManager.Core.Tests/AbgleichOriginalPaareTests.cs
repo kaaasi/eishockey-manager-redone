@@ -107,7 +107,11 @@ public class AbgleichOriginalPaareTests
                 // `spur-wartet`): Mit den Strömen von kader-regeln, transfer-pool und einzelpunkte fallen bis zur Wanderung andere Würfe;
                 // Leerplatz LEER3 liegt bei Saat 4711 in der Abwehr-Kondition außerhalb (Original 18, Remake 1) – Wanderung wie LEER4 oben,
                 // kein neu eingetragener Originalwert. f7f0410 und 3ca753a je allein grün.
-                new("Clubs[50 LEER3].TeamValues.DefenseCondition", Chance, Optional: true)],
+                new("Clubs[50 LEER3].TeamValues.DefenseCondition", Chance, Optional: true),
+                // Runde 25, Spur saison-geld Teil 2 (F08 A512, R21-D2 = A, R15-E2 = C): Die Baufirmen ziehen im Tagesabschluss 11 Würfe je
+                // Manager (Datei 0x3ED19–0x3ED48), andere Lage der Würfe bis zur Wanderung; ESC FRANKFURT liegt bei der Standardsaat in der
+                // Abwehr-Kondition außerhalb (Original −9, Remake 9) – Wanderung wie LEER4 oben, kein neu eingetragener Originalwert.
+                new("Clubs[13 ESC FRANKFURT].TeamValues.DefenseCondition", Chance, Optional: true)],
             // Konto, Automatik, Teamwerte und verdeckte Werte KREFELD: Eingriff/Sitzungszustand (#734, HokCompareClasses.Interventions).
             ["FILE13→FILE14"] = [.. SeasonStart,
                 // #730 Gegenrichtung: KUHNEKATH (Original 96, Remake 50–51) seit #784 nur bei 5 von 6 Saaten (nicht 1; Pflicht über
@@ -169,7 +173,12 @@ public class AbgleichOriginalPaareTests
             // Würfe durch den gemeinsamen Strom. Nur Saat 2, f7f0410 und 3ca753a je allein grün. Kein neu eingetragener Originalwert.
             ["FILE38→FILE39"] = [StrainSawtooth("5 KÖLNER EC"),
                 new("Clubs[5 KÖLNER EC].Players[KJELLBERG].Notice", Chance, Optional: true),
-                new("Clubs[5 KÖLNER EC].Players[KJELLBERG].NoticeYears", Chance, Optional: true)],
+                new("Clubs[5 KÖLNER EC].Players[KJELLBERG].NoticeYears", Chance, Optional: true),
+                // Runde 25, Spur saison-geld Teil 2 (F08 A512, R21-D2 = A, R15-E2 = C): Mit 11 Würfen der Baufirmen je Manager und Tag
+                // (Datei 0x3ED19–0x3ED48) fallen die Würfe der Tagesläufe anders; bei der Standardsaat liegen Sturm-Kondition und -Technik
+                // von KÖLN außerhalb (Original −11/−10, Remake −29/−28) – Zufall der Aufstellung, kein neu eingetragener Originalwert.
+                new("Clubs[5 KÖLNER EC].TeamValues.AttackCondition", Chance, Optional: true),
+                new("Clubs[5 KÖLNER EC].TeamValues.AttackTechnique", Chance, Optional: true)],
             ["FILE39→FILE40"] = [StrainSawtooth("5 KÖLNER EC")],
             // Formwerte KÖLN (#738) behoben durch abgleich-fix (Handbetrieb ohne Nachrücken, Import ohne Reihenspieler ohne
             // „eingesetzt“). Platz 196 KJELLBERG (#749) behoben durch abgleich-fix (Import: Besitzer Manager ohne Kader = vergeben).

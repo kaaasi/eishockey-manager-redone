@@ -321,8 +321,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Spur saison-geld Teil 1 (Runde 25, T03, R21-D2 = A, R15-E2 = C): neu – Markt-Takt random(0, 3) je Markt-Platz (A829, Datei
     // 0x07215), Oberliga-Zug am 29. April (A661, Datei 0x56275), große Wanderung vor der Mischung (A843/A935, Datei 0x56448); anderer
     // Zufallsverlauf ab dem ersten Takttag. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von 0c1811f → alte Werte.
-    [InlineData(false, "6489DD043E9AF40A")]
-    [InlineData(true, "3A110842C68E58E1")]
+    // Spur saison-geld Teil 2 (Runde 25, F06/F08, R21-D2 = A, R15-E2 = C): neu – Baufirmen 11 Würfe je Manager und Tag (A512, Datei
+    // 0x3ED19–0x3ED48), Sommerpause je Manager verschränkt (A526, Datei 0x564D2–0x56593), Banden je Feld (A888, 0x3E657); anderer
+    // Zufallsverlauf ab dem ersten Tagesabschluss. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von eaf8621 → alte Werte.
+    [InlineData(false, "27080A46E3758689")]
+    [InlineData(true, "2B5B2A0158707CB0")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -422,8 +425,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // (A829, Datei 0x07215), der Oberliga-Zug fällt am 29. April (A661, Datei 0x56275) und die große Wanderung vor der Mischung
     // (A843/A935, Datei 0x56448); anderer Zufallsverlauf ab dem ersten Takttag. Kein Originalsollwert, nur interner Abdruck.
     // Rückschaltprobe: src/ von 0c1811f + dieser Test → rot (alte Werte).
+    // Spur saison-geld Teil 2 (Runde 25, F06/F08, R21-D2 = A, R15-E2 = C): neu – Baufirmen 11 Würfe je Manager und Tag (A512, Datei
+    // 0x3ED19–0x3ED48), Sommerpause je Manager verschränkt (A526, Datei 0x564D2–0x56593), Banden je Feld (A888, 0x3E657); anderer
+    // Zufallsverlauf ab dem ersten Tagesabschluss. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von eaf8621 → alte Werte.
     private const string WorldOnlyReference =
-        "WorldChampion=52|500000|WorldChampion=52|-1523415|WorldChampion=52|-4541862|WorldChampion=53|-9216815|WorldChampion=63|-16456717|R765441391";
+        "WorldChampion=63|500000|WorldChampion=52|-1519287|WorldChampion=53|-4527595|WorldChampion=63|-9187410|WorldChampion=52|-16408084|R1420374789";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem

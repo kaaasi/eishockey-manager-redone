@@ -323,10 +323,13 @@ public class RngTwinProbeTests
     // Spur saison-geld Teil 1 (Runde 25, T03, R21-D2 = A, R15-E2 = C): neu – Markt-Takt random(0, 3) je Markt-Platz (A829, Datei
     // 0x07215), Oberliga-Zug am 29. April (A661, Datei 0x56275), große Wanderung vor der Mischung (A843/A935, Datei 0x56448); anderer
     // Zufallsverlauf ab dem ersten Takttag. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von 0c1811f → alte Werte.
-    [InlineData(false, 3, "3AC7AEC28CD849F3")]
-    [InlineData(true, 3, "BAD4C93C9C6A26F6")]
-    [InlineData(false, 11, "DBCFB657169974D0")]
-    [InlineData(true, 11, "E8AAE75AA220A7A2")]
+    // Spur saison-geld Teil 2 (Runde 25, F06/F08, R21-D2 = A, R15-E2 = C): neu – Baufirmen 11 Würfe je Manager und Tag (A512, Datei
+    // 0x3ED19–0x3ED48), Sommerpause je Manager verschränkt (A526, Datei 0x564D2–0x56593), Banden je Feld (A888, 0x3E657); anderer
+    // Zufallsverlauf ab dem ersten Tagesabschluss. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von eaf8621 → alte Werte.
+    [InlineData(false, 3, "429BC51225B8C597")]
+    [InlineData(true, 3, "DB1AF4C5D29789A6")]
+    [InlineData(false, 11, "9E30D73BB0397386")]
+    [InlineData(true, 11, "086A872A04703F1C")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -441,8 +444,11 @@ public class RngTwinProbeTests
     // Spur saison-geld Teil 1 (Runde 25, T03, R21-D2 = A, R15-E2 = C): neu – Markt-Takt random(0, 3) je Markt-Platz (A829, Datei
     // 0x07215), Oberliga-Zug am 29. April (A661, Datei 0x56275), große Wanderung vor der Mischung (A843/A935, Datei 0x56448); anderer
     // Zufallsverlauf ab dem ersten Takttag. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von 0c1811f → alte Werte.
-    [InlineData(false, "662783DD6F3BA462")]
-    [InlineData(true, "D9A063901FD397CE")]
+    // Spur saison-geld Teil 2 (Runde 25, F06/F08, R21-D2 = A, R15-E2 = C): neu – Baufirmen 11 Würfe je Manager und Tag (A512, Datei
+    // 0x3ED19–0x3ED48), Sommerpause je Manager verschränkt (A526, Datei 0x564D2–0x56593), Banden je Feld (A888, 0x3E657); anderer
+    // Zufallsverlauf ab dem ersten Tagesabschluss. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von eaf8621 → alte Werte.
+    [InlineData(false, "50BDAD553C2F469D")]
+    [InlineData(true, "8D29D4EE4C993668")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

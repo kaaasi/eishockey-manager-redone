@@ -501,8 +501,11 @@ public class GameModeTests
     // (A829, Datei 0x07215), der Oberliga-Zug fällt am 29. April (A661, Datei 0x56275) und die große Wanderung vor der Mischung
     // (A843/A935, Datei 0x56448); anderer Zufallsverlauf ab dem ersten Takttag. Kein Originalsollwert, nur interner Abdruck.
     // Rückschaltprobe: src/ von 0c1811f + dieser Test → rot (alte Werte).
+    // Spur saison-geld Teil 2 (Runde 25, F06/F08, R21-D2 = A, R15-E2 = C): neu – Baufirmen 11 Würfe je Manager und Tag (A512, Datei
+    // 0x3ED19–0x3ED48), Sommerpause je Manager verschränkt (A526, Datei 0x564D2–0x56593), Banden je Feld (A888, 0x3E657); anderer
+    // Zufallsverlauf ab dem ersten Tagesabschluss. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von eaf8621 → alte Werte.
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=0,GermanChampion=3,EuropeanCupWinner=2|1100000,400000|WorldChampion=52,CupWinner=14,GermanChampion=0,EuropeanCupWinner=3|2391297,400000|WorldChampion=52,CupWinner=14,GermanChampion=18,EuropeanCupWinner=3|2200548,400000|WorldChampion=52,CupWinner=0,GermanChampion=18,EuropeanCupWinner=18|3114361,500000|WorldChampion=52,CupWinner=18,GermanChampion=18,EuropeanCupWinner=18|2928623,500000|R346020608";
+        "WorldChampion=54,CupWinner=19,GermanChampion=1,EuropeanCupWinner=2|1100000,400000|WorldChampion=52,CupWinner=12,GermanChampion=4,EuropeanCupWinner=1|2506736,400000|WorldChampion=52,CupWinner=17,GermanChampion=17,EuropeanCupWinner=4|2718075,500000|WorldChampion=63,CupWinner=17,GermanChampion=17,EuropeanCupWinner=17|2735736,500000|WorldChampion=54,CupWinner=16,GermanChampion=16,EuropeanCupWinner=17|2443437,500000|R360091148";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)
