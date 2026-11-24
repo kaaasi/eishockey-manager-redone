@@ -32,8 +32,8 @@ gelten. **Je Thema:** (1) Beleg aus em.exe aus `re-abweichungen` (R25-D3 = B) �
 nachziehen, nichts ändern; (2) sonst roter Test → Änderung „wie im Original“ → `[APPROX]` wird `[ORIGINAL]` mit Fundstelle; bei
 Bildschirmen Bildschirmfoto mit Videobild bzw. DOSBox-Bild vergleichen. Bleibt ein Teil unklar: „wie im Original“, sonst
 `[APPROX]` mit Begründung, Leitstelle bündelt. **Markerliste:** kein `markerliste.py --write` in den Spuren; die Spur trägt ihre
-IDs mit neuem Stand im PR ein, den einzigen Generatorlauf macht `pruefung-karte`. **Migrationen** (Schema 64 ff.): Spuren mit
-Migration nacheinander mergen, Rebase-Fixlauf der nächsten erst nach dem Merge (`prozess/anhang.md` F). **Gemeinsame Dateien:**
+IDs mit neuem Stand im PR ein, den einzigen Generatorlauf macht `pruefung-karte`. **Migrationen** (Schema 64 ff.): `statistik-anzeige` bekommt 64, `saison-geld` (nur falls F06
+Felder braucht) die nächste freie Nummer; Spuren mit Migration nacheinander mergen, Rebase-Fixlauf der nächsten erst nach dem Merge (`prozess/anhang.md` F). **Gemeinsame Dateien:**
 `MainMenuScreen.cs` nur `bedienung`; `GameState.DailyRun.cs` `aufstellung` (B31) und `saison-geld` (T03, F08) je minimal;
 `ClubScheduleWindow.cs` `bedienung` (B11) und `wettbewerbe-anzeige` (B16), je minimal.
 
@@ -90,7 +90,7 @@ Gesamtreview ChatGPT (GPT-6.2 Astra) mit Claude-Auswertung.
   Vereinsfenster, Stand vor 0x38402 DGROUP 0xA0BF).
 - **Dateien:** `UI/Screens/Competitions/CupPairingsScreen.cs`, `CupTableMenuEntries.cs`, `NationalWidgets.cs`,
   `TeamInfoWindow.cs`, `ClubInfoWindow.cs`, `ClubScheduleWindow.cs`, `LeaguePairingsScreen.cs`, `DebCupGamesScreen.cs`,
-  `PlayoffGamesScreen.cs`, `WorldCupKnockoutScreen.cs`; `Core/CupsNational.TeamInfo.cs`, `CupsNational.cs`, `Cups.Tiebreak.cs`,
+  `PlayoffGamesScreen.cs`, `WorldCupKnockoutScreen.cs`; `Core/CupsNational.TeamInfo.cs`, `CupsNational.cs`, `CupsNational.Lineup.cs` (A961, minimal), `Cups.Tiebreak.cs`,
   `Playoffs.cs`, Marken in `MatchEngine.Minutes.cs` (minimal); Tests. **Prüfung:** `--schnell`; Pixelvergleich der Fenster.
 - **Status:** Go 24.11.2026, Start nach Merge von `re-abweichungen`.
 
@@ -101,7 +101,8 @@ Gesamtreview ChatGPT (GPT-6.2 Astra) mit Claude-Auswertung.
   Feld im Spielstand). Migration(en) Schema 64 ff. in einem Schritt.
 - **Dateien:** `UI/Screens/SeasonEndSummaryScreen.cs`, `SeasonEndTrophyScreen.cs`, `Statistics/HistoryScreen.cs`,
   `StrengthScreen.cs`, `Team/PlayerDataWindow.cs`, `PlayerHintLine.cs`, `PlayerInfoPopup.cs`; `Core/StatisticsStrength.cs`,
-  neue Datei(en) für die Felder, Zählstelle der Gegentore (minimal), `SaveGame.Migration.<thema>.cs`; Tests. **Prüfung:**
+  neue Datei(en) für die Felder, Zählstellen der Gegentore `MatchEngine.Live.cs`, `MatchEngine.National.cs`,
+  `MatchEngine.Statistics.cs` (je minimal; `MatchEngine.Statistics.cs` auch `saison-geld` K11 – wer später merged, rebast), `SaveGame.Migration.<thema>.cs`; Tests. **Prüfung:**
   `--schnell`; Mehrsaisonprobe (Felder über 4 Wechsel); Laden Schema 63.
 - **Status:** Go 24.11.2026, Start nach Merge von `re-abweichungen`.
 
