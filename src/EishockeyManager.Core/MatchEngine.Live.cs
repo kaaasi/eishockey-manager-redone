@@ -143,6 +143,8 @@ public static partial class MatchEngine
         var awayTeam = LiveTeamOf(game, away, home, awayManaged, managerMatch);
         TrackPenaltyBox(home, homeTeam); // A808: Strafbank-Stand für die Aufstellung im Spiel (MatchEngine.PenaltyBoxQuery.cs)
         TrackPenaltyBox(away, awayTeam);
+        CountAtKickOff(game, home, homeTeam, competition); // S07: [ORIGINAL] Spiele vor den Minuten (MatchEngine.LiveCredit.cs)
+        CountAtKickOff(game, away, awayTeam, competition);
         PrepareFromClubFields(game, home, away, homeTeam, awayTeam, homeManaged, awayManaged);
         // A071: Merker [0xA70E] des Spieltagsablaufs für die Minutenschleife (MatchEngine.TurnManager.cs).
         homeTeam.TurnManager = awayTeam.TurnManager = TurnManagerOf(game, competition, game.LiveScoreboard?.Active ?? false);
@@ -516,7 +518,8 @@ public static partial class MatchEngine
         // nach DGROUP 0xD0C2: 7 Liga, 6 DEB-Pokal, sonst Feld 2 (Europapokal, auch Play-offs; Datei 0x415CD–0x41622).
         if (squad is not null)
         {
-            foreach (var p in squad.Players.Where(p => p.Played))
+            // S07: [ORIGINAL] schon beim Spielbeginn und beim Aufstellen im Spiel gezählt (MatchEngine.LiveCredit.cs).
+            foreach (var p in squad.Players.Where(p => p.Played && !CountedAtKickOff(squad)))
                 p.Player.CountGame(p.PlayedFromBench ? InMatchSlot(competition) : slot);
         }
         else

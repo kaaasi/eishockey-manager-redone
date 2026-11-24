@@ -17,8 +17,10 @@ namespace EishockeyManager.Core;
 ///   den Klick ebenso (<see cref="Club.ClickPlayerInMatch"/> über <see cref="MatchEngine.PenaltyBoxMinutes"/>); der Abgleich
 ///   hält ihn zusätzlich draußen, falls er vor der Strafe aufgestellt war und seinen Platz behält.</item>
 /// <item>A677: [ORIGINAL] Ein im Spiel neu Aufgestellter ohne Kennzeichen „hat gespielt“ (+0x1A Bit 7) bekommt es und ein Spiel
-///   (Datei 0x415B7–0x41622, <see cref="LivePlayer.Played"/>); wer herausgenommen wird, behält sein Spiel. [APPROX] Das Remake
-///   zählt beide am Spielende (die Spalte SP zeigt das Spiel erst danach), ein Hinein und Hinaus im selben Eingriff zählt nicht.</item>
+///   (Datei 0x415B7–0x41622, <see cref="LivePlayer.Played"/>); wer herausgenommen wird, behält sein Spiel. [ORIGINAL] S07 (A898):
+///   gezählt wird sofort beim Aufstellen (<see cref="Club.ClickPlayerInMatch"/>, <see cref="MatchEngine.CountPlacedInMatch"/>), auch
+///   wenn der Spieler im selben Eingriff wieder herauskommt; die Aufgestellten beim Spielbeginn zählen vor den Minuten
+///   (<c>MatchEngine.LiveCredit.cs</c>).</item>
 /// <item>[ORIGINAL] Danach Feldspieler neu zählen 0x38A36 (Datei 0x5438D–0x54419, <see cref="MatchIntervention.AfterLineup"/>).</item>
 /// </list>
 /// </summary>
@@ -37,7 +39,8 @@ public static class LiveLineup
             p.Position = position;
             if (!boxed.Contains(p))
                 p.Dressed = p.Player.Available && club.IsDressed(p.Player);
-            if (touched && position != 0 && p.Dressed && !p.Played) // A677
+            // A677; S07: mit Zählung beim Spielbeginn sofort gezählt (MatchEngine.LiveCredit.cs), sonst am Spielende.
+            if (touched && position != 0 && p.Dressed && !p.Played && !MatchEngine.CountPlacedInMatch(club, p.Player))
                 p.Played = p.PlayedFromBench = true;
         }
         MatchIntervention.AfterLineup(team);
