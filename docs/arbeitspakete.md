@@ -104,7 +104,10 @@ Gesamtreview ChatGPT (GPT-6.2 Astra) mit Claude-Auswertung.
   neue Datei(en) für die Felder, Zählstellen der Gegentore `MatchEngine.Live.cs`, `MatchEngine.National.cs`,
   `MatchEngine.Statistics.cs` (je minimal; `MatchEngine.Statistics.cs` auch `saison-geld` K11 – wer später merged, rebast), `SaveGame.Migration.<thema>.cs`; Tests. **Prüfung:**
   `--schnell`; Mehrsaisonprobe (Felder über 4 Wechsel); Laden Schema 63.
-- **Status:** Go 24.11.2026, Start nach Merge von `re-abweichungen`.
+- **Status:** Teil 1 und Teil 2 fertig – PR #1005 (24.11.2026). B25, B28, A361 (Bilanzzeichen und Gesicht), A372 umgesetzt;
+  ohne neues Spielstandfeld: die Bilanzzeichen der Vereine sind die Ligaergebnisse der Saison (gleiche Menge wie 0x50283 bei
+  Code 7, geleert im selben Saisonwechselschritt), A957 ist keine Abweichung (Torhüter-Vereinswert +0x22 schreibt das Original
+  nie), A700 ist schon erfüllt (Lader in `NewGame.Create`). Keine Migration, Schema 64 bleibt frei.
 
 ### Spur `aufstellung` – Aufstellung, Taktik, Nationalaufstellung (Welle 1)
 

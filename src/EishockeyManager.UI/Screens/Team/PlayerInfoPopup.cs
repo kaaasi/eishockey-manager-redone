@@ -161,7 +161,8 @@ public sealed class PlayerInfoPopup
         for (var i = 0; i < 4; i++)
         {
             var r = Bar(i);
-            s.TextCentered(mini, r.X + r.W / 2, r.Y - 6, BarLabels[i], 35);
+            // [ORIGINAL] Beschriftung zentriert um x + 0x2F, Grundlinie y + 1 = Balken − 2, Farbe 1, ohne Schatten (Datei 0x04C83–0x04CA8)
+            Competitions.CompetitionWidgets.Centered(s, mini, r.X + 0x2F, r.X + 0x2F, r.Y - 2, BarLabels[i], BarFrameColor, null);
             DrawBarPixels(s, r, lengths[i]);
         }
 
@@ -169,30 +170,28 @@ public sealed class PlayerInfoPopup
     }
 
     /// <summary>
-    /// Balken wie im Video: heller Außenrand (2/3), schwarzer Innenrand, acht Farbstufen à 12 px über 6 Zeilen. Der Zeiger
-    /// ist eine Linie über die ganze Innenhöhe (acht Zeilen) in der Farbe des Abschnitts, in dem er steht; Lage
-    /// Balkenanfang + 1 + Länge (1–94 px, Wert 0–99 → · 94 / 99). [ORIGINAL] em.exe Datei 0x041AC, Adressen 0xBBA–0xBFC;
-    /// Maße des Rahmens am Videobild oberflaeche_1115 gemessen ([APPROX]: Rahmenfarben 2/3 und 197).
+    /// Balken 0x04C75 (Aufrufe aus 0x041AC mit x = Fenster + 7 bzw. + 0x6C und y = <see cref="Bar"/>.Y − 3). [ORIGINAL] Datei
+    /// 0x04CB0–0x04DAD (Abweichung B33/A372): Fläche (x + 1 | y + 3)–(x + 99 | y + 13) Farbe 1, darin (x + 2 | y + 4)–(x + 98 | y + 12)
+    /// Farbe 0, acht Farbstufen i (x + 2 + 12 i | y + 6)–(x + 14 + 12 i | y + 10) in Farbe DGROUP 0x482A[7 − i]
+    /// (<see cref="BarColors"/>), Zeiger als Linie (x + 1 + Länge | y + 4)–(x + 1 + Länge | y + 12) in der Farbe seines Abschnitts
+    /// (Länge 1–94, Datei 0x04D66–0x04DA8). Vorher am Video geschätzt: Rand 2/3/197, Farbband 6 Zeilen.
     /// </summary>
     public static void DrawBar(Surface s, Rect r, int value) => DrawBarPixels(s, r, PlayerDataWindow.BarPixelsFromPercent(value));
 
     /// <summary>Balken wie <see cref="DrawBar"/> mit der Zeigerlänge in Pixeln (auf 1–94 begrenzt, 0xBBA–0xBC7).</summary>
     public static void DrawBarPixels(Surface s, Rect r, int pixels)
     {
-        s.Fill(r, Colors.Black);
-        s.HLine(r.X, r.Y, r.W, 2);
-        s.HLine(r.X, r.Y + r.H - 1, r.W, 2);
-        s.HLine(r.X, r.Y + r.H - 2, r.W, 3);
-        s.VLine(r.X, r.Y, r.H, 3);
-        s.VLine(r.X + 1, r.Y + 1, r.H - 3, 2);
-        s.VLine(r.X + r.W - 1, r.Y + 1, r.H - 2, 197);
+        s.Fill(new Rect(r.X + 1, r.Y, 99, 11), BarFrameColor);
+        s.Fill(new Rect(r.X + 2, r.Y + 1, 97, 9), Colors.Black);
         const int step = 12;
-        var x0 = r.X + 2;
         for (var i = 0; i < BarColors.Length; i++)
-            s.Fill(new Rect(x0 + step * i, r.Y + 3, step, 6), BarColors[i]);
+            s.Fill(new Rect(r.X + 2 + step * i, r.Y + 3, step + 1, 5), BarColors[i]);
         var px = PlayerDataWindow.BarPixels(pixels);
-        s.VLine(r.X + 1 + px, r.Y + 2, 8, BarColors[px / step]);
+        s.VLine(r.X + 1 + px, r.Y + 1, 9, BarColors[px / step]);
     }
+
+    /// <summary>[ORIGINAL] Farbe der äußeren Fläche und der Beschriftung (Datei 0x04C86, 0x04CB0).</summary>
+    public const byte BarFrameColor = 1;
 
     /// <summary>Gesicht aus kb\10 (4 × 10 Köpfe à 17 × 21): Spalte nach Alter, Zeile nach Talent, siehe <see cref="PlayerDataWindow.Face"/>.</summary>
     public static Rect Face(Player p) => PlayerDataWindow.Face(p);
