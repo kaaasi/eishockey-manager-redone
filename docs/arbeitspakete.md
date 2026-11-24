@@ -119,7 +119,7 @@ Gesamtreview ChatGPT (GPT-6.2 Astra) mit Claude-Auswertung.
 - **Dateien:** `Core/Squad.Lineup*.cs`, `Squad.AutoLineup.cs`, `Squad.SlotValues.cs`, `CupsNational.Lineup.InMatch.cs`,
   `MatchEngine.LiveLineup.cs`, `GameState.TacticsLeft.cs`, `GameState.DailyRun.cs` (minimal); `UI/Screens/Team/LineupScreen.cs`,
   `TacticsScreen.cs`, `Competitions/NationalLineupScreen.cs`; Tests. **Prüfung:** `--schnell`; Mehrsaisonprobe (Kader).
-- **Status:** PR #1004 (Draft), Base `0c1811f`, Schema 64 (Entscheidung Leitstelle 24.11.2026). Teil 1 (B31) fertig; Teil 2: A807/A165 (Marker), A936 (Einstellung je Manager) und A939 (+0x15 außerhalb der Aufstellung) fertig, offen A971/A972 (Kennzeichen sechster Platz als Bildschirmzustand); Teil 3: K2, B13 und S07 A898 (Spiele vor den Minuten und beim Aufstellen im Spiel) fertig, offen S07 A874 (Nationalteam). Fortsetzung 2 angefordert.
+- **Status:** PR #1004, Base `3d6f792`, Schema 64 (Entscheidung Leitstelle 24.11.2026). Alle Teile fertig (Fortsetzung 2): Teil 1 B31; Teil 2 K07 (A165, A807, A936, A939, A971/A972 – Kennzeichen sechster Platz als Bildschirmzustand `LineupGrid`); Teil 3 K2, B13, S07 (A898, A874 – Länderspiele beim Spielbeginn und beim Aufstellen im Spiel). Bereit für das Erstreview.
 
 ### Spur `saison-geld` – Saisonwechsel, Geld, Platzwahl (Welle 1)
 
