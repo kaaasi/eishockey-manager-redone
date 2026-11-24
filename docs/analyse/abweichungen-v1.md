@@ -17,9 +17,11 @@ Grundlage: Vergleich der Bewertungen von ChatGPT ([PR #992](abweichungen-bewertu
   (niedrige Priorität), **T03** und **S01** (vor v1.0, entgegen „bleibt“).
 - **prüfen:** B16 (= A: Wettbewerbscode 0xD0C2 in em.exe lesen, zusammen mit B15; ändern nur bei belegter Abweichung);
   F06, F08 (= A: prüfen, belegte Abweichung ohne Rückfrage wie im Original ändern).
-- **aus dem Aufräumkonzept (A4 = A):** K2 (Strafbank beim Bundestrainer), K9 (= B17), K11 (Rollenwert +0x18), K13 (Platzwahl
-  0x29C3B) werden in Runde 25 mit Beleg geklärt ([aufraeumen-v1.md](aufraeumen-v1.md) §1.5); K15 bleibt.
-- **ins Aufräumen #936:** K04, K11, K13, L11, L12, C02, C08 (L11/C02 nach Aufräumkonzept A1).
+- **aus dem Aufräumkonzept (A4 = A):** Aufräumkonzept K2 (Strafbank beim Bundestrainer), Aufräumkonzept K9 (= Thema B17),
+  Aufräumkonzept K11 (Rollenwert +0x18), Aufräumkonzept K13 (Platzwahl 0x29C3B) werden in Runde 25 mit Beleg geklärt
+  ([aufraeumen-v1.md](aufraeumen-v1.md) §1.5); Aufräumkonzept K15 bleibt.
+- **ins Aufräumen #936:** Themen K04, K11, K13, L11, L12, C02, C08 dieser Liste (L11/C02 nach Aufräumkonzept A1).
+- Die Spalte „Entscheidung“ in Abschnitt 1 und 3 bleibt leer; maßgeblich ist dieser Abschnitt (#995).
 - **D-Themen:** warten auf DOSBox; D06 bleibt (Nutzerentscheidung 01.11.2026, Computerkader).
 
 ## 1. Themen mit Vorschlag „ändern“ (15 Themen, 44 IDs)
