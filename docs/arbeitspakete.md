@@ -139,7 +139,7 @@ Gesamtreview ChatGPT (GPT-6.2 Astra) mit Claude-Auswertung.
 - **Teile:** 1. gesammelte P3 der Runde; 2. einziger Lauf `markerliste.py --write`, Klassenzeilen der geänderten IDs in
   `restliste-v1-klassen.csv`, Status je Thema in `abweichungen-v1.md` Abschnitt 0 („umgesetzt“/„keine Abweichung“ mit PR).
 - **Dateien:** `docs/analyse/*`, Kommentare der P3. **Prüfung:** `--schnell`. **Erstreview:** Sonnet 5.5.
-- **Status:** Go 24.11.2026, Start nach Merge aller Welle-1-Spuren.
+- **Status:** Teil 1 läuft (Claude Code, Base `075dc2c`, 24.11.2026).
 
 **Modellwahl (Nutzer 17.11.2026):** je Lauf möglichst wenig Tokens für ein brauchbares Ergebnis – Haiku, Sonnet, Opus; Fable nur
 in Ausnahmefällen. **Läufe melden ihr Ende** per Push-Benachrichtigung (Nutzer 22.11.2026, `prozess/anhang.md` F).
