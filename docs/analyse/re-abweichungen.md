@@ -565,3 +565,254 @@ DGROUP 0x5CF4 = 0 und leere Zeilen, „Zug“ = Hinzufügen nach der Europapokal
   Zahl der Felder (Banden), übrige Arten · 1; Überschreiben wie bisher feldweise. Roter Test: Bandenvertrag über zwei
   Felder zu je 300 → Werbeanteil der Monatseinnahme 600 (Werte wie oben in Drittel-DM); kündbarer Vertrag über zwei Felder,
   Angebot über eine Bande → ein Feld neu, ein Feld alt, Einnahme alt + neu. Mehrsaisonprobe (Geld).
+
+### K07 – Aufstellung: Automatik je Manager, Verletzte, Meldung (A165, A807, A936, A939; A971/A972 offen)
+
+`python3 tools/reverse-engineering/abweichungen/k07_automatik.py` (Neuaufstellung 0x426BC mit Auswahl 0x42838 und Rolle
+0x04180 echt; Kader von Manager 1: 3 Torhüter, 9 Verteidiger, 12 Stürmer, Werte 40 + Platz, Platz 4 verletzt und vorher
+aufgestellt mit +0x15 = 2; alle übrigen +0x15 = 0x55 als Merker):
+
+```
+Einstellung 0x375 (Manager 0) = 1, 0x377 (Manager 1) = 0; Stubs: -
+   Platz:    0    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16   17   18   19   20   21   22   23
+   Art  :    T    T    T    A   Av    A    A    A    A    A    A    A    S    S    S    S    S    S    S    S    S    S    S    S
+   +0x0A:    0    0    0    0    1    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0
+   +0x15: 0x55 0x55 0x55 0x55  0x2 0x55 0x55 0x55 0x55 0x55 0x55 0x55 0x55 0x55 0x55 0x55 0x55 0x55 0x55 0x55 0x55 0x55 0x55 0x55
+Einstellung 0x375 (Manager 0) = 0, 0x377 (Manager 1) = 1; Stubs: -
+   Platz:    0    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16   17   18   19   20   21   22   23
+   Art  :    T    T    T    A   Av    A    A    A    A    A    A    A    S    S    S    S    S    S    S    S    S    S    S    S
+   +0x0A:    1    1    1    1    0    1    1    1    1    1    1    1    0    1    1    1    1    1    1    1    1    1    1    1
+   +0x15:  0x0  0x0  0x1  0x0  0x2  0x0  0x3  0x3  0x2  0x2  0x1  0x1 0x55  0x0  0x0 0x83 0x83 0x83 0x82 0x82 0x82 0x81 0x81 0x81
+```
+
+`python3 tools/reverse-engineering/abweichungen/k07_meldung.py` (Aufstellung 0x40364 wie in k2, Klick in die Zeile von
+Platz 0; alle Meldungen des Klicks der Reihe nach):
+
+```
+Einstellung 0x375 vorher 1, Status 0, links : Meldungen „Auto-Aufstellung“ / „ist deaktiviert !“ → „Keine Reihe“ / „ausgew{hlt !“; 0x375 nachher 0
+Einstellung 0x375 vorher 1, Status 1, links : Meldungen „Auto-Aufstellung“ / „ist deaktiviert !“ → „Spieler ist“ / „Gesperrt.“; 0x375 nachher 0
+Einstellung 0x375 vorher 1, Status 2, links : Meldungen „Auto-Aufstellung“ / „ist deaktiviert !“ → „Spieler ist“ / „Verletzt.“; 0x375 nachher 0
+Einstellung 0x375 vorher 1, Status 0, rechts: Meldungen -; 0x375 nachher 1
+Einstellung 0x375 vorher 1, Status 1, rechts: Meldungen -; 0x375 nachher 1
+Einstellung 0x375 vorher 1, Status 2, rechts: Meldungen -; 0x375 nachher 1
+Einstellung 0x375 vorher 0, Status 0, links : Meldungen „Keine Reihe“ / „ausgew{hlt !“; 0x375 nachher 0
+Einstellung 0x375 vorher 0, Status 1, links : Meldungen „Spieler ist“ / „Gesperrt.“; 0x375 nachher 0
+Einstellung 0x375 vorher 0, Status 2, links : Meldungen „Spieler ist“ / „Verletzt.“; 0x375 nachher 0
+Einstellung 0x375 vorher 0, Status 0, rechts: Meldungen -; 0x375 nachher 0
+Einstellung 0x375 vorher 0, Status 1, rechts: Meldungen -; 0x375 nachher 0
+Einstellung 0x375 vorher 0, Status 2, rechts: Meldungen -; 0x375 nachher 0
+```
+
+- **A936 – Einstellung je Manager: Abweichung bestätigt (Datenmodell).** 0x426BC liest das Byte DGROUP 0x375 + 2 · Manager
+  (Datei 0x426C4–0x426E4; Manager 1 → 0x377), bei 0 kehrt es ohne Änderung zurück. Auch das Abschalten in der Aufstellung
+  schreibt 0x375 + 2 · Manager (Datei 0x40ADE, 0x40DE4). Das Remake führt `Club.AutoLineupEnabled`; verschieden wird es,
+  sobald ein Manager den Verein wechselt (Einstellung bleibt im Original beim Manager).
+- **A165 – erste Aufstellung: für Managervereine keine Abweichung, für Computervereine kein Gegenstück.** Die
+  Spielvorbereitung 0x28165 ruft 0x426BC nach dem Kaderaufbau (Datei 0x2A067); 0x426BC setzt zuerst +0x0A aller 29
+  Kaderplätze auf 0 (Datei 0x426E7–0x42706) und stellt dann nach seiner Regel auf – die vorige Aufstellung wirkt nur über
+  stehen gebliebene +0x15 (siehe A939). Das Remake ruft nach `Lineup.AutoFill` für Managervereine `ApplyAutoLineup`
+  (`GameState.Integration.cs`, `GameState.AddManager.cs`); Ergebnis gleich. Computervereine haben im Original keine
+  Kaderplätze (Sätze nur für die Manager 0–3, Markt 4, Bundestrainer 5); ihre Aufstellung nach Spielwert ist eine Ergänzung
+  des Remakes.
+- **A939 – Reihe eines Verletzten: Abweichung bestätigt.** 0x426BC schreibt +0x15 nur für ausgewählte Spieler
+  (Reihe = Block + 1, Bit 0x80 Sturm; Ersatz 0, Datei 0x42744–0x42777, 0x427FD–0x42816). Nicht Ausgewählte behalten ihr
+  altes +0x15 – der Verletzte (Platz 4) steht danach mit +0x0A = 0 und +0x15 = 2 da, ebenso der nicht gebrauchte Platz 12
+  (0x55). Die Spielabrechnung kopiert +0x15 & 0x7F jedes Platzes (Datei 0x548A8–0x548E7, `Squad.SlotValues.cs`), der
+  Verletzte spielt also seine alte Reihe ein; im Remake (Spieler aus der Aufstellung genommen) Reihe 0.
+- **A807 – zwei Meldungen: keine Abweichung.** Ein Linksklick bei eingeschalteter Automatik schaltet sie ab und meldet
+  „Auto-Aufstellung / ist deaktiviert !“, danach die Meldung des Klicks (keine Reihe, gesperrt, verletzt) – auch wenn der
+  Klick nichts ändert. Ein Rechtsklick in der Namensspalte schaltet nichts ab (dort Spielerinfo, B13). Das Remake macht
+  genau das (`LineupScreen` stellt die zweite Meldung hinter „ist deaktiviert !“, `DisableAutoLineup` vor den Prüfungen in
+  `Squad.Lineup.cs`/`Squad.Lineup.InMatch.cs`); nur der `[APPROX]`-Satz in `LineupScreen.cs` („gewinnt diese Meldung“) ist
+  überholt.
+- **A971/A972 (sechster Feldspieler): offen** – Bildschirmfeld [bp−0x0E]/[bp−0x0B] der Aufstellung (Datei 0x40B69–0x40C98,
+  0x41032–0x41049) noch nicht nachgebildet; Fortsetzung 3.
+- **Vorgabe (`aufstellung`):** (1) Einstellung „automatisch aufstellen“ als Feld des Managers (Migration), Lesen und
+  Abschalten über den Manager am Zug; roter Test: Manager wechselt den Verein → Einstellung kommt mit. (2) Je Spieler die
+  zuletzt zugewiesene Reihe (+0x15) führen: gesetzt nur, wenn die Neuaufstellung bzw. der Eingriff ihn aufstellt, nicht
+  gelöscht beim Herausnehmen; `RollPlayedLines` liest sie. Roter Test: aufgestellter Verteidiger (Reihe 2) verletzt sich,
+  Neuaufstellung, Wurf 0 → `PlayedLine` = 2. (3) A807, A165: nur Marker nachziehen (`[ORIGINAL]` mit diesen Fundstellen;
+  A165 Computervereine `[APPROX]` „Ergänzung, Original ohne Kaderplätze“).
+
+### T03 – Saisonwechsel: Zeitpunkt und Reihenfolge der Würfe (A661, A829, A843, A935)
+
+`python3 tools/reverse-engineering/abweichungen/t03_markt.py` (Takt 0x07169 für Manager 0 bis zur zweiten Schleife Datei
+0x0727C, Zähler 0x4BE17 echt; vier Markt-Plätze, Zufall einmal untere, einmal obere Grenze):
+
+```
+Plätze vorher: 0: Kraft 60, Sperre 0x01, +0x09 0x20, Bieter 5; 1: Kraft 50, Sperre 0x00, +0x09 0x00, Bieter 0; 2: Kraft 57, Sperre 0x02, +0x09 0x40, Bieter 0; 3: Kraft 40, Sperre 0x81, +0x09 0x00, Bieter 0
+Lauf Zufall = untere Grenze:
+   Platz 0: random(0, 2) = 0
+   Platz 0: random(0, 3) = 0
+   Platz 0: 0x4B270 (Gebot verfällt)
+   Platz 1: random(0, 3) = 0
+   Platz 2: random(0, 3) = 0
+   Platz 3: random(0, 2) = 0
+   Platz 3: random(0, 3) = 0
+   nachher: 0: Kraft 50, Sperre 0x00, +0x09 0x00; 1: Kraft 50, Sperre 0x00, +0x09 0x00; 2: Kraft 47, Sperre 0x02, +0x09 0x40; 3: Kraft 40, Sperre 0x80, +0x09 0x00
+Lauf Zufall = obere Grenze:
+   Platz 0: random(0, 2) = 2
+   Platz 0: random(0, 3) = 3
+   Platz 1: random(0, 3) = 3
+   Platz 2: random(0, 3) = 3
+   Platz 3: random(0, 2) = 2
+   Platz 3: random(0, 3) = 3
+   nachher: 0: Kraft 50, Sperre 0x01, +0x09 0x20; 1: Kraft 50, Sperre 0x00, +0x09 0x00; 2: Kraft 47, Sperre 0x02, +0x09 0x40; 3: Kraft 40, Sperre 0x81, +0x09 0x00
+```
+
+`python3 tools/reverse-engineering/abweichungen/t03_saisonwechsel.py` (Tagesfunktion 0x54C9F ab Datei 0x56130 bis zum
+Saisonzähler Datei 0x56476, alle Aufrufe als Stub; Gruppe 2 mit zwei Paaren):
+
+```
+Lauf Datei 0x56130 bis stop at 0x56476:
+    1. random(36, 41) = 38
+    2. Tausch 0x36169(35, 38, 0x1)
+    3. random(36, 41) = 38
+    4. random(36, 41) = 40
+    5. Tausch 0x36169(34, 40, 0x1)
+    6. Ewige Tabelle 0x5667A
+    7. Wanderung 0x09D1B(10)
+    8. Ligamischung 0x35EDD
+    9. 0x346D5
+   10. Saisonschleife 0x26F20
+   11. 0x5ACA0(0)
+   12. 0x5ACA0(1)
+   weitere Stubs: 0x25b4a 0x51f3d 0x5d90d
+   Schreibzugriffe auf Tageszähler 0x3B7/0x3B9 und Tagesindex 0xA969: 0
+```
+
+- **A829 – Markt-Verfall: Abweichung bestätigt (Strom und Zahl der Würfe).** Eine Schleife je Markt-Platz (Anzahl 0x4BE17,
+  Satz 4): Kraft > 56 → −10; Sperre nur Manager 0 → random(0, 2), bei 0 frei; **random(0, 3) für jeden Platz**, erst
+  danach die Prüfung „offenes Gebot“ (+0x09 > 0x1F und Pool +0x1E ≠ 0, Datei 0x07227–0x07247), bei 0 verfällt es (0x4B270).
+  Das Remake rechnet erst Verfall und Sperren aller Plätze, dann je **Gebot** einen Wurf (`TransferMarket.AdvanceBids`,
+  Kommentar „der Wurf fällt nur bei einem offenen Gebot“ widerlegt).
+- **A661 – Oberliga-Zug: Abweichung bestätigt (Zeitpunkt).** Der Zug random(36, 41) (Datei 0x56275, Wiederholung bei
+  gleichem Zug) und die Tausche 0x36169 stehen im selben Durchlauf wie Ewige Tabelle, Wanderung und Mischung; zwischen
+  Datei 0x56130 und 0x56476 schreibt nichts Tageszähler oder Tagesindex – also am Tag der Mischung (29. April, Datei
+  0x5644E, belegt in `SeasonFlow.cs`/`wettbewerbe.md`). Das Remake zieht am 13. April (`FinishClubSeason`).
+- **A843/A935 – Wanderung vor der Mischung: Abweichung bestätigt.** Reihenfolge am 29. April: Austausch (Gruppen 0–2) →
+  Kostenstufe (Datei 0x563C0) → Ewige Tabelle 0x5667A → Wanderung 0x09D1B(10) → 0x35EDD (Länder, dann Ligen) → 0x346D5 →
+  0x26F20. Die Wanderung zählt die Sätze in der Folge **nach** den Tauschen von Auf- und Absteigern (0x36169 mit Schalter 1
+  tauscht ganze Sätze) und **vor** der neuen Mischung. Das Remake wandert in `StartNextSeason` (`OnNewSeasonManager`) nach
+  der Mischung, in deren neuer Folge (`MatchEngine.DriftOrder`).
+- **Vorgabe (`saison-geld`):** (1) `DailyRunMarket`: eine Schleife über die Markt-Plätze in Satzfolge – Verfall, Sperrwurf
+  (nur Sperre allein von Manager 0), `Random16(0, 3)` immer, Gebot des Platzes bei 0 löschen; roter Test: drei Plätze ohne
+  Gebot → drei Würfe aus `Random` (Stromstand nach dem Takt wie mit drei `Random16(0, 3)`). (2) `ExchangeOberliga` aus
+  `FinishClubSeason` in `FinishSeason` nach `ApplyForcedRelegation`, Zug `Random16(36, 41)` auf die Plätze 36–41; roter
+  Test: Stromstand und Oberliga-Paare am 13. April unverändert, am 29. April gezogen. (3) `DriftTeamValues(Season)` in
+  `FinishSeason` nach `RecordSeasonStatistics` und vor `MixForNextSeason`, Folge = Satzfolge der alten Saison mit den
+  Aufsteigern auf den Plätzen ihrer Absteiger (wie 0x36169); in `OnNewSeasonManager` entfernen. Roter Test: Wanderung zieht
+  vor den 40 Würfen der Länder (Stromstand), Reihenfolge der Vereine wie oben. Mehrsaisonprobe (4 Wechsel).
+
+### F08 – Stadion, Zuschauer und Sommerpause (A468, A509, A512, A526, A695)
+
+`python3 tools/reverse-engineering/abweichungen/f08_baufirma.py` (Tagesabschluss 0x3ED01 für Manager 1 bis Datei 0x3ED4A):
+
+```
+Merker vorher : Manager 0 [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0], Manager 1 [0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0]
+   Projekt  0: random(0, 10) = 7
+   Projekt  1: random(0, 10) = 7
+   Projekt  2: random(0, 10) = 0
+   Projekt  3: random(0, 10) = 0
+   Projekt  4: random(0, 10) = 7
+   Projekt  5: random(0, 10) = 7
+   Projekt  6: random(0, 10) = 7
+   Projekt  7: random(0, 10) = 7
+   Projekt  8: random(0, 10) = 7
+   Projekt  9: random(0, 10) = 7
+   Projekt 10: random(0, 10) = 7
+Merker nachher: Manager 0 [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0], Manager 1 [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+```
+
+`python3 tools/reverse-engineering/abweichungen/f08_stadionbau.py` (Bauwoche 0x3D316, Manager 0; Merkmal 2 ohne Ziel,
+Merkmal 4 mit Ziel 5, Sitzplätze ohne Ziel, je eine Restwoche):
+
+```
+   Projekt 0: 0x3cfa0 (aus Datei 0x3d330)
+   Projekt 2: 0x0390b (aus Datei 0x3d3ea)
+   Projekt 2: 0x0389c (aus Datei 0x3d409)
+   Projekt 2: 0x0389c (aus Datei 0x3d41b)
+   Projekt 2: 0x0390b (aus Datei 0x3d431)
+   Projekt 2: 0x4b2ba (aus Datei 0x3d447)
+   Projekt 4: 0x0390b (aus Datei 0x3d3ea)
+   Projekt 4: 0x0389c (aus Datei 0x3d409)
+   Projekt 4: 0x0389c (aus Datei 0x3d41b)
+   Projekt 4: 0x0390b (aus Datei 0x3d431)
+   Projekt 4: 0x4b2ba (aus Datei 0x3d447)
+   Projekt 9: 0x0390b (aus Datei 0x3d3ea)
+   Projekt 9: 0x0389c (aus Datei 0x3d409)
+   Projekt 9: 0x0389c (aus Datei 0x3d41b)
+   Projekt 9: 0x0390b (aus Datei 0x3d431)
+   Projekt 9: 0x4b2ba (aus Datei 0x3d447)
+Merkmal 2: Stufe 0, Ziel 0, Restwochen 0
+Merkmal 4: Stufe 5, Ziel 0, Restwochen 0
+Sitzplätze (Projekt 9): Plätze 0, Ziel 0, Restwochen 0
+```
+
+`python3 tools/reverse-engineering/abweichungen/f08_sommerpause.py` (Sommerschleife 0x54C9F ab Datei 0x56476, zwei Manager,
+drei Tage; Ausgabe gekürzt auf den ersten Tag, die weiteren gleich ohne Stadionbau):
+
+```
+Saisonzähler 0x3BD vor Datei 0x56476: 3
+   --- 0x367B1 (Datum weiter), Zähler 0x3B7 = 7
+   Manager 0: Stadionbau 0x3D316
+   Manager 0: Tagesabschluss 0x3ED01 (Saisonzähler 0x3BD = 4)
+   Manager 0: Heilung 0x07C12 Platz 0
+   Manager 0: Heilung 0x07C12 Platz 1
+   Manager 1: Stadionbau 0x3D316
+   Manager 1: Tagesabschluss 0x3ED01 (Saisonzähler 0x3BD = 4)
+   Manager 1: Heilung 0x07C12 Platz 0
+   Manager 1: Heilung 0x07C12 Platz 1
+   …
+```
+
+`python3 tools/reverse-engineering/abweichungen/f08_abrechnung.py` (Spieltag 0x36B5D, Ligaweg, bis zur ersten Minute):
+
+```
+   0x0b8c2 (aus Datei 0x36bdb)
+   0x084d7 (aus Datei 0x36c4f)
+   0x5ac9b (aus Datei 0x36c55)
+   0x50b45 (aus Datei 0x36cd3)
+   0x08365 (aus Datei 0x36d12)
+   0x08365 (aus Datei 0x36d49)
+   Abrechnung 0x544C0 (aus Datei 0x36dbd)
+   0x08365 (aus Datei 0x36d12)
+   0x08365 (aus Datei 0x36d49)
+   Abrechnung 0x544C0 (aus Datei 0x36dbd)
+   0x08365 (aus Datei 0x36d12)
+   0x08365 (aus Datei 0x36d49)
+   Abrechnung 0x544C0 (aus Datei 0x36dbd)
+   0x08365 (aus Datei 0x36d12)
+   0x08365 (aus Datei 0x36d49)
+   Abrechnung 0x544C0 (aus Datei 0x36dbd)
+   0x08365 (aus Datei 0x36d12)
+   0x08365 (aus Datei 0x36d49)
+   Abrechnung 0x544C0 (aus Datei 0x36dbd)
+   0x08365 (aus Datei 0x36d12)
+   0x08365 (aus Datei 0x36d49)
+   Abrechnung 0x544C0 (aus Datei 0x36dbd)
+   0x5ac9b (aus Datei 0x3700d)
+   Minutenschleife 0x37A62 (aus Datei 0x377de)
+Abrechnungen vor der ersten Minute: 6; Hauptmenü/Sicherung davor: nein
+```
+
+- **A512 – Baufirmen: Abweichung bestätigt (Zahl der Würfe).** random(0, 10) für **alle 11 Projekte** des Managers am Zug,
+  bei 0 Merker DGROUP 0xCC09 + 11 · Manager + Projekt = 0 (auch wenn nicht gesetzt). Das Remake würfelt nur für gesetzte
+  Merker (`ForgiveBuilders`); Verteilung je Merker gleich, Strom verschieden.
+- **A509 – Bau ohne Ziel: Abweichung bestätigt, im Spiel nicht erreichbar.** Bei Restwoche 0 setzt 0x3D316 ohne Prüfung
+  Stufe = Ziel bzw. Plätze = Zielplätze, Ziel = 0, und meldet (0x4B2BA, Datei 0x3D447) – ohne Ziel also Stufe bzw. Plätze 0.
+  Das Remake lässt die Stufe stehen und meldet nichts. Beide setzen Restwochen nur mit einem Ziel (Annahme); erreichbar nur
+  über einen fremden Spielstand (`ImportConstruction`).
+- **A526 – Sommerpause: Abweichung bestätigt (Reihenfolge), Buchjahr gleich.** Je Kalendertag (0x367B1) und je Manager
+  verschränkt: Stadionbau (Zähler ≡ 0), Tagesabschluss 0x3ED01, Heilung je Kaderplatz – dann der nächste Manager. Der
+  Saisonzähler ist schon erhöht (Datei 0x56476; 3 → 4 vor der ersten Buchung): Buchen in der neuen Saison wie im Remake.
+  Das Remake rechnet je Tag erst den Bau aller, dann den Tagesabschluss aller (Börse einmal), dann die Heilung aller.
+- **A468, A695 – Abrechnung vor dem Spiel: keine Abweichung im Ergebnis.** 0x36B5D rechnet 0x544C0 für alle sechs Paarungen
+  des Tages (Datei 0x36DBD), dann erst die Minutenschleife 0x37A62; dazwischen kein Hauptmenü, keine Sicherung. Gemerkte
+  Zuschauer über einen Spielstand hinweg (A468) und eine Abrechnung ohne Vorbereitung (A695: nur Spielwertung und direkte
+  Aufrufe ohne Spiel, die Aufstellung ändert sich dann nicht) kommen im Original nicht vor.
+- **Vorgabe (`saison-geld`):** (1) `ForgiveBuilders`: je Manager 11 Würfe `Between(Random, 0, 10)` in Projektfolge, bei 0
+  Merker löschen; roter Test: kein Merker gesetzt → 11 Würfe je Manager und Tag (Stromstand). (2) `RunSummerBreak` je Tag
+  je Manager: Bau (Zähler ≡ 0), Tagesabschluss des Managers, Heilung seines Kaders; Börse weiter einmal je Tag (#188) –
+  roter Test: zwei Manager, Folge der Würfe Bau/Baufirmen/Heilung wie oben. (3) A509: „wie im Original“ (Stufe = Ziel ohne
+  Prüfung, Meldung) oder `[APPROX]` mit diesem Beleg; A468, A695: Marker mit Beleg nachziehen, nichts ändern.
