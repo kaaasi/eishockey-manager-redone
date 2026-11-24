@@ -150,6 +150,10 @@ public class AbgleichOriginalPaareTests
                 // (Doppelwechsel, Teamwerte an deren Grenze, alle −43), im Original bleibt er in der Bundesliga; wie LANDSHUT ein
                 // Zufallsfeld der Aufstiegsrunde, kein fester Befund.
                 new("Clubs[9 EC HEDOS MÜNCHEN].TeamValues.*", Chance, Optional: true),
+                // Zufall (Runde 25, Spur saison-geld Teil 3, K11, R21-D2 = A): Mit dem Rollenwert aus dem Stand (Pool +0x18, Torwürfe
+                // Datei 0x5077–0x52CB) verläuft der Strom anders; bei Prüfsaat 77 geht EC RATINGEN in die Oberliga (Teamwerte an deren
+                // Grenze, alle −35), im Original nicht; wie LANDSHUT und HEDOS ein Zufallsfeld der Aufstiegsrunde, kein fester Befund.
+                new("Clubs[10 EC RATINGEN].TeamValues.*", Chance, Optional: true),
                 // Zufall (Runde 22, Spur transfer-pool, A864/A391, R21-D2 = A): Nur mit der Saat 1993 weicht ein Teamwert von MEMMINGEN
                 // ab (Angriff Kondition −11 im Original, 27 im Remake); mit den fünf weiteren Saaten (Pair_OtherSeed_SameExpectedList)
                 // nicht. Die Wanderung der Teamwerte zieht aus dem gemeinsamen Strom, den die Verletzung außerhalb des Spiels

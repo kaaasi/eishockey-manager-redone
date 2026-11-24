@@ -244,7 +244,7 @@ public static class NewGame
     /// und sein Platz ≤ DGROUP 0x7CB (35) ist. Sonst Zufallsplatz r der Start-Liga (Datei 0x29C78
     /// <c>random([0x7C0+L], [0x7C0+L]+[0x7B1+L]−1)</c>), neu gezogen, solange r der Verein eines früheren Managers ist
     /// (Datei 0x29C9B–0x29CC3) oder in Zeile 1 des Europapokals steht (Datei 0x29CCC, 0x45CD0(r, 1)); dann Tausch
-    /// Datei 0x29CF2 <c>0x36169(v, r, 0x80)</c>: Name, Logo, Manager und Spieler wandern, die Teamwerte bleiben am Platz.
+    /// Datei 0x29CF2 <c>0x36169(v, r, 0x80)</c> (gemeinsame Umsetzung <see cref="StartLeaguePlace"/>, K13): Name, Logo, Manager und Spieler wandern, die Teamwerte bleiben am Platz.
     /// Der Verdrängte übernimmt Platz und Liga des Managervereins (auch „ohne Liga“). Bei Start-Liga Bundesliga wird
     /// immer gezogen, r = v ist möglich. Belege FILE27/FILE28 (Köln fest, Start-Liga 2. Liga: Weißwasser bzw. Hannover in
     /// der Bundesliga mit Kölns Teamwerten), FILE15 (Bayreuth bleibt in der 2. Liga); <c>docs/analyse/re-runde-13.md</c>, U15-a.
@@ -262,16 +262,12 @@ public static class NewGame
     {
         var own = clubs[club];
         var ownPlace = Array.IndexOf(places, club);
-        if (league != League.Bundesliga && own.League == league && ownPlace <= LastLeagueSlot)
+        if (StartLeaguePlace.Keeps(league, own.League, ownPlace))
             return null;
-        var first = (int)league * LeagueSize;
-        bool Excluded(int slot) => earlierManagers.Contains(places[slot]) || slot == 0;
-        if (Enumerable.Range(first, LeagueSize).All(Excluded))
+        // K13 (Spur saison-geld Teil 3): dieselbe Ziehung wie beim Hinzufügen; Europapokal-Tabelle noch leer (Runde 0).
+        if (StartLeaguePlace.Draw((int)league * LeagueSize, LeagueSize, slot => places[slot], earlierManagers, [], 0, random)
+            is not { } partnerPlace)
             return null;
-        int partnerPlace;
-        do
-            partnerPlace = first + random.Next(LeagueSize);
-        while (Excluded(partnerPlace));
         var partner = places[partnerPlace];
         if (partner == club)
             return partner;

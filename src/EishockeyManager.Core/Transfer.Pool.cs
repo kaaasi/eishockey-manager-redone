@@ -27,8 +27,21 @@ public sealed class PoolSlot
     /// <summary>Index im Pool (1–199).</summary>
     public required int Index { get; init; }
 
-    /// <summary>Spieler des Platzes (Name +0x00, Talent +0x12, Alter +0x14, Grundstärken +0x15–0x17, Rollenwert +0x18).</summary>
-    public required Player Player { get; set; }
+    /// <summary>
+    /// Spieler des Platzes (Name +0x00, Talent +0x12, Alter +0x14, Grundstärken +0x15–0x17, Rollenwert +0x18). [ORIGINAL] Der
+    /// Rollenwert bleibt am Platz (einziger Schreiber Poolaufbau Datei 0x5B3BB–0x5B49D, K11): ein neuer Spieler des Platzes gleicher
+    /// Art übernimmt den Wert seines Vorgängers (<see cref="Core.Player.RoleValue"/>).
+    /// </summary>
+    public required Player Player
+    {
+        get;
+        set
+        {
+            if (field is not null && !ReferenceEquals(field, value) && field.Role == value.Role)
+                value.TakeRoleValueOf(field);
+            field = value;
+        }
+    }
 
     /// <summary>Verein bzw. Nationalteam (+0x1D), Index in <see cref="GameState.Clubs"/>.</summary>
     public required int Club { get; set; }
@@ -163,15 +176,20 @@ public static class TransferPoolRules
         p.Condition = (byte)(b + 10 - TransferRules.Random16(random, 0, 20));
     }
 
+    /// <summary>[ORIGINAL] Grundwerte des Rollenwerts (Datei 0x5B3BB–0x5B49D): Verteidiger 25, Stürmer 75, dazu random(0, 16).</summary>
+    public const int DefenderRoleBase = 25, ForwardRoleBase = 75, RoleValueSpread = 16;
+
     /// <summary>
-    /// Rollenwert +0x18 (verbraucht nur den Zufall). [ORIGINAL] Datei 0x5B3BB–0x5B49D: Torhüter 0, Verteidiger 25 + random(0, 16),
-    /// Stürmer 75 + random(0, 16). Das Remake führt nur die Art (<see cref="RoleOf"/>).
+    /// Rollenwert +0x18 eines Poolplatzes (Spur saison-geld Teil 3, K11). [ORIGINAL] Datei 0x5B3BB–0x5B49D: Torhüter 0 (ohne Wurf),
+    /// Verteidiger 25 + random(0, 16), Stürmer 75 + random(0, 16); die Art folgt dem Index (<see cref="RoleOf"/>). Beleg
+    /// <c>k11_rollenwert.py</c>. Gespeichert in <see cref="Player.RoleValue"/>.
     /// </summary>
-    public static void RollRoleValue(TransferPoolLayout layout, int index, Random random)
+    public static int RollRoleValue(TransferPoolLayout layout, int index, Random random) => layout.RoleOf(index) switch
     {
-        if (layout.RoleOf(index) != PlayerRole.Goalkeeper)
-            _ = TransferRules.Random16(random, 0, 16);
-    }
+        PlayerRole.Goalkeeper => 0,
+        PlayerRole.Defender => DefenderRoleBase + TransferRules.Random16(random, 0, RoleValueSpread),
+        _ => ForwardRoleBase + TransferRules.Random16(random, 0, RoleValueSpread),
+    };
 
     /// <summary>
     /// Grundstärken beim Listenwechsel aus den Teamwerten des Vereins. [ORIGINAL] Datei 0x4981E–0x4991C (Ov 0x118):
@@ -446,7 +464,7 @@ public sealed partial class TransferMarket
                 NameFromLeague(game, slot, role, random, names, held);
         }
         foreach (var slot in _pool)
-            TransferPoolRules.RollRoleValue(layout, slot.Index, random);
+            slot.Player.RoleValue = TransferPoolRules.RollRoleValue(layout, slot.Index, random);
         if (!start)
             Rename(game, nationals: true, random, held, exchange: false);
         AssignPoolIds(game);

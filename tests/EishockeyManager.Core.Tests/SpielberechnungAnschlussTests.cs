@@ -324,8 +324,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Spur saison-geld Teil 2 (Runde 25, F06/F08, R21-D2 = A, R15-E2 = C): neu – Baufirmen 11 Würfe je Manager und Tag (A512, Datei
     // 0x3ED19–0x3ED48), Sommerpause je Manager verschränkt (A526, Datei 0x564D2–0x56593), Banden je Feld (A888, 0x3E657); anderer
     // Zufallsverlauf ab dem ersten Tagesabschluss. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von eaf8621 → alte Werte.
-    [InlineData(false, "27080A46E3758689")]
-    [InlineData(true, "2B5B2A0158707CB0")]
+    // Spur saison-geld Teil 3 (Runde 25, K11, R21-D2 = A, R15-E2 = C): neu – Rollenwert Pool +0x18 als Feld (Player.RoleValue, Datei
+    // 0x5B3BB–0x5B49D), Torwürfe der Poolspieler mit dem gewürfelten Wert (Datei 0x5077–0x52CB); zugleich Rebase auf main 90d8394
+    // (aufstellung). Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von 395a8f8 (Teil 2 auf main) → andere Werte.
+    [InlineData(false, "FC829CC80C34E185")]
+    [InlineData(true, "E28514E7CAAF1433")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

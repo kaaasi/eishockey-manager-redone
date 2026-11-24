@@ -326,10 +326,13 @@ public class RngTwinProbeTests
     // Spur saison-geld Teil 2 (Runde 25, F06/F08, R21-D2 = A, R15-E2 = C): neu – Baufirmen 11 Würfe je Manager und Tag (A512, Datei
     // 0x3ED19–0x3ED48), Sommerpause je Manager verschränkt (A526, Datei 0x564D2–0x56593), Banden je Feld (A888, 0x3E657); anderer
     // Zufallsverlauf ab dem ersten Tagesabschluss. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von eaf8621 → alte Werte.
-    [InlineData(false, 3, "429BC51225B8C597")]
-    [InlineData(true, 3, "DB1AF4C5D29789A6")]
-    [InlineData(false, 11, "9E30D73BB0397386")]
-    [InlineData(true, 11, "086A872A04703F1C")]
+    // Spur saison-geld Teil 3 (Runde 25, K11, R21-D2 = A, R15-E2 = C): neu – Rollenwert Pool +0x18 als Feld (Player.RoleValue, Datei
+    // 0x5B3BB–0x5B49D), Torwürfe der Poolspieler mit dem gewürfelten Wert (Datei 0x5077–0x52CB); zugleich Rebase auf main 90d8394
+    // (aufstellung). Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von 395a8f8 (Teil 2 auf main) → andere Werte.
+    [InlineData(false, 3, "942D417E13D82A1C")]
+    [InlineData(true, 3, "304F08DC6AF1B8D3")]
+    [InlineData(false, 11, "F333EE3EB4236952")]
+    [InlineData(true, 11, "1AA2DB04754E1A0C")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -447,8 +450,11 @@ public class RngTwinProbeTests
     // Spur saison-geld Teil 2 (Runde 25, F06/F08, R21-D2 = A, R15-E2 = C): neu – Baufirmen 11 Würfe je Manager und Tag (A512, Datei
     // 0x3ED19–0x3ED48), Sommerpause je Manager verschränkt (A526, Datei 0x564D2–0x56593), Banden je Feld (A888, 0x3E657); anderer
     // Zufallsverlauf ab dem ersten Tagesabschluss. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von eaf8621 → alte Werte.
-    [InlineData(false, "50BDAD553C2F469D")]
-    [InlineData(true, "8D29D4EE4C993668")]
+    // Spur saison-geld Teil 3 (Runde 25, K11, R21-D2 = A, R15-E2 = C): neu – Rollenwert Pool +0x18 als Feld (Player.RoleValue, Datei
+    // 0x5B3BB–0x5B49D), Torwürfe der Poolspieler mit dem gewürfelten Wert (Datei 0x5077–0x52CB); zugleich Rebase auf main 90d8394
+    // (aufstellung). Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von 395a8f8 (Teil 2 auf main) → andere Werte.
+    [InlineData(false, "69047994AD5F9F14")]
+    [InlineData(true, "C36825F27A2C6300")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

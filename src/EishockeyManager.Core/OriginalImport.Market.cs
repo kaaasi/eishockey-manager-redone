@@ -123,6 +123,7 @@ public sealed partial class GameState
                 player.ContractYears = 0;
                 player.MonthlySalary = 0;
             }
+            player.RoleValue = e[0x18]; // [ORIGINAL] Pool +0x18 bleibt am Platz (K11, Player.RoleValue)
             players[i] = player;
             slots.Add(new PoolSlot
             {

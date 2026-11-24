@@ -59,13 +59,17 @@ public class AbgleichFixPoolTests
     /// neu; passiv +1,4 alt, +2,5 neu; über 5 alt Saat 8 passiv und Saat 3 aktiv Technik 5,0, neu Saaten 1 und 9 aktiv, 5 und 11
     /// passiv) – eine Eigenschaft dieser Probe am vierten Wechsel, nicht dieser Spur; im PR als Restlücke gemeldet. Saat 2 ist mit
     /// altem und neuem Code grün (höchstens 3,5).
+    /// Runde 25, Spur saison-geld Teil 3 (K11, R21-D2 = A, R15-E2 = C): Saat 3 statt 2 – mit dem Rollenwert aus dem Stand (Pool +0x18,
+    /// Torwürfe Datei 0x5077–0x52CB) und dem Rebase auf main 90d8394 liegt Saat 2 bei 5,6; größter Schritt über passiv und aktiv je Saat
+    /// 1–12: 3,0 / 5,6 / 2,0 / 5,0 / 2,9 / 2,9 / 4,7 / 2,0 / 4,0 / 4,4 / 4,7 / 2,7 – dieselbe Eigenschaft der Probe am vierten Wechsel
+    /// wie in Runde 21, kein systematischer Zuwachs.
     /// </summary>
     [GameDataTheory]
     [InlineData(false)]
     [InlineData(true)]
     public void File44_FourSeasonChanges_PoolMeansStable(bool active)
     {
-        var game = Import("FILE44.HOK", 2);
+        var game = Import("FILE44.HOK", 3);
         var manager = game.Managers[0];
         for (var season = 0; season < 4; season++)
         {

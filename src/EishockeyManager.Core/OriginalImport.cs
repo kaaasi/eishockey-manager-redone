@@ -490,6 +490,7 @@ public sealed partial class GameState
                 AssignPlayerId(player);
             }
             ApplySlot(player, slot, entry, clubOf, club);
+            player.RoleValue = entry[0x18]; // [ORIGINAL] Pool +0x18 (K11, Player.RoleValue)
             squadPlayers[slot[0x0F]] = player;
             if (listed)
                 continue; // A380: nur auf dem Markt-Platz

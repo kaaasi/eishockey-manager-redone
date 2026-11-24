@@ -354,6 +354,9 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // Runde 25, Spur saison-geld Teil 2 (F06/F08, R21-D2 = A, R15-E2 = C): neu – Baufirmen 11 Würfe je Manager und Tag (A512, Datei
     // 0x3ED19–0x3ED48), Sommerpause je Manager verschränkt (A526), Banden je Feld (A888); mit und ohne Anzeige weiter gleich.
     // Rückschaltprobe: src/ von eaf8621 → alte Referenz.
+    // Runde 25, Spur saison-geld Teil 3 (K11, R21-D2 = A, R15-E2 = C): neu ab 1994 – Torwürfe der Poolspieler mit dem gewürfelten
+    // Rollenwert Pool +0x18 (Datei 0x5B3BB–0x5B49D, 0x5077–0x52CB), zugleich Rebase auf main 90d8394 (aufstellung); mit und ohne Anzeige
+    // weiter gleich. Rückschaltprobe: src/ von 395a8f8 → andere Referenz (rot).
     private const string Reference =
-        "1993: DEB 8, DM 1, Tab 15504 | 1994: DEB 1, DM 0, Tab 16012 | 1995: DEB 6, DM 1, Tab 16044 | 1996: DEB 5, DM 5, Tab 16048";
+        "1993: DEB 8, DM 1, Tab 15504 | 1994: DEB 0, DM 8, Tab 16011 | 1995: DEB 9, DM 5, Tab 16327 | 1996: DEB 5, DM 4, Tab 16420";
 }

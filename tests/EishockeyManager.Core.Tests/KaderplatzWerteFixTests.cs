@@ -117,7 +117,10 @@ public class KaderplatzWerteFixTests
         // Spur saison-geld Teil 2 (Runde 25, F08 A512/A526, R21-D2 = A, R15-E2 = C): Saat 5 statt 3 – 11 Würfe der Baufirmen je Manager und
         // Tag (Datei 0x3ED19–0x3ED48), Sommerpause je Manager verschränkt; bei Saat 3 trägt der passive Manager nach vier Wechseln keinen
         // abweichenden Poolwert mehr, unter 3–11 erfüllt nur 5 die Vorbedingung passiv und aktiv. Die Probe hängt an der Saat.
-        var game = OriginalExportTests.NewGameForExport(database, 5);
+        // Spur saison-geld Teil 3 (Runde 25, K11, R21-D2 = A, R15-E2 = C): Saat 3 statt 5 – Torwürfe der Poolspieler mit dem gewürfelten
+        // Rollenwert (Datei 0x5077–0x52CB), zugleich Rebase auf main 90d8394; bei Saat 5 trägt der passive Manager nach vier Wechseln
+        // keinen abweichenden Poolwert mehr, unter 2–15 erfüllen 3, 6, 7, 11, 15 die Vorbedingung passiv und aktiv. Die Probe hängt an der Saat.
+        var game = OriginalExportTests.NewGameForExport(database, 3);
         RngTwinProbeTests.Run(game, active);
         var club = game.Clubs[game.Managers[0].ClubIndex];
         Assert.Contains(club.Players, p => p.PoolCondition is not null || p.PoolTechnique is not null);

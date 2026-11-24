@@ -25,7 +25,7 @@ public class SaveGameTests
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
     {
-        Assert.Equal(64, SaveGame.SchemaVersion);
+        Assert.Equal(65, SaveGame.SchemaVersion);
         Assert.Equal(ExpectedSchemaFingerprint, SaveGame.SchemaFingerprint());
     }
 
@@ -87,7 +87,8 @@ public class SaveGameTests
     //    GameState._youthOfDayDone: Jugend des Tages im alten Stand schon gerechnet (Teil 2, A384/A670; dieselbe Migration).
     // 63 Lineup._goalieStandIn → Lineup._sixthSkater: sechster Feldspielerplatz (Spur feldspieler-sechs Runde 23, #939 A937; vorläufig).
     // 64 Manager.AutoLineupEnabled (A936) und Player.LastLine (A939): Spur aufstellung Runde 25, K07.
-    private const string ExpectedSchemaFingerprint = "9192898DC037428B";
+    // 65 Player._roleValue: Rollenwert Pool +0x18 (Spur saison-geld Runde 25, K11).
+    private const string ExpectedSchemaFingerprint = "E9EBA812A531D94D";
 
     // ---------- Abnahme 3: Roundtrip ----------
 
