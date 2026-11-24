@@ -6,6 +6,22 @@ Runde 24, Spur `abweichungsliste` (R24-D1 = B, R20-D3-Zusatz). Grundlage: `pytho
 
 **Spalten:** *sichtbar* = der Spieler kann den Unterschied im normalen Spiel sehen oder hören (ja/nein); *Aufwand* für „wie im Original“: **S** bis etwa ein Tag, eine Stelle; **M** eine Funktion, Beleg in em.exe zu lesen oder ein Feld im Spielstand; **L** Umbau von Modell oder Ablauf. Themen bündeln gleiche Funktion bzw. gleichen Bildschirm; Doppelzeilen (z. B. A768/A769, A892/A956) stehen zusammen. Ein Thema steht im Bereich der Mehrzahl seiner IDs, einzelne IDs können aus einem anderen Bereich der Vollliste kommen.
 
+## 0. Entscheidungen des Nutzers (24.11.2026)
+
+Grundlage: Vergleich der Bewertungen von ChatGPT ([PR #992](abweichungen-bewertung-chatgpt.md)) und Gemini
+([abweichungen-bewertung-gemini.md](abweichungen-bewertung-gemini.md)) durch die Leitstelle; Klassen je Thema:
+[abweichungen-bewertung-claude.md](abweichungen-bewertung-claude.md). Was hier nicht steht, gilt nach Vorschlag.
+
+- **ändern (Runde 25):** die 15 Themen aus Abschnitt 1; zusätzlich **B31** (= A: beim Verlassen wie im Original schreiben, als
+  Kern-Ereignis), **B11** (= A: „jede Taste schließt“ wie im Original, Escape und Rechtsklick bleiben), **K07**, **S05**, **S07**
+  (niedrige Priorität), **T03** und **S01** (vor v1.0, entgegen „bleibt“).
+- **prüfen:** B16 (= A: Wettbewerbscode 0xD0C2 in em.exe lesen, zusammen mit B15; ändern nur bei belegter Abweichung);
+  F06, F08 (= A: prüfen, belegte Abweichung ohne Rückfrage wie im Original ändern).
+- **aus dem Aufräumkonzept (A4 = A):** K2 (Strafbank beim Bundestrainer), K9 (= B17), K11 (Rollenwert +0x18), K13 (Platzwahl
+  0x29C3B) werden in Runde 25 mit Beleg geklärt ([aufraeumen-v1.md](aufraeumen-v1.md) §1.5); K15 bleibt.
+- **ins Aufräumen #936:** K04, K11, K13, L11, L12, C02, C08 (L11/C02 nach Aufräumkonzept A1).
+- **D-Themen:** warten auf DOSBox; D06 bleibt (Nutzerentscheidung 01.11.2026, Computerkader).
+
 ## 1. Themen mit Vorschlag „ändern“ (15 Themen, 44 IDs)
 
 | Nr | Thema | Bereich | IDs | sichtbar | Aufwand | Grund | Entscheidung |

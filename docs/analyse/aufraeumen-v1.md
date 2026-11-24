@@ -266,7 +266,10 @@ Gemeinsame Dateien (`AGENTS.md` §2.5): `GameState.cs` (K3 `ReferenceRating`, U1
 | K1/K19 sehen neutral aus, sind es nicht | stille Abweichung | nur nach bestätigter Gleichheit; sonst liegen lassen |
 | Lauf mit Originaldaten fehlt | Umbau nur synthetisch geprüft | alle drei Prüfläufe Pflicht (§2.2), blockiert = blockiert |
 
-## 3. Offene Nutzerentscheidungen
+## 3. Nutzerentscheidungen
+
+**Entschieden (Nutzer 24.11.2026): A1 = B, A2 = A, A3 = B, A4 = A, A5 = A (Analyse-Skripte mit ihrer Analyse ins Archiv),
+A6 = A** – jeweils die Empfehlung unten.
 
 Je Entscheidung: Problem, Optionen mit Vor- und Nachteil, eine Empfehlung mit Begründung.
 
