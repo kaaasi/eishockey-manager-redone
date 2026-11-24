@@ -110,4 +110,81 @@ public class WettbewerbeAnzeigeTests
         Assert.Equal(0, Assert.IsType<EuropeanCupScreen>(table(host, menu)).View);
         Assert.Equal(0, Assert.IsType<EuropeanCupScreen>(pairings(host, menu)).View);
     }
+    // ---- Teil 2: B15/B16 Gegner- und Vereinsfenster ------------------------------------------------------------------
+
+    private static int[] Form(string signs) => [.. signs.Select(c => c switch { 's' => 3, 'u' => 2, 'n' => 1, _ => 0 })];
+
+    /// <summary>
+    /// B15 (A287): [ORIGINAL] Gesicht 0x51AAF – Stimmung 2 + Siege − Niederlagen über die acht Bilanzzeichen, erst danach auf
+    /// 1 … 3 begrenzt. Erwartete Werte aus <c>b15_gegnerfenster.py</c> Teil 1 (re-abweichungen B15/B16). Vorher immer gelb.
+    /// </summary>
+    [Theory]
+    [InlineData("--------", Widgets.Mood.Same)]
+    [InlineData("s-------", Widgets.Mood.Up)]
+    [InlineData("n-------", Widgets.Mood.Down)]
+    [InlineData("uuuuuuuu", Widgets.Mood.Same)]
+    [InlineData("snsnsnsn", Widgets.Mood.Same)]
+    [InlineData("ssssnnnn", Widgets.Mood.Same)]
+    [InlineData("nnnnnsss", Widgets.Mood.Down)]
+    [InlineData("ssssssss", Widgets.Mood.Up)]
+    public void FormMood_FromRecordSigns(string signs, Widgets.Mood expected) =>
+        Assert.Equal(expected, TeamInfoWindow.FormMood(Form(signs)));
+
+    /// <summary>
+    /// B15 (A287, A289): [ORIGINAL] Das Fenster zeichnet das Gesicht bei (249 | 89) (Ziel 0xF9 der Bildausgabe in 0x51AAF) nach der
+    /// Bilanz: nach einem WM-Gruppensieg grün. Vorher gelb bei x = 250.
+    /// </summary>
+    [GameDataFact]
+    public void TeamInfoWindow_DrawsFaceOfRecord()
+    {
+        var d = ScreenDriver.Create(TestGameData.Load());
+        d.StartNewGame();
+        var game = d.Host.Game!;
+        game.EnterNationalResult(55, 56, 4, 1, NationalMatchKind.WorldCupGroup);
+        var screen = new WorldCupScreen(d.Host, new MainMenuScreen(d.Host));
+        d.Host.Show(screen);
+        screen.Info.Show(55);
+        d.Frame();
+        var expected = new Surface { Palette = d.Surface.Palette };
+        expected.Fill(new Rect(0, 0, 320, 240), 4);
+        Widgets.Smiley(expected, d.Host.Assets, Widgets.Mood.Up, TeamInfoWindow.MoodX, TeamInfoWindow.MoodY);
+        Assert.Equal(249, TeamInfoWindow.MoodX);
+        for (var y = 89; y < 94; y++)
+            for (var x = 249; x < 255; x++)
+                if (expected.Pixels[y * 320 + x] != 4)
+                    Assert.Equal(expected.Pixels[y * 320 + x], d.Surface.Pixels[y * 320 + x]);
+    }
+
+    /// <summary>
+    /// B15/B16 (A286, A867): [ORIGINAL] Zeile „Historische Ergebnisse“ und dritter Knopf nur bei Wettbewerbscode DGROUP 0xD0C2 = 0
+    /// (Datei 0x4D7AA, 0x4E07A). Nach einem Freundschaftsspiel (Code 0xD, Datei 0x30390) fehlen beide bis zum nächsten Aufbau
+    /// des Hauptmenüs (nächster Zug); ein Klick auf die Stelle des Knopfs schaltet dann nichts um. Vorher immer gezeigt.
+    /// </summary>
+    [Fact]
+    public void HistoryLineAndWatchButton_OnlyWithCompetitionCodeZero()
+    {
+        var game = Synthetic();
+        var host = new ScreenHost(null!) { Game = game };
+        const int nation = 55;
+        static bool HasHistory(GameState g) => TeamInfoWindow.Lines(g, nation).Any(l => l.Text.StartsWith("Historische Ergebnisse"));
+        Assert.True(CompetitionCode.IsMainMenu(game));
+        Assert.True(HasHistory(game));
+        Assert.Contains(ClubInfoWindow.Lines(game, 20), l => l.Text.StartsWith("Historische Ergebnisse"));
+
+        CompetitionCode.FriendlyPlayed(game);
+        Assert.False(CompetitionCode.IsMainMenu(game));
+        Assert.False(HasHistory(game));
+        var window = new TeamInfoWindow();
+        window.Show(nation);
+        var mode = game.Clubs[nation].WatchMode;
+        window.Update(Click(TeamInfoWindow.WatchButton), game);
+        Assert.Equal(mode, game.Clubs[nation].WatchMode);
+        Assert.DoesNotContain(ClubInfoWindow.Lines(game, 20), l => l.Text.StartsWith("Historische Ergebnisse"));
+
+        game.Continue(); // nächster Zug: das Hauptmenü setzt Code 0 (Datei 0x44E32)
+        Assert.True(CompetitionCode.IsMainMenu(game));
+        Assert.True(HasHistory(game));
+        window.Update(Click(TeamInfoWindow.WatchButton), game);
+        Assert.NotEqual(mode, game.Clubs[nation].WatchMode);
+    }
 }
