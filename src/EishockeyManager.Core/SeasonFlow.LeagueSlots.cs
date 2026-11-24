@@ -17,8 +17,8 @@ namespace EishockeyManager.Core;
 /// (docs/analyse/re-runde-13.md, S-K6-b). Spur wettbewerbe-regeln Teil 2 (#897, N3 = B: eigene Zufallsquellen auf
 /// <see cref="GameState.Random"/>): Die 3 · 55 Tausche ziehen je zwei Würfe random(0, 11) aus dem gemeinsamen Strom, am 29. April
 /// an der Stelle der Mischung (Datei 0x5644E), nach den 40 Würfen der Länder (A825, Datei 0x35EE3–0x35FC9). Bis Runde 22 eine abgeleitete Quelle (Startwert aus Saison und Stromzustand,
-/// ohne Weiterschalten). [APPROX] lrandom ist nicht nachgebaut (Folge nicht zugexakt, N3 = B), und die Teamwert-Wanderung, die
-/// im Original unmittelbar davor zieht (Datei 0x56448), läuft im Remake erst in <see cref="StartNextSeason"/> nach der Mischung.
+/// ohne Weiterschalten). [APPROX] lrandom ist nicht nachgebaut (Folge nicht zugexakt, N3 = B). [ORIGINAL] Die Teamwert-Wanderung
+/// zieht unmittelbar davor (Datei 0x56448; seit Spur saison-geld, T03, <see cref="DriftSeasonEnd"/>).
 /// [ORIGINAL] Zeitpunkt (Spur saison Teil 3, S-K6-a, re-runde-13.md; Entscheidung Leitstelle L5): em.exe mischt am 29. April
 /// nach Auf- und Abstieg, Ewiger Tabelle und Teamwert-Wanderung, vor dem Fenster „Saisonende“ mit den Prämien (Datei 0x5644E
 /// vor 0x5645D). Das Remake bildet die Satzfolge der nächsten Saison daher schon in <see cref="FinishSeason"/>
@@ -98,14 +98,58 @@ public sealed partial class GameState
     private void PrepareNextLeagueSlots(SeasonRecord record)
     {
         _nextLeagueSlots.Clear();
-        var members = Enum.GetValues<League>().ToDictionary(l => l, l => Clubs
-            .Where(c => (c.Index < NewGame.SelectableClubs ? record.NextLeague(c.Index, c.League) : c.League) == l)
-            .Select(c => c.Index).ToHashSet());
-        if (SuccessorSlots(record, members) is { } next)
+        if (SuccessorSlots(record, NextLeagueMembers(record)) is { } next)
         {
             _nextLeagueSlots.AddRange(next);
             Mix(_nextLeagueSlots);
         }
+    }
+
+    /// <summary>Liga eines Vereins in der nächsten Saison (am 29. April, vor dem Ligawechsel in <see cref="StartNextSeason"/>).</summary>
+    private League? NextLeagueOf(SeasonRecord record, Club club) =>
+        club.Index < NewGame.SelectableClubs ? record.NextLeague(club.Index, club.League) : club.League;
+
+    private Dictionary<League, HashSet<int>> NextLeagueMembers(SeasonRecord record) =>
+        Enum.GetValues<League>().ToDictionary(l => l, l => Clubs.Where(c => NextLeagueOf(record, c) == l).Select(c => c.Index).ToHashSet());
+
+    /// <summary>
+    /// Satzfolge am 29. April nach den Tauschen von Auf- und Absteigern, vor der Mischung: die Ligaplätze der alten Saison mit den
+    /// Aufsteigern bzw. Absteigern auf den Plätzen ihrer Tauschpartner (<see cref="SuccessorSlots"/>, ungemischt), dann die Plätze
+    /// ohne Liga nach dem Oberliga-Austausch dieser Saison (<see cref="OutsidePlaces"/> mit <paramref name="record"/>), dann die
+    /// übrigen Vereine nach Index. Fehlt eine geführte Folge (ungewöhnliche Ligagröße), gilt <see cref="ClubRecordOrder"/>.
+    /// </summary>
+    /// <remarks>
+    /// [ORIGINAL] T03/A843/A935 (Spur saison-geld; docs/analyse/re-abweichungen.md T03): Die Wanderung 0x09D1B(10) (Datei 0x56448)
+    /// zählt die Vereinssätze in der Folge nach dem Austausch der Gruppen 0–2 (0x36169 mit Schalter 1 tauscht ganze Sätze,
+    /// Datei 0x56137–0x5636D) und vor der Mischung 0x35EDD (Datei 0x5644E).
+    /// </remarks>
+    internal IReadOnlyList<int> SeasonEndDriftOrder(SeasonRecord record)
+    {
+        var order = SuccessorSlots(record, NextLeagueMembers(record));
+        if (order is null)
+            return ClubRecordOrder();
+        var places = OutsidePlaces().ToArray();
+        ApplyOberligaPairs(record, places);
+        order.AddRange(places.Where(c => !order.Contains(c)));
+        order.AddRange(Enumerable.Range(0, Math.Min(NewGame.SelectableClubs, Clubs.Count)).Where(c => !order.Contains(c)));
+        return order;
+    }
+
+    /// <summary>
+    /// 29. April: große Wanderung der Teamwerte (Modus 10) in der Satzfolge <see cref="SeasonEndDriftOrder"/>, mit den Ligagrenzen
+    /// des Platzes nach dem Austausch (= Liga der nächsten Saison).
+    /// </summary>
+    /// <remarks>
+    /// [ORIGINAL] Grenzen nach Satzplatz (0x34FD5(i) / 2 in 0x9D1B, MatchEngine.TeamValues.cs): Nach dem Tausch 0x36169 steht der
+    /// Aufsteiger auf dem Platz der höheren Liga. [ORIGINAL] auch im Modus „nur Weltkugel“ (A058, Spur saison Teil 4;
+    /// docs/analyse/re-runde-13.md): Datei 0x56448 ruft 0x9D1B mit Modus 10 ohne Modusprüfung. Spielstände FILE20 → FILE21 (Modus 1):
+    /// Ligavereine Kondition/Technik (Felder 0x18–0x1B) gewandert und in den Ligagrenzen (Kaufbeuren 80 78 79 75 → 92 91 90 87,
+    /// Düsseldorf 94 × 4 an der Obergrenze), alle zwölf Nationalteams dort unverändert, Form 0x1C–0x1E überall neu.
+    /// </remarks>
+    private void DriftSeasonEnd(SeasonRecord record)
+    {
+        var order = SeasonEndDriftOrder(record);
+        MatchEngine.DriftTeamValues(this, TeamValueDrift.Season, MatchEngine.DriftOrder(this, order), c => NextLeagueOf(record, c));
     }
 
     /// <summary>

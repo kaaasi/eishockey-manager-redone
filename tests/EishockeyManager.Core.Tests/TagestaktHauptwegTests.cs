@@ -172,9 +172,11 @@ public class TagestaktHauptwegTests
         }
         Assert.Contains(game.TransferMarket.Bids, b => b.Listing.Player == p1);
 
-        // Gegenprobe: Der Lauf von Manager 0 lässt Gebote verfallen (random(0, 3) = 0).
+        // Gegenprobe: Der Lauf von Manager 0 lässt Gebote verfallen (random(0, 3) = 0). Spur saison-geld (T03/A829, R15-E2 = C): Der
+        // Verfall steht seit Runde 25 in der ersten Schleife von 0x07169 je Markt-Platz (Datei 0x07215–0x0726A,
+        // GameState.DailyRunMarket), nicht mehr im Angebotsteil CatchUpManagerDay.
         for (var i = 0; i < 100 && game.TransferMarket.Bids.Contains(bid0); i++)
-            game.TransferMarket.CatchUpManagerDay(game, m0);
+            game.DailyRunMarket(game.CurrentDay, m0);
         Assert.DoesNotContain(bid0, game.TransferMarket.Bids);
     }
 

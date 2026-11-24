@@ -129,18 +129,24 @@ public static partial class MatchEngine
     /// gelten für Datenbankwert + Abweichung. Nationalteams spielen als <c>RatedNation</c> mit eigenen Werten; ihre Form wird nur
     /// gezogen und gesetzt.
     /// </summary>
-    public static void DriftTeamValues(GameState game, TeamValueDrift drift)
+    public static void DriftTeamValues(GameState game, TeamValueDrift drift) =>
+        DriftTeamValues(game, drift, DriftOrder(game), c => c.League);
+
+    /// <summary>
+    /// Wanderung in der Reihenfolge <paramref name="order"/>; Modus 10 begrenzt nach <paramref name="leagueOf"/> (Liga des Satzplatzes).
+    /// </summary>
+    internal static void DriftTeamValues(GameState game, TeamValueDrift drift, IReadOnlyList<Club> order, Func<Club, League?> leagueOf)
     {
         var random = game.Random;
         var mode = (int)drift;
         var b = drift == TeamValueDrift.Season ? 3 : 1;
-        foreach (var club in DriftOrder(game))
+        foreach (var club in order)
         {
             if (club.TeamValues is not { } v)
                 continue;
             if (club.Index < NationalTeams.First)
             {
-                var (min, max) = drift == TeamValueDrift.Season ? DriftBounds(club.League) : (1, 99);
+                var (min, max) = drift == TeamValueDrift.Season ? DriftBounds(leagueOf(club)) : (1, 99);
                 var r = OriginalMatch.Rnd(random, 0, 2 * mode);
                 var step = OriginalMatch.Rnd(random, 0, 2 * r + 2 * b) - (mode + b);
                 int Move(int deviation) =>
@@ -163,15 +169,22 @@ public static partial class MatchEngine
     /// Vereine in der Reihenfolge der Wanderung: Satzfolge der drei Ligen und der Plätze ohne Liga
     /// (<see cref="GameState.ClubRecordOrder"/>), dann die übrigen Sätze bis zu den Nationalteams nach Index. [ORIGINAL] 0x9D1B
     /// zählt die Vereinssätze i = 0 … [0x6AD] + 11 (Datei 0x09D23–0x09D33, 0x09F41); die Sätze stehen in der Folge der letzten
-    /// Ligamischung (Datei 0x35EDD). [APPROX] Saisonwechsel: Das Original wandert am 29. April nach dem Platztausch von Auf- und
-    /// Absteigern und vor der Mischung der neuen Saison (Datei 0x56448 vor 0x5644E); das Remake wandert in
-    /// <see cref="GameState.StartNextSeason"/> und geht dort schon nach der gemischten Folge der neuen Saison. Vereine ohne Liga
+    /// Ligamischung (Datei 0x35EDD). [ORIGINAL] Saisonwechsel (T03/A843/A935, Spur saison-geld): am 29. April nach dem Platztausch
+    /// von Auf- und Absteigern und vor der Mischung der neuen Saison (Datei 0x56448 vor 0x5644E) in der Folge
+    /// <see cref="GameState.SeasonEndDriftOrder"/>; bis Runde 25 in <see cref="GameState.StartNextSeason"/> nach der gemischten
+    /// Folge der neuen Saison. Vereine ohne Liga
     /// außerhalb der Auswahl (Index 48–51) und Vereine, die in keiner geführten Folge stehen, folgen nach Index.
     /// </summary>
     public static IReadOnlyList<Club> DriftOrder(GameState game)
     {
         ArgumentNullException.ThrowIfNull(game);
-        var order = game.ClubRecordOrder().Where(i => i < game.Clubs.Count && i < NationalTeams.First).Distinct().ToList();
+        return DriftOrder(game, game.ClubRecordOrder());
+    }
+
+    /// <summary>Reihenfolge der Wanderung aus einer Satzfolge der Vereine (<paramref name="records"/>), Rest wie <see cref="DriftOrder(GameState)"/>.</summary>
+    internal static IReadOnlyList<Club> DriftOrder(GameState game, IReadOnlyList<int> records)
+    {
+        var order = records.Where(i => i < game.Clubs.Count && i < NationalTeams.First).Distinct().ToList();
         var seen = order.ToHashSet();
         order.AddRange(game.Clubs.Where(c => c.Index <= NationalTeams.Last && !seen.Contains(c.Index)).Select(c => c.Index).Order());
         return order.Select(i => game.Clubs[i]).ToList();

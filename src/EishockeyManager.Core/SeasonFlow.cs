@@ -380,15 +380,7 @@ public sealed partial class GameState
         foreach (var group in RelegationGroups)
             RecordRelegationGroup(record, group, group.Table(Clubs).Select(r => r.Club.Index).ToList());
 
-        // Oberliga-Austausch wie em.exe (Spur saisonwechsel, S-K1/S-K2, SeasonFlow.Oberliga.cs).
-        // [ORIGINAL] auch im Modus „nur Weltkugel“ (A163, Spur saison Teil 4; docs/analyse/re-runde-13.md): Datei 0x56238–0x56284
-        // ohne Modusprüfung über die ungespielte Platzliste DGROUP 0x5CCB (= Startordnung, LeagueTable.StartOrder). Ohne Ligaspiele
-        // gibt es keine Aufstiegsrunden, zwischen 1. Liga, 2. Liga und Oberliga wechselt niemand. Spielstände FILE20 → FILE21:
-        // HEC HEILBRONN und EC BAD TÖLZ (Plätze 34/35) gehen, EHC STRAUBING und ESV KÖNIGSBRUNN (Plätze 37/41) rücken nach;
-        // 1. und 2. Liga mit denselben zwölf Namen. [APPROX] Steht im Modus 1 der (nie geführte) Verein des Managers auf den
-        // letzten beiden Plätzen, bleibt er wie in den anderen Modi (Doppeltausch); ob em.exe dort das Vereinsfeld +0x16 setzt, ist
-        // nicht gelesen (in FILE20/21 nicht betroffen).
-        ExchangeOberliga(tables[League.Oberliga], record);
+        // Oberliga-Austausch (Tauschgruppe 2) erst am 29. April in FinishSeason (Spur saison-geld, T03/A661).
 
         CurrentRecord = record;
         Phase = SeasonPhase.ClubSeasonOver;
@@ -408,9 +400,28 @@ public sealed partial class GameState
         // am Saisonende liest (SeasonFlow.SeasonEndYouth.cs). Vorher erst im Saisonwechsel (StartFinanceSeason).
         SeasonEndYouthTeams();
         var forced = ApplyForcedRelegation(record); // Spur saisonwechsel Teil 2 (S-K3): Statusbit 0x04, nach den Titelbits
+        // Oberliga-Austausch wie em.exe (Spur saisonwechsel, S-K1/S-K2, SeasonFlow.Oberliga.cs).
+        // [ORIGINAL] T03/A661 (Spur saison-geld; docs/analyse/re-abweichungen.md T03): Der Zug random(36, 41) (Datei 0x56275) und die
+        // Tausche 0x36169 der Gruppe 2 stehen am 29. April im Austausch aller Gruppen (Datei 0x56137–0x5636D) nach dem
+        // Zwangsabstieg und vor Ewiger Tabelle, Wanderung und Mischung; zwischen Datei 0x56130 und 0x56476 schreibt nichts Tageszähler
+        // oder Tagesindex. Bis Runde 25 zog das Remake schon am 13. April (FinishClubSeason).
+        // [ORIGINAL] auch im Modus „nur Weltkugel“ (A163, Spur saison Teil 4; docs/analyse/re-runde-13.md): Datei 0x56238–0x56284
+        // ohne Modusprüfung über die ungespielte Platzliste DGROUP 0x5CCB (= Startordnung, LeagueTable.StartOrder). Ohne Ligaspiele
+        // gibt es keine Aufstiegsrunden, zwischen 1. Liga, 2. Liga und Oberliga wechselt niemand. Spielstände FILE20 → FILE21:
+        // HEC HEILBRONN und EC BAD TÖLZ (Plätze 34/35) gehen, EHC STRAUBING und ESV KÖNIGSBRUNN (Plätze 37/41) rücken nach;
+        // 1. und 2. Liga mit denselben zwölf Namen. [APPROX] Steht im Modus 1 der (nie geführte) Verein des Managers auf den
+        // letzten beiden Plätzen, bleibt er wie in den anderen Modi (Doppeltausch); ob em.exe dort das Vereinsfeld +0x16 setzt, ist
+        // nicht gelesen (in FILE20/21 nicht betroffen).
+        // [APPROX] Spielstände aus der Zeit zwischen 13. und 29. April vor Runde 25 haben schon gezogen: dann nicht erneut.
+        if (record.LeftOberliga.Count == 0)
+            ExchangeOberliga(record.FinalTables[League.Oberliga], record);
         // [ORIGINAL] Ewige Tabelle nach dem Austausch (Datei 0x563AF ruft 0x5667A), mit der Liga der nächsten Saison
         // (Spur saisonwechsel Teil 3, S-K4; StatisticsHistory.cs). Ewige Bilanz und „Früher“ hängen nicht am Austausch.
         RecordSeasonStatistics();
+        // [ORIGINAL] T03/A843/A935 (Spur saison-geld): große Wanderung der Teamwerte nach der Ewigen Tabelle (Datei 0x563AF) und vor
+        // der Mischung (Datei 0x56448 vor 0x5644E), in der Satzfolge nach den Tauschen von Auf- und Absteigern
+        // (SeasonFlow.LeagueSlots.cs, SeasonEndDriftOrder). Bis Runde 25 im Saisonwechsel nach der Mischung (OnNewSeasonManager).
+        DriftSeasonEnd(record);
         // A825 (Spur national Teil 2): [ORIGINAL] 0x35EDD mischt am 29. April zuerst die Länder (Datei 0x5644E, 0x35EE3–0x35FC9: 40 Würfe
         // aus dem gemeinsamen Strom, ohne Modusprüfung; CupsWorld.cs), danach die Ligen (Datei 0x36013 ff.).
         if (WorldCup is { } worldCup)
