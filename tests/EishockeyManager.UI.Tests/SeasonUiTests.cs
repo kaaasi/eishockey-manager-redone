@@ -79,7 +79,9 @@ public class SeasonUiTests
         // Spielende: erst die Bestenliste (em.exe 0x5642E), dann „Das wars...“ (0x56438 → 0x51F3D, L8), dann der Titel
         var highscore = Assert.IsType<EishockeyManager.UI.Screens.Statistics.HighscoreScreen>(d.Host.Current);
         Assert.Contains(highscore.Table.Entries, e => e.Name == "LetsShow" && !e.IsEmpty);
-        d.Advance();
+        // Spur bedienung, B11 = A (R15-E2 = C): Die Bestenliste wartet wie im Original nur auf die Maus (0x38:0x118, Datei
+        // 0x5DBD8) – Enter (Advance) schließt sie nicht mehr, daher ein Klick.
+        d.Click(160, 120);
         Assert.IsType<SeasonEndGameOverScreen>(d.Host.Current);
         d.Advance();
         Assert.IsType<TitleScreen>(d.Host.Current);
