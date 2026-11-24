@@ -348,6 +348,15 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // #925/A873, A838, A105/A836, A071; Teil 2 Jugend nach den Menüs A384/A670, Ligamischung aus dem Strom #897; Teil 3 A101, A677,
     // A553) zusammen mit kader-regeln, transfer-pool und einzelpunkte ändern Spielrechnung und Zufallsverlauf; kein Originalsollwert,
     // nur interner Abdruck. Rückschaltprobe: src/ von f7f0410 + dieser Test → rot (alte Werte), src/ von 3ca753a + dieser Test → rot.
+    // Runde 25, Spur saison-geld Teil 1 (T03, R21-D2 = A, R15-E2 = C): neu ab 1993 – der Markt-Takt würfelt random(0, 3) je
+    // Markt-Platz (A829, Datei 0x07215), Oberliga-Zug und große Wanderung am 29. April (A661, A843/A935); mit und ohne Anzeige
+    // weiter gleich. Rückschaltprobe: src/ von 0c1811f → alte Referenz.
+    // Runde 25, Spur saison-geld Teil 2 (F06/F08, R21-D2 = A, R15-E2 = C): neu – Baufirmen 11 Würfe je Manager und Tag (A512, Datei
+    // 0x3ED19–0x3ED48), Sommerpause je Manager verschränkt (A526), Banden je Feld (A888); mit und ohne Anzeige weiter gleich.
+    // Rückschaltprobe: src/ von eaf8621 → alte Referenz.
+    // Runde 25, Spur saison-geld Teil 3 (K11, R21-D2 = A, R15-E2 = C): neu ab 1994 – Torwürfe der Poolspieler mit dem gewürfelten
+    // Rollenwert Pool +0x18 (Datei 0x5B3BB–0x5B49D, 0x5077–0x52CB), zugleich Rebase auf main 90d8394 (aufstellung); mit und ohne Anzeige
+    // weiter gleich. Rückschaltprobe: src/ von 395a8f8 → andere Referenz (rot).
     private const string Reference =
-        "1993: DEB 6, DM 6, Tab 15539 | 1994: DEB 1, DM 9, Tab 15823 | 1995: DEB 21, DM 2, Tab 15765 | 1996: DEB 4, DM 9, Tab 15160";
+        "1993: DEB 8, DM 1, Tab 15504 | 1994: DEB 0, DM 8, Tab 16011 | 1995: DEB 9, DM 5, Tab 16327 | 1996: DEB 5, DM 4, Tab 16420";
 }

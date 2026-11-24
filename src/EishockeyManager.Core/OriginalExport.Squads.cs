@@ -4,15 +4,6 @@ namespace EishockeyManager.Core;
 
 public sealed partial class GameState
 {
-    /// <summary>Rollenwert im Pool +0x18 je Art. [APPROX] Das Original führt eine Zahl (0 Torhüter, unter 50 Abwehr, sonst Sturm;
-    /// FILE01: 25–40 Abwehr, 77/78 Sturm); das Remake nur die Art.</summary>
-    private static byte RoleValue(PlayerRole role) => role switch
-    {
-        PlayerRole.Goalkeeper => 0,
-        PlayerRole.Defender => 30,
-        _ => 70,
-    };
-
     /// <summary>
     /// Spielerpool far:8253, Kaderplätze 0x5DC3 der Managervereine (Satz 0–3) und der Transfermarkt (Satz 4); Nationalkader (Satz 5) in
     /// <see cref="WriteNational"/>. Umkehrung von <c>ApplySquad</c>, <c>ApplySlot</c> und <c>ApplyPoolAndMarket</c>.
@@ -226,7 +217,7 @@ public sealed partial class GameState
         e[0x15] = OriginalExport.Byte(p.PoolStrengths.Condition);
         e[0x16] = OriginalExport.Byte(p.PoolStrengths.Technique);
         e[0x17] = OriginalExport.Byte(p.PoolForm ?? p.Form); // A066 (kader-rest)
-        e[0x18] = RoleValue(p.Role);
+        e[0x18] = OriginalExport.Byte(p.RoleValue); // [ORIGINAL] Pool +0x18 (K11, Player.RoleValue)
         e[0x1A] = owner;
         e[0x1D] = (byte)clubSlot;
         BitConverter.GetBytes((ushort)Math.Clamp(p.Role == PlayerRole.Goalkeeper ? p.GoalieMinutes : p.Assists, 0, ushort.MaxValue))

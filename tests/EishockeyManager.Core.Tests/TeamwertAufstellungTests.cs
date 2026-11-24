@@ -259,7 +259,13 @@ public class TeamwertAufstellungTests(ITestOutputHelper output)
         // zählt der passive Lauf bei Saat 24 nur 194 Schritte (Schwelle 200); Saaten 25–28 ebenfalls zu kurz, 29 passiv und aktiv darüber.
         // Spur einzelpunkte Fixlauf Rebase auf main 21f341a (Runde 22, R21-D2 = A): Saat 30 statt 29 – A672/A665/A582 ändern den Zufallsverlauf; bei Saat 29
         // zählt der passive Lauf nur 190 Schritte (Schwelle 200); Saat 30 passiv 242, aktiv 243. Rückschaltprobe: src/ von 21f341a + Saat 30 passiv rot (zu wenige Schritte) – die Probe hängt an der Saat.
-        var game = TestGames.Create(30);
+        // Spur saison-geld Teil 1 (Runde 25, T03, R21-D2 = A, R15-E2 = C): Saat 33 statt 30 – anderer Zufallsverlauf ab dem ersten Takttag
+        // (A829, Datei 0x07215); bei Saat 30 zählt der passive Lauf nur 182 Schritte (Schwelle 200), 31, 32 ebenfalls zu kurz, 33 passiv 242,
+        // aktiv 243. Die Probe hängt an der Saat.
+        // Spur saison-geld Teil 2 (Runde 25, F08 A512/A526, R21-D2 = A, R15-E2 = C): Saat 34 statt 33 – 11 Würfe der Baufirmen je Manager
+        // und Tag (Datei 0x3ED19–0x3ED48), Sommerpause je Manager verschränkt; bei Saat 33 hält der passive Lauf nur 148 Schritte
+        // (Schwelle 200), 34–36 passiv und aktiv darüber. Die Probe hängt an der Saat.
+        var game = TestGames.Create(34);
         var changes = 0;
         var steps = 0;
         var values = new HashSet<int>();

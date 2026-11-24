@@ -17,7 +17,7 @@ public class SaisonWeltkugelTests
     }
 
     /// <summary>Eine Saison bis zum Bildschirm „Saisonende“ (passiv: Kader automatisch; aktiv: dazu Freundschaftsspiele).</summary>
-    private static void PlaySeason(GameState game, bool active)
+    private static void PlaySeason(GameState game, bool active, Action? beforeStep = null)
     {
         game.Continue(); // Sprung zur WM, Ernennung
         game.AutoNominate();
@@ -28,6 +28,7 @@ public class SaisonWeltkugelTests
         for (var guard = 0; game.Phase == SeasonPhase.Running; guard++)
         {
             Assert.True(guard < 100, "Saisonende nicht erreicht");
+            beforeStep?.Invoke();
             game.Continue();
         }
         Assert.Equal(SeasonPhase.SeasonOver, game.Phase);
@@ -81,14 +82,19 @@ public class SaisonWeltkugelTests
         var game = CreateWorldOnly(seed: 19);
         for (var change = 0; change < 4; change++)
         {
-            PlaySeason(game, active);
-            var before = game.Clubs.Where(c => c.Index <= NationalTeams.Last)
-                .ToDictionary(c => c.Index, c => MatchEngine.TeamValuesOf(c));
+            // Spur saison-geld (T03/A843/A935, R15-E2 = C): Die große Wanderung läuft seit Runde 25 am 29. April vor der Mischung
+            // (Datei 0x56448 vor 0x5644E, FinishSeason), nicht mehr in StartNextSeason. Verglichen wird daher der Stand vor dem
+            // letzten Schritt der Saison (29. April) mit dem Bildschirm „Saisonende“; danach ändert StartNextSeason nichts mehr.
+            Dictionary<int, ClubTeamValues>? before = null;
+            PlaySeason(game, active, () => before = game.Clubs.Where(c => c.Index <= NationalTeams.Last)
+                .ToDictionary(c => c.Index, c => MatchEngine.TeamValuesOf(c)));
+            var atSeasonEnd = game.Clubs.Select(MatchEngine.TeamValuesOf).ToList();
             game.StartNextSeason();
+            Assert.Equal(atSeasonEnd, game.Clubs.Select(MatchEngine.TeamValuesOf).ToList());
             var moved = 0;
             foreach (var club in game.Clubs.Where(c => c.Index <= NationalTeams.Last))
             {
-                var old = before[club.Index];
+                var old = before![club.Index];
                 var now = MatchEngine.TeamValuesOf(club);
                 Assert.InRange(now.DefenseForm, 45, 55);
                 Assert.InRange(now.AttackForm, 45, 55);

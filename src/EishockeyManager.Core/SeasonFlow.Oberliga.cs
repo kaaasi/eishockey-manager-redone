@@ -71,7 +71,7 @@ public sealed partial class GameState
     }
 
     /// <summary>
-    /// Tauschgruppe 2 am Ende der Vereinssaison: Paare (Letzter, Nachrücker) und (Vorletzter, Nachrücker).
+    /// Tauschgruppe 2 am 29. April: Paare (Letzter, Nachrücker) und (Vorletzter, Nachrücker).
     /// </summary>
     /// <remarks>
     /// [ORIGINAL] Datei 0x56238–0x56284: aus = Platzliste 0x5CCB + 24 + 11 − k (k = 0 Letzter, k = 1 Vorletzter), ein =
@@ -81,8 +81,9 @@ public sealed partial class GameState
     /// Listen enthalten das Paar trotzdem; das Remake trägt den Managerverein dafür als Absteiger und als Nachrücker ein
     /// (Fenster „Saisonende“ zeigt ihn grün in der Spalte Oberliga, `file13_14`). Gezogen wird auch für dieses Paar.
     /// [APPROX] Wie bisher zählen alle Manager, auch entlassene; ob em.exe deren Vereinsfeld +0x16 löscht, ist nicht gelesen.
-    /// [APPROX] Das Remake zieht schon am 13. April (Ende der Vereinssaison), em.exe am 29. April; dazwischen ändert sich
-    /// nichts, was den Zug beeinflusst (Ligaspiele ruhen).
+    /// [ORIGINAL] T03/A661 (Spur saison-geld): gezogen am 29. April aus <see cref="FinishSeason"/> nach dem Zwangsabstieg, mit
+    /// <c>random(36, 41)</c> aus dem gemeinsamen Strom (<see cref="TransferRules.Random16"/>; Datei 0x56275, Aufruf
+    /// <c>0x38:0x847</c>). Bis Runde 25 schon am 13. April (Ende der Vereinssaison) mit <c>Random.Next(6)</c>.
     /// </remarks>
     private void ExchangeOberliga(IReadOnlyList<int> oberligaTable, SeasonRecord record)
     {
@@ -93,7 +94,7 @@ public sealed partial class GameState
         {
             var leaving = oberligaTable[oberligaTable.Count - 1 - k];
             int pick;
-            do pick = draw[Random.Next(draw.Length)];
+            do pick = draw[TransferRules.Random16(Random, FirstOutsidePlace, FirstOutsidePlace + OutsideDrawPlaces - 1) - FirstOutsidePlace];
             while (pick == previous);
             previous = pick;
             record.LeftOberliga.Add(leaving);

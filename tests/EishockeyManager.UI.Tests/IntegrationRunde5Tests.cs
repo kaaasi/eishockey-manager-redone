@@ -24,7 +24,10 @@ public class IntegrationRunde5Tests : IDisposable
 
     private ScreenDriver Start()
     {
-        var d = FlowTests.CreateDriver();
+        // Spur saison-geld Teil 2 (Runde 25, F08 A512/A526, R21-D2 = A, R15-E2 = C): Saat 1994 statt 1993 – mit 11 Würfen der Baufirmen je
+        // Manager und Tag (Datei 0x3ED19–0x3ED48) und der verschränkten Sommerpause erreicht der Managerverein bei 1993 den Zug des
+        // Bundestrainers nicht (1994–1996 ja). Die Probe hängt an der Saat.
+        var d = FlowTests.CreateDriver(1994);
         var context = SaveContext.For(d.Host);
         context.Directory = _directory;
         context.AutoSaveOverride = false;

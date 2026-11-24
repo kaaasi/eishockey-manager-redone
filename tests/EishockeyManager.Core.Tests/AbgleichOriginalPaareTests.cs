@@ -107,7 +107,11 @@ public class AbgleichOriginalPaareTests
                 // `spur-wartet`): Mit den Strömen von kader-regeln, transfer-pool und einzelpunkte fallen bis zur Wanderung andere Würfe;
                 // Leerplatz LEER3 liegt bei Saat 4711 in der Abwehr-Kondition außerhalb (Original 18, Remake 1) – Wanderung wie LEER4 oben,
                 // kein neu eingetragener Originalwert. f7f0410 und 3ca753a je allein grün.
-                new("Clubs[50 LEER3].TeamValues.DefenseCondition", Chance, Optional: true)],
+                new("Clubs[50 LEER3].TeamValues.DefenseCondition", Chance, Optional: true),
+                // Runde 25, Spur saison-geld Teil 2 (F08 A512, R21-D2 = A, R15-E2 = C): Die Baufirmen ziehen im Tagesabschluss 11 Würfe je
+                // Manager (Datei 0x3ED19–0x3ED48), andere Lage der Würfe bis zur Wanderung; ESC FRANKFURT liegt bei der Standardsaat in der
+                // Abwehr-Kondition außerhalb (Original −9, Remake 9) – Wanderung wie LEER4 oben, kein neu eingetragener Originalwert.
+                new("Clubs[13 ESC FRANKFURT].TeamValues.DefenseCondition", Chance, Optional: true)],
             // Konto, Automatik, Teamwerte und verdeckte Werte KREFELD: Eingriff/Sitzungszustand (#734, HokCompareClasses.Interventions).
             ["FILE13→FILE14"] = [.. SeasonStart,
                 // #730 Gegenrichtung: KUHNEKATH (Original 96, Remake 50–51) seit #784 nur bei 5 von 6 Saaten (nicht 1; Pflicht über
@@ -141,6 +145,15 @@ public class AbgleichOriginalPaareTests
                 // Zufall: LANDSHUT steigt im Original in die Oberliga ab (Teamwerte auf deren Obergrenze, alle −33), im Remake
                 // nicht (Liga über den Saisonwechsel zufallsabhängig); Abstand 21–51 je Saat.
                 new($"{Landshut}.TeamValues.*", Chance, Optional: true),
+                // Zufall (Runde 25, Spur saison-geld Teil 1, T03/A829, R21-D2 = A): Mit dem Markt-Takt random(0, 3) je Markt-Platz
+                // (Datei 0x07215) geht bei Saat 4711 im Remake EC HEDOS MÜNCHEN als Partner des Zwangsabsteigers in die Oberliga
+                // (Doppelwechsel, Teamwerte an deren Grenze, alle −43), im Original bleibt er in der Bundesliga; wie LANDSHUT ein
+                // Zufallsfeld der Aufstiegsrunde, kein fester Befund.
+                new("Clubs[9 EC HEDOS MÜNCHEN].TeamValues.*", Chance, Optional: true),
+                // Zufall (Runde 25, Spur saison-geld Teil 3, K11, R21-D2 = A): Mit dem Rollenwert aus dem Stand (Pool +0x18, Torwürfe
+                // Datei 0x5077–0x52CB) verläuft der Strom anders; bei Prüfsaat 77 geht EC RATINGEN in die Oberliga (Teamwerte an deren
+                // Grenze, alle −35), im Original nicht; wie LANDSHUT und HEDOS ein Zufallsfeld der Aufstiegsrunde, kein fester Befund.
+                new("Clubs[10 EC RATINGEN].TeamValues.*", Chance, Optional: true),
                 // Zufall (Runde 22, Spur transfer-pool, A864/A391, R21-D2 = A): Nur mit der Saat 1993 weicht ein Teamwert von MEMMINGEN
                 // ab (Angriff Kondition −11 im Original, 27 im Remake); mit den fünf weiteren Saaten (Pair_OtherSeed_SameExpectedList)
                 // nicht. Die Wanderung der Teamwerte zieht aus dem gemeinsamen Strom, den die Verletzung außerhalb des Spiels
@@ -164,7 +177,12 @@ public class AbgleichOriginalPaareTests
             // Würfe durch den gemeinsamen Strom. Nur Saat 2, f7f0410 und 3ca753a je allein grün. Kein neu eingetragener Originalwert.
             ["FILE38→FILE39"] = [StrainSawtooth("5 KÖLNER EC"),
                 new("Clubs[5 KÖLNER EC].Players[KJELLBERG].Notice", Chance, Optional: true),
-                new("Clubs[5 KÖLNER EC].Players[KJELLBERG].NoticeYears", Chance, Optional: true)],
+                new("Clubs[5 KÖLNER EC].Players[KJELLBERG].NoticeYears", Chance, Optional: true),
+                // Runde 25, Spur saison-geld Teil 2 (F08 A512, R21-D2 = A, R15-E2 = C): Mit 11 Würfen der Baufirmen je Manager und Tag
+                // (Datei 0x3ED19–0x3ED48) fallen die Würfe der Tagesläufe anders; bei der Standardsaat liegen Sturm-Kondition und -Technik
+                // von KÖLN außerhalb (Original −11/−10, Remake −29/−28) – Zufall der Aufstellung, kein neu eingetragener Originalwert.
+                new("Clubs[5 KÖLNER EC].TeamValues.AttackCondition", Chance, Optional: true),
+                new("Clubs[5 KÖLNER EC].TeamValues.AttackTechnique", Chance, Optional: true)],
             ["FILE39→FILE40"] = [StrainSawtooth("5 KÖLNER EC")],
             // Formwerte KÖLN (#738) behoben durch abgleich-fix (Handbetrieb ohne Nachrücken, Import ohne Reihenspieler ohne
             // „eingesetzt“). Platz 196 KJELLBERG (#749) behoben durch abgleich-fix (Import: Besitzer Manager ohne Kader = vergeben).

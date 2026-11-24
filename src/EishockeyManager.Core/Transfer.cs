@@ -316,7 +316,8 @@ public sealed partial class TransferMarket
     private void AdvanceBids(GameState game, Random random, bool expire, Manager? only)
     {
         // [ORIGINAL] Verfall offener Gebote an den Marktplätzen (Datei 0x07215–0x0726A): random(0, 3) = 0 löscht Bit 0x80 samt
-        // Meldung (Spur kader-transfer, Runde 12, U4); der Wurf fällt nur bei einem offenen Gebot.
+        // Meldung (Spur kader-transfer, Runde 12, U4). [APPROX] Nur noch Tests und Werkzeuge (AdvanceDay): ein Wurf je Gebot. Der
+        // Tagesablauf würfelt wie das Original für jeden Markt-Platz, auch ohne Gebot (GameState.DailyRunMarket, T03/A829).
         if (expire)
             foreach (var bid in _bids.ToList())
                 if (TransferRules.Random16(random, 0, 3) == 0)
@@ -387,8 +388,14 @@ public sealed partial class TransferMarket
     public void ReleaseBidLocks(Random random)
     {
         foreach (var listing in _listings)
-            if ((listing.RejectedBy & 0x7F) == 1 && TransferRules.Random16(random, 0, 2) == 0)
-                listing.RejectedBy ^= 1;
+            ReleaseBidLock(listing, random);
+    }
+
+    /// <summary>Sperrwurf eines Markt-Platzes wie <see cref="ReleaseBidLocks"/> (Datei 0x071CC–0x07202).</summary>
+    internal static void ReleaseBidLock(TransferListing listing, Random random)
+    {
+        if ((listing.RejectedBy & 0x7F) == 1 && TransferRules.Random16(random, 0, 2) == 0)
+            listing.RejectedBy ^= 1;
     }
 
     /// <summary>

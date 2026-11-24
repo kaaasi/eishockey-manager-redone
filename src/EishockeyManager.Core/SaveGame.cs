@@ -45,7 +45,7 @@ public static partial class SaveGame
     public const string Identifier = "EISHOCKEY-MANAGER-REDONE-SPIELSTAND";
 
     /// <summary>Aktuelle Schemaversion. Bei jeder Änderung der Zustandsfelder erhöhen und eine Migration eintragen.</summary>
-    public const int SchemaVersion = 64;
+    public const int SchemaVersion = 65;
 
     /// <summary>Dateiendung der eigenen Spielstände.</summary>
     public const string FileExtension = ".ems";
@@ -151,6 +151,8 @@ public static partial class SaveGame
     /// Feldspielerplatz (<c>SaveGame.Migration.FeldspielerSechs.cs</c>).
     /// 63 → 64 (Runde 25, Spur aufstellung K07): <c>Manager.AutoLineupEnabled</c> (A936) und <c>Player.LastLine</c> (A939)
     /// (<c>SaveGame.Migration.Aufstellung.cs</c>).
+    /// 64 → 65 (Runde 25, Spur saison-geld K11, nach `aufstellung`): <c>Player._roleValue</c>, Rollenwert Pool +0x18
+    /// (<c>SaveGame.Migration.SaisonGeld.cs</c>).
     /// </summary>
     private static readonly IReadOnlyDictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>> Migrations =
         new Dictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>>
@@ -218,6 +220,7 @@ public static partial class SaveGame
             [61] = MigrateWettbewerbeRegeln,
             [62] = MigrateFeldspielerSechs,
             [63] = MigrateAufstellung,
+            [64] = MigrateSaisonGeld,
         };
 
     private static readonly Assembly CoreAssembly = typeof(GameState).Assembly;

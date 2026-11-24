@@ -27,22 +27,12 @@ public static class MatchStatistics
     private static readonly int[] PickTable = [16, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
     /// <summary>
-    /// Rollenwert (Spielerfeld 0x18): Torhüter 0, Verteidiger 25–41, Stürmer 75–91 (<c>docs/reverse-engineering.md</c>).
-    /// [APPROX] Das Remake führt den Wert nicht; es nimmt die Mitte der Spanne.
-    /// </summary>
-    public static int RoleValue(PlayerRole role) => role switch
-    {
-        PlayerRole.Goalkeeper => 0,
-        PlayerRole.Defender => 33,
-        _ => 83,
-    };
-
-    /// <summary>
     /// Tore und Vorlagen der Feldspieler. [ORIGINAL] Datei 0x5077–0x52CB:
     /// <list type="number">
     /// <item>Ohne eigenes Tor passiert nichts – auch die Spiele zählen dann nicht (Datei 0x5077).</item>
     /// <item>Jeder Spieler des Vereins: Spiele + 1; Feldspieler werden Kandidat, wenn Rollenwert + random(5, 25) &gt;
-    ///   random(10, 99) (Stürmer fast immer, Verteidiger etwa zur Hälfte).</item>
+    ///   random(10, 99) (Stürmer fast immer, Verteidiger etwa zur Hälfte). Rollenwert = Pool +0x18 des Spielers
+    ///   (<see cref="Player.RoleValue"/>; Spur saison-geld Teil 3, K11).</item>
     /// <item>Unter zwei Kandidaten keine Tore und Vorlagen.</item>
     /// <item>Je Tor: mit 1/5 (random(0, 4) = 0) ohne Torschützen. Sonst Zug random(0, g) mit der Grenze g aus
     ///   <see cref="PickTable"/>: bei 0 neuer Versuch, wenn g ≠ 0 und n &gt; random(0, 1) + 2, sonst Ende. Bei ≠ 0 ein
@@ -64,7 +54,7 @@ public static class MatchStatistics
                 p.Games++;
             if (p.Role == PlayerRole.Goalkeeper)
                 continue;
-            if (RoleValue(p.Role) + OriginalMatch.Rnd(random, 5, 25) > OriginalMatch.Rnd(random, 10, 99))
+            if (p.RoleValue + OriginalMatch.Rnd(random, 5, 25) > OriginalMatch.Rnd(random, 10, 99))
             {
                 candidates.Add(p);
                 if (candidates.Count >= MaxCandidates)

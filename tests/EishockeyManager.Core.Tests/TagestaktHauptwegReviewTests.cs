@@ -51,9 +51,9 @@ public class TagestaktHauptwegReviewTests
         }
     }
 
-    private static GameState Import(string file) =>
+    private static GameState Import(string file, int seed = 4711) =>
         GameState.ImportOriginal(OriginalSaveGame.Read(File.ReadAllBytes(OriginalImportTests.OriginalSave(file))),
-            ClubDatabase.Load(TestGameData.Load()), 4711);
+            ClubDatabase.Load(TestGameData.Load()), seed);
 
     /// <summary>Gastronomie + 1 beauftragen, Bauzeit des Angebots fest (gewürfelt wären es weniger; das Projekt soll nicht fertig werden).</summary>
     private static void Order(GameState game, Manager me, int weeks)
@@ -261,7 +261,10 @@ public class TagestaktHauptwegReviewTests
     [GameDataFact]
     public void File24_ToMenuOfDay17_MarketDecayedOnceLikeFile25()
     {
-        var game = Import("FILE24.HOK");
+        // Spur saison-geld Teil 2 (Runde 25, A512, R21-D2 = A, R15-E2 = C): Saat 1 statt 4711 – mit 11 Würfen der Baufirmen je Manager und
+        // Tag (Datei 0x3ED19–0x3ED48) trifft bei 4711 der Listenwechsel random(0, n + 2) = 0 (Datei 0x54E65) vor Tag 17 und ersetzt die
+        // Markt-Plätze; das Original wechselte die Liste nicht (Saaten 1–6 ohne Wechsel). Die Probe hängt an der Saat.
+        var game = Import("FILE24.HOK", 1);
         Assert.Equal(14, game.CurrentDay);
         var expected = Import("FILE25.HOK").TransferMarket.Listings.Where(l => l.Seller is null)
             .ToDictionary(l => l.Player.Name, l => l.Player.Strain);

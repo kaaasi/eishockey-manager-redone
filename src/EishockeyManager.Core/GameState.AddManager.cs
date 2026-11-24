@@ -58,7 +58,9 @@ public sealed partial class GameState
     /// <item>Startkader aus dem Pool (<see cref="SeatAddedSquad"/>) und Markt, dann [ORIGINAL] Platztausch des gewählten Vereins in
     ///   die Start-Liga (Datei 0x29C3B–0x29CF7, <see cref="DrawStartLeaguePlace"/>, <see cref="SwapClubPlaces"/>): Der Manager
     ///   übernimmt den gezogenen Platz mit Liga, Tabellenstand, Spielplan und Teamwerten, der Verdrängte seinen alten Platz.
-    ///   [APPROX] Ein zufällig zugeteilter Verein (ohne Wahl) tauscht nicht, wie beim Spielstart.</item>
+    ///   [APPROX] Ein zufällig zugeteilter Verein (ohne Wahl) tauscht nicht, wie beim Spielstart: Die Zufallszuteilung ist eine
+    ///   Erweiterung des Remakes, im Original wählt jeder Manager einen Verein (Datei 0x2964C; A463, Beleg
+    ///   <c>docs/analyse/re-abweichungen.md</c> K13).</item>
     /// <item>Startwerte, Gehälter ([ORIGINAL] nach dem Tausch, Datei 0x29DA4–0x29EF7), Aufstellung, danach die Teamwerte des Platzes
     ///   aus der Aufstellung ([ORIGINAL] 0x952C(m, 0), Datei 0x2A073; <see cref="WriteLineupTeamValues"/>).</item>
     /// <item>Konto <see cref="FinanceRules.StartMoney"/> ([ORIGINAL] Datei 0x29BD5), Werbeangebote ([ORIGINAL] 0x3F833/0x3FB47,

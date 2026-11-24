@@ -34,9 +34,14 @@ public class ZufallsstromTeil3Tests
         var (game, twin) = (Create(3), Create(3));
         var manager = game.Managers[0];
         var day = game.CurrentDay;
+        // Spur saison-geld (T03/A829, R15-E2 = C): Ohne Sperre, ohne Gebote und ohne eigene Markt-Plätze zieht der Markt-Teil je
+        // Platz random(0, 3) (Datei 0x07215, vor der Prüfung des Gebots Datei 0x07227); bis Runde 25 hier „zieht nichts“ (widerlegt,
+        // docs/analyse/re-abweichungen.md T03). Die Probe rechnet den Verfallswurf je Platz mit.
+        var plain = Copy(game.Random);
+        foreach (var _ in twin.TransferMarket.Listings)
+            TransferRules.Random16(plain, 0, 3);
         twin.DailyRunMarket(day, twin.Managers[0]);
-        // Ohne Sperre, ohne Gebote und ohne eigene Markt-Plätze zieht der Markt-Teil nichts: Die Probe misst nur die Sperre.
-        Assert.Equal(game.Random.Capture(), twin.Random.Capture());
+        Assert.Equal(plain.Capture(), twin.Random.Capture());
 
         var locked = game.TransferMarket.Listings.Take(3).ToList();
         Assert.Equal(3, locked.Count);
@@ -44,7 +49,13 @@ public class ZufallsstromTeil3Tests
             listing.RejectedBy = 0x81;
         var contract = game.ComputerSquadRandom.Capture();
         var sim = Copy(game.Random);
-        var expected = locked.Select(_ => TransferRules.Random16(sim, 0, 2) == 0 ? 0x80 : 0x81).ToList();
+        var expected = new List<int>();
+        foreach (var listing in game.TransferMarket.Listings)
+        {
+            if (locked.Contains(listing))
+                expected.Add(TransferRules.Random16(sim, 0, 2) == 0 ? 0x80 : 0x81);
+            TransferRules.Random16(sim, 0, 3);
+        }
 
         game.DailyRunMarket(day, manager);
 

@@ -263,7 +263,8 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                             if (offer is not null) game.AcceptOffer(manager, slot, offer.Sponsor);
                         }
                     }
-                    maxContracts = Math.Max(maxContracts, game.Ads(manager).Contracts.Sum(c => c.MonthlyAmount));
+                    // Spur saison-geld Teil 2 (F06/A888, R15-E2 = C): Monatseinnahme je Vertrag, bei Banden Betrag · Felder ([ORIGINAL] 0x3E657).
+                    maxContracts = Math.Max(maxContracts, game.Ads(manager).MonthlyIncome);
                     maxRoster = Math.Max(maxRoster, club.Players.Count);
                     var price = stadium.TicketPrice;
                     var capacity = stadium.Capacity;

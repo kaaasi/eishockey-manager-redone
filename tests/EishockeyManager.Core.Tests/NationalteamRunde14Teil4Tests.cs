@@ -69,26 +69,23 @@ public class NationalteamRunde14Teil4Tests
     }
 
     /// <summary>
-    /// #688 (R688-04): Keine Wanderung seit <see cref="ClearLeagueForms"/> am Halt des 14. April: Die eine Wanderung des
-    /// Tageswechsels zu Tag 216 (Zähler 217, Datei 0x55292) liegt wie im Original vor dessen Menü, die Schleife wandert nicht.
-    /// </summary>
-    private static void AssertLeagueFormsNotDrifted(GameState game) =>
-        Assert.All(game.Clubs.Where(c => c.League is not null && c.TeamValues is not null),
-            c => Assert.Equal(0, c.TeamValues!.Value.DefenseForm));
-
-
-    /// <summary>
     /// Bis hinter den Tag 216 spielen (Bundestrainer am Zug: Continue hält am nächsten WM-Tag) und die Teamwerte danach liefern.
     /// R14NT4N-01: Die eine Wanderung des Hauptwegs läuft im Tageslauf von Tag 216.
     /// </summary>
-    private static string PlayEntryDay(GameState game, Action<GameState>? eachTurn = null)
+    private static string PlayEntryDay(GameState game, Action<GameState>? eachTurn = null) => PlayEntryDay(game, eachTurn, out _);
+
+    /// <param name="lastView">Teamwerte vor dem letzten Schritt (Spur saison-geld: reicht der Schritt ohne Bundestrainer bis über den
+    /// 29. April, liegt die Wanderung des Saisonwechsels darin, siehe <see cref="PlayToSeasonOver"/>).</param>
+    private static string PlayEntryDay(GameState game, Action<GameState>? eachTurn, out (string TeamValues, bool FormsCleared) lastView)
     {
+        lastView = (LeagueTeamValues(game), FormsCleared(game));
         for (var guard = 0; game.CurrentDay <= SeasonCalendar.ClubSeasonEnd + 1 && game.Phase is SeasonPhase.Running
                  or SeasonPhase.ClubSeasonOver; guard++)
         {
             Assert.True(guard < 50, "Tag 216 nicht verlassen");
             TopUp(game);
             eachTurn?.Invoke(game);
+            lastView = (LeagueTeamValues(game), FormsCleared(game));
             game.Continue();
         }
         return LeagueTeamValues(game);
@@ -104,17 +101,35 @@ public class NationalteamRunde14Teil4Tests
             m.Money = Math.Max(m.Money, 10_000_000);
     }
 
-    private static void PlayToSeasonOver(GameState game, Action<GameState>? eachTurn = null)
+    /// <summary>
+    /// Bis zum Bildschirm „Saisonende“ spielen. Liefert die Teamwerte der Ligavereine vor dem letzten Schritt (29. April): Spur
+    /// saison-geld (T03/A843/A935, R15-E2 = C) – die große Wanderung des Saisonwechsels (Datei 0x56448, vor der Mischung 0x5644E)
+    /// läuft seit Runde 25 am 29. April in FinishSeason, also vor diesem Halt; sie gehört nicht zur WM-Schleife. Bis Runde 25 lief sie
+    /// erst in StartNextSeason, die Proben lasen deshalb den Stand am Halt.
+    /// </summary>
+    private static (string TeamValues, bool FormsCleared) PlayToSeasonOver(GameState game, Action<GameState>? eachTurn = null,
+        (string TeamValues, bool FormsCleared)? start = null)
     {
+        var view = start ?? (LeagueTeamValues(game), FormsCleared(game));
         for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
         {
             Assert.True(guard < 3000, "Saisonende nicht erreicht");
             TopUp(game);
             eachTurn?.Invoke(game);
+            view = (LeagueTeamValues(game), FormsCleared(game));
             game.Continue();
         }
         Assert.Equal(SeasonPhase.SeasonOver, game.Phase);
+        return view;
     }
+
+    /// <summary>
+    /// #688 (R688-04): Keine Wanderung seit <see cref="ClearLeagueForms"/> am Halt des 14. April bis vor den 29. April
+    /// (<see cref="PlayToSeasonOver"/>): Die eine Wanderung des Tageswechsels zu Tag 216 (Zähler 217, Datei 0x55292) liegt wie im
+    /// Original vor dessen Menü, die Schleife wandert nicht.
+    /// </summary>
+    private static bool FormsCleared(GameState game) =>
+        game.Clubs.Where(c => c.League is not null && c.TeamValues is not null).All(c => c.TeamValues!.Value.DefenseForm == 0);
 
     /// <summary>
     /// #664 (1), Modus 2 („nur Fahne“): Regressionstest (vorher rot: Training an den Trainingstagen, Listenwechsel und
@@ -142,7 +157,7 @@ public class NationalteamRunde14Teil4Tests
         var strains = SetListingStrains(game);
         ClearLeagueForms(game);
 
-        PlayToSeasonOver(game);
+        var end = PlayToSeasonOver(game);
 
         // #678: Der Hauptweg-Tageswechsel zu Tag 216 (Zähler 217 ≡ 0) ruft 0x07169 je Manager (Datei 0x552A6): ein Training und ein
         // Markt-Verfall, #688 (R688-04) wie im Original vor dem Menü des 14. April, also vor diesem Fenster; danach (ohne WM-Spiele)
@@ -150,7 +165,7 @@ public class NationalteamRunde14Teil4Tests
         Assert.All(before.TrainingDelta(game), d => Assert.Equal(0, d));
         Assert.Equal(before.Listings, game.TransferMarket.Listings.Select(l => l.Player));
         Assert.Empty(game.TransferMarket.Bids);
-        AssertLeagueFormsNotDrifted(game);
+        Assert.True(end.FormsCleared); // keine Wanderung bis vor den 29. April (Saisonwechsel, Datei 0x56448)
         Assert.Equal(0, injured.InjuredGames);
         Assert.Equal(strains, ListingStrains(game)); // kein Markt-Verfall 0x071BB ohne WM-Spiele
     }
@@ -177,7 +192,7 @@ public class NationalteamRunde14Teil4Tests
         var strains = SetListingStrains(game);
         ClearLeagueForms(game);
 
-        PlayToSeasonOver(game);
+        var end = PlayToSeasonOver(game);
 
         // #678: Der Takt des Hauptweg-Tageswechsels zu Tag 216 (Zähler 217 ≡ 0, je ein Training beider Manager und ein Verfall) liegt
         // seit #688 (R688-04) wie im Original vor dem Menü des 14. April, also vor diesem Fenster. Gegenprobe: Takt nach dem Halt
@@ -185,7 +200,7 @@ public class NationalteamRunde14Teil4Tests
         Assert.Equal([-3 * before.TrainingCost[0], 0], before.TrainingDelta(game));
         Assert.Equal(Decayed(strains, 3), ListingStrains(game));
         Assert.Equal(before.Listings, game.TransferMarket.Listings.Select(l => l.Player)); // kein Listenwechsel (R14NT4-05)
-        AssertLeagueFormsNotDrifted(game); // R14NT4N-01: die eine Wanderung (Tag 216) liegt vor dem Halt (#688)
+        Assert.True(end.FormsCleared); // R14NT4N-01: die eine Wanderung (Tag 216) liegt vor dem Halt (#688); 29. April: Saisonwechsel
         Assert.Equal(GameState.FinalWorldCupStage, game.WorldCupStage);
         Assert.NotNull(game.WorldCup!.Winner);
     }
@@ -224,12 +239,12 @@ public class NationalteamRunde14Teil4Tests
         Assert.True(game.DayOpened);
         var afterEntry = PlayEntryDay(game, nominate);
         Assert.Equal(before.TeamValues, afterEntry);
-        PlayToSeasonOver(game, nominate);
+        var end = PlayToSeasonOver(game, nominate);
         if (game.WorldCupLastPenaltyCoachDay is > 0 and var last && MatchEngine.IsDriftDay(game.Counter(last)))
             skipped.Add(last); // A498: letzter WM-Tag, sein Schritt (c) liegt im Tageswechsel zum 29. April
 
         Assert.Equal([-(3 - skipped.Count) * before.TrainingCost[0]], before.TrainingDelta(game)); // #688: Takt von Tag 216 vor dem Fenster
-        Assert.Equal(afterEntry, LeagueTeamValues(game));
+        Assert.Equal(afterEntry, end.TeamValues); // vor dem 29. April (Wanderung des Saisonwechsels, T03)
         Assert.Equal(GameState.FinalWorldCupStage, game.WorldCupStage);
     }
 
@@ -275,8 +290,8 @@ public class NationalteamRunde14Teil4Tests
                     g.AutoNominate();
             };
             var hasCoach = game.NationalCoach is not null;
-            var afterEntry = PlayEntryDay(game, nominate);
-            PlayToSeasonOver(game, nominate);
+            var afterEntry = PlayEntryDay(game, nominate, out var entryView);
+            var end = PlayToSeasonOver(game, nominate, game.Phase == SeasonPhase.SeasonOver ? entryView : null);
             if (game.WorldCupLastPenaltyCoachDay is > 0 and var last && MatchEngine.IsDriftDay(game.Counter(last)))
                 skipped.Add(last); // A498: letzter WM-Tag, sein Schritt (c) liegt im Tageswechsel zum 29. April
 
@@ -285,9 +300,9 @@ public class NationalteamRunde14Teil4Tests
             // Spur national Teil 2 (A498, R15-E2 = C): [ORIGINAL] Traf die letzte Strafe eines WM-Tags das Land des Bundestrainers,
             // entfällt (c) für Manager 0 (Datei 0x35AB8 → 0xA70E = 5, 0x07172); vorher immer drei Läufe.
             Assert.Equal([-(3 - skipped.Count) * before.TrainingCost[0], 0], before.TrainingDelta(game));
-            AssertLeagueFormsNotDrifted(game);
+            Assert.True(end.FormsCleared); // bis vor den 29. April (Wanderung des Saisonwechsels, T03)
             if (hasCoach)
-                Assert.Equal(afterEntry, LeagueTeamValues(game));
+                Assert.Equal(afterEntry, end.TeamValues);
             Assert.Equal(GameState.FinalWorldCupStage, game.WorldCupStage);
             var saved = SaveGame.Save(game);
             Assert.Equal(saved, SaveGame.Save(SaveGame.Load(saved).Game!));

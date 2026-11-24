@@ -296,8 +296,15 @@ public class JugendTeamsTests
     // #925/A873, A838, A105/A836, A071; Teil 2 Jugend nach den Menüs A384/A670, Ligamischung aus dem Strom #897; Teil 3 A101, A677,
     // A553) zusammen mit kader-regeln, transfer-pool und einzelpunkte ändern Spielrechnung und Zufallsverlauf; kein Originalsollwert,
     // nur interner Abdruck. Rückschaltprobe: src/ von f7f0410 + dieser Test → rot (alte Werte), src/ von 3ca753a + dieser Test → rot.
+    // Spur saison-geld Teil 1 (Runde 25, T03, R21-D2 = A, R15-E2 = C): neu – der Markt-Takt würfelt random(0, 3) je Markt-Platz
+    // (A829, Datei 0x07215), der Oberliga-Zug fällt am 29. April (A661, Datei 0x56275) und die große Wanderung vor der Mischung
+    // (A843/A935, Datei 0x56448); anderer Zufallsverlauf ab dem ersten Takttag. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von 0c1811f + dieser Test → rot (alte Werte).
+    // Spur saison-geld Teil 2 (Runde 25, F06/F08, R21-D2 = A, R15-E2 = C): neu – Baufirmen 11 Würfe je Manager und Tag (A512, Datei
+    // 0x3ED19–0x3ED48), Sommerpause je Manager verschränkt (A526, Datei 0x564D2–0x56593), Banden je Feld (A888, 0x3E657); anderer
+    // Zufallsverlauf ab dem ersten Tagesabschluss. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von eaf8621 → alte Werte.
     private const string ExpectedActive =
-        "0:Schueler:2/11/63;0:Jugend:2/11/65;0:Junioren:3/6/65;1:Schueler:2/6/78;1:Jugend:2/6/72;1:Junioren:2/11/74;2:Schueler:1/11/82;2:Jugend:1/11/81;2:Junioren:1/11/76;3:Schueler:1/6/85;3:Jugend:1/6/84;3:Junioren:1/6/83";
+        "0:Schueler:2/11/70;0:Jugend:2/11/68;0:Junioren:2/11/65;1:Schueler:1/11/77;1:Jugend:1/11/77;1:Junioren:1/11/77;2:Schueler:1/6/81;2:Jugend:1/6/81;2:Junioren:1/6/81;3:Schueler:1/6/82;3:Jugend:1/6/84;3:Junioren:1/6/83";
     // kader-start Teil 2 (U15-a, L13): neu, siehe oben.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     // Review #662 (R14NT-01, Leitstelle Runde 14): neu – der passive Bundesligist wird Bundestrainer; nach der Ernennung läuft die
@@ -395,8 +402,15 @@ public class JugendTeamsTests
     // #925/A873, A838, A105/A836, A071; Teil 2 Jugend nach den Menüs A384/A670, Ligamischung aus dem Strom #897; Teil 3 A101, A677,
     // A553) zusammen mit kader-regeln, transfer-pool und einzelpunkte ändern Spielrechnung und Zufallsverlauf; kein Originalsollwert,
     // nur interner Abdruck. Rückschaltprobe: src/ von f7f0410 + dieser Test → rot (alte Werte), src/ von 3ca753a + dieser Test → rot.
+    // Spur saison-geld Teil 1 (Runde 25, T03, R21-D2 = A, R15-E2 = C): neu – der Markt-Takt würfelt random(0, 3) je Markt-Platz
+    // (A829, Datei 0x07215), der Oberliga-Zug fällt am 29. April (A661, Datei 0x56275) und die große Wanderung vor der Mischung
+    // (A843/A935, Datei 0x56448); anderer Zufallsverlauf ab dem ersten Takttag. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von 0c1811f + dieser Test → rot (alte Werte).
+    // Spur saison-geld Teil 2 (Runde 25, F06/F08, R21-D2 = A, R15-E2 = C): neu – Baufirmen 11 Würfe je Manager und Tag (A512, Datei
+    // 0x3ED19–0x3ED48), Sommerpause je Manager verschränkt (A526, Datei 0x564D2–0x56593), Banden je Feld (A888, 0x3E657); anderer
+    // Zufallsverlauf ab dem ersten Tagesabschluss. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von eaf8621 → alte Werte.
     private const string ExpectedPassive =
-        "0:Schueler:2/2/72;0:Jugend:2/2/73;0:Junioren:1/6/74;1:Schueler:2/6/62;1:Jugend:2/6/60;1:Junioren:2/2/56;2:Schueler:3/2/47;2:Jugend:3/2/47;2:Junioren:3/2/46;3:Schueler:3/6/45;3:Jugend:3/6/43;3:Junioren:3/6/42";
+        "0:Schueler:1/6/69;0:Jugend:2/2/65;0:Junioren:2/2/66;1:Schueler:2/2/55;1:Jugend:3/2/51;1:Junioren:3/2/53;2:Schueler:3/2/47;2:Jugend:3/6/45;2:Junioren:3/6/44;3:Schueler:3/6/41;3:Jugend:3/6/41;3:Junioren:3/6/40";
 }
 
 public class JugendTeamsMigrationTests

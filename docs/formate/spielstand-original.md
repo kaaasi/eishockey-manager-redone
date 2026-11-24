@@ -417,7 +417,7 @@ jetzt eigens (vorher von der Regel 0x19–0x1C verdeckt, R727N2-01). Im Modus �
 Spiel dieses Modus setzt den Kader nicht in den Pool (`SeatManagerSquads`); für ihn gilt im Export die alte Ersatzregel
 (`AddUnseatedSquadPlayers`: Platz gleichen Namens beim eigenen Verein, sonst erster freier Ligaplatz seiner Art).
 
-## Feldkarte Remake-Spielstand (Schema 64) ↔ HOK
+## Feldkarte Remake-Spielstand (Schema 65) ↔ HOK
 
 Spur `hok-import`, Teil 1 (Runde 14, E14-1 C). Jedes Feld des Remake-Spielstands (`SaveGame.SchemaDescription()`, ohne die
 Hilfsfelder von Tupeln) steht hier genau einmal; der Test `OriginalImportFieldMapTests` prüft das gegen das Schema und wird
@@ -757,6 +757,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `Player.TrendControl` | B | `5DC3+0x14` | Steuerbyte |
 | `Player.TrendScore` | B | `5DC3+0x0E` | Tendenzwert 30 … 68 (0x4907A, Player.Slot.cs) |
 | `Player.UnsolicitedOffer` | B | `5DC3+0x09` | Bit 0x40, Verein `+0x16` (Regel 1) |
+| `Player._roleValue` | B | `far:8253+0x18` | Rollenwert des Poolplatzes (0, 25 … 41, 75 … 91; K11, Datei 0x5B3BB–0x5B49D; Spur `saison-geld`, Schema 65); −1 = keiner (Spieler ohne Poolplatz: Mitte 0/33/83) |
 | `PlayerLoan.ContractYears` | U | – | wie `Player.Loan` |
 | `PlayerLoan.Insured` | U | – | wie `Player.Loan` |
 | `PlayerLoan.MonthlySalary` | U | – | wie `Player.Loan` |
@@ -1154,6 +1155,8 @@ liegt bei den genannten Spuren.
   false.
 - Schema 64 (Runde 25, Spur `aufstellung`, K07): `Manager.AutoLineupEnabled` (0x375 + 2 · m, A936) und `Player.LastLine` (+0x15 außerhalb
   der Aufstellung, A939). Migration: Wert des Vereins des Managers bzw. 0 (`SaveGame.Migration.Aufstellung.cs`).
+- Schema 65 (Runde 25, Spur `saison-geld`, K11, nach `aufstellung`): `Player._roleValue` (Rollenwert Pool +0x18). Migration: −1 (Mitte der
+  Spanne je Art, `SaveGame.Migration.SaisonGeld.cs`).
 
 ### Zugang (Teil 3)
 

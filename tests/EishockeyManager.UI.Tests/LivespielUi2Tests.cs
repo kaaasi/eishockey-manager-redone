@@ -305,7 +305,10 @@ public sealed class LivespielUi2Tests
         // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A, R15-E2 = C): Saat 1997 statt 1996 – Pokalauslosungen (Datei 0x298B1, 0x43A8C) und Pokalspiele ziehen aus dem gemeinsamen Strom statt aus CupRandom, anderer Zufallsverlauf ab dem Spielstart; bei Saat 1996 erreicht Verein 42 die Play-offs nicht (nächster Spieltag 216), 1994, 1995, 1997, 1999, 2000 erfüllen die Vorbedingung.
         // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A, R15-E2 = C): Saat 1996 statt 1997 – Werbung, Börse, Zuschauer, Talentsuche, Jugend und Baufirmen ziehen aus dem gemeinsamen Strom statt aus FinanceRandom (Werbeangebote des Spielstarts Datei 0x2A03B–0x2A061, Börse Datei 0x43AD5), anderer Zufallsverlauf ab dem Spielstart; bei Saat 1997 erreicht Verein 42 die Play-offs nicht, unter 1993–2000 erfüllen 1996, 1998, 1999 die Vorbedingung.
         // Runde 22, Spur wettbewerbe-regeln Teil 2 (R15-E2 = C): Saat 1995 statt 1996 – Jugend nach den Menüs vor den Ligaspielen (A384/A670, Datei 0x55003–0x5502C), andere Lage der Würfe ab dem ersten Ligaspieltag; bei Saat 1996 erreicht Verein 42 die Play-offs nicht (nächster Spieltag 216), unter 1990–2005 erfüllen 1995, 1997, 1999, 2001–2005 die Vorbedingung. Rückschaltprobe: alter Code mit Saat 1995 ebenfalls grün.
-        var game = NewGame.Create(d.Host.Assets.Database, setup, 1995);
+        // Runde 25, Spur saison-geld Teil 1 (T03, R21-D2 = A, R15-E2 = C): Saat 1996 statt 1995 – der Markt-Takt würfelt random(0, 3) je Markt-Platz
+        // (A829, Datei 0x07215), anderer Zufallsverlauf ab dem ersten Takttag; bei Saat 1995 erreicht Verein 42 die Play-offs nicht
+        // (nächster Spieltag 216), unter 1990–2005 erfüllen 1991, 1993, 1996, 1997, 2001–2003, 2005 die Vorbedingung. Die Probe hängt an der Saat.
+        var game = NewGame.Create(d.Host.Assets.Database, setup, 1996);
         d.Host.Game = game;
         d.Host.Show(new MainMenuScreen(d.Host));
         d.Frame();

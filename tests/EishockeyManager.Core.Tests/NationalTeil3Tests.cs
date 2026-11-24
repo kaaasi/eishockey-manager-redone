@@ -139,7 +139,10 @@ public class NationalTeil3Tests
     public void WorldCup_InjuriesAndGamesHitTheSlot()
     {
         var injuredSeen = false;
-        foreach (var seed in new[] { 7, 11, 13, 17, 19 })
+        // Spur saison-geld Teil 2 (Runde 25, F08 A512/A526, R21-D2 = A, R15-E2 = C): 29 und 41 statt 17 und 19 – mit 11 Würfen der Baufirmen
+        // je Manager und Tag (Datei 0x3ED19–0x3ED48) und der verschränkten Sommerpause trifft unter 7–43 nur bei 29 und 41 eine Verletzung
+        // den WM-Kader. Die Probe hängt an der Saat.
+        foreach (var seed in new[] { 7, 11, 13, 29, 41 })
         {
             var (game, coach) = WorldOnlyCoach(seed);
             game.AutoNominate();

@@ -220,7 +220,10 @@ public class AddManagerTests
         Assert.Equal(saved, SaveGame.Save(loaded));
         Assert.Equal("Neu", loaded.Managers[1].Name);
         // Auch das geladene Spiel nimmt weitere Manager an (bis vier).
-        loaded.AddManager(new ManagerSetup { Name = "Drei", Head = 5, ClubIndex = 8 });
+        // Spur saison-geld Teil 2 (A512, R15-E2 = C): Der Platztausch (Datei 0x29C3B) zieht aus dem Spielzufall, den die 11 Würfe der
+        // Baufirmen je Tag (Datei 0x3ED19–0x3ED48) verschieben; „Neu“ kann dabei auf Platz 8 landen – daher der erste freie Verein ab 8.
+        var third = Enumerable.Range(8, NewGame.SelectableClubs - 8).First(c => loaded.Managers.All(m => m.ClubIndex != c));
+        loaded.AddManager(new ManagerSetup { Name = "Drei", Head = 5, ClubIndex = third });
         Assert.Equal(3, loaded.Managers.Count);
         Assert.Equal(3, loaded.Setup.Managers.Count);
     }

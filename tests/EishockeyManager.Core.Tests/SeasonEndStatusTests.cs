@@ -73,7 +73,14 @@ public class SeasonEndStatusTests
         // Spur wettbewerbe-regeln Fixlauf Rebase auf main f7f0410 (Runde 22, R15-E2 = C): Saat 92 statt 88 – mit den Strömen von kader-regeln, transfer-pool und
         // einzelpunkte stehen bei 88 (und 89–91, 93–96) nicht beide Managervereine unter den ersten fünf. Rückschaltprobe: src/ von f7f0410
         // mit Saat 92 ebenfalls grün – die Probe hängt an der Saat.
-        var game = GameModeTests.Create(92, true, true, 2, 1); // kader-start U15-a/R-K5 (L13): Saat 3 → 17; #675 (Tageszähler 0x3B7, anderer Zufallsverlauf): 17 → 56; #678 (Tagestakt 0x07169): 56 → 71; #784 (Gast nach dem Heimverein, Runde 17; Saaten 71–83 ohne Vorbedingung): 71 → 84, Vorbedingung beide unter den ersten fünf; Spur start-lader (Lader beim Spielstart, Datei 0x439BB, anderer Zufallsverlauf): 84 → 24
+        // Spur saison-geld Teil 1 (Runde 25, T03, R21-D2 = A, R15-E2 = C): Saat 101 statt 92 – Markt-Takt random(0, 3) je Markt-Platz (A829, Datei
+        // 0x07215), Oberliga-Zug und Wanderung am 29. April ändern den Zufallsverlauf ab dem ersten Takttag; unter 92–159 stehen nur
+        // bei 101, 116, 117, 125, 128, 133 beide Managervereine unter den ersten fünf. Die Probe hängt an der Saat (Vorbedingung
+        // ausdrücklich geprüft).
+        // Spur saison-geld Teil 2 (Runde 25, F08 A512/A526, R21-D2 = A, R15-E2 = C): Saat 122 statt 101 – die Baufirmen ziehen im
+        // Tagesabschluss 11 Würfe je Manager (Datei 0x3ED19–0x3ED48), die Sommerpause läuft je Manager verschränkt (0x564D2–0x56593);
+        // unter 101–140 stehen nur bei 122, 125, 128, 133 beide Managervereine unter den ersten fünf. Die Probe hängt an der Saat.
+        var game = GameModeTests.Create(122, true, true, 2, 1); // kader-start U15-a/R-K5 (L13): Saat 3 → 17; #675 (Tageszähler 0x3B7, anderer Zufallsverlauf): 17 → 56; #678 (Tagestakt 0x07169): 56 → 71; #784 (Gast nach dem Heimverein, Runde 17; Saaten 71–83 ohne Vorbedingung): 71 → 84, Vorbedingung beide unter den ersten fünf; Spur start-lader (Lader beim Spielstart, Datei 0x439BB, anderer Zufallsverlauf): 84 → 24
         ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToSeasonEnd(game);
         var record = game.History[^1];
@@ -91,7 +98,9 @@ public class SeasonEndStatusTests
     public void ClubOnly_ManagerInTopFive_NoStatusBit()
     {
         // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A, R15-E2 = C): Saat 10 statt 9 – Pokalauslosungen (Datei 0x298B1, 0x43A8C) und Pokalspiele ziehen aus dem gemeinsamen Strom statt aus CupRandom, anderer Zufallsverlauf ab dem Spielstart; bei Saat 9 ist Verein 2 nicht unter den ersten fünf, unter 7–16 bei 10, 11, 16. Die Probe hängt an der Saat.
-        var game = GameModeTests.Create(10, true, false, 2); // kader-start U15-a/R-K5 (L13): Saat 3 → 22, Vorbedingung nach dem Starttausch (Teamwerte bleiben am Platz); Spur start-lader (Lader beim Spielstart, Datei 0x439BB, anderer Zufallsverlauf): 22 → 9
+        // Spur saison-geld Teil 1 (Runde 25, T03, R21-D2 = A, R15-E2 = C): Saat 11 statt 10 – anderer Zufallsverlauf ab dem ersten Takttag
+        // (A829, Datei 0x07215); unter 10–59 steht Verein 2 bei 11, 13, 16, 17, 28 … unter den ersten fünf. Die Probe hängt an der Saat.
+        var game = GameModeTests.Create(11, true, false, 2); // kader-start U15-a/R-K5 (L13): Saat 3 → 22, Vorbedingung nach dem Starttausch (Teamwerte bleiben am Platz); Spur start-lader (Lader beim Spielstart, Datei 0x439BB, anderer Zufallsverlauf): 22 → 9
         ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToSeasonEnd(game);
         var record = game.History[^1];

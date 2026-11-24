@@ -36,12 +36,15 @@ public class SponsorTests
 
         var contract = game.AcceptOffer(me, new AdSlot(AdSlotKind.Bande, 6), 1);
         Assert.NotNull(contract);
-        Assert.Equal([6, 0], contract!.Boards);                 // nächstes freies Feld, ggf. von vorn
-        Assert.Equal(before + 7_000, game.MonthlyIncome(me));
+        // Spur saison-geld Teil 2 (F06/A888, R15-E2 = C): [ORIGINAL] je Bande das erste freie Feld ab Feld 0 (Datei 0x2BAD9,
+        // 0x2BADE–0x2BB6D), Betrag je Feld (0x3E657, Datei 0x3E70C–0x3E734); vorher [6, 0] und einmal 7.000.
+        Assert.Equal([0, 1], contract!.Boards);
+        Assert.Equal(before + 2 * 7_000, game.MonthlyIncome(me));
         Assert.Null(game.Ads(me).OfferFrom(AdSlotKind.Bande, 1)); // Angebot verbraucht
 
+        // [ORIGINAL] Datei 0x2BA9D–0x2BAD1: das angeklickte Feld zählt nicht, nur die Zahl freier Felder (vorher „Feld belegt“ → null).
         SetOffer(game, me, AdSlotKind.Bande, sponsor: 2, boards: 1, amount: 3_000);
-        Assert.Null(game.AcceptOffer(me, new AdSlot(AdSlotKind.Bande, 0), 2)); // Feld belegt
+        Assert.Equal([2], game.AcceptOffer(me, new AdSlot(AdSlotKind.Bande, 0), 2)!.Boards);
     }
 
     [Fact]

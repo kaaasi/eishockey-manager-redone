@@ -258,10 +258,13 @@ public sealed class AdvertisingScreen : Screen
 
     private bool CanShowInfo() => _slot is { } slot && slot.Kind != AdSlotKind.Fernsehen && Cursor >= 0;
 
-    /// <summary>Angebot des gezeigten Partners für die gewählte (freie) Fläche.</summary>
+    /// <summary>
+    /// Angebot des gezeigten Partners für die gewählte (freie) Fläche. [ORIGINAL] F06/A888 (Datei 0x2BF86–0x2BFD2): bei Banden zählt
+    /// nur die Zahl der freien oder kündbaren Felder, nicht das angeklickte Feld (<see cref="GameState.AcceptOffer"/>).
+    /// </summary>
     public SponsorOffer? CurrentOffer()
     {
-        if (_slot is not { } slot || Cursor < 0 || !Ads.IsFree(slot) || !Game.IsAdSlotAvailable(Me, slot))
+        if (_slot is not { } slot || Cursor < 0 || slot.Kind != AdSlotKind.Bande && !Ads.IsFree(slot) || !Game.IsAdSlotAvailable(Me, slot))
             return null;
         var offer = Ads.OfferFrom(slot.Kind, Cursor);
         if (offer is null || (slot.Kind == AdSlotKind.Bande && Ads.FreeBoards().Count() < offer.Boards))

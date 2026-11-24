@@ -141,8 +141,14 @@ public sealed partial class GameState
     /// </summary>
     private void AccrueDailyInterest(DateOnly date)
     {
-        var days = DateTime.DaysInMonth(date.Year, date.Month) + 1;
         for (var i = 0; i < Managers.Count; i++)
+            AccrueDailyInterest(date, i);
+    }
+
+    /// <summary>Zinslauf eines Managers (Teil des Tagesabschlusses 0x3ED01 je Manager; Sommerpause, Spur saison-geld A526).</summary>
+    private void AccrueDailyInterest(DateOnly date, int i)
+    {
+        var days = DateTime.DaysInMonth(date.Year, date.Month) + 1;
         {
             var manager = Managers[i];
             var finance = Finance(manager);

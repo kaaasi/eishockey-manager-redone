@@ -228,7 +228,7 @@ public static class HokCompareClasses
         Set(Exact, "Player.Age", "Player.ContractYears", "Player.InsuranceLocked",
             "Player.InsurancePremium", "Player.IsForeigner", "Player.Loan", "Player.MonthlySalary", "Player.Name",
             "Player.NegotiationLock", "Player.Notice", "Player.NoticeYears", "Player.Number", "Player.OnLoan",
-            "Player.PurchasePrice", "Player.Role");
+            "Player.PurchasePrice", "Player.Role", "Player._roleValue"); // K11: Pool +0x18, fest am Poolplatz (Datei 0x5B3BB–0x5B49D)
         Set(Random, "Player.Assists", "Player.ClubGamesCarry", "Player.ClubCupGamesCarry", "Player.ClubEuropeGamesCarry",
             "Player.ClubGoalsCarry", "Player.ClubCupGoalsCarry", "Player.ClubEuropeGoalsCarry", "Player.CupGames",
             "Player.EuropeGames", "Player.CupGoals", "Player.EuropeGoals", "Player.Games", "Player.GoalieMinutes", "Player.Goals",
