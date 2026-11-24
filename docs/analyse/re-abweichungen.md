@@ -535,3 +535,33 @@ DGROUP 0x5CF4 = 0 und leere Zeilen, „Zug“ = Hinzufügen nach der Europapokal
   2 · (32 ≫ Runde) Einträge von Zeile 1 (bei Runde 0 auch Zeile 2; leere Einträge = Satz 0), Zufall `Random16` aus dem
   gemeinsamen Strom; Tausch bleibt je Weg (Start: Platzfelder, Zug: `SwapClubPlaces`). Roter Test nur für den Randfall:
   Hinzufügen in Europapokal-Runde 3 mit Wurf 0 → Tausch mit Satz 0.
+
+### F06 – Werbeangebot und Bande (A888)
+
+`python3 tools/reverse-engineering/abweichungen/f06_bande.py` (Annahme Datei 0x2BAD4–0x2BB80 mit Angebotssatz, Kopie 0x105C4
+= Borland `movmem(Quelle, Ziel, n)` nachgebildet; Monatseinnahme 0x3E657 mit Teamanteil 0):
+
+```
+1. Annahme eines Bandenangebots (Betrag 900, Partner 6); Felder vorher: [0: 300 Nr 1 k] [1: 300 Nr 1 k] [2: 500 Nr 2] [3: -] [4: -] [5: -] [6: -] (Nr 1 = kündbarer Vertrag über zwei Felder)
+   1 Bande(n): [0: 900 Nr 3] [1: 300 Nr 1 k] [2: 500 Nr 2] [3: -] [4: -] [5: -] [6: -]; DGROUP 0x17C danach 4
+   2 Bande(n): [0: 900 Nr 3] [1: 900 Nr 3] [2: 500 Nr 2] [3: -] [4: -] [5: -] [6: -]; DGROUP 0x17C danach 4
+   3 Bande(n): [0: 900 Nr 3] [1: 900 Nr 3] [2: 500 Nr 2] [3: 900 Nr 3] [4: -] [5: -] [6: -]; DGROUP 0x17C danach 4
+2. Monatseinnahme 0x3E657 (Teamanteil 0): Summe der Felder +0
+   vorher      : Rückgabe 1100
+   ein Feld    : Rückgabe 900
+   zwei Felder : Rückgabe 1800
+   drei Felder : Rückgabe 2700
+```
+
+- **Urteil: Abweichung bestätigt, und zwar im Geld.** Jede Bande ist ein eigener Satz (DGROUP 0xC15B + 0x6E · Manager +
+  10 · Feld): die Annahme kopiert das Angebot je Bande in das erste freie oder kündbare Feld (Feld 0 … 6 der Reihe nach)
+  und setzt dort +4 = Vertragsnummer DGROUP 0x17C (danach + 1). Ein Angebot über eine Bande überschreibt also **ein** Feld
+  eines kündbaren Vertrags, der Rest des alten Vertrags bleibt mit **seinem Betrag je Feld** stehen. Die Einnahme
+  0x3E657 zählt +0 aller 11 Felder (Datei 0x3E70C–0x3E734): ein Vertrag über n Banden bringt n · Betrag. Das Remake führt
+  eine Bande als einen `SponsorContract` mit `Boards` und einem `MonthlyAmount`; `Sponsoring.MonthlyIncome` zählt den Betrag
+  je Vertrag **einmal**, der Export (`OriginalExport.Rest.cs`) schreibt ihn je Feld. Das Aufteilen beim Überschreiben
+  (`OverwriteCancellable`, Rest mit vollem Betrag) stimmt dann nur, wenn der Betrag als „je Feld“ gilt.
+- **Vorgabe (`saison-geld`):** `MonthlyAmount` als Betrag je Feld festschreiben; `Sponsoring.MonthlyIncome` = Σ Betrag ·
+  Zahl der Felder (Banden), übrige Arten · 1; Überschreiben wie bisher feldweise. Roter Test: Bandenvertrag über zwei
+  Felder zu je 300 → Monatseinnahme 600 (Drittel: 1800 bei 900 je Feld, siehe oben); kündbarer Vertrag über zwei Felder,
+  Angebot über eine Bande → ein Feld neu, ein Feld alt, Einnahme alt + neu. Mehrsaisonprobe (Geld).
