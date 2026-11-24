@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Abdeckung von em.exe im Remake</title>
+<style>
+:root{--g:#2f9e62;--y:#e2b100;--b:#3b82f6;--x:#8e959c;--r:#d64545;--bg:#fff;--fg:#1d2329;--mut:#5d6872;--line:#d9dee3;--card:#f5f7f9}
+@media (prefers-color-scheme:dark){:root{--bg:#14181c;--fg:#e6eaee;--mut:#9aa5af;--line:#2d353d;--card:#1d2328}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1180px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:1.5rem;margin:0 0 4px}h2{font-size:1.1rem;margin:30px 0 10px}
+.mut{color:var(--mut)}.small{font-size:.85rem}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px;margin:14px 0}
+.leg{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;display:flex;gap:9px;align-items:flex-start}
+.sw{flex:none;width:16px;height:16px;border-radius:4px;margin-top:3px}
+.leg b{display:block}
+.bar{display:flex;height:34px;border-radius:6px;overflow:hidden;border:1px solid var(--line);margin:6px 0 4px}
+.bar div{display:flex;align-items:center;justify-content:center;color:#fff;font-size:.78rem;font-weight:600;white-space:nowrap;overflow:hidden;text-shadow:0 0 2px rgba(0,0,0,.45)}
+.y-text{color:#1d2329!important;text-shadow:none!important}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin:10px 0}
+.stat div{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.stat b{font-size:1.25rem;display:block}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:999px;padding:4px 12px;cursor:pointer;font:inherit;font-size:.85rem;display:inline-flex;gap:6px;align-items:center}
+.chip i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.chip[aria-pressed=false]{opacity:.45;text-decoration:line-through}
+.area{margin:14px 0}
+.area h3{font-size:.95rem;margin:0 0 4px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.tm{position:relative;width:100%;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--card)}
+.tm .c{position:absolute;border:1px solid var(--bg);cursor:default;overflow:hidden;font-size:10px;color:#fff;padding:1px 2px;line-height:1.15}
+.tm .c.dim{opacity:.08}
+.tm .c.y{color:#1d2329}
+#tip{position:fixed;z-index:9;max-width:340px;background:#111;color:#fff;border-radius:8px;padding:8px 10px;font-size:.78rem;line-height:1.35;pointer-events:none;display:none;box-shadow:0 4px 18px rgba(0,0,0,.4)}
+#tip b{color:#fff}#tip .k{color:#aab4be}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--mut);font-weight:600}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+code{font:12px ui-monospace,Menlo,Consolas,monospace}
+details{margin:6px 0}summary{cursor:pointer}
+.note{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--x);border-radius:6px;padding:8px 12px;margin:12px 0}
+.wrap{overflow-x:auto}
+</style>
+</head>
+<body>
+<main>
+<h1>Abdeckung von <code>em.exe</code> im Remake</h1>
+<div class="mut small" id="kopf">Stand <code>main @ 382b03a</code> · 24.11.2026 · 679 Funktionen, 309.525 Byte Code, gewichtet nach Bytes</div>
+
+<div class="legend" id="legend"></div>
+
+<h2>Gesamt</h2>
+<div class="small mut">nach Bytes</div><div class="bar" id="bar-b"></div>
+<div class="small mut">nach Anzahl Funktionen</div><div class="bar" id="bar-n"></div>
+<div class="stat" id="stat"></div>
+<div class="note small" id="grau-note"></div>
+
+<h2>Karte je Bereich</h2>
+<div class="small mut">Jede Funktion ein Rechteck, Fläche nach Größe, in Adressreihenfolge. Überfahren zeigt Dateioffset, Größe, Farbe, Klasse, Fundstellen und Hinweis. Die Chips blenden Farben aus.</div>
+<div class="chips" id="chips"></div>
+<div id="areas"></div>
+
+<h2>Die größten gelben Funktionen (umgesetzt ohne Beleg)</h2>
+<div class="wrap"><table id="t-gelb"></table></div>
+<h2>Die größten roten Funktionen (noch unbekannt)</h2>
+<div class="wrap"><table id="t-rot"></table></div>
+<h2>Graue Funktionen mit Beleg</h2>
+<div class="small mut">Einzelbelege aus der Restliste (F-Nummer, Plattformersatz oder entfallen), danach die Systemsegmente, die das Remake durch .NET/MonoGame ersetzt.</div>
+<div class="wrap"><table id="t-grau"></table></div>
+<details><summary class="small">Alle grauen Funktionen einzeln</summary><div class="wrap"><table id="t-grau-alle"></table></div></details>
+
+<h2>Probe</h2>
+<div id="probe" class="small"></div>
+
+<h2>Grenzen</h2>
+<ul class="small">
+<li>Eine Fundstelle zählt die ganze Funktion (Körnung): „grün“ und „blau“ sind Obergrenzen. Große Funktionen mit wenigen Fundstellen sind zu günstig eingestuft.</li>
+<li>Blau hat Vorrang vor grün und gelb: schon eine Fundstelle im Bereich eines <code>[APPROX]</code> der Klasse E (bewusste Abweichung) färbt die ganze Funktion blau.</li>
+<li>Quellen: <code>funktionskarte.py</code> (Funktionen, Status), <code>markerliste.py</code> (Klasse je Marker), <code>docs/analyse/restliste-v1.md</code> und <code>inventur.md</code> (Belege für gelb und grau). Aus dem Original sind nur Adressen, Größen und kurze Textauszüge enthalten.</li>
+</ul>
+</main>
+<div id="tip"></div>
+<script>
+const COL={g:'var(--g)',y:'var(--y)',b:'var(--b)',x:'var(--x)',r:'var(--r)'};
+const NAME={g:'grün',y:'gelb',b:'blau',x:'grau',r:'rot'};
+const DESC={g:['belegt umgesetzt','Status „umgesetzt“, keine Fundstelle gehört zu einem [APPROX] der Klasse E'],
+y:['umgesetzt ohne Beleg','genähert mit [APPROX] Klasse K/D, oder dokumentiert ohne Adresse, aber mit Nachweisdatei im Remake'],
+b:['anders umgesetzt','eine Fundstelle gehört zu einem [APPROX] der Klasse E (Nutzerentscheidung, korrigierter Fehler, Erweiterung)'],
+x:['weggefallen','nur mit Beleg: Kopierschutz, Sicher-/Ladesperre, ERROR.HOK, DOS-Treiber, Overlay-/Speicherverwaltung, Laufzeitbibliothek'],
+r:['noch unbekannt','alles Übrige; im Zweifel rot']};
+const ORDER=['g','y','b','x','r'];
+const nf=n=>n.toLocaleString('de-DE');
+const pc=(a,b)=>(100*a/b).toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1})+' %';
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let D,F,active=new Set(ORDER);
+fetch('daten.json').then(r=>r.json()).then(d=>{D=d;F=d.funcs;init()});
+function init(){
+ const tb={},tn={};ORDER.forEach(c=>{tb[c]=0;tn[c]=0});
+ let TB=0;F.forEach(f=>{tb[f.c]+=f.s;tn[f.c]++;TB+=f.s});
+ const TN=F.length;
+ document.getElementById('legend').innerHTML=ORDER.map(c=>`<div class="leg"><span class="sw" style="background:${COL[c]}"></span><div><b>${NAME[c]} – ${DESC[c][0]}</b><span class="small mut">${DESC[c][1]}</span></div></div>`).join('');
+ const bar=(id,v,T)=>document.getElementById(id).innerHTML=ORDER.filter(c=>v[c]>0).map(c=>`<div class="${c=='y'?'y-text':''}" style="background:${COL[c]};width:${100*v[c]/T}%" title="${NAME[c]}: ${nf(v[c])} (${pc(v[c],T)})">${100*v[c]/T>=4?pc(v[c],T):''}</div>`).join('');
+ bar('bar-b',tb,TB);bar('bar-n',tn,TN);
+ document.getElementById('stat').innerHTML=ORDER.map(c=>`<div><span class="small mut"><i style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${COL[c]}"></i> ${NAME[c]}</span><b>${pc(tb[c],TB)}</b><span class="small mut">${nf(tb[c])} Byte · ${nf(tn[c])} Funktionen (${pc(tn[c],TN)})</span></div>`).join('');
+ const gf=F.filter(f=>f.gt=='f'),gs=F.filter(f=>f.gt=='s');
+ const sum=a=>a.reduce((s,f)=>s+f.s,0);
+ document.getElementById('grau-note').innerHTML=`<b>Zur grauen Gruppe:</b> ${nf(sum(gf))} Byte (${gf.length} Funktionen) haben einen Einzelbeleg (F-Nummer der Restliste). ${nf(sum(gs))} Byte (${gs.length} Funktionen, alle bisher „unbekannt“ oder nur „dokumentiert“) liegen in Systemsegmenten und sind mit dem Segmentbeleg grau (<code>docs/re-abdeckung.md</code> Zeile 86, Segmentarten in <code>funktionskarte.py</code>). Verlangt man einen Beleg je Funktion, würden diese ${pc(sum(gs),TB)} rot.`;
+ // chips
+ document.getElementById('chips').innerHTML=ORDER.map(c=>`<button class="chip" data-c="${c}" aria-pressed="true"><i style="background:${COL[c]}"></i>${NAME[c]}</button>`).join('');
+ document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{const c=b.dataset.c;active.has(c)?active.delete(c):active.add(c);b.setAttribute('aria-pressed',active.has(c));applyFilter()});
+ draw();let w=0;addEventListener('resize',()=>{if(Math.abs(document.body.clientWidth-w)>20){w=document.body.clientWidth;draw()}});
+ tables(TB);probe(tb,tn,TB,TN);
+}
+function squarify(items,x,y,w,h){ // items sorted by size desc, size = area weight
+ const out=[];let tot=items.reduce((s,i)=>s+i.v,0);const sc=w*h/tot;items=items.map(i=>({...i,a:i.v*sc}));
+ function worst(row,side){const s=row.reduce((q,i)=>q+i.a,0);const mx=Math.max(...row.map(i=>i.a)),mn=Math.min(...row.map(i=>i.a));return Math.max(side*side*mx/(s*s),s*s/(side*side*mn))}
+ let i=0;while(i<items.length){const side=Math.min(w,h);let row=[items[i]];let j=i+1;
+  while(j<items.length&&worst(row.concat(items[j]),side)<=worst(row,side)){row.push(items[j]);j++}
+  const s=row.reduce((q,k)=>q+k.a,0);
+  if(w>=h){const rw=s/h;let cy=y;row.forEach(k=>{const rh=k.a/rw;out.push({...k,x,y:cy,w:rw,h:rh});cy+=rh});x+=rw;w-=rw}
+  else{const rh=s/w;let cx=x;row.forEach(k=>{const rw=k.a/rh;out.push({...k,x:cx,y,w:rw,h:rh});cx+=rw});y+=rh;h-=rh}
+  i=j}
+ return out}
+function draw(){
+ const el=document.getElementById('areas');el.innerHTML='';
+ D.bereiche.forEach((name,bi)=>{
+  const fs=F.filter(f=>f.b==bi);if(!fs.length)return;
+  const tot=fs.reduce((s,f)=>s+f.s,0);
+  const sec=document.createElement('div');sec.className='area';
+  const cnt={};ORDER.forEach(c=>cnt[c]=0);fs.forEach(f=>cnt[f.c]+=f.s);
+  sec.innerHTML=`<h3><span>${esc(name)}</span><span class="small mut">${fs.length} Funktionen · ${nf(tot)} Byte · ${ORDER.filter(c=>cnt[c]).map(c=>NAME[c]+' '+pc(cnt[c],tot)).join(' · ')}</span></h3>`;
+  const box=document.createElement('div');box.className='tm';sec.appendChild(box);el.appendChild(sec);
+  const W=box.clientWidth,H=Math.max(70,Math.min(300,Math.round(W*Math.sqrt(tot)/ (Math.sqrt(309525)*2.6))+60));
+  box.style.height=H+'px';
+  const lay=squarify(fs.slice().sort((a,b)=>b.s-a.s).map(f=>({f,v:f.s})),0,0,W,H);
+  lay.forEach(k=>{const d=document.createElement('div');d.className='c '+k.f.c;d.style.cssText=`left:${k.x}px;top:${k.y}px;width:${k.w}px;height:${k.h}px;background:${COL[k.f.c]}`;
+   if(k.w>46&&k.h>13)d.textContent=k.f.d.slice(2);
+   d._f=k.f;d.onmousemove=ev=>tip(ev,k.f);d.onmouseleave=()=>document.getElementById('tip').style.display='none';box.appendChild(d)});
+ });
+ applyFilter();
+}
+function applyFilter(){document.querySelectorAll('.tm .c').forEach(d=>d.classList.toggle('dim',!active.has(d._f.c)))}
+function tip(ev,f){const t=document.getElementById('tip');
+ t.innerHTML=`<b>${esc(f.d)}</b> · ${nf(f.s)} Byte · <b style="color:${COL[f.c].replace('var(--g)','#5fd08b').replace('var(--y)','#f0cb3c').replace('var(--b)','#7aa7ff').replace('var(--x)','#b5bcc3').replace('var(--r)','#ff7a7a')}">${NAME[f.c]}</b><br><span class="k">Status ${esc(f.st)}${f.k?' · Klasse '+esc(f.k):''}${f.m.length?' · '+esc(f.m.join(', ')):''}</span><br><span class="k">Bereich:</span> ${esc(D.bereiche[f.b])}${f.t?'<br><span class="k">Hinweis:</span> '+esc(f.t):''}<br><span class="k">Fundstellen (${f.n}):</span> ${f.f.length?f.f.map(esc).join('<br>'):'keine'}<br><span class="k">Grund:</span> ${esc(f.g)}`;
+ t.style.display='block';const r=t.getBoundingClientRect();let x=ev.clientX+14,y=ev.clientY+14;if(x+r.width>innerWidth-8)x=ev.clientX-r.width-14;if(y+r.height>innerHeight-8)y=Math.max(8,ev.clientY-r.height-14);t.style.left=Math.max(8,x)+'px';t.style.top=y+'px'}
+function tables(TB){
+ const rows=(c,n)=>F.filter(f=>f.c==c).sort((a,b)=>b.s-a.s).slice(0,n);
+ const mk=(id,a,cols)=>document.getElementById(id).innerHTML='<tr>'+cols.map(c=>`<th class="${c[2]||''}">${c[0]}</th>`).join('')+'</tr>'+a.map(f=>'<tr>'+cols.map(c=>`<td class="${c[2]||''}">${c[1](f)}</td>`).join('')+'</tr>').join('');
+ const base=[['Dateioffset',f=>'<code>'+f.d+'</code>'],['Byte',f=>nf(f.s),'n'],['Bereich',f=>esc(D.bereiche[f.b])],['Status',f=>esc(f.st)],['Hinweis / Grund',f=>esc((f.t?f.t+' – ':'')+f.g)]];
+ mk('t-gelb',rows('y',20),base);
+ const rr=rows('r',20);mk('t-rot',rr,base);
+ const gr=F.filter(f=>f.c=='x');
+ const seg={};gr.filter(f=>f.gt=='s').forEach(f=>{const k=f.g.replace(/: docs.*/,'');(seg[k]=seg[k]||[]).push(f)});
+ const ein=gr.filter(f=>f.gt=='f').sort((a,b)=>b.s-a.s);
+ let h='<tr><th>Beleg</th><th class="n">Funktionen</th><th class="n">Byte</th><th>Quelle</th></tr>';
+ Object.entries(seg).sort((a,b)=>b[1].reduce((s,f)=>s+f.s,0)-a[1].reduce((s,f)=>s+f.s,0)).forEach(([k,v])=>h+=`<tr><td>${esc(k)}</td><td class="n">${v.length}</td><td class="n">${nf(v.reduce((s,f)=>s+f.s,0))}</td><td class="small"><code>docs/re-abdeckung.md:86</code>, <code>funktionskarte.py</code> BASE_KIND</td></tr>`);
+ h+=ein.map(f=>`<tr><td><code>${f.d}</code> ${esc(f.g.replace(/^F\d+ \(([^)]*)\): /,''))}</td><td class="n">1</td><td class="n">${nf(f.s)}</td><td class="small">${esc(f.g.match(/^F\d+ \(([^)]*)\)/)?.[0]||'')}</td></tr>`).join('');
+ document.getElementById('t-grau').innerHTML=h;
+ mk('t-grau-alle',gr.sort((a,b)=>b.s-a.s),[['Dateioffset',f=>'<code>'+f.d+'</code>'],['Byte',f=>nf(f.s),'n'],['Bereich',f=>esc(D.bereiche[f.b])],['Status',f=>esc(f.st)],['Beleg',f=>esc(f.g)]]);
+}
+function probe(tb,tn,TB,TN){
+ const sB=ORDER.reduce((s,c)=>s+tb[c],0),sN=ORDER.reduce((s,c)=>s+tn[c],0);
+ const smp=D.probe;
+ document.getElementById('probe').innerHTML=`<p>Summe der Bytes aller Farben: <b>${nf(sB)}</b> = Summe <code>groesse</code> der CSV (${nf(TB)}); Anzahl Funktionen: <b>${sN}</b> = ${TN} Zeilen der CSV. Alle 573 Marker der Markerliste sind aufgelöst, keine Fundstelle blieb ohne Klasse.</p>
+ <p>Stichprobe: je Farbe 10 zufällig gezogene Funktionen (Zufallsstartwert 7; bei gelb und rot alle, wenn es weniger gibt). Für jede wurden Fundstellen, Marker-ID bzw. Beleg gelesen. Zusätzlich im Quelltext nachgesehen: 0x02293 (blau, Marker A417, Klasse E, <code>FinanceStocks.cs:183</code>) und 0x057E3 (blau, Marker A846, <code>NewGame.cs:27</code>). Keine eigene Nachmessung am Original.</p>
+ <ul>${ORDER.map(c=>`<li><b>${NAME[c]}</b>: ${smp[c].map(a=>'<code>'+a+'</code>').join(', ')}</li>`).join('')}</ul>`;
+}
+</script>
+</body>
+</html>
