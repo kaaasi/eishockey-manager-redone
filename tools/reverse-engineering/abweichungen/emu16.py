@@ -80,6 +80,9 @@ class CPU:
         self.int_hook = None
         self.visited: set[int] = set()
         self.record = False
+        self.port_toggle = 0
+        self.history: list | None = None        # last executed addresses (debugging)
+        self.pre: dict[int, object] = {}         # file address -> fn(cpu) run before the instruction there
 
     # ------------------------------------------------------------ addresses
     def file_of(self, cs: int, ip: int) -> int:
@@ -330,6 +333,12 @@ class CPU:
                 raise Stop(f"stop at {here:#x}")
             if self.record:
                 self.visited.add(here)
+            if self.history is not None:
+                self.history.append((here, self.r["sp"]))
+                if len(self.history) > 40000:
+                    del self.history[:20000]
+            if here in self.pre:
+                self.pre[here](self)
             self.steps += 1
             if self.steps > self.max_steps:
                 raise Stop(f"step limit at {here:#x}")
@@ -608,7 +617,9 @@ class CPU:
             if op < 0xE8:
                 self.fetch()
             if op in (0xE4, 0xE5, 0xEC, 0xED):
-                r["ax"] = 0
+                # VGA status 0x3DA toggles so that retrace waits end; other ports read 0
+                self.port_toggle ^= 0xFF
+                r["ax"] = self.port_toggle if op in (0xEC, 0xED) and r["dx"] == 0x3DA else 0
             return
         if op == 0xE8:
             d = self.fetchw()
