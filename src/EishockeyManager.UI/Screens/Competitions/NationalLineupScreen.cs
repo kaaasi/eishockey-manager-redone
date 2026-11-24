@@ -37,7 +37,6 @@ public sealed class NationalLineupScreen : Screen
     public const byte SelectedLineColor = 0x10;
 
     private int? _selectedLine;
-    private bool _changed;
     private int _mouseX = -1, _mouseY = -1;
 
     public NationalLineupScreen(ScreenHost host, Screen back) : base(host)
@@ -84,7 +83,6 @@ public sealed class NationalLineupScreen : Screen
         {
             case "C":
                 coach.ClearFormation();
-                _changed = true;
                 return;
         }
 
@@ -115,8 +113,6 @@ public sealed class NationalLineupScreen : Screen
             ? coach.ClickPlayerInMatch(player, ref selected, right: input.RightClick)
             : coach.ClickPlayer(player, ref selected, right: input.RightClick);
         _selectedLine = selected;
-        if (result is LineupResult.Assigned or LineupResult.TakenOut or LineupResult.Dressed or LineupResult.Undressed)
-            _changed = true;
         Report(result);
     }
 
@@ -144,7 +140,6 @@ public sealed class NationalLineupScreen : Screen
             coach.ClearSlotInMatch(slot); // [ORIGINAL] Datei 0x40CFD: im Spiel bleibt der Spieler eingesetzt
         else
             coach.ClearSlot(slot);
-        _changed = true;
         if (wasAuto)
             _message.ShowShort("Auto-Aufstellung", "ist deaktiviert !");
     }
@@ -153,17 +148,18 @@ public sealed class NationalLineupScreen : Screen
     public static Screen Tactics(ScreenHost host, Screen back) =>
         new TacticsScreen(host, back, () => host.Game!.NationalCoach!.Tactics, () => new NationalLineupScreen(host, back),
             new AutoLineupSwitch(() => host.Game!.NationalCoach!.AutoLineupEnabled, on => host.Game!.NationalCoach!.SetAutoLineup(on),
-                was => host.Game!.NationalCoach!.CloseTactics(was))); // A492: Schalter im Taktikbildschirm
+                was => host.Game!.NationalCoach!.CloseTactics(was))) // A492: Schalter im Taktikbildschirm
+        {
+            Left = game => game.OnNationalTacticsLeft(), // B31: 0x48E62 auch beim Bundestrainer
+        };
 
     /// <summary>
-    /// Verlassen (Datei 0x41506–0x4151A): 0x952C schreibt die Länderwerte aus der Aufstellung
-    /// (<see cref="GameState.OnNationalLineupLeft"/>), hier nur nach einer Änderung (siehe dort).
+    /// Verlassen (Datei 0x41506–0x4151A): [ORIGINAL] 0x952C schreibt die Länderwerte aus der Aufstellung ohne Bedingung
+    /// (<see cref="GameState.OnNationalLineupLeft"/>; B31 = A, Nutzer 24.11.2026) – auch ohne Änderung und im Spiel.
     /// </summary>
     private void Leave(Screen next)
     {
-        if (_changed)
-            Host.Game?.OnNationalLineupLeft();
-        _changed = false;
+        Host.Game?.OnNationalLineupLeft();
         Host.Show(next);
     }
 

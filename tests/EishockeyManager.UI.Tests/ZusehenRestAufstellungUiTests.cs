@@ -40,25 +40,32 @@ public sealed class ZusehenRestAufstellungUiTests
         Assert.NotEqual(before, after);
     }
 
-    /// <summary>[APPROX] Ohne Änderung kein Ereignis: bloßes Öffnen und Verlassen lässt die Felder stehen (AGENTS.md, E4).</summary>
+    /// <summary>
+    /// B31 (A892, Runde 25): [ORIGINAL] 0x952C beim Verlassen ohne Bedingung (Datei 0x41513–0x4151A) – auch ohne Änderung schreibt
+    /// das Verlassen die Felder aus der Aufstellung (B31 = A, Nutzer 24.11.2026). Vorher (rot): Felder blieben stehen (Prüfung
+    /// „nur nach einer Änderung“). Das bloße Öffnen ändert nichts (<see cref="PassiveScreenTests"/>).
+    /// </summary>
     [GameDataFact]
-    public void LeavingUnchangedLineup_KeepsClubFields()
+    public void LeavingUnchangedLineup_WritesClubFields()
     {
         var d = FlowTests.CreateDriver();
         d.StartNewGame();
         var game = d.Host.Game!;
         var club = game.Clubs[game.ActiveManager.ClubIndex];
+        club.SetAutoLineup(false); // sonst stellt die Rückkehr ins Menü neu auf (Datei 0x450C6)
         var before = MatchEngine.ClubFieldValues(club);
         foreach (var p in club.Lineup.Block(0))
             p.Technique = Math.Max(1, p.Technique - 30); // Felder lesen die Aufstellung erst beim nächsten Schreiben
         var back = d.Host.Current!;
         d.Host.Show(new LineupScreen(d.Host, back));
         d.Frames(3);
+        Assert.Equal(before, MatchEngine.ClubFieldValues(club)); // Öffnen ändert nichts
         d.Press(Key.Escape);
 
         Assert.Same(back, d.Host.Current);
-        Assert.Equal(before, MatchEngine.ClubFieldValues(club));
-        Assert.NotEqual(before, Parts(MatchEngine.ClubLineupTeamValues(club)));
+        var after = MatchEngine.ClubFieldValues(club);
+        Assert.NotEqual(before, after);
+        Assert.Equal(Parts(MatchEngine.ClubLineupTeamValues(club)), after);
     }
 
     private static (PartValues, PartValues) Parts(

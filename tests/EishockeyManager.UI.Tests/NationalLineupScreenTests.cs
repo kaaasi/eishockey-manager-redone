@@ -48,6 +48,9 @@ public class NationalLineupScreenTests
         // A009 (Runde 14): Die Rückkehr ins Menü nach „auto“ stellt mit „automatisch aufstellen“ auf (Datei 0x450C6); erst danach
         // darf sich durch Öffnen und Schließen nichts mehr ändern.
         game.OnMainMenu(game.ActiveManager, isReturn: true);
+        // B31 (Runde 25): Verlassen schreibt ohne Bedingung (Datei 0x41513, 0x48E19); die Kern-Ereignisse vorab, geprüft wird das Öffnen.
+        game.OnNationalLineupLeft();
+        game.OnNationalTacticsLeft();
         var before = StateFingerprint.Of(game);
 
         d.OpenTile("Aufstellung");

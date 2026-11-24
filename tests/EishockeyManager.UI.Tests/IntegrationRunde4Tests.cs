@@ -85,6 +85,10 @@ public class IntegrationRunde4Tests : IDisposable
         Assert.Equal(TacticMode.Semi, loaded.NationalCoach.Tactics.AttackMode);
         Assert.Equal(strength, loaded.NationalMatchStrength(NationalTeams.Germany));
 
+        // B31 (Runde 25): Das Verlassen schreibt ohne Bedingung (0x952C Datei 0x41513, 0x48E62 Datei 0x48E19) – die Kern-Ereignisse
+        // vorab, damit hier nur Öffnen und Laden geprüft werden (beide Ereignisse ändern beim zweiten Aufruf nichts).
+        loaded.OnNationalLineupLeft();
+        loaded.OnNationalTacticsLeft();
         var before = StateFingerprint.Of(loaded);
         foreach (var tile in new[] { "Aufstellung", "Taktik" })
         {

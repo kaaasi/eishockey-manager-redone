@@ -125,7 +125,6 @@ public sealed class LineupScreen : Screen
         if (_info.Update(input))
             return;
 
-        _opened ??= Host.Game is null ? null : Snapshot();
         var wasAuto = Club.AutoLineupEnabled;
         HandleInput(input);
         // [ORIGINAL] em.exe Datei 0x40ADE (Integration Runde 11, wettbewerbe-spiel Teil 8): Ein Eingriff von Hand schaltet die
@@ -232,24 +231,15 @@ public sealed class LineupScreen : Screen
     }
 
     /// <summary>
-    /// Verlassen (Datei 0x41506–0x4151A): 0x952C schreibt die Felder des Managervereins aus der Aufstellung
-    /// (<see cref="GameState.OnLineupLeft"/>, A858), hier nur nach einer Änderung (siehe dort, [APPROX]).
+    /// Verlassen (Datei 0x41506–0x4151A): [ORIGINAL] 0x952C schreibt die Felder des Managervereins aus der Aufstellung ohne
+    /// Bedingung (<see cref="GameState.OnLineupLeft"/>, A858; B31 = A, Nutzer 24.11.2026) – auch ohne Änderung und im Spiel
+    /// (dieselbe Funktion 0x40364). Das bloße Öffnen ändert nichts (AGENTS.md §4).
     /// </summary>
     private void Leave(Screen next)
     {
-        if (Host.Game is { } game && _opened is { } opened && !opened.SequenceEqual(Snapshot()))
-            game.OnLineupLeft(Club);
-        _opened = null;
+        Host.Game?.OnLineupLeft(Club);
         Host.Show(next);
     }
-
-    /// <summary>Aufstellung beim ersten Aufbau (Plätze und Eingesetzte), Vergleich beim Verlassen.</summary>
-    private int[]? _opened;
-
-    private int[] Snapshot() =>
-    [
-        .. LineupSlot.All.Select(s => Club.Lineup[s]?.Id ?? 0), -1, .. Club.Dressed.Select(p => p.Id).Order(),
-    ];
 
     /// <summary>
     /// Meldungen (Texte aus em.exe); „Schon 22 Mann / im Team !“ aus DGROUP 0x11D5. [ORIGINAL] Die Aufstellung ruft für alle Fälle die
