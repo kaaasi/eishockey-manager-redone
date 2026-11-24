@@ -167,9 +167,10 @@ public sealed class EuropeanCupScreen : Screen
     }
 }
 
-/// <summary>Anmeldung im Hauptmenü: Paarungen → Europapokal.</summary>
+/// <summary>Anmeldung im Hauptmenü: Paarungen → Europapokal, mit gemerkter Seite (DGROUP 0x5126, <see cref="EuropeanCupPages"/>).</summary>
 internal static class EuropeanCupMenuEntries
 {
     [MenuEntry("Europapokal")]
-    private static Screen EuropeanCup(ScreenHost host, Screen back) => new EuropeanCupScreen(host, back);
+    private static Screen EuropeanCup(ScreenHost host, Screen back) =>
+        EuropeanCupPages.FromTile(host, back, EuropeanCupPages.Tile.Pairings);
 }

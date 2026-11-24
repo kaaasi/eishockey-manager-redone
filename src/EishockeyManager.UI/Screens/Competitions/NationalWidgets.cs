@@ -42,8 +42,9 @@ public static class NationalWidgets
     /// Farbe 4 mit dem Namen (Flow, zentriert, Grundlinie 200, Farbe 0), Kopf „ART REIHE: 1. 2. 3.“ (Mini, x + 10,
     /// Grundlinie 208), Wertefeld (x + 64 | 212) … (x + 122 | 223) Farbe 4, Zeilen „Abwehr“ und „Sturm“ (x + 4,
     /// Grundlinie 216 / 223) mit den Werten der Reihen 1–3 bei x + 70 + 20 · Reihe (Farbe 1, zweistellig).
-    /// [APPROX] Reihenwerte: im Original aus der Aufstellung (0x28:0x16BF); hier Mittel aus Kondition und Technik der
-    /// Reihe (Bundestrainer) bzw. die Länderwerte für alle drei Reihen.
+    /// [ORIGINAL] Reihenwerte (B17, A285, A419): 0x28:0x16BF = 0x977F(Verein, Reihe, Teil, 0, 0) (Datei 0x3B65C), angezeigt
+    /// (Byte 2 + Byte 1) / 2 (Datei 0x3B664–0x3B691) über die Zahlenausgabe 0x38:0x2C2 (Datei 0x3B6C4) – siehe
+    /// <see cref="LineValue"/>.
     /// </summary>
     public static void TeamPanel(Surface s, Assets a, GameState game, int club, int side)
     {
@@ -65,12 +66,14 @@ public static class NationalWidgets
         }
     }
 
-    /// <summary>Wert einer Reihe (siehe <see cref="TeamPanel"/>), auf 0–99 begrenzt.</summary>
-    public static int LineValue(GameState game, int club, int line, bool attack)
-    {
-        if (game.NationalCoach is { } coach && coach.Nation == club)
-            return Math.Clamp(coach.Lineup().LineValue(line, attack), 0, 99);
-        var (cd, td, ca, ta) = game.NationalRatings(club);
-        return Math.Clamp(attack ? (ca + ta) / 2 : (cd + td) / 2, 0, 99);
-    }
+    /// <summary>
+    /// Wert einer Reihe (siehe <see cref="TeamPanel"/>). [ORIGINAL] B17 (A285, A419, A961; Aufräumkonzept K9): 0x977F wie in
+    /// Datei 0x3B65C, (Kondition + Technik) / 2 der Rückgabe (Datei 0x3B664–0x3B691) – <see cref="GameState.NationalPanelLineValue"/>,
+    /// Beleg `b17_reihenwerte_national.py` (300 von 300 gleich, docs/analyse/re-abweichungen.md B17). Länder ohne
+    /// Bundestrainer: Teamwerte + 4 − 4 · Reihe, je auf 0 … 100 begrenzt; Land des Bundestrainers: Spielerweg 0x98F8 über
+    /// <see cref="MatchEngine.ManagedLineValues"/> (A494). Keine eigene Grenze bei 99: 0x977F liefert höchstens 100, die
+    /// Zahlenausgabe zeigt dann drei Stellen. Vorher (K + T) / 2 der Länderwerte bzw. der Aufstellung, auf 0–99 begrenzt.
+    /// </summary>
+    public static int LineValue(GameState game, int club, int line, bool attack) =>
+        game.NationalPanelLineValue(club, line, attack);
 }

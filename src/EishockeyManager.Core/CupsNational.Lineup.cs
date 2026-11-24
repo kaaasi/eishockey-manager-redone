@@ -370,8 +370,10 @@ public sealed partial class NationalCoach
     /// Wirksame Aufstellung aus einer Formation (Reihen 1–3 und Torhüter, nur einsatzfähige Spieler). Der sechste Feldspieler (#939,
     /// A875; auch der Feldspieler im Tor der Neuaufstellung, A672) steht als siebter Eintrag hinter den drei Abwehrreihen in
     /// <see cref="NationalLineup.Defenders"/>: er zählt in <see cref="NationalLineup.Players"/> (Länderspiele, +0x15 ≠ 0), nicht in
-    /// <see cref="NationalLineup.LineValue"/>. [APPROX] Die Reihenwerte der Anzeige bleiben Remake-Werte je zwei Verteidiger; das Spiel
-    /// rechnet über +0x15 (<see cref="MatchEngine.NationalSquad"/>, Datei 0x98F8).
+    /// <see cref="NationalLineup.LineValue"/>. [APPROX] Die Reihenwerte der Anzeige rechnet für das Land des Bundestrainers wie das
+    /// Spiel über +0x15 (<see cref="GameState.NationalPanelLineValue"/> → <see cref="MatchEngine.ManagedLineValues"/> über
+    /// <see cref="MatchEngine.NationalSquad"/>, Datei 0x977F → 0x98F8; B17, Runde 25); den Spielerweg 0x98F8 hat re-abweichungen
+    /// für die Anzeige nicht eigens nachgebildet, er gilt wie im Spiel (A494).
     /// </summary>
     private NationalLineup FormationLineup(Core.Lineup formation)
     {
