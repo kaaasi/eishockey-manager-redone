@@ -15,15 +15,7 @@ public static class NewsBar
     public static readonly Rect Area = new(3, 201, 314, 36);
     public static readonly Rect ScrollUp = new(300, 206, 13, 11);
     public static readonly Rect ScrollDown = new(300, 219, 13, 11);
-    private static readonly Rect Text = new(3, 201, 296, 36);
     private const byte TextColor = 0;
-
-    /// <summary>
-    /// Hinweis bei einer Frage rechts unten. [APPROX] Im Bild nicht belegt. Der Posteingang ist nur über den Klick auf die
-    /// Nachricht erreichbar (<see cref="Update"/>); die Kachel „Neuer“ öffnet die Spielvorbereitung für weitere Manager (#841,
-    /// <see cref="SetupScreen"/>). Früher verwies „(Neuer)“ auf die Kachel (R4-02, #109).
-    /// </summary>
-    public static string QuestionHint(GameState game) => "(Klicken)";
 
     /// <summary>Gezeigte Nachricht (Index im Posteingang) je Manager.</summary>
     private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<ManagerFinance, StrongBox> Cursor = new();
@@ -100,49 +92,20 @@ public static class NewsBar
         // [ORIGINAL] Datei 0x4B6F0–0x4B76D: Das Original bricht nicht um, sondern zeichnet die Zeilen der Nachricht (getrennt durch „^“)
         // je zentriert im Bereich x 0x10 … 0x12F (Mitte 159), erste Zeile Grundlinie 212 (Datum), danach + 12, dann + 7. Die Leiste
         // (Fläche bis y 236) fasst daher nur zwei Textzeilen (Grundlinien 224, 231).
-        // [APPROX] Die Nachrichten des Remakes stehen als Zeilen ohne „^“-Trennung: Sie werden mit Leerzeichen verbunden und auf
-        // die Breite des weißen Feldes umbrochen (im Bild bricht „EC HEDOS MÜNCHEN ist an SCHIFFL“ / „interessiert.“ so um). Ergeben
-        // sich mehr als zwei Zeilen, wird breiter umbrochen (bis zur Feldbreite) und, falls es dann noch zu viele sind, nach der
-        // zweiten Zeile abgeschnitten – eine dritte Zeile läge auf dem unteren Rand der Leiste (y 234); der volle Text steht im Posteingang.
+        // [ORIGINAL] B07 (A779, A780): Die Zeilen der Nachricht (im Remake Message.Lines, im Original die „^“-Teile nach dem
+        // Datum) stehen ohne Umbruch je zentriert untereinander, + 12 nach dem Datum, dann je + 7 (Datei 0x4B6F0–0x4B76D). Die
+        // Texte des Spiels haben höchstens zwei Zeilen; mehr zeichnet das Original wie hier ohne Abschnitt. Einen Hinweis bei
+        // einer Frage und einen Zähler „n/m“ zeichnet die Schleife nicht (`file37a_1`, `file46_6`: nur Datum, Zeilen, Pfeile).
         s.TextCentered(mini, center, DateY, SeasonCalendar.FormatShort(message.Day, message.Season), TextColor);
         var y = TextY;
-        var text = ManagerText.ForFont(string.Join(' ', message.Lines));
-        var lines = Wrap(mini, text, WrapWidth).ToList();
-        if (lines.Count > MaxTextLines)
-            lines = Wrap(mini, text, Text.W - 12).ToList();
-        foreach (var line in lines.Take(MaxTextLines))
+        foreach (var line in message.Lines)
         {
-            s.TextCentered(mini, center, y, line, TextColor);
+            s.TextCentered(mini, center, y, ManagerText.ForFont(line), TextColor);
             y += LineStep;
         }
-        // [APPROX] Hinweis bei einer Frage und Zähler bei mehreren Nachrichten: im Bild nicht belegt (eine Nachricht ohne Zähler).
-        if (message.IsQuestion)
-            s.TextRight(mini, Text.Right - 4, 228, QuestionHint(game), Colors.Red);
-        if (inbox.Count > 1)
-            s.TextRight(mini, Text.Right - 4, 221, $"{index + 1}/{inbox.Count}", TextColor);
     }
 
     private const int DateY = 207;
     private const int TextY = 220;
     private const int LineStep = 7;
-    private const int WrapWidth = 128;
-    private const int MaxTextLines = 2;
-
-    internal static IEnumerable<string> Wrap(BitmapFont font, string text, int width)
-    {
-        var line = "";
-        foreach (var word in text.Split(' ', StringSplitOptions.RemoveEmptyEntries))
-        {
-            var next = line.Length == 0 ? word : line + " " + word;
-            if (line.Length > 0 && font.Measure(next) > width)
-            {
-                yield return line;
-                line = word;
-            }
-            else
-                line = next;
-        }
-        if (line.Length > 0)
-            yield return line;
-    }
 }

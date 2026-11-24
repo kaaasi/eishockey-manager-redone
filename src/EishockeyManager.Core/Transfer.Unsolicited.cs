@@ -11,6 +11,12 @@ public static class UnsolicitedOfferRules
     public const int FirstForeignClub = 0x40;
 
     /// <summary>
+    /// [ORIGINAL] Meldung „$ ist an $^interessiert.^“ (Datei 0x19787): Verein und Spieler in der ersten Zeile, „interessiert.“ in
+    /// der zweiten (`file37a_1`: „EC HEDOS MÜNCHEN ist an SCHIFFL“ / „interessiert.“; B07, Trennung an „^“).
+    /// </summary>
+    public static string[] MessageText(Club buyer, Player player) => [$"{buyer.Name} ist an {player.Name}", "interessiert."];
+
+    /// <summary>
     /// Tageswurf je Kaderplatz. [ORIGINAL] Datei 0x079DE–0x07A54 (Schalter DGROUP 0x4860 = 0): w = Wert(Preis) / 10000;
     /// random(0, 200) &lt; w, dann random(0, 450) = 0. Der zweite Wurf fällt nur nach dem ersten.
     /// </summary>
@@ -118,7 +124,7 @@ public sealed partial class GameState
                     continue;
                 p.UnsolicitedOffer = Clubs.First(c => c.Index == buyer);
                 foreach (var m in Managers.Where(m => m.ClubIndex == club.Index && !m.Dismissed))
-                    NotifyAbout(m, p, $"{p.UnsolicitedOffer.Name} ist an", $"{p.Name} interessiert.");
+                    NotifyAbout(m, p, UnsolicitedOfferRules.MessageText(p.UnsolicitedOffer, p));
             }
         }
     }

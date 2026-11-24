@@ -30,8 +30,8 @@ namespace EishockeyManager.UI.Screens.Statistics;
 ///   (217 | 105)–(299 | 145) Farbe 6 mit 13 Streifen (218 … 298, je 3 Zeilen ab 106, Farben 28 … 16); Balken der
 ///   Heimspiele (<see cref="AudienceBars"/>); Konto- und Schuldenbalken (<see cref="AccountBar"/>, <see cref="DebtBar"/>)
 ///   in (223 … 293 | 179 … 188) bzw. (… | 206 … 215), Grund 0, Rahmen Farbe 6.</item>
-/// <item>[APPROX] Das Original kehrt nach dem Zeichnen ins Menü zurück; wie bei „Fairplay“ schließt hier ein Klick oder
-///   eine Taste.</item>
+/// <item>[APPROX] Das Original kehrt nach dem Zeichnen ins Menü zurück (kein Aufruf von 0x38:0x118 in Datei 0x2D5AE–0x2E2CA);
+///   wie bei „Fairplay“ schließt hier ein Klick. Tasten schließen nicht wie im Original (B11 = A), Escape als Komfort.</item>
 /// <item>[ORIGINAL] Über-/Unterzahl: Managerfelder DGROUP 0x97D2 + 2 · k (<see cref="Manager.PowerPlayCounts"/>), gezählt in der
 ///   Minutenrechnung (Tor 0xA939–0xA9A2 und 0xAA2C–0xAAEF, Strafe 0x35A84/0x35B18; <c>docs/spielberechnung.md</c> §18).
 ///   Anschluss über die Zeitleiste geprüft (Spur wettbewerbe-spiel, Teil 4, A349: <c>WettbewerbeSpiel4ScreenTests</c>).</item>
@@ -342,7 +342,7 @@ public sealed class ClubStatisticsScreen : Screen
 
     public override void Update(InputState input)
     {
-        if (input.LeftClick || input.RightClick || input.Keys.Count > 0)
+        if (input.LeftClick || input.RightClick || input.Pressed(Key.Escape))
             Host.Show(_back);
     }
 

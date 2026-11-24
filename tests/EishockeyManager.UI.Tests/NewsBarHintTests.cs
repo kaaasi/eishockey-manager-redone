@@ -4,7 +4,10 @@ using EishockeyManager.UI.Screens.ManagerArea;
 
 namespace EishockeyManager.UI.Tests;
 
-/// <summary>R4-02 (#109), #841: Der Hinweis bei einer Frage verweist auf die Nachricht, nicht auf die Kachel „Neuer“.</summary>
+/// <summary>
+/// R4-02 (#109), #841: Die Kachel „Neuer“ ist nur bei voller Managerzahl gesperrt. Der frühere Hinweis „(Klicken)“ bei einer Frage
+/// entfällt wie im Original (B07, A778: Datei 0x4B6F0–0x4B76D zeichnet keinen Hinweis; Prüfung in NewsBarDosboxTests).
+/// </summary>
 public class NewsBarHintTests
 {
     private static GameState Synthetic(int managers)
@@ -25,16 +28,15 @@ public class NewsBarHintTests
 
     /// <summary>
     /// #841: Die Kachel „Neuer“ öffnet die Spielvorbereitung für weitere Manager (Datei 0x45755 → 0x28165), der Posteingang
-    /// ist nur über die Nachricht erreichbar – der Hinweis verweist daher immer auf den Klick (vorher „(Neuer)“ bei freier Kachel).
+    /// ist nur über die Nachricht erreichbar.
     /// </summary>
     [Theory]
     [InlineData(1)]
     [InlineData(3)]
     [InlineData(4)]
-    public void QuestionHint_PointsToClick_NotToNewTile(int managers)
+    public void NewTile_LockedOnlyWithAllManagers(int managers)
     {
         var game = Synthetic(managers);
         Assert.Equal(managers >= GameSetup.MaxManagers, TileLocks.IsLocked(game, Tile("Neuer")));
-        Assert.Equal("(Klicken)", NewsBar.QuestionHint(game));
     }
 }

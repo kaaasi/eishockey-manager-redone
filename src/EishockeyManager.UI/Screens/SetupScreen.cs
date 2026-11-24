@@ -134,7 +134,8 @@ public sealed class SetupScreen : Screen
         if (input.Pressed(Key.Escape))
         {
             // [APPROX] Im Hinzufügen-Modus verlässt das Original die Vorbereitung nur über „Los jetzt!“ (ohne neue Manager ohne
-            // Wirkung, Datei 0x297CA); Escape führt hier ohne Änderung ins Hauptmenü zurück.
+            // Wirkung, Datei 0x297CA); Escape führt hier ohne Änderung ins Hauptmenü zurück
+            // (Komfort, bleibt nach B11 = A, Nutzer 24.11.2026).
             Host.Show(_back ?? new TitleScreen(Host));
             return;
         }

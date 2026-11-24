@@ -40,7 +40,9 @@ public static class MenuLamps
         var red = new bool[Count];
         if (game.NationalCoachMenu)
         {
-            // [APPROX] Vor der Ernennung gibt es keinen WM-Kader: Lampe 0 rot wie ein leerer Kader im Original.
+            // [ORIGINAL] B18/A331: Mit leerem WM-Kader ist Lampe 0 rot, 2–5 grün (Datei 0x42C4B; docs/analyse/re-abweichungen.md
+            // B18). Ein Menü des Bundestrainers vor der Ernennung gibt es im Original nicht (Datei 0x5557F–0x55587); dort gilt
+            // hier dasselbe wie beim leeren Kader.
             red[0] = game.NationalCoach is not { } coach || !Complete(coach.Formation);
             return red; // Lampe 1 siehe unten; 2–5 beim Bundestrainer immer grün
         }

@@ -24,7 +24,8 @@ public sealed class MainMenuScreen : Screen
     /// Schleife mit „weiter“ (0x4551B). Vorher prüft sie den Bundestrainer (<see cref="CoachWarning"/>, #217, 0x454C2) und
     /// „Sie können nicht mehr weiterspielen.“ (DGROUP 0x176, 0x454F5) – letzteres gehört zur Sicher-/Ladesperre
     /// des Originals, die nach Entscheidung des Nutzers nicht übernommen wird (<c>docs/formate/spielstand-original.md</c>).
-    /// [APPROX] Nur die linke Maustaste; was die rechte (0x5A16 = 3) im Original anders macht, ist nicht geprüft.
+    /// [ORIGINAL] Linke und rechte Maustaste (DGROUP 0x5A16 = 1 oder 3) wirken gleich (B12, Datei 0x45483–0x4551E;
+    /// docs/analyse/re-abweichungen.md B12).
     /// </summary>
     public static readonly Rect ContinueLogo = new(275, 34, 38, 38);
 
@@ -33,7 +34,8 @@ public sealed class MainMenuScreen : Screen
     /// das Logo (33 &lt; y &lt; 72) ruft 232 &lt; x &lt; 272 die Leistenfunktion 0x120:0x48 (Datei 0x4B5F4) mit 0xFF
     /// („Manager am Zug“, Datei 0x4B68C) auf – dieselbe Nachrichtenleiste wie beim Kennzeichen „neue Nachricht“
     /// (0x4527C), danach geht die Schleife mit der Logo-Prüfung weiter.
-    /// [APPROX] Das Remake wählt dabei die Kachel ab, weil Leiste und kleine Kacheln dieselbe Fläche belegen.
+    /// [ORIGINAL] Die gewählte Kachel bleibt (B18/A297): Die Leiste liegt über den kleinen Kacheln, ein Klick auf einen Eintrag
+    /// öffnet danach weiter dessen Bildschirm; linke und rechte Taste gleich (docs/analyse/re-abweichungen.md B12, B18).
     /// </summary>
     public static readonly Rect ManagerHead = new(233, 34, 39, 38);
 
@@ -67,6 +69,12 @@ public sealed class MainMenuScreen : Screen
     public static readonly Rect InfoBar = new(0, 21, 320, 56);
 
     private int _selectedBig = -1;
+
+    /// <summary>
+    /// Nachrichtenleiste über den kleinen Kacheln einer gewählten Kachel (Klick auf den Managerkopf, B18/A297). Sie bleibt, bis
+    /// eine große Kachel gewählt oder das Menü neu aufgebaut wird; die Einträge darunter bleiben anklickbar.
+    /// </summary>
+    private bool _newsBarOverTiles;
     private int _mouseX = -1, _mouseY = -1;
 
     /// <summary>
@@ -102,6 +110,7 @@ public sealed class MainMenuScreen : Screen
     /// <summary>Ein Aufbau des Menüs: genau ein Aufruf des Ereignisses; die Leiste zeigt, was es meldet.</summary>
     private void BuildMenu()
     {
+        _newsBarOverTiles = false; // neuer Aufbau zeichnet die Kachelreihe neu
         if (Host.Game is not { } game)
         {
             _newsBar = false;
@@ -176,22 +185,27 @@ public sealed class MainMenuScreen : Screen
             return;
         }
 
-        if (input.Pressed(Key.Escape) || input.RightClick)
+        // [ORIGINAL] B12 (A296): Die rechte Taste wirkt im Hauptmenü wie die linke und wählt nicht ab (Datei 0x45483–0x4551E;
+        // Rechtsklick auf eine leere Fläche lässt die Auswahl stehen). Nur Gegner-/Vereinsname und Infofile (oben) sind links.
+        // [APPROX] Escape wählt als Komfort des Remakes ab (B11 = A, Nutzer 24.11.2026).
+        if (input.Pressed(Key.Escape))
         {
             _selectedBig = -1;
+            _newsBarOverTiles = false;
             return;
         }
 
-        // Managerkopf (#216): zeigt die Nachrichtenleiste des Managers am Zug, auch ohne neue Nachricht (0x4549D).
-        if (input.Clicked(ManagerHead))
+        // Managerkopf (#216): zeigt die Nachrichtenleiste des Managers am Zug, auch ohne neue Nachricht (0x4549D); die Auswahl
+        // bleibt (B18/A297).
+        if (MouseClicked(input, ManagerHead))
         {
-            _selectedBig = -1;
             _newsBar = true;
+            _newsBarOverTiles = _selectedBig >= 0;
             return;
         }
 
-        // Tag weiter: Klick aufs Vereinslogo (#205); die Leertaste hat diese Funktion im Original nicht.
-        if (input.Clicked(ContinueLogo))
+        // Tag weiter: Klick aufs Vereinslogo (#205), linke oder rechte Taste (B12); die Leertaste hat diese Funktion im Original nicht.
+        if (MouseClicked(input, ContinueLogo))
         {
             // Bundestrainer mit zu kleinem Kader: Warnung statt Tagesablauf (#217, 0x454C2).
             // [ORIGINAL] Der Wächter „ernannt“ ist gleichwertig (A300, Spur nationalteam Runde 13): Das Original prüft nur DGROUP
@@ -208,8 +222,9 @@ public sealed class MainMenuScreen : Screen
 
         for (var i = 0; i < BigTiles.Length; i++)
         {
-            if (!input.Clicked(BigTile(i)))
+            if (!MouseClicked(input, BigTile(i)))
                 continue;
+            _newsBarOverTiles = false;
             if (i == QuitTile)
             {
                 _selectedBig = -1;
@@ -225,7 +240,7 @@ public sealed class MainMenuScreen : Screen
             var tiles = SmallTiles[_selectedBig];
             for (var i = 0; i < tiles.Length; i++)
             {
-                if (input.Clicked(SmallTile(i)) && !tiles[i].IsEmpty && !NationalMenu.IsLocked(Game, tiles[i]))
+                if (MouseClicked(input, SmallTile(i)) && !tiles[i].IsEmpty && !NationalMenu.IsLocked(Game, tiles[i]))
                 {
                     Host.Show(OpenTile(tiles[i]));
                     return;
@@ -237,6 +252,9 @@ public sealed class MainMenuScreen : Screen
             return;
     }
 
+    /// <summary>[ORIGINAL] Klick mit linker oder rechter Taste (DGROUP 0x5A16 = 1 oder 3, B12, Datei 0x45483–0x4551E).</summary>
+    private static bool MouseClicked(InputState input, Rect r) => input.Clicked(r) || input.RightClicked(r);
+
     /// <summary>
     /// Tag weiter (Klick aufs Vereinslogo): Im Hot-Seat gibt der Manager am Zug nur an den nächsten noch nicht bereiten Manager ab
     /// (Hauptmenü bleibt, Infoleiste zeigt den neuen Manager). Erst der letzte bestätigt den Tag, dann läuft er
@@ -245,6 +263,7 @@ public sealed class MainMenuScreen : Screen
     private void Continue_()
     {
         _selectedBig = -1;
+        _newsBarOverTiles = false;
         _newsBar = false; // neuer Tag bzw. nächster Manager: Menü wird neu aufgebaut
         if (!Game.IsLastTurnOfDay)
         {
@@ -277,11 +296,15 @@ public sealed class MainMenuScreen : Screen
             var r = BigTile(i);
             Widgets.Frame(s, Assets, r, FrameStyle.Orange, Colors.TileBackground);
             s.Blit(sheet, BigIconSource(i), r.X + 7, r.Y + 7);
+            // [ORIGINAL] B18/A301: Umriss 0x0B5A7 (vier Seiten, Ecken eingeschlossen) von (X + 4 | Y + 4) bis (X + 67 | Y + 52) in
+            // Farbe 24; die abgewählte Kachel bekommt ihn in Farbe 30 = Kachelgrund (Datei 0x45579–0x45659).
             if (i == _selectedBig)
-                s.HLine(r.X + 4, r.Bottom - 5, r.W - 8, Colors.Yellow); // [APPROX] Markierung
+                s.Outline(new Rect(r.X + 4, r.Y + 4, 64, 49), Colors.Yellow);
         }
 
-        if (_selectedBig >= 0)
+        if (_selectedBig >= 0 && _newsBarOverTiles)
+            ManagerArea.NewsBar.Draw(s, Assets, Game); // B18/A297: Leiste über den Kacheln
+        else if (_selectedBig >= 0)
         {
             var tiles = SmallTiles[_selectedBig];
             for (var i = 0; i < tiles.Length; i++)
@@ -323,7 +346,9 @@ public sealed class MainMenuScreen : Screen
         var next = game.UpcomingMatch(team);
         if (game.NationalCoachMenu)
         {
-            // [APPROX] Ohne Liga keine Tabellenkurve; der Bundestrainer sieht hier nichts (kein Videobeleg).
+            // [ORIGINAL] B18/A302: Die Tabellenkurve 0x445E0 zeichnet nichts, sobald einer der beiden ein Land ist (Index ≥ DGROUP
+            // 0x6AD); die Infoleiste übergibt beim Bundestrainer das Land 52 → leeres Feld, auch ohne Achsen
+            // (docs/analyse/re-abweichungen.md B18, b18_hauptmenue_aufbau.py).
         }
         else if (game.PlayedMatchDays == 0)
         {

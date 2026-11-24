@@ -162,13 +162,33 @@ public class AudioMixerTests
         Assert.All(Read(mixer, 100), s => Assert.Equal(0, s));
     }
 
+    /// <summary>
+    /// B01 (A002): Das Original spielt die Titelmusik einmal und bleibt dann still – ein Start über Treiberfunktion 6
+    /// (Datei 0x431CB, einziger Aufruf Datei 0x4391F), der Treiber stoppt am Meta-Ereignis FF 2F (Datei 0x15DB0 → 0x15F08),
+    /// kein Neustart (docs/analyse/re-vor-dosbox.md, A002). Der Mixer meldet weiter „läuft“, damit die Musikregel das Lied
+    /// im Titelbildschirm nicht neu startet (das Statusbyte DGROUP 0x59E6 liest das Original nirgends).
+    /// </summary>
     [Fact]
-    public void Music_LoopsAfterEnd()
+    public void Music_PlaysOnceThenStaysSilent()
     {
         var mixer = Mixer(SyntheticMusic());
         mixer.PlayMusic();
         Read(mixer, Rate * 3); // Lied ist 1 s lang
         Assert.True(mixer.IsMusicPlaying);
+        Assert.All(Read(mixer, Rate / 4), s => Assert.Equal(0, s));
+
+        mixer.PlayMusic(); // wie die Musikregel im Titelbildschirm: kein Neustart, solange nicht gestoppt
+        Assert.All(Read(mixer, Rate / 4), s => Assert.Equal(0, s));
+    }
+
+    [Fact]
+    public void Music_RestartsAfterStop()
+    {
+        var mixer = Mixer(SyntheticMusic());
+        mixer.PlayMusic();
+        Read(mixer, Rate * 3);
+        mixer.StopMusic();
+        mixer.PlayMusic();
         Assert.Contains(Read(mixer, Rate / 4), s => Math.Abs((int)s) > 500);
     }
 
