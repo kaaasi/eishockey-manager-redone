@@ -118,7 +118,7 @@ Stand `ebdc3c6`. Grundlage: [abweichungen-v1.md](abweichungen-v1.md), Vergleich 
 | D07 | Transfer: Meldung „unfair“ und verworfenes Gebot | **D** | S | N | Wartet auf DOSBox. |
 | D08 | Live-Spiel: Reihenzahl, Pokalweg, Penalty, Verletzungsmerker, Zählfeld | **D** | N | N | Wartet auf DOSBox. |
 
-## Offene Fragen
+## Entscheidungen zu den Fragen (Nutzer 24.11.2026)
 
-1. **B16** (Vereinsfenster, Bilanzzeichen): Abweichung nicht belegt – siehe Chat 24.11.2026.
-2. **F06/F08** (Geld): Umgang mit dem Prüfergebnis – siehe Chat 24.11.2026.
+1. **B16** = A: 0xD0C2 in em.exe lesen (mit B15), ändern nur bei belegter Abweichung.
+2. **F06/F08** = A: prüfen, belegte Abweichung ohne Rückfrage wie im Original ändern.

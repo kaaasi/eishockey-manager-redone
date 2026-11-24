@@ -15,7 +15,8 @@ Grundlage: Vergleich der Bewertungen von ChatGPT ([PR #992](abweichungen-bewertu
 - **ändern (Runde 25):** die 15 Themen aus Abschnitt 1; zusätzlich **B31** (= A: beim Verlassen wie im Original schreiben, als
   Kern-Ereignis), **B11** (= A: „jede Taste schließt“ wie im Original, Escape und Rechtsklick bleiben), **K07**, **S05**, **S07**
   (niedrige Priorität), **T03** und **S01** (vor v1.0, entgegen „bleibt“).
-- **prüfen, dann entscheiden:** F06, F08 (Geld), B16 (Beleg widersprüchlich).
+- **prüfen:** B16 (= A: Wettbewerbscode 0xD0C2 in em.exe lesen, zusammen mit B15; ändern nur bei belegter Abweichung);
+  F06, F08 (= A: prüfen, belegte Abweichung ohne Rückfrage wie im Original ändern).
 - **ins Aufräumen #936:** K04, K11, K13, L11, L12, C02, C08 (L11/C02 nach Aufräumkonzept A1).
 - **D-Themen:** warten auf DOSBox; D06 bleibt (Nutzerentscheidung 01.11.2026, Computerkader).
 
