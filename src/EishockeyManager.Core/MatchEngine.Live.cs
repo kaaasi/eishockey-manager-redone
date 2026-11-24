@@ -477,11 +477,13 @@ public static partial class MatchEngine
             var national = coach.Lineup();
             if (competition == MatchCompetition.WorldCup)
             {
-                CreditWorldCupSquad(coach, against, side, report); // A628: Satz 5, nicht der Vereinsplatz (MatchEngine.National.cs)
+                // A628: Satz 5, nicht der Vereinsplatz (MatchEngine.National.cs); S07 A874: Spiele schon beim Spielbeginn gezählt.
+                CreditWorldCupSquad(coach, against, side, report, countGames: !CountedAtKickOff(team));
                 return;
             }
             // R8W3I-06: Die Strafe zählt beim Spieler aus 0x378C5 (wie beim Managerverein), kein eigener Zufallszug mehr.
-            CreditLineup(national.Players.ToList(), national.Goalkeeper, against, side, report, league: false);
+            CreditLineup(national.Players.ToList(), national.Goalkeeper, against, side, report, league: false,
+                squad: CountedAtKickOff(team) ? team!.Squad : null); // S07 A874: dann zählt nur der Spielkader (schon gezählt)
             return;
         }
         if (club.Index >= FirstForeignClub || club.Players.Count == 0)

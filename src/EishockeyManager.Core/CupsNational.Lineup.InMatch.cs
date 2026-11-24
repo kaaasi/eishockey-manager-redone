@@ -13,8 +13,10 @@ namespace EishockeyManager.Core;
 ///   Satzes 5: es gelten die Regeln „im Spiel“ von <see cref="Club.ClickPlayerInMatch"/> (Datei 0x40E2A keine Grenze 22,
 ///   0x4115F/0x40CFD herausgenommen bleibt eingesetzt, 0x40F35/0x41287 Rechtsklick auf einen Aufgestellten ändert nichts), auch der
 ///   sechste Feldspielerplatz (#939, A875: Datei 0x40EC4–0x40EFF und 0x413C9–0x414B4 ohne Blick auf den Kennwert).</item>
-/// <item>[APPROX] Wie dort zählt das Remake die Länderspiele am Spielende aus der Aufstellung (<c>MatchEngine.CreditWorldCupSquad</c>),
-///   nicht beim Aufstellen im Spiel (Datei 0x415B7–0x41622).</item>
+/// <item>[ORIGINAL] S07 (A874): Wie beim Verein zählen die Länderspiele beim Spielbeginn (Abrechnung 0x544C0 vor den Minuten, Datei
+///   0x54910–0x5499E) und ein im Spiel neu Aufgestellter sofort (Datei 0x415B7–0x41622, <c>MatchEngine.CountPlacedInMatch</c> über
+///   den Vereinsplatz des Landes der laufenden Paarung); die Abrechnung am Spielende (<c>MatchEngine.CreditWorldCupSquad</c>) zählt
+///   sie nicht erneut. Ohne Vereinsplatz (Aufruf außerhalb des Live-Bildschirms) zählt wie bisher das Spielende.</item>
 /// </list>
 /// </summary>
 public sealed partial class NationalCoach
@@ -62,15 +64,23 @@ public sealed partial class NationalCoach
             if (!(slot.Role == player.Role ? Formation.Assign(slot, player) : Formation.PlaceSkater(slot, player)))
                 return LineupResult.WrongRole;
             _dressed.Add(player);
+            CountPlaced(nationClub, player); // S07 A874: [ORIGINAL] Datei 0x415B7–0x41622, sofort
             return LineupResult.Assigned;
         }
         // [ORIGINAL] A875: sechster Feldspielerplatz (Datei 0x413C9–0x414B4), Kennwert an 0x41533 (Datei 0x413E8): eingesetzt.
         if (Formation.TryOpenSixthSkater(l, player))
         {
             _dressed.Add(player);
+            CountPlaced(nationClub, player); // S07 A874
             return LineupResult.Assigned;
         }
         return LineupResult.NoRoom;
+    }
+
+    private static void CountPlaced(Club? nationClub, Player player)
+    {
+        if (nationClub is not null)
+            MatchEngine.CountPlacedInMatch(nationClub, player);
     }
 
     /// <summary>Platz leeren im Spiel: der Spieler bleibt eingesetzt ([ORIGINAL] Datei 0x40CFD).</summary>
