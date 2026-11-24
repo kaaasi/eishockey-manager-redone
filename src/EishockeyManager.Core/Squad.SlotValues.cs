@@ -55,8 +55,8 @@ public static class SquadSlotRules
     /// 0x120:0x66 Modus 0, Datei 0x5482D) random(0, 4); bei 0 wird +0x02 = +0x15 &amp; 0x7F (Reihe der Aufstellung ohne Sturmbit, 0 =
     /// nicht aufgestellt, Torhüter 1). Jeder Platz würfelt, auch nicht eingesetzte. Beleg <c>a093</c>: FILE71/72 alle +0x02 = 0, nach
     /// einem Spieltag FILE73 Berlin Plätze 1, 4, 6, 19 und München 14, FILE74 München 2, 14, 18 – jeweils gleich der Reihe, rund ein
-    /// Fünftel der Plätze. [APPROX] Ein Verletzter steht im Remake nicht mehr in der Aufstellung (im Original behält er +0x15,
-    /// <c>Squad.Lineup.cs</c>) und spielt deshalb Reihe 0 ein.
+    /// Fünftel der Plätze. [ORIGINAL] A939: Gelesen wird +0x15 jedes Platzes (<see cref="Club.SlotLine"/>): ein Verletzter, den das
+    /// Remake aus der Aufstellung nimmt, spielt wie im Original seine alte Reihe ein (<see cref="Player.LastLine"/>).
     /// </summary>
     public static void RollPlayedLines(Club club, Random random)
     {
@@ -67,7 +67,7 @@ public static class SquadSlotRules
         {
             if (TransferRules.Random16(random, 0, 4) != 0)
                 continue;
-            players[i].PlayedLine = club.Lineup.PositionOf(players[i]) & 0x7F;
+            players[i].PlayedLine = club.SlotLine(players[i]) & 0x7F;
         }
     }
 }
@@ -164,6 +164,7 @@ public sealed partial class Player
             InjuredGames = 0;
             InjuryKind = InjuryKinds.Unknown;
         }
+        LastLine = 0; // A939: +0x15 = 0 (memset 0x42E3A; der Kauf vom Manager übernimmt +0x15 nicht)
         Notice = ContractNotice.None;
         NoticeYears = 0;
         NegotiationLock = 0;

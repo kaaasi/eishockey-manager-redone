@@ -13,6 +13,7 @@ public sealed partial class GameState
     /// </summary>
     internal void InitializeManagerSystems()
     {
+        BindLineupOwners(); // Spur aufstellung, A936: „automatisch aufstellen“ je Manager (Squad.AutoLineup.Manager.cs)
         // Spur transfer-vertraege-komplett: Startgehalt der Kaderplätze der Manager = Wert(Gehalt) (0x29EE4). Spur zufallsstrom
         // (Teil 3): Tendenz und +0x19 würfelt der Spielstart schon im Poolaufbau (Datei 0x5B1CD–0x5B245); hier nur noch für Plätze
         // ohne Steuerbyte (Import, „nur Weltkugel“).

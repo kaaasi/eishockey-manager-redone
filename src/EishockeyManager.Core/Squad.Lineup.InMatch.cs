@@ -16,9 +16,9 @@ namespace EishockeyManager.Core;
 ///   der Linksklick in die gewählte Reihe.</item>
 /// <item>[ORIGINAL] Datei 0x4135E und 0x413E8 reichen den Kennwert an das Aufstellen 0x41533 weiter: im Spiel bekommt ein neu
 ///   Aufgestellter ohne Kennzeichen „hat gespielt“ (Spielerfeld +0x1A Bit 7) das Kennzeichen und sofort ein Spiel im
-///   laufenden Wettbewerb (+0x06 + k, +0x1C + 2k nach DGROUP 0xD0C2, Datei 0x415B7–0x41622). Das Remake zählt die Spiele
-///   eines Managervereins am Spielende aus der Aufstellung (<c>MatchEngine.CreditLineup</c>, Datei 0x5494C; ein im Spiel neu Aufgestellter zählt mit dem Wettbewerbsfeld, <c>PlayedFromBench</c>): Wer während des
-///   Spiels herausgenommen wird, zählt nicht, wer hineinkommt, zählt erst am Ende (Zählzeitpunkt, A898).</item>
+///   laufenden Wettbewerb (+0x06 + k, +0x1C + 2k nach DGROUP 0xD0C2, Datei 0x415B7–0x41622). [ORIGINAL] S07 (A898): Das Remake zählt
+///   ebenso sofort (<see cref="MatchEngine.CountPlacedInMatch"/>; die Aufgestellten beim Spielbeginn vor den Minuten, Datei 0x5494C,
+///   <c>MatchEngine.LiveCredit.cs</c>); wer danach herausgenommen wird, behält sein Spiel.</item>
 /// <item>A808: [ORIGINAL] Datei 0x40DAF–0x40E2A: ein Spieler auf der Strafbank (Status +0x09 &amp; 3 = 1, Datei 0x35C02) ergibt für
 ///   beide Tasten nur die Meldung „Spieler ist“ / „Gesperrt.“ (<see cref="LineupResult.Suspended"/>, Abfrage
 ///   <see cref="MatchEngine.PenaltyBoxMinutes"/>); er bleibt draußen, bis die Strafbank ihn freigibt.</item>
@@ -32,8 +32,11 @@ namespace EishockeyManager.Core;
 /// </summary>
 public sealed partial class Club
 {
-    /// <summary>Klick auf einen Spieler der Kaderliste im Spiel (siehe Klasse; ohne Spiel <see cref="ClickPlayer"/>).</summary>
-    public LineupResult ClickPlayerInMatch(Player player, ref int? line, bool right)
+    /// <summary>
+    /// Klick auf einen Spieler der Kaderliste im Spiel (siehe Klasse; ohne Spiel <see cref="ClickPlayer"/>, dort auch
+    /// <paramref name="grid"/>).
+    /// </summary>
+    public LineupResult ClickPlayerInMatch(Player player, ref int? line, bool right, LineupGrid? grid = null)
     {
         if (!Players.Contains(player))
             return LineupResult.NotInSquad;
@@ -46,14 +49,14 @@ public sealed partial class Club
         if (MatchEngine.PenaltyBoxMinutes(this, player) > 0)
             return LineupResult.Suspended;
         // [ORIGINAL] Datei 0x40EC4–0x40EFF, ohne Blick auf den Kennwert (siehe Klasse).
-        if (!right && player.Role == PlayerRole.Goalkeeper && line == Lineup.GoalkeeperLine && Lineup.SixthSkaterOpen)
+        if (!right && player.Role == PlayerRole.Goalkeeper && line == Lineup.GoalkeeperLine && Lineup.SixthOpen(grid))
             return LineupResult.SixSkaters;
         if (Lineup.FindSlot(player) is { } from)
         {
             if (right)
                 return LineupResult.Unchanged; // [ORIGINAL] Datei 0x41287–0x4129E
             TakeOverDressed();
-            Lineup.Clear(from);
+            Lineup.Remove(from, grid);
             _dressed.Add(player.Id); // [ORIGINAL] Datei 0x4115F: +0x0A = Kennwert ≠ 0
             line = Lineup.LineOf(from);
             return LineupResult.TakenOut;
@@ -64,7 +67,7 @@ public sealed partial class Club
             return LineupResult.WrongRole;
         foreach (var slot in Lineup.SearchSlots(l, player.Role))
         {
-            if (Lineup[slot] is not null)
+            if (!Lineup.IsFreeCell(slot, grid))
                 continue;
             // [ORIGINAL] Datei 0x41533: Platz +0x15 und eingesetzt +0x0A = 1, ohne Grenze 22 (Datei 0x40E2A); andere Hälfte der
             // Reihe wie beim Linksklick (Datei 0x414D3, A683).
@@ -72,25 +75,27 @@ public sealed partial class Club
             if (!(slot.Role == player.Role ? Lineup.Assign(slot, player) : Lineup.PlaceSkater(slot, player)))
                 return LineupResult.WrongRole;
             _dressed.Add(player.Id);
+            MatchEngine.CountPlacedInMatch(this, player); // S07: [ORIGINAL] Datei 0x415B7–0x41622, sofort
             return LineupResult.Assigned;
         }
         // [ORIGINAL] A937: sechster Feldspielerplatz (Datei 0x413C9–0x414B4), Kennwert an 0x41533 (Datei 0x413E8): eingesetzt.
-        if (Lineup.TryOpenSixthSkater(l, player))
+        if (Lineup.TryOpenSixthSkater(l, player, grid))
         {
             TakeOverDressed();
             _dressed.Add(player.Id);
+            MatchEngine.CountPlacedInMatch(this, player); // S07
             return LineupResult.Assigned;
         }
         return LineupResult.NoRoom;
     }
 
-    /// <summary>Platz leeren im Spiel: der Spieler bleibt eingesetzt ([ORIGINAL] Datei 0x40CFD).</summary>
-    public void ClearLineupSlotInMatch(LineupSlot slot)
+    /// <summary>Platz leeren im Spiel: der Spieler bleibt eingesetzt ([ORIGINAL] Datei 0x40CFD); Gitter wie <see cref="ClearLineupSlot"/>.</summary>
+    public void ClearLineupSlotInMatch(LineupSlot slot, LineupGrid? grid = null)
     {
-        if (Lineup[slot] is not { } player)
+        if ((grid?.PlayerAt(Lineup, slot) ?? Lineup[slot]) is not { } player)
             return;
         TakeOverDressed();
-        Lineup.Clear(slot);
+        Lineup.Clear(slot, grid);
         _dressed.Add(player.Id);
         DisableAutoLineup();
     }

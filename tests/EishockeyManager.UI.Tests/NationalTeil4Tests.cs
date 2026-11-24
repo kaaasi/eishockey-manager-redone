@@ -16,7 +16,7 @@ namespace EishockeyManager.UI.Tests;
 public sealed class NationalTeil4Tests
 {
     /// <summary>Modus „nur Weltkugel“ mit einem Manager, nach dem Sprung zur WM ernannt, Kader „auto“.</summary>
-    private static (ScreenDriver Driver, GameState Game, NationalCoach Coach) StartWorldCup()
+    internal static (ScreenDriver Driver, GameState Game, NationalCoach Coach) StartWorldCup()
     {
         var d = FlowTests.CreateDriver();
         var setup = new GameSetup();
@@ -39,7 +39,7 @@ public sealed class NationalTeil4Tests
     }
 
     /// <summary>Bis zum laufenden Live-Spiel des Landes des Bundestrainers (ab Minute 5); liefert Bildschirm, Paarung und Seite.</summary>
-    private static (LiveMatchScreen Live, LiveMatch Match, int Side) RunToCoachMatch(ScreenDriver d, NationalCoach coach)
+    internal static (LiveMatchScreen Live, LiveMatch Match, int Side) RunToCoachMatch(ScreenDriver d, NationalCoach coach)
     {
         for (var frames = 0; ; frames++)
         {

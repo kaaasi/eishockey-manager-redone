@@ -12,8 +12,8 @@ public class WettbewerbeRegelnUiTests
 {
     /// <summary>
     /// A553: [ORIGINAL] Verlassen des Taktikbildschirms ruft 0x48E62 (Aufruf Datei 0x48E19): Vereinsfeld 0x26 = Grundwert +
-    /// „Unentschieden“ (Datei 0x4902B–0x4903E), Angriff bleibt. [APPROX] nur nach einer Änderung; bloßes Öffnen und Verlassen
-    /// ändert nichts (AGENTS.md §4, PassiveScreenTests).
+    /// „Unentschieden“ (Datei 0x4902B–0x4903E), Angriff bleibt – ohne Bedingung, auch ohne Änderung (B31 = A, A959; vorher hier
+    /// „nur nach einer Änderung“). Das bloße Öffnen ändert nichts (AGENTS.md §4, PassiveScreenTests).
     /// </summary>
     [GameDataFact]
     public void TacticsScreen_Leave_WritesMatchEffort()
@@ -29,9 +29,10 @@ public class WettbewerbeRegelnUiTests
 
         d.OpenTile("Taktik");
         Assert.IsType<TacticsScreen>(d.Host.Current);
+        Assert.Equal((33, 2), (t.MatchEffort, t.MatchAttack)); // Öffnen ändert nichts
         d.Press(Key.Escape);
         Assert.IsNotType<TacticsScreen>(d.Host.Current);
-        Assert.Equal((33, 2), (t.MatchEffort, t.MatchAttack)); // ohne Änderung
+        Assert.Equal((60, 2), (t.MatchEffort, t.MatchAttack)); // ohne Änderung: 50 + 10
 
         d.OpenTile("Taktik");
         t.SetEffort(0, ScoreSituation.Tied, 15); // wie ein Klick auf die Pfeile der Zeile „Unentschieden“

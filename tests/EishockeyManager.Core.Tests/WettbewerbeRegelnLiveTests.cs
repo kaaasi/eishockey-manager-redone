@@ -204,6 +204,9 @@ public class WettbewerbeRegelnLiveTests
     /// A677: [ORIGINAL] Spiele zählen die Aufgestellten bei Spielbeginn (0x544C0 setzt +0x1A Bit 7, Datei 0x54910–0x54973) und
     /// jeder im Spiel neu Aufgestellte ohne Bit 7 (Datei 0x415B7–0x41622). Herausgenommene behalten ihr Spiel. Vorher (rot):
     /// gezählt wurde die Aufstellung am Spielende – der Herausgenommene ohne Spiel.
+    /// S07 (Spur aufstellung Runde 25, R15-E2 = C): Die Aufgestellten zählen schon vor den Minuten (Datei 0x54910–0x5499E), in Minute 10
+    /// also bereits gezählt, am Spielende nicht noch einmal; vorher erwartete der Test ihr Spiel erst am Ende. Rückschaltprobe: src/ von
+    /// 4433148 + dieser Test → rot (Herausgenommener und übrige Aufgestellte + 1 am Ende).
     /// </summary>
     [Fact]
     public void Games_StartLineupAndPlacedInMatch()
@@ -219,9 +222,9 @@ public class WettbewerbeRegelnLiveTests
         LiveLineup.Apply(team, club);
         day.Finish();
 
-        Assert.Equal(before[takenOut] + 1, takenOut.Games);
+        Assert.Equal(before[takenOut], takenOut.Games);
         Assert.Equal(before[bench] + 1, bench.Games);
-        Assert.All(others, p => Assert.Equal(before[p] + 1, p.Games));
+        Assert.All(others, p => Assert.Equal(before[p], p.Games));
         Assert.All(club.Players.Where(p => p != bench && p != takenOut && !others.Contains(p)),
             p => Assert.Equal(before[p], p.Games));
     }

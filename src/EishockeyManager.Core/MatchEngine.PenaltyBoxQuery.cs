@@ -13,8 +13,8 @@ namespace EishockeyManager.Core;
 /// <item>[ORIGINAL] Im Spiel zählt +0x0D nicht herunter: die beiden Abzüge stehen in der Spielabrechnung nach dem Spiel (Datei
 ///   0x5487C–0x5488C und 0x548EB–0x5490C, nur Liga). Die Hinweiszeile zeigt also die volle Strafe (2 bzw. 5), nicht die
 ///   Restzeit der Strafbank.</item>
-/// <item>[APPROX] Nur Vereine; die Nationalaufstellung des Bundestrainers (<c>NationalLineupScreen</c>) fragt nicht ab. Was nach
-///   dem Spiel mit +0x0D/Bit 0 eines bei Spielende noch Bestraften geschieht (Abzug 0x5490C, Löschen 0x551D4–0x551E0), bildet
+/// <item>[ORIGINAL] Auch die Nationalaufstellung des Bundestrainers fragt ab (Aufräumkonzept K2, Datei 0x40DAF–0x40E27 ohne
+///   Sonderfall für Manager 5; <see cref="NationalCoach.ClickPlayerInMatch"/>). [APPROX] Was nach dem Spiel mit +0x0D/Bit 0 eines bei Spielende noch Bestraften geschieht (Abzug 0x5490C, Löschen 0x551D4–0x551E0), bildet
 ///   das Remake nicht ab: nach dem Spiel ist niemand mehr auf der Strafbank.</item>
 /// </list>
 /// Darstellungszustand der laufenden Paarung, nicht im Spielstand (wie <see cref="LiveTeam"/>).

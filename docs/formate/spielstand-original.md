@@ -417,7 +417,7 @@ jetzt eigens (vorher von der Regel 0x19–0x1C verdeckt, R727N2-01). Im Modus �
 Spiel dieses Modus setzt den Kader nicht in den Pool (`SeatManagerSquads`); für ihn gilt im Export die alte Ersatzregel
 (`AddUnseatedSquadPlayers`: Platz gleichen Namens beim eigenen Verein, sonst erster freier Ligaplatz seiner Art).
 
-## Feldkarte Remake-Spielstand (Schema 63) ↔ HOK
+## Feldkarte Remake-Spielstand (Schema 64) ↔ HOK
 
 Spur `hok-import`, Teil 1 (Runde 14, E14-1 C). Jedes Feld des Remake-Spielstands (`SaveGame.SchemaDescription()`, ohne die
 Hilfsfelder von Tupeln) steht hier genau einmal; der Test `OriginalImportFieldMapTests` prüft das gegen das Schema und wird
@@ -549,6 +549,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `Manager.Head` | B | `0178+m` | wie `ManagerSetup.Head` |
 | `Manager.Level` | B | `0118+0` | Level |
 | `Manager.OneSeasonFlag` | U | `965B+0xE9` | Managerbyte DGROUP 0x9744 + 0x1AF · m, viertes Pokalbyte der Bestenliste (A847, Datei 0x29D23/0x5D351; Spur `einzelpunkte`, Schema 56); der Import liest es noch nicht: false `[APPROX]` |
+| `Manager.AutoLineupEnabled` | B | `0375+0` | „automatisch aufstellen“ des Managers: 0x375 + 2 · m (A936, Datei 0x426C4–0x426E4; Spur `aufstellung`, Schema 64); der Import liest 0x376 + 2 · m wie `Club._autoLineup` |
 | `Manager.Money` | B | `965B+0x18F` | Konto / 3 |
 | `Manager.Name` | B | `965B+0x00` | Name |
 | `Manager.PowerPlayCounts` | B | `965B+0x177` | sechs Wörter (DGROUP 0x97D2 + 2 · k) |
@@ -722,6 +723,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `Player.PoolForm` | B | `far:8253+0x17` | nur wenn ≠ Kader `+0x12` (Verletzung senkt nur den Pool, em.exe Datei 0x05B34–0x05B7C; neuer Kaderplatz übernimmt ihn, Datei 0x42EFF; A066, Schema 50) |
 | `Player.PoolCondition` | B | `far:8253+0x15` | nur wenn ≠ Kader `+0x10` (Drift 0x054D9 auch bei Spielern mit Kaderplatz, A714; neuer Kaderplatz übernimmt ihn, Datei 0x42EC9; Spur `kaderplatz-werte`, Schema 55) |
 | `Player.PoolTechnique` | B | `far:8253+0x16` | nur wenn ≠ Kader `+0x11` (wie `PoolCondition`; Datei 0x42EE4) |
+| `Player.LastLine` | B | `5DC3+0x15` | +0x15 außerhalb der Aufstellung (nicht Ausgewählte der Neuaufstellung, Verletzte; A939, Datei 0x42744–0x42777; Spur `aufstellung`, Schema 64); Aufgestellte 0 |
 | `Player.PlayedLine` | B | `5DC3+0x02` | eingespielte Reihe (A093; Spur `kaderplatz-werte` Teil 2, Schema 55); Satz 5 (Nationalkader) nicht geführt |
 | `Player.Games` | B | `5DC3+0x06` | Summe `+0x06` … `+0x08` |
 | `Player.GoalieMinutes` | B | `far:8253+0x1F` | Torhüter |
@@ -1150,6 +1152,8 @@ liegt bei den genannten Spuren.
   dem letzten Spiel (A838). Migration: false (`SaveGame.Migration.WettbewerbeRegeln.cs`).
   Teil 2: `GameState._youthOfDayDone` (Jugendteams nach den Menüs, A384/A670). Migration: true bei `DayOpened` und Tag ab 1, sonst
   false.
+- Schema 64 (Runde 25, Spur `aufstellung`, K07): `Manager.AutoLineupEnabled` (0x375 + 2 · m, A936) und `Player.LastLine` (+0x15 außerhalb
+  der Aufstellung, A939). Migration: Wert des Vereins des Managers bzw. 0 (`SaveGame.Migration.Aufstellung.cs`).
 
 ### Zugang (Teil 3)
 

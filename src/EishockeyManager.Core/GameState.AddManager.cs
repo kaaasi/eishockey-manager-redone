@@ -158,6 +158,7 @@ public sealed partial class GameState
 
         RenewOffers(manager);
         PrepareTraining(manager);
+        BindLineupOwners(); // Spur aufstellung, A936 (Squad.AutoLineup.Manager.cs)
         club.ApplyAutoLineup();
         club.ReferenceRating = TeamStrength.Rating(club.Lineup);
         WriteLineupTeamValues(club);

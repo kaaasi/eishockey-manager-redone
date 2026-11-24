@@ -217,13 +217,16 @@ public static partial class MatchEngine
     /// getrennt (siehe <c>CreditLineup</c>); Gegentore stehen im Remake am Spieler (Poolfeld +0x1B des Torhüters nicht gelesen).
     /// Wie jede Abrechnung 0x544C0 begrenzt sie danach die Belastung der Plätze.
     /// </summary>
-    internal static void CreditWorldCupSquad(NationalCoach coach, int against, int side, MatchReport report)
+    /// <param name="countGames">false, wenn die Spiele schon beim Spielbeginn und beim Aufstellen im Spiel gezählt sind (S07 A874,
+    /// <c>MatchEngine.LiveCredit.cs</c>).</param>
+    internal static void CreditWorldCupSquad(NationalCoach coach, int against, int side, MatchReport report, bool countGames = true)
     {
         // [ORIGINAL] Kaderplatzschleife Datei 0x548A8–0x549BB über alle Plätze des Satzes 5: Belastung auf 50 … 150 (0x549A2).
         TrainingRules.ClampStrain(coach.Squad.Select(m => m.Player));
         var national = coach.Lineup();
-        foreach (var p in national.Players)
-            p.CountGame(CompetitionSlot.Europe); // +0x08/+0x20 (Datei 0x5494C–0x5499E, Wettbewerb 8)
+        if (countGames)
+            foreach (var p in national.Players)
+                p.CountGame(CompetitionSlot.Europe); // +0x08/+0x20 (Datei 0x5494C–0x5499E, Wettbewerb 8)
         if (national.Goalkeeper is { } goalie)
         {
             var keeper = coach.SourceOf(goalie);

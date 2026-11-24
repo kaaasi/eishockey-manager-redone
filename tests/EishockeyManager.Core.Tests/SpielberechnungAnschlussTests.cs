@@ -315,8 +315,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // #925/A873, A838, A105/A836, A071; Teil 2 Jugend nach den Menüs A384/A670, Ligamischung aus dem Strom #897; Teil 3 A101, A677,
     // A553) zusammen mit kader-regeln, transfer-pool und einzelpunkte ändern Spielrechnung und Zufallsverlauf; kein Originalsollwert,
     // nur interner Abdruck. Rückschaltprobe: src/ von f7f0410 + dieser Test → rot (alte Werte), src/ von 3ca753a + dieser Test → rot.
-    [InlineData(false, "D4275E7222A6F2C8")]
-    [InlineData(true, "D9C872850E776F4E")]
+    // Spur aufstellung (Runde 25, K07/S07, R21-D2 = A, R15-E2 = C): neu – Manager.AutoLineupEnabled (A936) und Player.LastLine (A939): ein Verletzter spielt seine alte
+    // Reihe ein (+0x02 aus +0x15, Datei 0x548A8–0x548E7), das ändert bei Level 4/5 die Technik im Spiel (Datei 0x09A65–0x09A8A) und damit den Verlauf. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von
+    // 4433148 + dieser Test → rot (alte Werte).
+    [InlineData(false, "891F46E7A08CCED5")]
+    [InlineData(true, "06F8407E7774EE64")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

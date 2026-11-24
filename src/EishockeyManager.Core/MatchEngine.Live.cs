@@ -143,6 +143,8 @@ public static partial class MatchEngine
         var awayTeam = LiveTeamOf(game, away, home, awayManaged, managerMatch);
         TrackPenaltyBox(home, homeTeam); // A808: Strafbank-Stand für die Aufstellung im Spiel (MatchEngine.PenaltyBoxQuery.cs)
         TrackPenaltyBox(away, awayTeam);
+        CountAtKickOff(game, home, homeTeam, competition); // S07: [ORIGINAL] Spiele vor den Minuten (MatchEngine.LiveCredit.cs)
+        CountAtKickOff(game, away, awayTeam, competition);
         PrepareFromClubFields(game, home, away, homeTeam, awayTeam, homeManaged, awayManaged);
         // A071: Merker [0xA70E] des Spieltagsablaufs für die Minutenschleife (MatchEngine.TurnManager.cs).
         homeTeam.TurnManager = awayTeam.TurnManager = TurnManagerOf(game, competition, game.LiveScoreboard?.Active ?? false);
@@ -475,11 +477,13 @@ public static partial class MatchEngine
             var national = coach.Lineup();
             if (competition == MatchCompetition.WorldCup)
             {
-                CreditWorldCupSquad(coach, against, side, report); // A628: Satz 5, nicht der Vereinsplatz (MatchEngine.National.cs)
+                // A628: Satz 5, nicht der Vereinsplatz (MatchEngine.National.cs); S07 A874: Spiele schon beim Spielbeginn gezählt.
+                CreditWorldCupSquad(coach, against, side, report, countGames: !CountedAtKickOff(team));
                 return;
             }
             // R8W3I-06: Die Strafe zählt beim Spieler aus 0x378C5 (wie beim Managerverein), kein eigener Zufallszug mehr.
-            CreditLineup(national.Players.ToList(), national.Goalkeeper, against, side, report, league: false);
+            CreditLineup(national.Players.ToList(), national.Goalkeeper, against, side, report, league: false,
+                squad: CountedAtKickOff(team) ? team!.Squad : null); // S07 A874: dann zählt nur der Spielkader (schon gezählt)
             return;
         }
         if (club.Index >= FirstForeignClub || club.Players.Count == 0)
@@ -516,7 +520,8 @@ public static partial class MatchEngine
         // nach DGROUP 0xD0C2: 7 Liga, 6 DEB-Pokal, sonst Feld 2 (Europapokal, auch Play-offs; Datei 0x415CD–0x41622).
         if (squad is not null)
         {
-            foreach (var p in squad.Players.Where(p => p.Played))
+            // S07: [ORIGINAL] schon beim Spielbeginn und beim Aufstellen im Spiel gezählt (MatchEngine.LiveCredit.cs).
+            foreach (var p in squad.Players.Where(p => p.Played && !CountedAtKickOff(squad)))
                 p.Player.CountGame(p.PlayedFromBench ? InMatchSlot(competition) : slot);
         }
         else

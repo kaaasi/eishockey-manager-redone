@@ -59,12 +59,7 @@ public sealed class TacticsScreen : Screen
     private bool? _autoAtOpen;
     private int _block;
 
-    public TacticsScreen(ScreenHost host, Screen back) : base(host)
-    {
-        _back = back;
-        if (host.Game is { } game && game.ActiveManager?.ClubIndex is >= 0 and var c && c < game.Clubs.Count)
-            _opened = Snapshot(game.Clubs[c].Tactics); // A553: Stand beim Öffnen
-    }
+    public TacticsScreen(ScreenHost host, Screen back) : base(host) => _back = back;
 
     /// <summary>Taktik eines anderen Teams (Spur nationalteam-2: Nationalteam) mit eigenem Weg zur Aufstellung.</summary>
     public TacticsScreen(ScreenHost host, Screen back, Func<Tactics> tactics, Func<Screen> lineup, AutoLineupSwitch? auto = null)
@@ -92,11 +87,13 @@ public sealed class TacticsScreen : Screen
     }
 
     /// <summary>
-    /// Verlassen des Bildschirms: eine eingeschaltete Einstellung stellt neu auf, dann schreibt der Kern Vereinsfeld 0x26 (A553,
-    /// <see cref="Leave"/>), dann folgt <paramref name="show"/>.
+    /// Verlassen des Bildschirms: [ORIGINAL] 0x48E62 schreibt zuerst Vereinsfeld 0x26 (Datei 0x4902B–0x4903E, <see cref="Leave"/>),
+    /// dann folgt bei eingeschalteter Einstellung die Neuaufstellung (Datei 0x49042–0x49071, Aufruf 0x426BC; A960), dann
+    /// <paramref name="show"/>.
     /// </summary>
     private void Close(Func<Screen?> show)
     {
+        Leave();
         if (_autoAtOpen is { } was)
         {
             if (_auto is { } auto)
@@ -104,7 +101,6 @@ public sealed class TacticsScreen : Screen
             else
                 TeamUi.OwnClub(Host).CloseTactics(was);
         }
-        Leave();
         if (show() is { } next)
             Host.Show(next);
     }
@@ -115,33 +111,30 @@ public sealed class TacticsScreen : Screen
     public bool InMatch { get; init; }
 
     /// <summary>
-    /// Verlassen (A553, Spur wettbewerbe-regeln): [ORIGINAL] 0x48E62 beim Verlassen (Aufruf Datei 0x48E19) schreibt Vereinsfeld
-    /// 0x26 (<see cref="GameState.OnTacticsLeft"/>); nur der Vereinsbildschirm außerhalb des Spiels. [APPROX] Hier nur nach einer
-    /// Änderung von Modus, Einsatz oder Angriff (AGENTS.md §4, wie die Aufstellung A858); das Original schreibt auch ohne – dann
-    /// unterscheidet es sich nur, wenn 0x26 seit dem letzten Verlassen vom Spielende überschrieben wurde.
+    /// Verlassen (A553, Spur wettbewerbe-regeln; B31 = A, Nutzer 24.11.2026): [ORIGINAL] 0x48E62 beim Verlassen (Aufruf Datei
+    /// 0x48E19) schreibt ohne Bedingung Vereinsfeld 0x26 des Teams des Managers am Zug (Satz 0x9657 + 0x3D · Team, Datei
+    /// 0x47FDA–0x47FFD): Verein <see cref="GameState.OnTacticsLeft"/>, Bundestrainer <see cref="GameState.OnNationalTacticsLeft"/>
+    /// (<see cref="Left"/>), auch ohne Änderung. [APPROX] Im Spiel (Aufruf über 0x48E28 aus 0x5434C) schreibt das Original
+    /// denselben Satz; das Remake führt Einsatz und Angriff dort in <see cref="LiveTeam"/>, das Spielende schreibt 0x26 neu (A893).
     /// </summary>
-    /// <remarks>Rebase auf main f7f0410: von <see cref="Close"/> nach dem Schalter „automatisch aufstellen“ aufgerufen (A492/A673/A681);
-    /// die Reihenfolge der beiden Schreibvorgänge ist [APPROX] nicht gelesen, sie berühren verschiedene Felder.</remarks>
     private void Leave()
     {
-        if (_tactics is null && !InMatch && Host.Game is { } game && _opened is { } opened && opened != Snapshot(Tactics))
+        if (InMatch || Host.Game is not { } game)
+            return;
+        if (Left is { } left)
+            left(game);
+        else if (_tactics is null)
             game.OnTacticsLeft(TeamUi.OwnClub(Host));
-        _opened = null;
     }
 
-    /// <summary>Modi, Einsatz und Angriff beim ersten Aufbau (Vergleich beim Verlassen, A553).</summary>
-    private string? _opened;
-
-    private static string Snapshot(Tactics t) => string.Join(",",
-        Enumerable.Range(0, Tactics.Blocks).SelectMany(b => Enum.GetValues<ScoreSituation>()
-            .SelectMany(s => new[] { t.Effort(b, s), t.Attack(b, s) })).Prepend((int)t.AttackMode).Prepend((int)t.EffortMode));
+    /// <summary>Kern-Ereignis beim Verlassen für ein anderes Team (Nationalteam: <see cref="GameState.OnNationalTacticsLeft"/>).</summary>
+    public Action<GameState>? Left { get; init; }
 
     /// <summary>Gewählter Block (0–3).</summary>
     public int Block => _block;
 
     public override void Update(InputState input)
     {
-        _opened ??= Snapshot(Tactics);
         if (input.Pressed(Key.Escape) || input.RightClick)
         {
             Close(() => _back);

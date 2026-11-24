@@ -42,6 +42,18 @@ public class PassiveScreenTests
         }
     }
 
+    /// <summary>
+    /// B31 (Runde 25, B31 = A): Das Verlassen von Aufstellung und Taktik ist ein Kern-Ereignis ohne Bedingung (0x952C Datei
+    /// 0x41513–0x4151A, 0x48E62 Datei 0x48E19). Es wird vorab ausgelöst (ein zweiter Aufruf ändert nichts), damit der Abdruck
+    /// nur das Öffnen prüft.
+    /// </summary>
+    private static void LeaveEventsFirst(GameState game)
+    {
+        var club = game.Clubs[game.ActiveManager.ClubIndex];
+        game.OnLineupLeft(club);
+        game.OnTacticsLeft(club);
+    }
+
     private static void AssertSame(string expected, string actual, string what) =>
         Assert.True(expected == actual, $"{what} hat sich verändert – {StateFingerprint.FirstDifference(expected, actual)}");
 
@@ -65,6 +77,7 @@ public class PassiveScreenTests
         AssertPausedDayUnprocessed(game);
         var money = game.ActiveManager.Money;
         var market = game.TransferMarket.UpdatedDay;
+        LeaveEventsFirst(game);
         var before = StateFingerprint.Of(game);
 
         OpenAndCloseEveryTile(d);

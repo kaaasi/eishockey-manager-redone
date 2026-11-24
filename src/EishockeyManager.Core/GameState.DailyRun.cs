@@ -260,10 +260,9 @@ public sealed partial class GameState
     /// 0x18–0x1D des Managervereins stehen danach auf den Werten der neuen Aufstellung (<see cref="UpdateManagerTeamValues"/>).
     /// Beleg DOSBox `a093`: FILE71 → FILE72 nur Reihentausch bei EC HEDOS MÜNCHEN ohne Spiel, Felder 68 70 69 69 55 48 →
     /// 69 70 69 70 55 48 (Kondition A/S, Technik A/S, Form A/S) – genau die Rechnung aus der getauschten Aufstellung
-    /// (<c>ZusehenRestAufstellungTests</c>). [APPROX] Der Bildschirm meldet es nur nach einer Änderung (AGENTS.md: kein
-    /// Spielzustand durch bloßes Öffnen); ohne Änderung unterscheidet sich das Original nur, wenn die Wanderung 0x9D1B die Felder
-    /// seit dem letzten Tag mit Ereignis bewegt hat – dann setzt es sie schon beim Verlassen zurück, das Remake erst am nächsten
-    /// Tag mit Ereignis.
+    /// (<c>ZusehenRestAufstellungTests</c>). Der Bildschirm meldet es bei jedem Verlassen, auch ohne Änderung (B31 = A, Nutzer
+    /// 24.11.2026); hat die Wanderung 0x9D1B die Felder seit dem letzten Tag mit Ereignis bewegt, setzt das Verlassen sie zurück.
+    /// Das bloße Öffnen ändert nichts (AGENTS.md §4).
     /// </summary>
     public void OnLineupLeft(Club club)
     {

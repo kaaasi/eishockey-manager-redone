@@ -54,6 +54,7 @@ public static partial class SaveGame
             using var document = JsonDocument.Parse(root.ToJsonString(), new JsonDocumentOptions { MaxDepth = 1024 });
             var game = new Reader(document.RootElement).Read();
             AfterLoadPool(game, loadedSchema); // Spur pool (#743): Managerkader in den Pool (SaveGame.Migration.Pool.cs)
+            game.BindLineupOwners(); // Spur aufstellung, A936 (SaveGame.Migration.Aufstellung.cs)
             var problems = game.ValidatePlayerIdentity();
             if (problems.Count > 0)
                 return Fail("Der Spielstand ist beschädigt: " + problems[0]);

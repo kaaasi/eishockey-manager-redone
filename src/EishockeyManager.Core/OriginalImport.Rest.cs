@@ -285,6 +285,7 @@ public sealed partial class GameState
         // holte der Schleifenkopf 0x376 = 1 zurück und stellte neu auf (Datei 0x54D84–0x54D9E), der Spieltag sicherte dann 0x376 = 1
         // (Datei 0x54FDC). Beleg ZusehenRestAufstellungTests.
         club.AutoLineupEnabled = save.Block("0375")[2 * m + 1] != 0;
+        Managers[m].AutoLineupEnabled = club.AutoLineupEnabled; // A936: Einstellung des Managers (Squad.AutoLineup.Manager.cs)
     }
 
     /// <summary>

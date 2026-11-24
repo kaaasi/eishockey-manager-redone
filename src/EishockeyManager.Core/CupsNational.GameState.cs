@@ -132,10 +132,9 @@ public sealed partial class GameState
     public bool NationalSquadLocked => WorldCupStage > 0;
 
     /// <summary>
-    /// Ereignis „Aufstellung des Bundestrainers verlassen“ (Datei 0x41506–0x4151A: 0x952C mit DGROUP 0xA70E). [APPROX] Der
-    /// Bildschirm meldet es nur, wenn der Besuch die Aufstellung geändert hat: Bildschirme ändern durch bloßes Öffnen keinen
-    /// Spielzustand (AGENTS.md, E4). Unterschied zum Original nur, wenn sich seit der letzten Rechnung Spielerwerte geändert
-    /// haben (Bonus eines Freundschaftsspiels); dann rechnet der nächste Tag.
+    /// Ereignis „Aufstellung des Bundestrainers verlassen“. [ORIGINAL] Datei 0x41506–0x4151A: 0x952C mit DGROUP 0xA70E ohne
+    /// Bedingung; der Bildschirm meldet es bei jedem Verlassen, auch ohne Änderung (B31 = A, Nutzer 24.11.2026). Das bloße
+    /// Öffnen ändert nichts (AGENTS.md §4).
     /// </summary>
     public void OnNationalLineupLeft() => UpdateNationalTeamValues();
 

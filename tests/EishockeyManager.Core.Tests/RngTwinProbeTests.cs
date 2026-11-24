@@ -316,10 +316,14 @@ public class RngTwinProbeTests
     // auf dem sechsten Feldspielerplatz (Gitter Datei 0x40478–0x404D7: dritter Spieler der Abwehrhälfte in Reihe 1) und zählt damit wie
     // jeder Aufgestellte (Lineup.Players/Contains); +0x15 bleibt 1. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe:
     // PlaceGoalieStandIn wie vorher außerhalb der Plätze (nur +0x15 = 1) + dieser Test → alte Werte 6AEE65C74DC93257 / EEC117151416D579.
-    [InlineData(false, 3, "01B6261E9CBBCE94")]
-    [InlineData(true, 3, "F2FEEB9FFBD324CA")]
-    [InlineData(false, 11, "C6D9D5194BFD0979")]
-    [InlineData(true, 11, "450183E60BB97E84")]
+    // Spur aufstellung (Runde 25, K07/S07, R21-D2 = A, R15-E2 = C): neu – Manager.AutoLineupEnabled (A936) und Player.LastLine (A939) stehen
+    // im Abdruck; ein Verletzter spielt seine alte Reihe ein (+0x02 aus +0x15, Datei 0x548A8–0x548E7), das ändert bei Level 4/5 die Technik
+    // im Spiel (Datei 0x09A65–0x09A8A) und damit den Verlauf. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von
+    // 4433148 + dieser Test → rot (alte Werte).
+    [InlineData(false, 3, "EC5330CBE873E6F0")]
+    [InlineData(true, 3, "E09B2F9B6C47563E")]
+    [InlineData(false, 11, "F9724FA55F723261")]
+    [InlineData(true, 11, "CCC7D2A7384E2393")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -427,8 +431,12 @@ public class RngTwinProbeTests
     // #925/A873, A838, A105/A836, A071; Teil 2 Jugend nach den Menüs A384/A670, Ligamischung aus dem Strom #897; Teil 3 A101, A677,
     // A553) zusammen mit kader-regeln, transfer-pool und einzelpunkte ändern Spielrechnung und Zufallsverlauf; kein Originalsollwert,
     // nur interner Abdruck. Rückschaltprobe: src/ von f7f0410 + dieser Test → rot (alte Werte), src/ von 3ca753a + dieser Test → rot.
-    [InlineData(false, "F57E5D70BE67DFAC")]
-    [InlineData(true, "AF2AF2EEDFD9E119")]
+    // Spur aufstellung (Runde 25, K07/S07, R21-D2 = A, R15-E2 = C): neu – Manager.AutoLineupEnabled (A936) und Player.LastLine (A939) stehen
+    // im Abdruck; ein Verletzter spielt seine alte Reihe ein (+0x02 aus +0x15, Datei 0x548A8–0x548E7), das ändert bei Level 4/5 die Technik
+    // im Spiel (Datei 0x09A65–0x09A8A) und damit den Verlauf. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von
+    // 4433148 + dieser Test → rot (alte Werte).
+    [InlineData(false, "B3641C7559E5347A")]
+    [InlineData(true, "57885F606A837A25")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

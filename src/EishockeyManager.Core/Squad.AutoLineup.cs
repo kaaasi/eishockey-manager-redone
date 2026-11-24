@@ -160,7 +160,8 @@ public sealed partial class Club
     /// <summary>
     /// Einstellung „automatisch aufstellen“ (DGROUP 0x375 + 2 · Manager). [ORIGINAL] Startwert 1 (statisch, Datei
     /// 0x16DD0 + 0x375); ein Eingriff in der Aufstellung schaltet sie ab (Datei 0x40ADE, 0x40DE4).
-    /// [APPROX] Das Remake führt sie je Verein statt je Manager. [ORIGINAL] A681: Eingeschaltet wird sie im Taktikbildschirm (Knopf 0,
+    /// [ORIGINAL] A936: Sie gehört dem Manager (<see cref="Manager.AutoLineupEnabled"/>, Datei 0x426C4–0x426E4); dieses Feld gilt nur
+    /// für Vereine ohne Manager und spiegelt sonst den Wert des Managers (<see cref="AutoSetting"/>, Squad.AutoLineup.Manager.cs). A681: Eingeschaltet wird sie im Taktikbildschirm (Knopf 0,
     /// Datei 0x47CA0/0x47F4E/0x49058), beim Verlassen folgt die Neuaufstellung (<see cref="CloseTactics"/>).
     /// </summary>
     private bool _autoLineup = true;
@@ -171,12 +172,12 @@ public sealed partial class Club
     /// </summary>
     public bool AutoLineupEnabled
     {
-        get => _autoLineup;
-        set => _autoLineup = value;
+        get => AutoSetting;
+        set => AutoSetting = value;
     }
 
     /// <summary>Eingriff von Hand: Einstellung aus (Datei 0x40ADE/0x40DE4, Meldung DGROUP 0x124D in der Oberfläche).</summary>
-    private void DisableAutoLineup() => _autoLineup = false;
+    private void DisableAutoLineup() => AutoSetting = false;
 
     /// <summary>
     /// Datei 0x426BC: mit der Einstellung neu aufstellen (<see cref="AutoLineupRule"/>); ohne sie bleibt alles, wie es ist.
@@ -185,12 +186,14 @@ public sealed partial class Club
     /// </summary>
     public bool ApplyAutoLineup()
     {
-        if (!_autoLineup)
+        if (!AutoSetting)
             return false;
+        var before = LineupPositions();
         var dressed = AutoLineupRule.Apply(Lineup, Players.ToList());
         _dressed.Clear();
         _dressed.UnionWith(dressed.Select(p => p.Id));
         _dressedByHand = true;
+        KeepLastLines(before, reservesZero: true); // A939: nicht Ausgewählte behalten +0x15, Ersatz 0 (Squad.LastLine.cs)
         return true;
     }
 }
