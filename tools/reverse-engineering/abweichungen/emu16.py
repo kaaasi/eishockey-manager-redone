@@ -624,8 +624,10 @@ class CPU:
         if op == 0xE8:
             d = self.fetchw()
             target = (self.ip + d) & 0xFFFF
+            # Borland idiom "push cs; call near" = far call of a function in the same segment (ends with retf)
+            far = self.rb(self.s["cs"], (self.ip - 4) & 0xFFFF) == 0x0E
             self.push(self.ip)
-            self.enter_target(self.s["cs"], target, False, start)
+            self.enter_target(self.s["cs"], target, far, start)
             return
         if op == 0xE9:
             d = self.fetchw()
