@@ -185,8 +185,7 @@ public sealed class HistoryScreen : Screen
     public static (int League, int Deb, int Europe) Codes(ManagerSeasonHistory h)
     {
         var codes = SeasonCodes.Of(h);
-        var league = h.LeagueOutcome == LeagueOutcome.Rank ? h.Rank + 12 * (int)h.League : codes.League;
-        return (league, codes.Deb, codes.Europe);
+        return (codes.League, codes.Deb, codes.Europe); // Ligaversatz seit #1007 in SeasonCodes.Of
     }
 
     /// <summary>

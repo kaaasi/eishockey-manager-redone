@@ -157,7 +157,8 @@ public readonly record struct SeasonCodes(byte League, byte Deb, byte Europe)
     {
         var league = h.LeagueOutcome switch
         {
-            LeagueOutcome.Rank => (byte)Math.Clamp(h.Rank, 0, 0x7F),
+            // [ORIGINAL] Platz + DGROUP 0x7C0[Liga] (0, 12, 24; Datei 0x55C0E–0x55C56, Befund #1007, h1_highscore_liga.py).
+            LeagueOutcome.Rank => (byte)Math.Clamp(h.Rank + 12 * (int)h.League, 0, 0x7F),
             LeagueOutcome.PlayoffQuarterFinal => (byte)0x33,
             LeagueOutcome.PlayoffSemiFinal => (byte)0x34,
             LeagueOutcome.PlayoffFinal => (byte)0x35,
