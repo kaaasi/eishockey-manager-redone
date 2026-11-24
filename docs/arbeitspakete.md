@@ -132,7 +132,7 @@ Gesamtreview ChatGPT (GPT-6.2 Astra) mit Claude-Auswertung.
   `FinanceStadium.cs`, `MatchGate.cs`, `StadiumStatistics.cs`, `NewGame.cs`, `GameState.AddManager*.cs`,
   `OriginalExport.Squads.cs`, `MatchEngine.Statistics.cs`; Migration nur falls F06 Felder je Bandenteil braucht; Tests.
   **Prüfung:** `--schnell`; Mehrsaisonprobe (passiv/aktiv, Geld).
-- **Status:** Go 24.11.2026, Start nach Merge von `re-abweichungen`.
+- **Status:** Teil 1 (T03) in Arbeit – Branch `paket/saison-geld`, Base `0c1811f`, Bearbeiter Claude Code (24.11.2026).
 
 ### Spur `pruefung-karte` – Abschluss der Runde (Welle 2)
 
