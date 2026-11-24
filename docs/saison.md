@@ -76,7 +76,7 @@ gesetzte Bit 0–6 ein Symbol aus `kb\13` (Schleife Datei `0x2714F`, Tabelle DGR
 | 0 (0x01) | 2 Pfeil hoch | `Promotion` | Tabelle 0x4B2E |
 | 1 (0x02) | 1 Pfeil runter | `Relegation` | Tabelle 0x4B2E |
 | 2 (0x04) | 0 | – (nicht abgebildet, Setzen bei 0x55F87) | Tabelle 0x4B2E |
-| 3 (0x08) | 5 | `GermanChampion` – `[APPROX]` Zelle 3 (Puck) statt 5 | Setzen bei 0x55C09 |
+| 3 (0x08) | 5 | `GermanChampion` – Symbol 5 (Spur statistik-anzeige, B25) | Setzen bei 0x55C09 |
 | 4 (0x10) | 4 Fahne | `CupWinner` | Setzen bei 0x55D12 (Prämie 1.500.000 Drittel) |
 | 5 (0x20) | 6 Landkarte mit Pokal | `EuropeanCupWinner` | Setzen bei 0x55DAD |
 | 6 (0x40) | 8 Weltkugel | abgeleitet: `GameState.HasTopFiveStatus` (kein `SeasonEvent`, nicht gespeichert) | Setzen bei 0x553ED |
@@ -141,10 +141,7 @@ Die Pfeile vor den Vereinsnamen sind Zeichen des Mini-Fonts: `&` = Pfeil nach un
 
 ## Offen
 
-- Pokal auf dem Meisterfoto: das Original setzt je Titel einen Pokal aus den Einzelteilen in kb\16 (rechts oben)
-  zusammen; hier bleibt der Pokal des Fotos.
-- Ereignissymbole: Bit 2 (Symbol 0) fehlt; Meister (Bit 3) zeigt im Original das Symbol 5, das Remake den Puck (siehe Tabelle oben).
-  Prämien außer 1. Platz Oberliga.
+- Prämien außer 1. Platz Oberliga.
 - Play-Off-Format genauer am Disassembly prüfen (Termine der Aufstiegsrunden: A142, `reverse-engineering.md` Spur `wettbewerbe-rest`).
 - Bisherige Begegnungen in der Infoleiste reichen im Original über Saisongrenzen hinweg (nicht Teil dieses Pakets).
 
