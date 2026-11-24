@@ -8,10 +8,9 @@ Checkout `git rev-parse HEAD` = Head, `git status --porcelain` leer. Originaldat
 
 **Ja** für genau diesen Head. Kein Befund über P3:
 
-- Alle drei Läufe von `tools/pruefen.sh` sind grün (Tabelle unten).
-- Die Rückschaltprobe bestätigt die Angaben der PR-Beschreibung.
-- Jede Vorgabe aus `re-abweichungen.md` (T03, F06 mit RA-01 und Klickprüfung, F08, K11, K13) ist so umgesetzt, wie sie dort steht.
-- Die Migration 64 → 65 lädt Stände mit Schema 63 und 64. Ein Stand vom 13. April aus dem alten Code zieht nicht doppelt.
+Alle drei Läufe von `tools/pruefen.sh` sind grün, die Rückschaltprobe bestätigt die PR-Beschreibung, und jede Vorgabe aus
+`re-abweichungen.md` (T03, F06 mit RA-01 und Klickprüfung, F08, K11, K13) ist so umgesetzt, wie sie dort steht. Die Migration
+64 → 65 lädt Stände mit Schema 63 und 64; ein Stand vom 13. April aus dem alten Code zieht nicht doppelt.
 
 Der K13-Randfall ist **nicht** `beleg-strittig`: Die Widerlegung der Spur stimmt mit der Disassembly überein (B4). Die vier P3
 sind Testlücken, ein Kommentar und eine Folgeaufgabe außerhalb der Vorgabe. Sie blockieren den Merge nicht.
@@ -44,23 +43,18 @@ wie in `MarketPart_…`).
 Saisonwechseln noch keinen gewürfelten Rollenwert. Das ist durch das erwartete `[APPROX]` gedeckt (Mitte 0/33/83 für alte Stände,
 dauerhaft). Nur der Satz im Kommentar führt in die Irre.
 
-**SG-04 (P3, Doku) – `re-abweichungen.md` K13 „Randfall“ ist überholt.** Siehe B4. Der Nachtrag gehört der Leitstelle bzw.
-`pruefung-karte` (fremde Datei); der PR sagt das selbst.
+**SG-04 (P3, Doku) – `re-abweichungen.md` K13 „Randfall“ ist überholt** (B4); Nachtrag durch Leitstelle bzw. `pruefung-karte`.
 
 Keine weiteren Befunde. Was ausdrücklich geprüft wurde:
 
 - **Dateien außerhalb der Grenzen:** `FinanceMonthly.cs` (+8), `GameState.Manager.cs` (+6), `AdvertisingScreen.cs` (+7),
   `SaveGame.cs` (+3), `Transfer.Pool.cs` (+36, K11 nötig), `OriginalImport*.cs` (je +1), `HokCompareClasses.cs` (1 Zeile),
   `Transfer.cs`/`Transfer.Listed.cs` (Helfer, `expire: false`). Alles minimal und im PR begründet.
-- **Fremde saatabhängige Tests:** im Diff Stück für Stück geprüft
-  (`RngTwinProbeTests`, `KaderplatzWerteFixTests`, `AbgleichFixPoolTests`, `AbgleichOriginalPaareTests`, …).
-  - Jede Änderung hat eine Begründung mit Fundstelle.
-  - Saatwechsel tragen die Liste der geprüften Saaten.
-  - Abdrücke sind als „kein Originalsollwert“ markiert.
-  - Kein neuer Originalsollwert ist eingetragen.
-  - Die drei neuen optionalen Einträge in `AbgleichOriginalPaareTests` (HEDOS, RATINGEN, FRANKFURT/KÖLN) sind als Zufallsfelder
-    begründet, und die Prüfsaat ist grün.
-  - Ergebnis: R15-E2 = C und R21-D2 = A sind erfüllt.
+- **Fremde saatabhängige Tests** (`RngTwinProbeTests`, `KaderplatzWerteFixTests`, `AbgleichFixPoolTests`,
+  `AbgleichOriginalPaareTests`, …) im Diff Stück für Stück geprüft: Jede Änderung hat eine Begründung mit Fundstelle, Saatwechsel
+  tragen die Liste der geprüften Saaten, Abdrücke sind als „kein Originalsollwert“ markiert, kein neuer Originalsollwert ist
+  eingetragen. Die neuen optionalen Einträge in `AbgleichOriginalPaareTests` (HEDOS, RATINGEN, FRANKFURT, KÖLN) sind als
+  Zufallsfelder begründet, die Prüfsaat ist grün. R15-E2 = C und R21-D2 = A sind erfüllt.
 
 ## 3. Ausgeführte Prüfungen
 
@@ -92,44 +86,34 @@ PR-Beschreibung. `SaisonGeldTeil3Tests` kompiliert gegen die Base nicht (neue AP
 
 **B3 – Spielstände über die Versionen (eigene Probe, nicht committet).** Der alte Code (Base) schreibt zwei Stände mit Schema 64:
 einen am 13. April (`ClubSeasonOver`, Saat 5, zwei Manager) und einen am Bildschirm „Saisonende“. Den Oberliga-Zug hatte der alte
-Code schon gezogen (26, 32 → 40, 38). Der Head lädt beide Stände:
-
-- Am 29. April zieht er nicht erneut; die Paare bleiben gleich.
-- Speichern(Laden(Speichern)) ist bytegleich.
-- Es folgen 4 weitere Saisonwechsel ohne Fehler, das Geld bleibt positiv, und es gibt keinen gewürfelten Rollenwert.
-- Ohne den Schutz `LeftOberliga.Count == 0` (M8) wird die Probe rot.
+Code schon gezogen (26, 32 → 40, 38). Der Head lädt beide Stände. Am 29. April zieht er nicht erneut, die Paare bleiben gleich.
+Speichern(Laden(Speichern)) ist bytegleich. Es folgen 4 weitere Saisonwechsel ohne Fehler, das Geld bleibt positiv, ein gewürfelter
+Rollenwert entsteht nicht. Ohne den Schutz `LeftOberliga.Count == 0` (M8) wird die Probe rot.
 
 Schema 63 → 65 lädt über `AufstellungK07Tests` (Zeile 183, Kette 63 → 64 → 65) und die Migrationsketten in `GameModeTests`.
 
 **B4 – K13-Randfall, Gegenprobe der Disassembly.**
 
-- Die Bytes `F4 5C` stehen nur beim Lesen in 0x45CD0 (Datei 0x45CD7). Alle Schreiber nutzen die Tabelle `[bx+0x5CF3]` mit dem
-  Wettbewerb `[bp+6]` als Index: `mov …,0` bei Datei 0x341CC, `mov …,1` bei 0x346B3, `inc` bei 0x348DB und 0x34AE3, `dec` bei
-  0x349E9 (alle in 0x341AB bzw. 0x3489D). Dazu kommt die Ein- und Ausgabe des Spielstands bei Datei 0x5C224 und 0x5CC15.
-- Einziger naher Aufrufer von 0x3489D ist Datei 0x34F64. Die Schleife dort (Datei 0x34F10–0x34F71) läuft mit `[bp−1]` = 0 und
-  `[bp−2]` = 1, also nur für Wettbewerb 0.
-- 0x45CD0 zählt bis `[0x3B1 + [0x5CF4]]`.
-- Ergebnis: DGROUP 0x5CF4 ist im Spiel nur 0 oder 1. Die Lesart des Berichts („ab Runde 3 …“) ist widerlegt, die Umsetzung der
-  Spur passt dazu.
+Die Bytes `F4 5C` stehen nur beim Lesen in 0x45CD0 (Datei 0x45CD7). Alle Schreiber nutzen die Tabelle `[bx+0x5CF3]` mit dem
+Wettbewerb `[bp+6]` als Index: `mov …,0` bei Datei 0x341CC, `mov …,1` bei 0x346B3, `inc` bei 0x348DB und 0x34AE3, `dec` bei
+0x349E9 (alle in 0x341AB bzw. 0x3489D); dazu die Ein- und Ausgabe des Spielstands (Datei 0x5C224, 0x5CC15). Einziger naher Aufrufer
+von 0x3489D ist Datei 0x34F64; die Schleife dort (Datei 0x34F10–0x34F71) läuft mit `[bp−1]` = 0, `[bp−2]` = 1, also nur für
+Wettbewerb 0. 0x45CD0 zählt bis `[0x3B1 + [0x5CF4]]`. Ergebnis: DGROUP 0x5CF4 ist im Spiel nur 0 oder 1. Die Lesart des Berichts
+(„ab Runde 3 …“) ist widerlegt, die Umsetzung der Spur passt dazu.
 
 **B5 – Skripte.** `f06_bande.py`, `t03_markt.py` und `k13_platzwahl.py` laufen fehlerfrei. Ihre Ausgabe stimmt mit dem Bericht und
 den Testfällen überein. Disassembly der Annahme bei Datei 0x2BAD9: Die Feldsuche beginnt für jede Bande wieder bei Feld 0
 (`[bp−0x2A]` = 0). Frei heißt Betrag 0 oder +6 Bit 0x80. Das passt zu `FreeBoards().Take(n)`, weil neue Verträge nicht kündbar sind.
 
-**Code gelesen:**
+**Code gelesen:** T03 `DailyRunMarket` (Verfall, Sperre, `Random16(0, 3)` je Platz, dann Löschen) und `ExchangeOberliga`
+(`Random16(36, 41)`); Reihenfolge am 29. April wie im Original (Jugend, Zwangsabstieg, Oberliga, Ewige Tabelle, Wanderung, Länder,
+Ligen). F06 `AcceptOffer`/`CurrentOffer` und Einnahme je Feld; F08 `ForgiveBuilders`, `RunSummerDay`, Bau ohne Ziel; K11 Feld,
+Weitergabe, Export, Import, Statistik.
 
-- T03: `DailyRunMarket` mit Verfall, Sperre und `Random16(0, 3)` je Platz, dann Löschen; `ExchangeOberliga` mit `Random16(36, 41)`.
-- Reihenfolge am 29. April wie im Original: Jugend, Zwangsabstieg, Oberliga, Ewige Tabelle, Wanderung, Länder, Ligen.
-- F06: `AcceptOffer`/`CurrentOffer`, Einnahme je Feld.
-- F08: `ForgiveBuilders`, `RunSummerDay`, Bau ohne Ziel.
-- K11: Feld, Weitergabe, Export, Import, Statistik.
-
-**Akzeptierte `[APPROX]`** (erwartet offen, bestätigt):
-
-- `Player.RoleValue`: Spieler ohne Poolplatz und Stände vor Schema 65 bekommen die Mitte 0/33/83 ohne Wurf, dauerhaft (SG-03).
-- A463: die Zufallszuteilung ist eine Erweiterung des Remakes. Beleg Datei 0x2964C: Im Original wählt jeder Manager selbst.
-- Ebenfalls akzeptiert: alte Stände vom 13. bis 29. April behalten ihren Zug (B3), der Saisonende-Stand verliert eine Wanderung,
-  `AdvanceBids` gilt nur noch für Werkzeuge, und die Börse rechnet einmal je Tag (#188).
+**Akzeptierte `[APPROX]`** (erwartet offen, bestätigt): `Player.RoleValue` – Spieler ohne Poolplatz und Stände vor Schema 65
+bekommen die Mitte 0/33/83 ohne Wurf, dauerhaft (SG-03). A463 – die Zufallszuteilung ist eine Erweiterung des Remakes (Datei
+0x2964C: im Original wählt jeder Manager selbst). Ebenfalls akzeptiert: alte Stände vom 13. bis 29. April behalten ihren Zug (B3),
+der Saisonende-Stand verliert eine Wanderung, `AdvanceBids` nur noch für Werkzeuge, Börse einmal je Tag (#188).
 
 **Annahmen (nicht geprüft):** Fernaufrufe (`call far`) auf 0x3489D oder 0x341AB aus anderen Segmenten habe ich nur über das Muster
 `E8` gesucht. Videobilder wurden nicht verglichen, weil der PR keinen Bildschirm ändert. Die Bedingung in `AdvertisingScreen`
