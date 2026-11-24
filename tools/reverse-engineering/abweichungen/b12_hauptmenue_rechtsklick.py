@@ -20,7 +20,7 @@ CASES = [
     ("Leere Fläche nach Kachel 1", [(1, *TILE0)], (160, 160)),
     ("Kopfzeile y < 0x15 (Credits)", [], (160, 10)),
     ("Fläche x 0xE9–0x10F, y 0x22–0x47", [], (250, 40)),
-    ("Managerkopf (DGROUP 0xE1A6 = 5)", [], (176, 39)),
+    ("Gegnername x 0x8A–0xE6 (0xE1A6 = 5)", [], (176, 39)),
     ("Feld x 0x13E, y 0xEF", [], (0x13E, 0xEF)),
 ]
 
