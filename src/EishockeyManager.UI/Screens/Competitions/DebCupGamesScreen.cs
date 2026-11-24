@@ -198,6 +198,8 @@ public sealed class DebCupGamesScreen : Screen
         if (overview is null)
             return null;
         var (_, top) = FrameFor(overview.Groups.Sum(g => g.Rows.Count), overview.Groups.Count(g => g.Rows.Count == 0));
+        // [ORIGINAL] Datei 0x33AE4 prüft y gegen Oberkante + 26; im Remake wirkungslos, weil die erste Zeile frühestens bei
+        // top + 54 liegt (Band ab top + 49) – Nachbildung des Originals, bewusst beibehalten (Befund #1011, Review #1008: gleichwertig).
         if (y <= top + 16 + 10)
             return null;
         foreach (var (line, left, right) in RowLines(overview))
