@@ -302,16 +302,139 @@ Europacup (Byte +0x1B; Bit 3–6 = im Wettbewerb, Bit 0–2 = Runde, 0x80 = Sieg
 - **Vorgabe (`statistik-anzeige`):** Bilanzzeichen je Verein führen (Schema 64), Zeichen und Gesicht wie oben; Teamwerte vor
   dem ersten Spiel aus dem Lader statt Streuung 0/Form 50.
 
-### C07 – Pokal- und Play-off-Marken, Klick auf Verein (A098, A277, A435, A482, A759, A924, A925) – teilweise
+### C07 – Pokal- und Play-off-Marken, Klick auf Verein (A098, A277, A435, A482, A759, A924, A925)
 
-- **Klick auf einen Verein (A277): Abweichung bestätigt (Lesart, nicht nachgebildet).** 0x32E23 (Tabelle DEB-Pokal u. a.)
-  ruft bei Linksklick unterhalb der Kopfzeile das Vereinsfenster 0x4D385(Verein, Seite, 0, 0) auf (Datei 0x33AAF–0x33B30:
-  Spalte links/rechts nach x > 0x63, Zeile nach den gezeichneten y-Werten, Seite = Spalte bzw. 2 bei Art 3). Weitere
-  Aufrufer des Fensters: 0x2F5B6, 0x2FC2F, 0x31CD5, 0x3ADE1. Die Nachbildung mit Paarungsdaten fehlt noch.
-- **Marken nach Verlängerungstor (A482, A759, A924): offen.** Gelesen: Datei 0x381FF–0x3824B holt den Stand aus den Zeilen
-  DGROUP 0x5C4B und zieht alle Marken ab (−30, solange > 29); 0x38402 schreibt danach Heim + Tor + 30. Danach hätte der
-  Endstand **eine** Marke, das Video zeigt zwei (`eisbaeren_f44_01330`). Ob 0x38402 aus diesem Zweig oder dem Zweig mit
-  der Tabelle DGROUP 0xA0BF (Datei 0x37E2D, ohne Abzug) erreicht wird, ist nicht nachgebildet – Fortsetzung.
+`python3 tools/reverse-engineering/abweichungen/c07_marken.py` (Minutenweg wie im Spieltag 0x36B5D, Datei 0x37176–0x37295:
+0x32AA3 mit Schalter 0 nach Minute 60, Verlängerung 0x37A62(61–65) und 0x37A62(66–70), 0x32AA3 mit Schalter 1 und
+Penaltyschießen 0x3901B; Chancenwurf 0x09F5C und Schuss 0xA484 gesetzt, Würfe random(2, 5) des Penaltyschießens ohne
+Zuschauer vorgegeben):
+
+```
+Minutenweg nach Minute 60 (Stand 3:3 bzw. 4:2), Verlängerung 61–70, Chance = Tor
+  DEB-Pokal (Zeile 0), 3:3, Heimtor Minute 63
+     nach 0x32AA3(Schalter 0) Rückgabe 1: Heim 33, Gast 3
+     nach 0x37A62(61–65): Heim 34, Gast 3
+     nach 0x37A62(66–70): Heim 34, Gast 3
+     nach 0x32AA3(Schalter 1) mit Penaltyschießen 0x3901B, Rückgabe 0: Heim 34, Gast 3
+     gewertete Spiele 0xA928/0xA918: [(34, 3)]
+     → Endstand 4:3, Marken 1
+  DEB-Pokal (Zeile 0), 3:3, Gasttor Minute 68
+     nach 0x32AA3(Schalter 0) Rückgabe 1: Heim 33, Gast 3
+     nach 0x37A62(61–65): Heim 33, Gast 3
+     nach 0x37A62(66–70): Heim 33, Gast 4
+     nach 0x32AA3(Schalter 1) mit Penaltyschießen 0x3901B, Rückgabe 0: Heim 33, Gast 4
+     gewertete Spiele 0xA928/0xA918: [(33, 4)]
+     → Endstand 3:4, Marken 1
+  DEB-Pokal (Zeile 0), 3:3, kein Tor
+     nach 0x32AA3(Schalter 0) Rückgabe 1: Heim 33, Gast 3
+     nach 0x37A62(61–65): Heim 33, Gast 3
+     nach 0x37A62(66–70): Heim 33, Gast 3
+     nach 0x32AA3(Schalter 1) mit Penaltyschießen 0x3901B, Rückgabe 1: Heim 66, Gast 5
+     0x3901B(Zeile, Paarung) gerufen bei Stand Heim/Gast (63, 3); Würfe random(2, 5) Heim/Gast: [3, 2]
+     → Endstand 6:5, Marken 2
+  DEB-Pokal (Zeile 0), 4:2 nach 60
+     nach 0x32AA3(Schalter 0) Rückgabe 0: Heim 4, Gast 2
+     → Endstand 4:2, Marken 0
+  Play-off (Zeile 2), 3:3, Heimtor Minute 63
+     nach 0x32AA3(Schalter 0) Rückgabe 1: Heim 33, Gast 3
+     nach 0x37A62(61–65): Heim 34, Gast 3
+     nach 0x37A62(66–70): Heim 34, Gast 3
+     nach 0x32AA3(Schalter 1) mit Penaltyschießen 0x3901B, Rückgabe 0: Heim 34, Gast 3
+     gewertete Spiele 0xA928/0xA918: [(34, 3)]
+     → Endstand 4:3, Marken 1
+  Play-off (Zeile 2), 3:3, Gasttor Minute 68
+     nach 0x32AA3(Schalter 0) Rückgabe 1: Heim 33, Gast 3
+     nach 0x37A62(61–65): Heim 33, Gast 3
+     nach 0x37A62(66–70): Heim 33, Gast 4
+     nach 0x32AA3(Schalter 1) mit Penaltyschießen 0x3901B, Rückgabe 0: Heim 33, Gast 4
+     gewertete Spiele 0xA928/0xA918: [(33, 4)]
+     → Endstand 3:4, Marken 1
+  Play-off (Zeile 2), 3:3, kein Tor
+     nach 0x32AA3(Schalter 0) Rückgabe 1: Heim 33, Gast 3
+     nach 0x37A62(61–65): Heim 33, Gast 3
+     nach 0x37A62(66–70): Heim 33, Gast 3
+     nach 0x32AA3(Schalter 1) mit Penaltyschießen 0x3901B, Rückgabe 1: Heim 66, Gast 5
+     0x3901B(Zeile, Paarung) gerufen bei Stand Heim/Gast (63, 3); Würfe random(2, 5) Heim/Gast: [3, 2]
+     → Endstand 6:5, Marken 2
+  Play-off (Zeile 2), 4:2 nach 60
+     nach 0x32AA3(Schalter 0) Rückgabe 0: Heim 4, Gast 2
+     → Endstand 4:2, Marken 0
+  WM-Endrunde (Zeile 3), 3:3, Heimtor Minute 63
+     nach 0x32AA3(Schalter 0) Rückgabe 1: Heim 33, Gast 3
+     nach 0x37A62(61–65): Heim 34, Gast 3
+     nach 0x37A62(66–70): Heim 34, Gast 3
+     nach 0x32AA3(Schalter 1) mit Penaltyschießen 0x3901B, Rückgabe 0: Heim 34, Gast 3
+     gewertete Spiele 0xA928/0xA918: [(34, 3)]
+     → Endstand 4:3, Marken 1
+  WM-Endrunde (Zeile 3), 3:3, Gasttor Minute 68
+     nach 0x32AA3(Schalter 0) Rückgabe 1: Heim 33, Gast 3
+     nach 0x37A62(61–65): Heim 33, Gast 3
+     nach 0x37A62(66–70): Heim 33, Gast 4
+     nach 0x32AA3(Schalter 1) mit Penaltyschießen 0x3901B, Rückgabe 0: Heim 33, Gast 4
+     gewertete Spiele 0xA928/0xA918: [(33, 4)]
+     → Endstand 3:4, Marken 1
+  WM-Endrunde (Zeile 3), 3:3, kein Tor
+     nach 0x32AA3(Schalter 0) Rückgabe 1: Heim 33, Gast 3
+     nach 0x37A62(61–65): Heim 33, Gast 3
+     nach 0x37A62(66–70): Heim 33, Gast 3
+     nach 0x32AA3(Schalter 1) mit Penaltyschießen 0x3901B, Rückgabe 1: Heim 66, Gast 5
+     0x3901B(Zeile, Paarung) gerufen bei Stand Heim/Gast (63, 3); Würfe random(2, 5) Heim/Gast: [3, 2]
+     → Endstand 6:5, Marken 2
+  WM-Endrunde (Zeile 3), 4:2 nach 60
+     nach 0x32AA3(Schalter 0) Rückgabe 0: Heim 4, Gast 2
+     → Endstand 4:2, Marken 0
+```
+
+- **Urteil: Abweichung bestätigt – Marken vertauscht.** Minutenweg: Tor in der Verlängerung → **eine** Marke, Penaltyschießen
+  → **zwei** Marken, in DEB-Pokal (Zeile 0), Play-offs (Zeile 2) und WM-Endrunde (Zeile 3) gleich. Ablauf: 0x32AA3 setzt
+  nach Minute 60 bei Gleichstand Heim + 30 (DEB Datei 0x32B9D, Zeilen 2/3 Datei 0x32D72); die Verlängerung liest den Stand
+  im Pokalzweig (Datei 0x380D0 ff., nur bei Pokal ≠ 0 – der Zweig mit DGROUP 0xA0BF, Datei 0x37E2D, ist die Liga) und zieht
+  die Marken ab (Datei 0x381FF–0x3824B); ein Tor schreibt 0x36AAA(Stand ohne Marken + Tor, Heim + 30) als gewertetes Spiel
+  (Datei 0x38402, Byte 0x5A, Liste DGROUP 0xA928/0xA918), am Ende jedes Abschnitts zurück in die Zeile (0x369C7(2, 1),
+  Datei 0x38616). Nach der Verlängerung setzt 0x32AA3 bei noch gleichem Stand (Heim − 30 = Gast) die zweite Marke; 0x3901B
+  nimmt eine ab (Datei 0x39088), setzt die Bytes auf die Treffer und schreibt Heim = Stand mit einer Marke + Treffer + 30
+  (Datei 0x39770–0x397B3) – Endstand = Gleichstand + Treffer mit zwei Marken. Das Remake macht es umgekehrt:
+  `CupMatch.FromReport` 2 Marken nach Verlängerungstor, 1 nach Penaltyschießen; `Playoffs.MarksFromReport` 2 in beiden
+  Fällen. Das Video `eisbaeren_f44_01330` („4: 3..“ neben „4: 3.“, WM-Endrunde) widerspricht nicht: zwei Marken stammen dort
+  aus einem Penaltyschießen bzw. dem schnellen Weg, nicht aus einem Verlängerungstor.
+- **Schneller Weg (A925, Lesart, nicht nachgebildet):** Datei 0x376E1 ruft 0x32AA3 vor dem Zusatzwurf; für Zeile 3 setzt
+  0x32AA3 bei Gleichstand dieselbe Marke (Datei 0x32C8E–0x32D84) und 0x3775D die zweite – auch die WM-Endrunde hat im
+  schnellen Weg zwei Marken (`Cups.Tiebreak.cs` nennt eine, „Zeile 3 in 0x32AA3 nicht gelesen“). Der Zusatzwurf der ersten
+  offenen Paarung bleibt wie in `Playoffs.cs` (A925) beschrieben.
+
+`python3 tools/reverse-engineering/abweichungen/c07_klick.py` (Bildschirm 0x32E23 mit Paarungen in DGROUP 0x5CFB,
+Heim 10 + k, Gast 40 + k; je Fall ein Klick, danach Rechtsklick):
+
+```
+DEB-Pokalspiele (Art 0): Kopfzeile bis y 30, Zeilen (Grundlinie) [73, 88, 95, 102, 109, 139, 146, 153, 160, 167, 174, 181, 188, 195, 202, 209]
+   links, Name links, Zeile 0       → Fenster 0x4D385(Verein 23, Seite 0); Bildschirm bleibt, Rechtsklick danach: zurück
+   links, Name rechts, Zeile 0      → Fenster 0x4D385(Verein 53, Seite 1); Bildschirm bleibt, Rechtsklick danach: zurück
+   links, Name links, Zeile 3       → Fenster 0x4D385(Verein 24, Seite 0); Bildschirm bleibt, Rechtsklick danach: zurück
+   links, Name rechts, Zeile 3      → Fenster 0x4D385(Verein 54, Seite 1); Bildschirm bleibt, Rechtsklick danach: zurück
+   links, Zeile 0, Grundlinie + 1   → kein Fenster; Bildschirm bleibt, Rechtsklick danach: zurück
+   links, Kopfzeile                 → kein Fenster; Bildschirm bleibt, Rechtsklick danach: zurück
+   rechts, Name links, Zeile 0      → kein Fenster; Bildschirm zurück
+Play-Off Spiele (Art 2): Kopfzeile bis y 28, Zeilen (Grundlinie) [55, 62, 69, 76, 90, 97, 111, 118, 125, 132, 139, 146, 153, 160, 167, 174]
+   links, Name links, Zeile 0       → Fenster 0x4D385(Verein 10, Seite 0); Bildschirm bleibt, Rechtsklick danach: zurück
+   links, Name rechts, Zeile 0      → Fenster 0x4D385(Verein 40, Seite 1); Bildschirm bleibt, Rechtsklick danach: zurück
+   links, Name links, Zeile 3       → Fenster 0x4D385(Verein 13, Seite 0); Bildschirm bleibt, Rechtsklick danach: zurück
+   links, Name rechts, Zeile 3      → Fenster 0x4D385(Verein 43, Seite 1); Bildschirm bleibt, Rechtsklick danach: zurück
+   links, Zeile 0, Grundlinie + 1   → kein Fenster; Bildschirm bleibt, Rechtsklick danach: zurück
+   links, Kopfzeile                 → kein Fenster; Bildschirm bleibt, Rechtsklick danach: zurück
+   rechts, Name links, Zeile 0      → kein Fenster; Bildschirm zurück
+```
+
+- **Klick auf einen Verein (A277): Abweichung bestätigt.** Linksklick unterhalb der Kopfzeile (y > Kopf + 10) auf eine
+  gezeichnete Zeile (Grundlinie − 6 < y ≤ Grundlinie, Datei 0x33AE4–0x33B03) öffnet das Vereinsfenster 0x4D385(Verein, Seite,
+  0, 0): x ≤ 0x63 linker Verein (Seite 0), sonst rechter (Seite 1; Art 3 = WM: Seite 2, Datei 0x33AD9). Der Bildschirm
+  bleibt danach stehen; nur der Rechtsklick (DGROUP 0x5A16 = 3) verlässt ihn (Datei 0x33B33), ein Linksklick daneben oder in
+  die Kopfzeile tut nichts. Das Remake: `DebCupGamesScreen` verlässt bei jedem Klick, `WorldCupKnockoutScreen` bei
+  Linksklick; `PlayoffGamesScreen` öffnet schon ein Vereinsfenster.
+- **Vorgabe (`wettbewerbe-anzeige`):** Marken Minutenweg: Verlängerungstor 1, Penaltyschießen 2 (`CupMatch.FromReport`,
+  `Playoffs.MarksFromReport`, `MatchReport.Overtime`); schneller Weg WM-Endrunde 2. Roter Test: 3:3 nach 60, Heimtor in
+  der Verlängerung → 4:3 mit einer Marke; 3:3 ohne Tor, Penaltyschießen 3:2 → 6:5 mit zwei Marken. Klick wie oben in
+  `DebCupGamesScreen` und `WorldCupKnockoutScreen` (Zeilen aus der Zeichenrechnung, Seite nach x > 0x63); Rechtsklick
+  verlässt. A098, A924, A925 nur Marker mit Beleg nachziehen bzw. nach der Regel oben.
 
 ## Teil 2 – Kern
 
