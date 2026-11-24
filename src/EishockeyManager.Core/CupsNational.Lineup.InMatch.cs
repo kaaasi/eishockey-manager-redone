@@ -19,8 +19,11 @@ namespace EishockeyManager.Core;
 /// </summary>
 public sealed partial class NationalCoach
 {
-    /// <summary>Klick auf einen Spieler der Kaderliste im Spiel (siehe Klasse; ohne Spiel <see cref="ClickPlayer"/>).</summary>
-    public LineupResult ClickPlayerInMatch(Player player, ref int? line, bool right)
+    /// <summary>
+    /// Klick auf einen Spieler der Kaderliste im Spiel (siehe Klasse; ohne Spiel <see cref="ClickPlayer"/>).
+    /// <paramref name="nationClub"/>: Vereinsplatz des Landes (laufende Paarung) für die Strafbank-Abfrage.
+    /// </summary>
+    public LineupResult ClickPlayerInMatch(Player player, ref int? line, bool right, Club? nationClub = null)
     {
         player = SlotOf(player);
         if (!Contains(player))
@@ -29,6 +32,12 @@ public sealed partial class NationalCoach
         if (player.InjuredGames > 0)
             return LineupResult.Injured;
         if (player.SuspendedGames > 0)
+            return LineupResult.Suspended;
+        // Aufräumkonzept K2: [ORIGINAL] Die Abfrage Datei 0x40DAF–0x40E27 liest den Status +0x09 &amp; 3 des Kaderplatzes des
+        // Managers am Zug (DGROUP 0x5DC3 + 0x618 · DGROUP 0xA70E) – für Manager 5 wie für einen Verein; Status 1 (Strafbank) setzt
+        // 0x35818 im Satz 5 (Teamfeld +0x16 = 6, Datei 0x35AB8–0x35AC6, `or [es:bx+0x09],1` Datei 0x35C02). Beide Tasten: nur
+        // „Spieler ist“ / „Gesperrt.“ (wie <see cref="Club.ClickPlayerInMatch"/>, A808).
+        if (nationClub is not null && MatchEngine.PenaltyBoxMinutes(nationClub, player) > 0)
             return LineupResult.Suspended;
         // [ORIGINAL] Datei 0x40EC4–0x40EFF (A875).
         if (!right && player.Role == PlayerRole.Goalkeeper && line == GoalkeeperLine && Formation.SixthSkaterOpen)

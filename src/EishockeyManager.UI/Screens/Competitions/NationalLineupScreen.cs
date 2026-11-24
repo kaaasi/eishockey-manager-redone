@@ -19,8 +19,8 @@ namespace EishockeyManager.UI.Screens.Competitions;
 /// auf den ersten freien Platz seiner Art in dieser Reihe oder nimmt einen Aufgestellten heraus; Linksklick auf einen belegten
 /// Platzknopf leert ihn (der Spieler ist danach nicht mehr eingesetzt), Rechtsklick außerhalb der Listenzeilen – auch auf
 /// einen Platz – verlässt den Bildschirm (Spur nationalteam Runde 14 Teil 4, Hinweis aus #667). Tasten A und C wie beim
-/// Verein. [APPROX] Die Spielerinfo auf Rechtsklick (Datei 0x40872) ist nicht übernommen; Escape führt wie der Rechtsklick
-/// außerhalb der Liste zurück.
+/// Verein. [ORIGINAL] B13 (A757): Rechtsklick auf einen Namen öffnet die Spielerinfo des WM-Kaderplatzes (Datei
+/// 0x4084E–0x40872, 0x041AC); Escape führt wie der Rechtsklick außerhalb der Liste zurück.
 /// </para>
 /// </remarks>
 public sealed class NationalLineupScreen : Screen
@@ -65,11 +65,18 @@ public sealed class NationalLineupScreen : Screen
     /// <summary>Meldungsfenster bzw. Kurzmeldung des Bildschirms.</summary>
     public MessageBox Message => _message;
 
+    private readonly PlayerInfoPopup _info = new();
+
+    /// <summary>Spielerdaten-Fenster (rechte Maustaste auf einen Namen, B13).</summary>
+    public PlayerInfoPopup Info => _info;
+
     public override void Update(InputState input)
     {
         _mouseX = input.MouseX;
         _mouseY = input.MouseY;
         if (_message.Update(input))
+            return;
+        if (_info.Update(input))
             return;
         if (Coach is not { } coach || input.Pressed(Key.Escape))
         {
@@ -78,6 +85,16 @@ public sealed class NationalLineupScreen : Screen
         }
 
         var rows = coach.Rows;
+        // B13 (A757): [ORIGINAL] Derselbe Bildschirm 0x40364 wie beim Verein: rechte Maustaste über der Namensspalte (0x22 < x <
+        // 0x60) einer Zeile der Hinweiszeilen-Rechnung 0x41683 öffnet das Spielerdaten-Fenster 0x041AC (Abfrage Datei
+        // 0x4084E–0x40872 ohne Sonderfall für Manager 5; Beleg `b13_nationalaufstellung_rechtsklick.py`); 0x041AC liest den
+        // Kaderplatz des Managers am Zug (DGROUP 0xA70E, Datei 0x041B4–0x041CD), hier den WM-Kaderplatz.
+        if (input.RightClick && input.MouseX is > 0x22 and < 0x60 && Host.Game is { } game
+            && PlayerHintLine.Row(PlayerListLayout.Lineup(rows.Count), input.MouseY) is var hit and >= 0 && hit < rows.Count)
+        {
+            ShowPlayerData(game, coach, rows[hit]);
+            return;
+        }
         // [APPROX] Wie beim Verein (LineupScreen) gibt es die Remake-Tasten A und C im Spiel nicht.
         switch (InMatch ? "" : input.Text.ToUpperInvariant())
         {
@@ -110,7 +127,7 @@ public sealed class NationalLineupScreen : Screen
         }
         var selected = _selectedLine;
         var result = InMatch
-            ? coach.ClickPlayerInMatch(player, ref selected, right: input.RightClick)
+            ? coach.ClickPlayerInMatch(player, ref selected, right: input.RightClick, NationClub(coach))
             : coach.ClickPlayer(player, ref selected, right: input.RightClick);
         _selectedLine = selected;
         Report(result);
@@ -130,7 +147,7 @@ public sealed class NationalLineupScreen : Screen
         if (!OnSlot(coach, x, y, out var slot) || coach.Formation[slot] is not { } placed)
             return;
         var wasAuto = coach.AutoLineupEnabled;
-        if (placed.InjuredGames > 0 || placed.SuspendedGames > 0)
+        if (placed.InjuredGames > 0 || placed.SuspendedGames > 0 || PenaltyMinutes(coach, placed) > 0) // K2: Strafbank im Spiel
         {
             coach.SwitchOffAutoLineup();
             _message.ShowShort("Spieler ist", "noch gesperrt !"); // ersetzt die Kurzmeldung davor
@@ -294,13 +311,29 @@ public sealed class NationalLineupScreen : Screen
 
         TeamUi.DrawSwitch(s, Assets, toTactics: true);
         _message.Draw(s, Assets);
+        _info.Draw(s, Assets);
+    }
+
+    /// <summary>
+    /// Spielerdaten des WM-Kaderplatzes (B13). [ORIGINAL] 0x041AC vergleicht Manager +0x14 (beim Bundestrainer das Land) mit dem
+    /// Verein des Spielers (Pool +0x1D, Adressen 0x7D6–0x801): ein Nationalspieler gehört nie zum Land, Gehalt also „-“, Marktwert
+    /// nach Level (<see cref="PlayerDataContext.Create"/>).
+    /// </summary>
+    private void ShowPlayerData(GameState game, NationalCoach coach, Player row)
+    {
+        var player = coach.SlotOf(row);
+        var source = coach.SourceOf(row);
+        var playerClub = game.Clubs.FirstOrDefault(c => c.Players.Contains(source));
+        var level = coach.Manager < game.Managers.Count ? game.Managers[coach.Manager].Level : 0;
+        _info.Show(player, PlayerDataWindow.PurchasePrice(player),
+            PlayerDataContext.Create(game, player, playerClub, game.Clubs[coach.Nation], level));
     }
 
     /// <summary>
     /// Text der Statuszeile wie beim Verein; NR ist hier die Platznummer im WM-Kader. [ORIGINAL] Listenzeilen über die
     /// Hinweiszeile em.exe 0x41683 (<see cref="PlayerHintLine"/>): Der Bildschirm ist derselbe wie beim Verein (Datei
-    /// 0x40364, siehe Klasse), also auch der Aufruf 0x40845 mit Ursprung 7 | 29, Maske 0xF0C7, Rand 0xE9 (R8W3-06). Ein
-    /// Spielerdaten-Fenster (0x041AC) ruft die Aufstellung auch beim Verein am Head nicht; hier daher ebenfalls nicht.
+    /// 0x40364, siehe Klasse), also auch der Aufruf 0x40845 mit Ursprung 7 | 29, Maske 0xF0C7, Rand 0xE9 (R8W3-06). Das
+    /// Spielerdaten-Fenster (0x041AC) öffnet die rechte Maustaste auf einen Namen (B13, <see cref="ShowPlayerData"/>).
     /// </summary>
     private string? HoverText(NationalCoach coach, IReadOnlyList<Player> rows)
     {
@@ -312,8 +345,26 @@ public sealed class NationalLineupScreen : Screen
         if (row < 0 || column < 0)
             return null;
         var p = rows[row];
-        return PlayerHintLine.Text(p, column, new PlayerHintInfo(coach.IsDressed(p), LineOf(coach, p)), showExhaustion: true);
+        return PlayerHintLine.Text(p, column,
+            new PlayerHintInfo(coach.IsDressed(p), LineOf(coach, p), PenaltyMinutes(coach, p)), showExhaustion: true);
     }
+
+    /// <summary>
+    /// Spielpartner des Landes in der laufenden Paarung (Strafbank-Abfrage, Aufräumkonzept K2; Länderspiele rechnen mit einem
+    /// eigenen Vereinsplatz ohne Kader, <c>GameState.RatedNation</c>), außerhalb des Spiels null.
+    /// </summary>
+    private Club? NationClub(NationalCoach coach) =>
+        InMatch && _back is Live.LiveMatchScreen live
+            ? live.Session.Shown.Select(m => m.Home.Index == coach.Nation ? m.Home : m.Away.Index == coach.Nation ? m.Away : null)
+                .FirstOrDefault(c => c is not null)
+            : null;
+
+    /// <summary>
+    /// Aufräumkonzept K2: Strafbank-Stand im Spiel wie beim Verein (<see cref="MatchEngine.PenaltyBoxMinutes"/>; derselbe Bildschirm
+    /// 0x40364, Status +0x09 des Kaderplatzes des Managers am Zug); außerhalb des Spiels 0. Nur Abfrage.
+    /// </summary>
+    private int PenaltyMinutes(NationalCoach coach, Player p) =>
+        NationClub(coach) is { } club ? MatchEngine.PenaltyBoxMinutes(club, coach.SlotOf(p)) : 0;
 
     /// <summary>Reihe (1–4), in der der Spieler im Nationalteam aufgestellt ist, sonst 0 (Kaderplatz +0x15 &amp; 0x7F).</summary>
     private static int LineOf(NationalCoach coach, Player p)

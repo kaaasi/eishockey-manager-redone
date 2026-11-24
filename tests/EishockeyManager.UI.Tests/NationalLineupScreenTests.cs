@@ -211,10 +211,11 @@ public class NationalLineupScreenTests
         Assert.Equal(1, coach.DressedCount);
 
         // Rechtsklick auf einen nicht Eingesetzten setzt ihn ein, ein zweiter Rechtsklick nimmt ihn wieder heraus
-        // (Datei 0x40F35–0x40F59; bis Runde 13 Linksklick).
-        d.RightClick(60, RowY(0));
+        // (Datei 0x40F35–0x40F59; bis Runde 13 Linksklick). B13 (Runde 25): außerhalb der Namensspalte (0x22 < x < 0x60 öffnet die
+        // Spielerdaten, Datei 0x4084E–0x40872), daher x = 150 statt 60.
+        d.RightClick(150, RowY(0));
         Assert.True(coach.IsDressed(coach.Rows[0]));
-        d.RightClick(60, RowY(0));
+        d.RightClick(150, RowY(0));
         Assert.False(coach.IsDressed(coach.Rows[0]));
 
         // Linksklick auf den belegten Platz leert ihn (Datei 0x40AA3–0x40D0D); der Torhüter ist danach nicht mehr eingesetzt.
@@ -224,9 +225,9 @@ public class NationalLineupScreenTests
 
         // 22 eingesetzt: der 23. wird mit „Schon 22 Mann / im Team !“ abgewiesen.
         for (var i = 0; i < NationalCoach.MaxDressed; i++)
-            d.RightClick(60, RowY(i));
+            d.RightClick(150, RowY(i));
         Assert.Equal(NationalCoach.MaxDressed, coach.DressedCount);
-        d.RightClick(60, RowY(NationalCoach.MaxDressed));
+        d.RightClick(150, RowY(NationalCoach.MaxDressed));
         Assert.Equal(NationalCoach.MaxDressed, coach.DressedCount);
         Assert.NotNull(screen.Message.Short); // Kurzmeldung 0x0C0B8 ohne Knopf, schließt von selbst
         d.Frames(100);
