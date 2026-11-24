@@ -8,8 +8,9 @@ namespace EishockeyManager.Core;
 /// Das Original kodiert den Ausgang im Ergebnisbyte des Heimvereins (Zeilen DGROUP 0x5C4B): + 30 je Marke, die Anzeige
 /// 0x32E23 zieht je 30 ab und setzt dafür einen Punkt hinter das Ergebnis (Datei 0x338AB–0x338E3, höchstens zwei).
 /// <list type="bullet">
-/// <item>[ORIGINAL] Schneller Weg, Gleichstand: Heim = h + random(0, 2) + 30, Gast = g + random(0, 2), bis ungleich
-///   (Datei 0x376F0–0x377A3, Marke 0x37761) – Endstand mit einer Marke (WM-Endrunde, Zeile 3 in 0x32AA3 nicht gelesen).</item>
+/// <item>[ORIGINAL] Schneller Weg, Gleichstand (WM-Endrunde, C07/A925): 0x32AA3 markiert Zeile 3 vor dem Zusatzwurf (Datei
+///   0x376E1 → 0x32C8E–0x32D84, Heim + 30), dann Heim = h + random(0, 2) + 30, Gast = g + random(0, 2), bis ungleich (Datei
+///   0x376F0–0x377A3, zweite Marke 0x3775D) – Endstand mit zwei Marken (Lesart re-abweichungen C07).</item>
 /// <item>[ORIGINAL] Schneller Weg im DEB-Pokal (#925 (b), Spur re-reste Teil 2, <c>docs/analyse/re-reste-23.md</c> §1):
 ///   0x32AA3 markiert die Zeile 0 vor dem Wurf (0x32AF4, Heimbyte + 30 bei 0x32B9D), 0x3775D setzt die zweite Marke – genau
 ///   ein Wurf, Endstand h + x : g + y mit zwei Marken; bleibt es gleich (x = y), zählt die Wertung 0x34C76
@@ -19,12 +20,14 @@ namespace EishockeyManager.Core;
 ///   <see cref="MatchEngine.DebCupExtraRoll"/>): 0x32AA3 meldet die offene Paarung (0:0 → 30:0 → 60:0, 0x32B23/0x32B3F) als
 ///   Gleichstand, 0x376F0 würfelt bis Heim + x ≠ Gast + y (0x37724–0x37748), 0x3775D eine Marke; Sieger nach der Summe (0x34C76).
 ///   Nur die ersten beiden gerechneten Paarungen eines Termins (60:0 erkennt die Markierung nicht mehr).</item>
-/// <item>[ORIGINAL] Minutenweg, nach der Verlängerung noch Gleichstand: Penaltyschießen 0x3901B nimmt die Marke ab
-///   (0x39088: Heimbyte − 30), Endstand = Gleichstand + Treffer, Heim + 30 (0x39789, 0x397B3) – eine Marke.</item>
-/// <item>Minutenweg, Tor in der Verlängerung: [ORIGINAL] 0x38402 schreibt den Spielstand mit Heim + 30 auf den schon
-///   markierten Stand; im Video zwei Punkte („4: 3..“, eisbaeren_f44_01330, neben „4: 3.“ nach Penaltyschießen).
-///   [APPROX] Woher der Stand vor 0x38402 kommt (Tabelle DGROUP 0xA0BF, 0x37E2D), ist nicht verfolgt; die zwei Marken
-///   stützen sich auf das Videobild.</item>
+/// <item>[ORIGINAL] Minutenweg (C07, A098/A482; Beleg <c>c07_marken.py</c>, re-abweichungen C07): 0x32AA3 markiert nach Minute 60 bei
+///   Gleichstand (Heim + 30, DEB Datei 0x32B9D, Zeilen 2/3 Datei 0x32D72). Die Verlängerung liest den Stand im Pokalzweig (Datei
+///   0x380D0 ff.) und zieht die Marken ab (Datei 0x381FF–0x3824B); ein Tor schreibt 0x36AAA(Stand ohne Marken + Tor, Heim + 30)
+///   (Datei 0x38402) – Tor in der Verlängerung: <b>eine</b> Marke. Bleibt es gleich, setzt 0x32AA3 (Schalter 1) die zweite Marke,
+///   das Penaltyschießen 0x3901B nimmt eine ab (0x39088) und schreibt Heim = Stand mit einer Marke + Treffer + 30 (Datei
+///   0x39770–0x397B3) – Penaltyschießen: <b>zwei</b> Marken. In DEB-Pokal, Play-offs und WM-Endrunde gleich. Vorher umgekehrt
+///   (zwei nach einem Verlängerungstor nach dem Videobild eisbaeren_f44_01330, das nicht widerspricht: „4: 3..“ stammt dort aus
+///   einem Penaltyschießen bzw. dem schnellen Weg).</item>
 /// </list>
 /// Der Spielbericht (<see cref="MatchReport"/>) hält weiter den Gleichstand und die Penaltytore getrennt, damit die
 /// Spielerzähler nur echte Tore zählen; <see cref="KnockoutMatch.PenaltyWinner"/> nennt nach einem Penaltyschießen den
@@ -44,10 +47,10 @@ public static class CupMatch
     }
 
     /// <summary>
-    /// Endstand und Marken aus dem Spielbericht: 0 = reguläre Spielzeit (oder Spielwertung), 1 = Penaltyschießen (Endstand
-    /// = Gleichstand + Penaltytore), 2 = in der Verlängerung entschieden oder (<paramref name="debCup"/>, schneller Weg
-    /// <see cref="MatchReport.FastCupPath"/>) Zusatzwurf des DEB-Pokals bei eigenem Gleichstand; dort zählt ein stehender
-    /// Gleichstand für den Heimverein (0x34C76, #925 (b)). Zusatzwurf des DEB-Pokals bei ungleichem Ergebnis (RR-01,
+    /// Endstand und Marken aus dem Spielbericht (C07): 0 = reguläre Spielzeit (oder Spielwertung), 1 = in der Verlängerung
+    /// entschieden (Minutenweg), 2 = Penaltyschießen (Endstand = Gleichstand + Penaltytore) bzw. Zusatzwurf des schnellen Wegs
+    /// (<see cref="MatchReport.FastCupPath"/>) bei eigenem Gleichstand; im DEB-Pokal (<paramref name="debCup"/>) zählt dort ein
+    /// stehender Gleichstand für den Heimverein (0x34C76, #925 (b)). Zusatzwurf des DEB-Pokals bei ungleichem Ergebnis (RR-01,
     /// <see cref="MatchEngine.DebCupExtraRoll"/>): Endstand = Ergebnis + Wurf, eine Marke, Sieger nach der Summe.
     /// </summary>
     public static (KnockoutMatch Match, int Marks) FromReport(int day, Club home, Club away, MatchReport report,
@@ -66,13 +69,14 @@ public static class CupMatch
         }
         if (report.Forfeit || hg != ag)
         {
-            var marks = !report.Forfeit && report.Overtime ? 2 : 0;
+            var marks = !report.Forfeit && report.Overtime ? 1 : 0; // C07: [ORIGINAL] Verlängerungstor eine Marke (Datei 0x38402)
             return (new KnockoutMatch(day, home.Index, away.Index, hg, ag), marks);
         }
         if (report.ShootoutGoals is { } goals && goals.Home != goals.Away)
         {
             var winner = goals.Home > goals.Away ? home.Index : away.Index;
-            return (new KnockoutMatch(day, home.Index, away.Index, hg + goals.Home, ag + goals.Away, winner), debFastPath ? 2 : 1);
+            // C07: [ORIGINAL] Penaltyschießen (0x32AA3 + 0x3901B) und Zusatzwurf des schnellen Wegs (0x32AA3 + 0x3775D) zwei Marken.
+            return (new KnockoutMatch(day, home.Index, away.Index, hg + goals.Home, ag + goals.Away, winner), MaxMarks);
         }
         // Beide Wege liefern bei Gleichstand immer Penaltytore; bleibt nur der Sieger, gilt er mit Gleichstand.
         // #945 (Review #944 P3-1): [ORIGINAL] Bleibt der Gleichstand nach dem einen Zusatzwurf der Play-offs (x = y), stehen die
@@ -80,6 +84,6 @@ public static class CupMatch
         // #925 (b): im DEB-Pokal zählt der stehende Gleichstand des schnellen Wegs für den Heimverein (0x34C76 jnc), zwei Marken.
         var fallback = report.ShootoutHomeWins is false && !debFastPath ? away.Index : home.Index;
         var (extraHome, extraAway) = report.ShootoutGoals ?? (0, 0);
-        return (new KnockoutMatch(day, home.Index, away.Index, hg + extraHome, ag + extraAway, fallback), debFastPath ? 2 : 1);
+        return (new KnockoutMatch(day, home.Index, away.Index, hg + extraHome, ag + extraAway, fallback), MaxMarks);
     }
 }

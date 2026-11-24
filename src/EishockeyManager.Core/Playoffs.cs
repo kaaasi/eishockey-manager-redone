@@ -108,14 +108,17 @@ public sealed class PlayoffSeries(int homeClub, int awayClub)
     /// Marken eines im Remake gespielten Play-off-Spiels. [ORIGINAL] Schneller Weg, Gleichstand: 0x32AA3 (Schalter 0) + 30, dann
     /// 0x37761 + 30 – zwei Marken (FILE44: Viertelfinale 2–7 Spiel 3 „2:4“, Halbfinale 2 Spiel 3 „5:3“ mit 0x40/0x3F). Minutenweg,
     /// Penaltyschießen: 0x32AA3 nach 60 Minuten (Schalter 0) und nach der Verlängerung (Schalter 1, Datei 0x32D72) je + 30, 0x3901B
-    /// nimmt eine ab (0x39088) und setzt sie wieder (0x39789) – zwei Marken. [APPROX] Minutenweg, Tor in der Verlängerung: zwei
-    /// Marken wie beim Pokal (<see cref="CupMatch.FromReport"/>); 0x38402 setzt + 30 auf den Stand aus DGROUP 0xA0BF, dessen Marken
-    /// nicht verfolgt sind (A482). [APPROX] Die eine Marke des schnellen Wegs (Zusatzwurf der ersten offenen Paarung, siehe
+    /// nimmt eine ab (0x39088) und setzt sie wieder (0x39789) – zwei Marken. [ORIGINAL] Minutenweg, Tor in der Verlängerung: eine
+    /// Marke wie beim Pokal (<see cref="CupMatch.FromReport"/>): die Verlängerung zieht die Marken ab (Datei 0x381FF–0x3824B), 0x38402
+    /// schreibt den Stand ohne Marken + Tor mit Heim + 30 (C07, A924; Beleg <c>c07_marken.py</c> Zeile 2). [APPROX] Die eine Marke des schnellen Wegs (Zusatzwurf der ersten offenen Paarung, siehe
     /// <see cref="Marks"/>) bildet das Remake nicht nach: dazu gehören die Zusatztore, und die rechnet
     /// <see cref="OriginalMinutes.FastCupResultWithTie"/> nur bei eigenem Gleichstand (Befund an die Leitstelle, PR der Spur).
     /// </summary>
     public static int MarksFromReport(MatchReport report) =>
-        !report.Forfeit && (report.Overtime || report.ShootoutGoals is not null || report.ShootoutHomeWins is not null) ? TieMarks : 0;
+        report.Forfeit ? 0
+        : report.ShootoutGoals is not null || report.ShootoutHomeWins is not null ? TieMarks
+        : report.Overtime ? report.HomeGoals == report.AwayGoals ? TieMarks : 1
+        : 0;
 
     public int Wins(int club) => Games.Count(g => g.Winner == club);
     public bool IsDecided => Wins(HomeClub) >= WinsNeeded || Wins(AwayClub) >= WinsNeeded;

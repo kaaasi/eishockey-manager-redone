@@ -92,7 +92,7 @@ Gesamtreview ChatGPT (GPT-6.2 Astra) mit Claude-Auswertung.
   `TeamInfoWindow.cs`, `ClubInfoWindow.cs`, `ClubScheduleWindow.cs`, `LeaguePairingsScreen.cs`, `DebCupGamesScreen.cs`,
   `PlayoffGamesScreen.cs`, `WorldCupKnockoutScreen.cs`; `Core/CupsNational.TeamInfo.cs`, `CupsNational.cs`, `CupsNational.Lineup.cs` (A961, minimal), `Cups.Tiebreak.cs`,
   `Playoffs.cs`, Marken in `MatchEngine.Minutes.cs` (minimal); Tests. **Prüfung:** `--schnell`; Pixelvergleich der Fenster.
-- **Status:** Teil 1 in Arbeit (Claude Code, 24.11.2026), Base `0c1811f`.
+- **Status:** Teile 1–3 fertig (Claude Code, 24.11.2026) – PR #1003, Base `0c1811f`; wartet auf Erstreview.
 
 ### Spur `statistik-anzeige` – Saisonende, Historie, Stärken, Spielerfenster (Welle 1)
 

@@ -336,8 +336,8 @@ public sealed class MatchReport
 
     /// <summary>
     /// Zusatztore aus dem schnellen Weg der Pokale (0x376F0, <see cref="OriginalMinutes.FastCupResultWithTie"/>) statt aus dem
-    /// Penaltyschießen 0x3901B des Minutenwegs; <see cref="CupMatch.FromReport"/> bildet daraus im DEB-Pokal zwei Marken und den
-    /// stehenden Gleichstand für den Heimverein (#925 (b), Spur re-reste Teil 2).
+    /// Penaltyschießen 0x3901B des Minutenwegs; <see cref="CupMatch.FromReport"/> bildet daraus zwei Marken (DEB-Pokal und
+    /// WM-Endrunde, C07) und im DEB-Pokal den stehenden Gleichstand für den Heimverein (#925 (b), Spur re-reste Teil 2).
     /// </summary>
     public bool FastCupPath { get; set; }
 }
@@ -451,8 +451,9 @@ public static partial class OriginalMinutes
     /// drittelweise 1–20, 21–40, 41–60; je Minute Torchancen 0x9F5C, Abschluss je Chance (Heim zuerst), dann Strafen für
     /// Heim und Gast (außer in Minute 60 und 70). Bei <see cref="MatchRules.KnockOut"/> und Gleichstand Verlängerung 61–65
     /// und 66–70.
-    /// [APPROX] Die Verlängerung läuft wie im Original ohne „Sudden Death“ über beide Abschnitte; die Ergebnismarken
-    /// (+10/+30) des Originals bildet das Remake über <see cref="MatchReport.Overtime"/> ab.
+    /// [ORIGINAL] Die Verlängerung läuft ohne „Sudden Death“ über beide Abschnitte (0x36B5D ruft 0x37A62(61–65) und (66–70),
+    /// Datei 0x37176–0x37295; nachgespielt in <c>c07_marken.py</c>); die Ergebnismarken (+ 30) des Originals bildet <see cref="CupMatch.FromReport"/> aus
+    /// <see cref="MatchReport.Overtime"/> (C07, A098: Verlängerungstor eine, Penaltyschießen zwei).
     /// </summary>
     public static MatchReport Play(LiveTeam home, LiveTeam away, MatchRules rules, Random random)
     {

@@ -68,10 +68,11 @@ public class ReResteTests
 
         var minute = CupMatch.FromReport(1, home, away,
             new MatchReport { HomeGoals = 3, AwayGoals = 3, ShootoutHomeWins = true, ShootoutGoals = (3, 2) }, debCup: true);
-        Assert.Equal((6, 5, (int?)home.Index, 1), (minute.Match.HomeGoals, minute.Match.AwayGoals, minute.Match.PenaltyWinner, minute.Marks));
+        // C07 (Runde 25, wettbewerbe-anzeige, R15-E2 = C): [ORIGINAL] Verlängerungstor eine Marke, Penaltyschießen und Gleichstand im schnellen Weg zwei (Beleg c07_marken.py, re-abweichungen C07); vorher umgekehrt.
+        Assert.Equal((6, 5, (int?)home.Index, 2), (minute.Match.HomeGoals, minute.Match.AwayGoals, minute.Match.PenaltyWinner, minute.Marks));
 
         var playoff = CupMatch.FromReport(1, home, away, Fast((1, 1), false));
-        Assert.Equal(((int?)away.Index, 1), (playoff.Match.PenaltyWinner, playoff.Marks));
+        Assert.Equal(((int?)away.Index, 2), (playoff.Match.PenaltyWinner, playoff.Marks)); // C07: schneller Weg zwei Marken
     }
 
     /// <summary>

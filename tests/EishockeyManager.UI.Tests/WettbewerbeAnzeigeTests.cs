@@ -187,4 +187,81 @@ public class WettbewerbeAnzeigeTests
         window.Update(Click(TeamInfoWindow.WatchButton), game);
         Assert.NotEqual(mode, game.Clubs[nation].WatchMode);
     }
+    // ---- Teil 3: C07 Klick auf einen Verein ---------------------------------------------------------------------------
+
+    private static InputState LeftAt(int x, int y) => new() { MouseX = x, MouseY = y, LeftClick = true };
+
+    /// <summary>
+    /// C07 (A277): [ORIGINAL] „DEB-Pokalspiele“ (0x32E23, Beleg <c>c07_klick.py</c>): Linksklick auf eine Zeile (Grundlinie − 6 &lt; y ≤
+    /// Grundlinie) öffnet das Vereinsfenster, x ≤ 0x63 links, sonst rechts; der Bildschirm bleibt. Linksklick in die Kopfzeile oder
+    /// eine Zeile darunter tut nichts, Rechtsklick führt zurück. Vorher führte jeder Klick zurück.
+    /// </summary>
+    [Fact]
+    public void DebCupGames_ClickOnClub_OpensClubWindow_RightClickLeaves()
+    {
+        var game = Synthetic();
+        var host = new ScreenHost(null!) { Game = game };
+        var menu = new Dummy(host);
+        host.Show(menu);
+        string[] titles = ["A", "B", "C", "D", "E", "F"];
+        var groups = titles.Select((t, i) => new DebCupGroup(t, i == 0 ? [new DebCupRow(23, 33, []), new DebCupRow(24, 34, [])] : [])).ToList();
+        var overview = new DebCupOverview(0, 0, null, groups, "");
+        var screen = new DebCupGamesScreen(host, menu, overview);
+        host.Show(screen);
+        var lines = DebCupGamesScreen.RowLines(overview);
+        Assert.Equal(2, lines.Count);
+        var (_, top) = DebCupGamesScreen.FrameFor(2, 5);
+        Assert.Equal(top + 46 + 8, lines[0].Y);
+
+        Assert.Equal(23, DebCupGamesScreen.ClubAt(overview, 0x63, lines[0].Y));
+        Assert.Equal(33, DebCupGamesScreen.ClubAt(overview, 0x64, lines[0].Y - 5));
+        Assert.Equal(34, DebCupGamesScreen.ClubAt(overview, 150, lines[1].Y));
+        Assert.Null(DebCupGamesScreen.ClubAt(overview, 50, lines[0].Y - 6));
+        Assert.Null(DebCupGamesScreen.ClubAt(overview, 50, lines[1].Y + 1));
+
+        var before = StateFingerprint.Of(game);
+        screen.Update(LeftAt(50, top + 20)); // Kopfzeile
+        Assert.Same(screen, host.Current);
+        Assert.False(screen.InfoWindows.Visible);
+        screen.Update(LeftAt(150, lines[0].Y));
+        Assert.Same(screen, host.Current);
+        Assert.Equal(33, screen.InfoWindows.Club.Club);
+        screen.Update(RightClick); // schließt das Fenster
+        Assert.False(screen.InfoWindows.Visible);
+        Assert.Same(screen, host.Current);
+        screen.Update(RightClick);
+        Assert.Same(menu, host.Current);
+        Assert.Equal(before, StateFingerprint.Of(game));
+    }
+
+    /// <summary>
+    /// C07 (A277): [ORIGINAL] „WM-Endrundenspiele“ (Art 3, Seite 2): Klick auf ein Land öffnet das Gegner-Fenster, der Bildschirm
+    /// bleibt; Rechtsklick führt zurück. Vorher führte jeder Linksklick zurück.
+    /// </summary>
+    [Fact]
+    public void WorldCupKnockout_ClickOnTeam_OpensTeamWindow()
+    {
+        var game = Synthetic();
+        var host = new ScreenHost(null!) { Game = game };
+        var menu = new Dummy(host);
+        host.Show(menu);
+        var sections = new List<WorldCupKnockoutSection> { new("Viertelfinale", [new(52, 55, 0, 0, 0), new(53, 56, 0, 0, 0)]) };
+        var screen = new WorldCupKnockoutScreen(host, menu, sections);
+        host.Show(screen);
+        var (_, top) = WorldCupKnockoutScreen.FrameFor(2, 1, live: false);
+        var first = top + 46 + WorldCupKnockoutScreen.HeadingPitch;
+        Assert.Equal(52, screen.TeamAt(40, first));
+        Assert.Equal(56, screen.TeamAt(120, first + DebCupGamesScreen.RowPitch));
+        Assert.Null(screen.TeamAt(40, first + 1 + DebCupGamesScreen.RowPitch));
+
+        screen.Update(LeftAt(120, first));
+        Assert.Same(screen, host.Current);
+        Assert.Equal(55, screen.InfoWindows.Nation.Club);
+        screen.Update(RightClick);
+        Assert.False(screen.InfoWindows.Visible);
+        screen.Update(LeftAt(10, top + 5));
+        Assert.Same(screen, host.Current);
+        screen.Update(RightClick);
+        Assert.Same(menu, host.Current);
+    }
 }

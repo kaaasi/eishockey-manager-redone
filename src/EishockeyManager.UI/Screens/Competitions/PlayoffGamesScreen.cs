@@ -38,7 +38,8 @@ public sealed record PlayoffOverview(IReadOnlyList<PlayoffSection> Sections, int
     public static PlayoffOverview Of(Playoffs playoffs, int today)
     {
         var days = SeasonCalendar.DaysOf(DayEvents.Playoffs);
-        var rounds = playoffs.Rounds.Select(r => r.Select(s => (s.HomeClub, s.AwayClub, s.Games.ToList())).ToList()).ToList();
+        var rounds = playoffs.Rounds.Select(r => r.Select(s => (s.HomeClub, s.AwayClub, s.Games.ToList(),
+            Marks: Enumerable.Range(0, s.Games.Count).Select(s.MarksOf).ToList())).ToList()).ToList();
         var last = playoffs.Rounds[^1];
         var lastIndex = playoffs.Rounds.Count - 1;
         if (rounds.Count < 3 && last.All(s => s.IsDecided) && days[Playoffs.DatesPerRound * lastIndex + Playoffs.DatesPerRound - 1] < today)
@@ -46,7 +47,7 @@ public sealed record PlayoffOverview(IReadOnlyList<PlayoffSection> Sections, int
             // [ORIGINAL] Tabelle DGROUP 0x144: Serie k = Sieger der Serie k gegen Sieger der Serie k + Serienzahl / 2 (wie Playoffs.Prepare).
             var winners = last.Select(s => s.Winner!.Value).ToList();
             var half = winners.Count / 2;
-            rounds.Add(Enumerable.Range(0, half).Select(k => (winners[k], winners[k + half], new List<KnockoutMatch>())).ToList());
+            rounds.Add(Enumerable.Range(0, half).Select(k => (winners[k], winners[k + half], new List<KnockoutMatch>(), Marks: new List<int>())).ToList());
         }
 
         var sections = new List<PlayoffSection>();
@@ -55,11 +56,11 @@ public sealed record PlayoffOverview(IReadOnlyList<PlayoffSection> Sections, int
             var finished = r < rounds.Count - 1;
             var passed = days.Skip(Playoffs.DatesPerRound * r).Take(Playoffs.DatesPerRound).Count(d => d < today);
             var rows = new List<PlayoffRow>();
-            foreach (var (home, away, games) in rounds[r])
+            foreach (var (home, away, games, marks) in rounds[r])
             {
                 var swapped = !finished && (passed == Playoffs.DatesPerRound ? WinnerOf(games, home, away) == away : passed % 2 == 1);
                 var (left, right) = swapped ? (away, home) : (home, away);
-                rows.Add(new PlayoffRow(left, right, games.Select(m => ResultOf(m, left)).ToList()));
+                rows.Add(new PlayoffRow(left, right, games.Select((m, i) => ResultOf(m, left, marks[i])).ToList()));
             }
             sections.Add(new PlayoffSection(SectionTitles[r], rows));
         }
@@ -77,14 +78,16 @@ public sealed record PlayoffOverview(IReadOnlyList<PlayoffSection> Sections, int
     /// <summary>
     /// Ergebnis eines Serienspiels aus Sicht des linken Vereins. [ORIGINAL] Tore je Platz DGROUP 0xCCB2 + 14 · Spiel + Platz
     /// (Datei 0x337EE–0x33817), links Platz 2k (folge21_02150: Berliner SC – ES Weißwasser „3: 2  0: 4  4: 2  4: 0“ bei drei
-    /// Siegen des BSC). [APPROX] Punkte: einer nach Penaltyschießen; zwei nach einem Tor in der Verlängerung (Video
-    /// folge21_02150 „7: 5..“) kennt das Remake für Play-Offs nicht.
+    /// Siegen des BSC). [ORIGINAL] Punkte = Marken des Spiels (<see cref="PlayoffSeries.MarksOf"/>, C07/A435): eine nach einem Tor
+    /// in der Verlängerung, zwei nach Penaltyschießen bzw. Gleichstand im schnellen Weg (Beleg <c>c07_marken.py</c> Zeile 2; Video
+    /// folge21_02150 „7: 5..“ nach Penaltyschießen). Vorher einer bei Penaltysieger, sonst keiner. Ohne
+    /// <paramref name="marks"/> wie <see cref="PlayoffSeries.MarksOf"/> ohne Eintrag.
     /// </summary>
-    public static DebCupResult ResultOf(KnockoutMatch match, int left)
+    public static DebCupResult ResultOf(KnockoutMatch match, int left, int? marks = null)
     {
         var leftIsHome = match.Home == left;
         return new DebCupResult(leftIsHome ? match.HomeGoals : match.AwayGoals, leftIsHome ? match.AwayGoals : match.HomeGoals,
-            match.PenaltyWinner is null ? 0 : 1);
+            marks ?? (match.PenaltyWinner is null ? 0 : PlayoffSeries.TieMarks));
     }
 }
 

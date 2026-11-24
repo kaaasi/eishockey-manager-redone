@@ -175,7 +175,8 @@ public class WettbewerbeRegelnTests
         var (match, marks) = CupMatch.FromReport(1, home, away,
             new MatchReport { HomeGoals = 3, AwayGoals = 3, ShootoutHomeWins = false, ShootoutGoals = (2, 2) });
 
-        Assert.Equal((5, 5, (int?)away.Index, 1), (match.HomeGoals, match.AwayGoals, match.PenaltyWinner, marks));
+        // C07 (Runde 25, wettbewerbe-anzeige, R15-E2 = C): [ORIGINAL] Verlängerungstor eine Marke, Penaltyschießen und Gleichstand im schnellen Weg zwei (Beleg c07_marken.py, re-abweichungen C07); vorher umgekehrt.
+        Assert.Equal((5, 5, (int?)away.Index, 2), (match.HomeGoals, match.AwayGoals, match.PenaltyWinner, marks));
     }
 
     /// <summary>
