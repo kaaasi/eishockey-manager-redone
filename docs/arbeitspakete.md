@@ -79,7 +79,7 @@ Gesamtreview ChatGPT (GPT-6.2 Astra) mit Claude-Auswertung.
   die Bildschirme von B11 (`Competitions/ClubScheduleWindow.cs`, `DebCupDrawLive.cs`, `WorldCupScreen.cs`, `QuitQuestion.cs`,
   `SetupScreen.cs`, `Statistics/ClubStatisticsScreen.cs`, `FairplayScreen.cs`, `HighscoreScreen.cs`, `PlayerStatisticsScreen.cs`),
   zugehörige Tests. **Prüfung:** `--schnell`; Bildschirmfotos Hauptmenü (Manager, Bundestrainer).
-- **Status:** Go 24.11.2026, Start nach Merge von `re-abweichungen`.
+- **Status:** Teil 1 in Arbeit (Claude Code, 24.11.2026), Base `0c1811f`.
 
 ### Spur `wettbewerbe-anzeige` – Paarungs-, Gegner- und Vereinsfenster (Welle 1)
 
