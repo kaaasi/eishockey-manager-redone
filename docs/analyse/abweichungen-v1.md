@@ -24,6 +24,37 @@ Grundlage: Vergleich der Bewertungen von ChatGPT ([PR #992](abweichungen-bewertu
 - Die Spalte „Entscheidung“ in Abschnitt 1 und 3 bleibt leer; maßgeblich ist dieser Abschnitt (#995).
 - **D-Themen:** warten auf DOSBox; D06 bleibt (Nutzerentscheidung 01.11.2026, Computerkader).
 
+**Stand nach Runde 25 (Spur `pruefung-karte`, 24.11.2026; Belege `re-abweichungen.md`, PRs der Spuren gemergt):**
+
+| Thema | Ergebnis | PR |
+|---|---|---|
+| B01, B07 | umgesetzt (Titelmusik einmal, Trennung an „^“, Hinweis/Zähler wie Original) | #1002 |
+| B10 | umgesetzt (gemerkte Seite) | #1003 |
+| B11 | umgesetzt (B11 = A: „jede Taste schließt“ nur noch Maus; Escape/Rechtsklick bleiben `[APPROX]`, Nutzer) | #1002 |
+| B12 | umgesetzt (Rechtsklick wie Linksklick, kein Abwählen) | #1002 |
+| B13 | umgesetzt (Spielerinfo per Rechtsklick in der Nationalaufstellung) | #1004 |
+| B15 | Gesicht (A287) und Knopf/Zeile „Historische Ergebnisse“ (A286) umgesetzt; Tore/Spiel, Schnitt (A288, A290) keine Abweichung | #1003 |
+| B16 (prüfen) | Wettbewerbscode 0xD0C2 umgesetzt (Knopf, Zeile); Bilanz/Teamsatz (A495, A753) keine Abweichung in der Quelle | #1003 |
+| B17 (= Aufräumkonzept K9) | umgesetzt (Reihenwerte über 0x977F) | #1003 |
+| B18 | Markierung (A301) und Feld neben dem Kopf (A297) umgesetzt; Kurve (A302) und Lampe (A331) keine Abweichung | #1002 |
+| B25, B28 | umgesetzt (Symbol, Pokalbild; Kodierung Platz + 12 · Liga, Pokalbalken) | #1005 |
+| B29 | Smiley/Bilanzzeichen (A361) umgesetzt; Managervereine (A699) keine Abweichung; Startwerte (A700) schon erfüllt; kein neues Feld | #1005 |
+| B33 | Spielerfenster (A372) umgesetzt; „Gegentore beim Verein“ (A957) keine Abweichung (Original schreibt +0x22 nie) | #1005 |
+| B31 | umgesetzt (Verlassen von Aufstellung/Taktik als Kern-Ereignis) | #1004 |
+| K07 | umgesetzt (Automatik je Manager, Verletzte, sechster Feldspieler; Schema 64); A165, A807 nur Marker | #1004 |
+| S07 | umgesetzt (Einsätze beim Aufstellen im Spiel zählen) | #1004 |
+| T03 | umgesetzt (Markt-Verfall je Platz, Oberliga-Zug und Wanderung am 29. April) | #1006 |
+| C07 | umgesetzt (Marken, Klick ins Vereinsfenster); A098, A924, A925 nur Marker mit Beleg | #1003 |
+| F06 (prüfen) | Abweichung im Geld bestätigt und umgesetzt (Bande je Feld) | #1006 |
+| F08 (prüfen) | A509, A512, A526 umgesetzt; A468, A695 keine Abweichung im Ergebnis (nur Marker) | #1006 |
+| Aufräumkonzept K2 | umgesetzt (Strafbank beim Bundestrainer) | #1004 |
+| Aufräumkonzept K11 | umgesetzt (Rollenwert als Feld, Schema 65) | #1006 |
+| Aufräumkonzept K13 | eine gemeinsame Platzwahl; Randfall widerlegt (DGROUP 0x5CF4 nur 0 oder 1), A463 bleibt `[APPROX]` (Erweiterung) | #1006 |
+| S01, S02, S04, S05 | Runde 26 (R25-D1 = D) | – |
+
+Belege und Beschlüsse zu den Befunden der Erstreviews: Highscore-Ligabyte (Verdacht #1007) bestätigt und behoben (Beleg
+`h1_highscore_liga.py`, PR #1022).
+
 ## 1. Themen mit Vorschlag „ändern“ (15 Themen, 44 IDs)
 
 | Nr | Thema | Bereich | IDs | sichtbar | Aufwand | Grund | Entscheidung |
