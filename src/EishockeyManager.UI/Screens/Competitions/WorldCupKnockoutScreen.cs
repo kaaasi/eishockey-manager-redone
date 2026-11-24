@@ -30,10 +30,13 @@ public sealed record WorldCupKnockoutSection(string Title, IReadOnlyList<WorldCu
 ///   <c>dosbox/nur-weltkugel/24</c>. Erreichbar über „Endrunde“ der Paarungsansicht „Gruppe n   m.Spieltag“ (<see cref="CupPairingsScreen"/>,
 ///   DOSBox 20, 21; #194). [ORIGINAL] Im Menü des Bundestrainers öffnet „Paarungen → WM“ ab WM-Stufe 5 direkt diese Seite (A293,
 ///   DOSBox `file49_7`; <c>WorldCupMenuEntries.Pairings</c>); die Gruppentabelle hat keinen Knopf „Endrunde“ (`file49_6`).</item>
-/// <item>[ORIGINAL] Punkte hinter dem Ergebnis = Marken + 30 (Anzeige 0x338AB–0x338E3): einer nach Penaltyschießen mit Endstand
-///   (schneller Weg 0x37761, Minutenweg 0x39789), zwei nach einem Tor in der Verlängerung (0x38402; eisbaeren_f44_01330 „4: 3..“
-///   neben „4: 3.“) – <see cref="WorldCup.MarksOf"/>, <see cref="CupMatch"/>. [APPROX] Die Herkunft des Stands vor 0x38402 ist
-///   nicht verfolgt.</item>
+/// <item>[ORIGINAL] Punkte hinter dem Ergebnis = Marken + 30 (Anzeige 0x338AB–0x338E3): einer nach einem Tor in der Verlängerung
+///   (0x38402 auf den Stand ohne Marken), zwei nach Penaltyschießen (0x32AA3 + 0x3901B) bzw. Gleichstand im schnellen Weg (0x32AA3 +
+///   0x3775D) – <see cref="WorldCup.MarksOf"/>, <see cref="CupMatch"/> (C07, A759; Beleg <c>c07_marken.py</c>; eisbaeren_f44_01330
+///   „4: 3..“ neben „4: 3.“ widerspricht nicht).</item>
+/// <item>[ORIGINAL] Klick auf ein Land (C07, A277; Beleg <c>c07_klick.py</c>, Art 3 = Seite 2, Datei 0x33AD9): Linksklick auf eine Zeile
+///   wie bei <see cref="DebCupGamesScreen.ClubAt"/> öffnet das Gegner-Fenster (<see cref="TeamInfoWindow"/>), der Bildschirm bleibt
+///   stehen; Rechtsklick führt zurück. [APPROX] Eine Taste führt als Komfort des Remakes ebenfalls zurück.</item>
 /// <item>[APPROX] Die Anzeige im Spielablauf („60.Minute“) gibt es im Remake noch nicht (Spur livespiel); vorbereitet über
 ///   <c>liveMinute</c>.</item>
 /// </list>
@@ -124,14 +127,45 @@ public sealed class WorldCupKnockoutScreen : Screen
         return (h + 1, y);
     }
 
+    /// <summary>Gegner-Fenster nach einem Klick auf ein Land (<see cref="TeamAt"/>).</summary>
+    public InfoBarWindows InfoWindows { get; } = new();
+
+    /// <summary>
+    /// [ORIGINAL] Land unter der Maus wie bei „DEB-Pokalspiele“ (Datei 0x33AAF–0x33B30): Zeile mit Grundlinie − 6 &lt; y ≤ Grundlinie,
+    /// nur unterhalb von Oberkante + 26; x ≤ 0x63 links, sonst rechts.
+    /// </summary>
+    public int? TeamAt(int x, int y)
+    {
+        var sections = Sections;
+        var (_, top) = FrameFor(sections.Sum(s => s.Rows.Count), sections.Count, _liveMinute is not null);
+        if (y <= top + 16 + 10)
+            return null;
+        var line = top + 46;
+        foreach (var section in sections)
+        {
+            line += HeadingPitch;
+            foreach (var row in section.Rows)
+            {
+                if (line - 6 < y && line >= y)
+                    return x > 0x63 ? row.Right : row.Left;
+                line += DebCupGamesScreen.RowPitch;
+            }
+        }
+        return null;
+    }
+
     public override void Update(InputState input)
     {
+        if (Host.Game is { } game && (InfoWindows.Nation.Update(input, game) | InfoWindows.Club.Update(input, game)))
+            return;
         if (input.Pressed(Key.Escape) || input.RightClick)
             Host.Show(_back);
         else if (_liveMinute is null && input.Clicked(Button))
             Host.Show(_groupPage?.Invoke() ?? new WorldCupScreen(Host, _back));
-        else if (input.LeftClick || input.Keys.Count > 0)
+        else if (input.Keys.Count > 0 || (_liveMinute is not null && input.LeftClick))
             Host.Show(_back);
+        else if (input.LeftClick && Host.Game is not null && TeamAt(input.MouseX, input.MouseY) is { } team)
+            InfoWindows.Show(team);
     }
 
     public override void Draw(Surface s)
@@ -185,5 +219,6 @@ public sealed class WorldCupKnockoutScreen : Screen
                 line += DebCupGamesScreen.RowPitch;
             }
         }
+        InfoWindows.Draw(s, Assets, game);
     }
 }

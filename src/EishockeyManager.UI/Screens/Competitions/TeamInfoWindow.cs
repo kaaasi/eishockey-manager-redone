@@ -36,12 +36,16 @@ namespace EishockeyManager.UI.Screens.Competitions;
 ///   (Datei 0x4C10A–0x4C14A; Bild DGROUP 0xC12F = kb\4, geladen Datei 0x438B5). Klick schaltet 0 → 1 → 2 → 0 über 0x0AE2B
 ///   (<see cref="GameState.ToggleWatch"/>, Datei 0x4E440–0x4E46F). Belegt an <c>eisbaeren_f24_00046</c> (Modus 0) und
 ///   <c>_00122</c> (Deutschland mit Bundestrainer, Modus 2).</item>
-/// <item>[APPROX] Zeile und dritter Knopf hängen im Original am Wettbewerbscode DGROUP 0xD0C2 = 0 (Hauptmenü; nach
-///   Freundschaftsspielen bleibt der Code bis zum nächsten Tag stehen, daher fehlen sie in DOSBox 44 und
-///   <c>bundestrainer_00417</c>). Das Remake führt den Code nicht und zeigt beide immer. Die Liste der Knopfplätze DGROUP 0xE1B6
-///   (Zeichen 1–3 nach dem Klick) ist Darstellung und entfällt.</item>
-/// <item>[APPROX] Das Gesicht neben der Flagge (0x110:0x5C, Quelle nicht gelesen) bleibt gelb; Lage vermessen.</item>
-/// <item>[APPROX] „Tore / Spiel“ kommt im Original aus 0xE0:0x70 (nicht gelesen): hier Tore · 10 / Spiele je Seite, „a.b:c.d“.</item>
+/// <item>[ORIGINAL] Zeile „Historische Ergebnisse“ mit Liste und dritter Knopf nur bei Wettbewerbscode DGROUP 0xD0C2 = 0 (Datei
+///   0x4D7AA, 0x4E07A; nach einem Freundschaftsspiel bis zum nächsten Aufbau des Hauptmenüs nicht, DOSBox 44 und
+///   <c>bundestrainer_00417</c>): <see cref="CompetitionCode"/> (B15/B16, A286; Beleg re-abweichungen B15/B16 Punkt 4). Die
+///   Liste der Knopfplätze DGROUP 0xE1B6 (Zeichen 1–3 nach dem Klick) ist Darstellung und entfällt.</item>
+/// <item>[ORIGINAL] Gesicht neben der Flagge (A287): 0x51AAF zeichnet es mit den Bilanzzeichen bei (0xF9 | 0x59) (Datei
+///   0x4D59E–0x4D5C6, <see cref="FormMood"/>); „0x110:0x5C“ (Datei 0x4D588) ist die Tabellenkurve 0x445E0, für Länder ohne
+///   Wirkung. Beleg <c>b15_gegnerfenster.py</c> Teil 1.</item>
+/// <item>[ORIGINAL] „Tore / Spiel“ (A288) aus 0xE0:0x70 = Datei 0x2ECA0 (Teamsatz +0x19/+0x1A Tore, +0x1D/+0x1E Gegentore,
+///   +0x21/+0x22 Spiele, Seite 2 = Summe), Format wie <see cref="Average"/> (205 von 205 gleich, <c>b15_gegnerfenster.py</c>
+///   Teil 2).</item>
 /// </list>
 /// </remarks>
 public sealed class TeamInfoWindow
@@ -61,8 +65,11 @@ public sealed class TeamInfoWindow
     public const byte TextColor = 30;
     public const byte NoSeriesColor = 6;
 
-    /// <summary>[APPROX] Gesicht neben der Flagge, vermessen an DOSBox 14 und <c>bundestrainer_00610</c>.</summary>
-    public const int MoodX = 250;
+    /// <summary>
+    /// [ORIGINAL] Gesicht neben der Flagge: Ziel (0xF9 | 0x59) der Bildausgabe 0x139C9 in 0x51AAF (Datei 0x4D5B8–0x4D5C6), dieselbe
+    /// Ausgabe wie die Bilanzzeichen bei (0x76 + 8 i | 0x59). Vorher 250, vermessen an DOSBox 14 und <c>bundestrainer_00610</c>.
+    /// </summary>
+    public const int MoodX = 249;
     public const int MoodY = 89;
 
     /// <summary>[ORIGINAL] Texte der Serien (DGROUP 0xF41 ff.).</summary>
@@ -102,7 +109,7 @@ public sealed class TeamInfoWindow
     /// <summary>[ORIGINAL] Klick auf den dritten Knopf (nur linke Taste, Datei 0x4E42A–0x4E46A): Markierung umschalten.</summary>
     internal static void WatchClick(InputState input, GameState? game, int club)
     {
-        if (game is not null && club < game.Clubs.Count && input.Clicked(WatchButton))
+        if (game is not null && club < game.Clubs.Count && CompetitionCode.IsMainMenu(game) && input.Clicked(WatchButton))
             game.ToggleWatch(game.Clubs[club]);
     }
 
@@ -171,13 +178,24 @@ public sealed class TeamInfoWindow
         }
         y += 2;
 
-        if (HeadToHeadSlot(game, nation) is { } slot)
+        if (CompetitionCode.IsMainMenu(game) && HeadToHeadSlot(game, nation) is { } slot)
         {
             Add("Historische Ergebnisse gegen " + game.Clubs[NationalTeams.Germany].Name, LabelX);
             y += LineStep;
             Add(HeadToHeadText(game.HeadToHead(slot, nation)), LabelX);
         }
         return lines;
+    }
+
+    /// <summary>
+    /// [ORIGINAL] Gesicht neben der Flagge (A287, Datei 0x51AAF): Stimmung 2 + Siege − Niederlagen über die acht Bilanzzeichen,
+    /// erst danach auf 1 … 3 begrenzt; 1 rot, 2 gelb, 3 grün. Beleg <c>b15_gegnerfenster.py</c> Teil 1 („s-------“ grün,
+    /// „nnnnnsss“ rot, „ssssnnnn“ gelb). Vorher immer gelb.
+    /// </summary>
+    public static Widgets.Mood FormMood(IReadOnlyList<int> form)
+    {
+        var mood = 2 + form.Count(f => f == 3) - form.Count(f => f == 1);
+        return mood >= 3 ? Widgets.Mood.Up : mood <= 1 ? Widgets.Mood.Down : Widgets.Mood.Same;
     }
 
     /// <summary>[ORIGINAL] Punkte und Spiele aus den Bilanzzeichen (Datei 0x51AAF: Sieg 2, Unentschieden 1).</summary>
@@ -194,7 +212,10 @@ public sealed class TeamInfoWindow
         return (points, games);
     }
 
-    /// <summary>[APPROX] Schnitt mit einer Nachkommastelle, abgeschnitten (ohne Spiel 0.0).</summary>
+    /// <summary>
+    /// [ORIGINAL] Schnitt mit einer Nachkommastelle, abgeschnitten (ohne Spiel 0.0) wie 0x2ECA0 (A290; 205 von 205 gleich,
+    /// <c>b15_gegnerfenster.py</c> Teil 2).
+    /// </summary>
     public static string Average(int goals, int games)
     {
         var tenths = games == 0 ? 0 : goals * 10 / games;
@@ -278,8 +299,8 @@ public sealed class TeamInfoWindow
         Widgets.Logo(s, a, game.Clubs[club].LogoGraphic, 259, 53);
         NationalWidgets.FillInclusive(s, 122, 58, 228, 87, 1);
         s.Outline(new Rect(122, 58, 107, 30), 3);
-        Widgets.Smiley(s, a, Widgets.Mood.Same, MoodX, MoodY);
         var form = game.NationalForm(club);
+        Widgets.Smiley(s, a, FormMood(form), MoodX, MoodY);
         for (var i = 0; i < form.Count; i++)
             if (form[i] != 0)
                 Widgets.Smiley(s, a, form[i] == 3 ? Widgets.Mood.Up : form[i] == 1 ? Widgets.Mood.Down : Widgets.Mood.Same, 118 + 8 * i, 89);
@@ -291,7 +312,8 @@ public sealed class TeamInfoWindow
         s.Blit(a.Image(2), new Rect(17, 179, Widgets.ButtonWidth, Widgets.ButtonHeight), CloseButton.X, CloseButton.Y,
             transparent: 0);
         CompetitionWidgets.Centered(s, mini, CloseButton.X, CloseButton.X + 59, CloseButton.Y + 7, "Reicht mir", 29, 1);
-        DrawWatchButton(s, a, game.Clubs[club].WatchMode);
+        if (CompetitionCode.IsMainMenu(game))
+            DrawWatchButton(s, a, game.Clubs[club].WatchMode);
         CompetitionWidgets.Centered(s, mini, Left, Left + 0xD8, Top + 0x3A, "Stärke:" + game.NationalInfoStrength(club), TextColor, null);
         foreach (var line in Lines(game, club))
             CompetitionWidgets.Left(s, mini, line.X, line.Baseline, line.Text, line.Color);

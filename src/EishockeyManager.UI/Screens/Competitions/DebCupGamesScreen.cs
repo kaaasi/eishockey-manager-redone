@@ -3,9 +3,10 @@ using EishockeyManager.Core;
 namespace EishockeyManager.UI.Screens.Competitions;
 
 /// <summary>Ergebnis eines Pokalspiels in der Übersicht: Tore von links und rechts, dazu 0–2 Punkte dahinter.</summary>
-/// <param name="Dots">Marken des Spiels (<see cref="CupTie.MarksOf"/>): 0 = reguläre Spielzeit, 1 = Penaltyschießen (schneller Weg
-/// 0x37761, Minutenweg 0x39789; Endstand = Gleichstand + Penaltytore), 2 = Tor in der Verlängerung (0x38402 auf den schon markierten
-/// Stand; eisbaeren_f44_01330 „4: 3..“). [ORIGINAL] Je + 30 im Ergebnis ein Punkt (Anzeige Datei 0x338AB–0x338E3).</param>
+/// <param name="Dots">Marken des Spiels (<see cref="CupTie.MarksOf"/>): 0 = reguläre Spielzeit, 1 = Tor in der Verlängerung (0x38402
+/// auf den Stand ohne Marken, Datei 0x381FF–0x3824B) bzw. Zusatzwurf des DEB-Pokals bei ungleichem Ergebnis, 2 = Penaltyschießen
+/// (Minutenweg 0x32AA3 + 0x3901B, Endstand = Gleichstand + Treffer) bzw. Gleichstand im schnellen Weg (0x32AA3 + 0x3775D) – C07,
+/// <see cref="CupMatch"/>. [ORIGINAL] Je + 30 im Ergebnis ein Punkt (Anzeige Datei 0x338AB–0x338E3).</param>
 public readonly record struct DebCupResult(int Left, int Right, int Dots);
 
 /// <summary>Eine Paarung der laufenden Pokalrunde; <see cref="Results"/> hat einen Eintrag je gespieltem Termin (null = nicht ausgetragen).</summary>
@@ -118,12 +119,15 @@ public sealed record DebCupOverview(int Round, int DatesPlayed, int? NextDay, IR
 ///   nach Terminnummer. Spiele, die nicht mehr nötig waren (Serie entschieden), bleiben leer. Der Wert „+ 30“ bzw. „+ 60“ im
 ///   Ergebnis setzt einen bzw. zwei Punkte hinter das Ergebnis (x + 22 und x + 24).</item>
 /// </list>
-/// [APPROX]
 /// <list type="bullet">
-/// <item>Zwei Punkte nach einem Tor in der Verlängerung stützen sich auf das Videobild (Herkunft des Stands vor 0x38402 nicht verfolgt,
-///   siehe <see cref="CupMatch"/>). [ORIGINAL] Ein Punkt ist ein Pixel: Aufruf 0x50:0x3B0 ohne Farbargument (Zeichenfarbe des Ergebnisses)
-///   bei x + 22 + 2 · i auf der Textzeile (Datei 0x339BD–0x339E3); am Video eisbaeren_f44_01330 ein Pixel auf der Grundlinie.</item>
-/// <item>Ein Klick auf einen Verein im Original wird nicht nachgebildet; jede Taste und jeder Klick führt zurück.</item>
+/// <item>[ORIGINAL] Punkte nach <see cref="DebCupResult.Dots"/> (C07, Beleg <c>c07_marken.py</c>, re-abweichungen C07). Ein Punkt ist ein
+///   Pixel: Aufruf 0x50:0x3B0 ohne Farbargument (Zeichenfarbe des Ergebnisses) bei x + 22 + 2 · i auf der Textzeile (Datei
+///   0x339BD–0x339E3); am Video eisbaeren_f44_01330 ein Pixel auf der Grundlinie.</item>
+/// <item>[ORIGINAL] Klick auf einen Verein (C07, A277; Beleg <c>c07_klick.py</c>): Linksklick unterhalb der Kopfzeile (y &gt; Oberkante
+///   + 26) auf eine Zeile (Grundlinie − 6 &lt; y ≤ Grundlinie, Datei 0x33AE4–0x33B03) öffnet das Vereinsfenster 0x4D385, x ≤ 0x63
+///   den linken, sonst den rechten Verein (<see cref="ClubAt"/>); der Bildschirm bleibt stehen, ein Linksklick daneben tut nichts,
+///   der Rechtsklick (DGROUP 0x5A16 = 3, Datei 0x33B33) führt zurück. [APPROX] Das Fenster zeigt Seite 2 (Gesamt) statt Seite 0/1
+///   wie <see cref="PlayoffGamesScreen"/>; eine Taste führt als Komfort des Remakes ebenfalls zurück.</item>
 /// </list>
 /// </remarks>
 public sealed class DebCupGamesScreen : Screen
@@ -166,10 +170,50 @@ public sealed class DebCupGamesScreen : Screen
 
     public static int ResultX(int dates, int index) => 207 - 10 * (dates - 1) + 36 * index;
 
+    /// <summary>Vereinsfenster nach einem Klick auf einen Verein (<see cref="ClubAt"/>).</summary>
+    public InfoBarWindows InfoWindows { get; } = new();
+
+    /// <summary>Grundlinien der Paarungszeilen mit ihren Vereinen, wie <see cref="Draw"/> sie legt (Zeilen aus Strichen fehlen).</summary>
+    public static IReadOnlyList<(int Y, int Left, int Right)> RowLines(DebCupOverview overview)
+    {
+        var (_, y) = FrameFor(overview.Groups.Sum(g => g.Rows.Count), overview.Groups.Count(g => g.Rows.Count == 0));
+        var lines = new List<(int, int, int)>();
+        var line = y + 46;
+        foreach (var group in overview.Groups)
+        {
+            line += 8;
+            for (var r = 0; r < group.Rows.Count; r++)
+                lines.Add((line + RowPitch * r, group.Rows[r].LeftClub, group.Rows[r].RightClub));
+            line += RowPitch * Math.Max(group.Rows.Count - 1, 0) + RowPitch;
+        }
+        return lines;
+    }
+
+    /// <summary>
+    /// [ORIGINAL] Verein unter der Maus (Datei 0x33AAF–0x33B30): Zeile mit Grundlinie − 6 &lt; y ≤ Grundlinie, nur unterhalb von
+    /// Oberkante + 26; x ≤ 0x63 der linke, sonst der rechte Verein.
+    /// </summary>
+    public static int? ClubAt(DebCupOverview? overview, int x, int y)
+    {
+        if (overview is null)
+            return null;
+        var (_, top) = FrameFor(overview.Groups.Sum(g => g.Rows.Count), overview.Groups.Count(g => g.Rows.Count == 0));
+        if (y <= top + 16 + 10)
+            return null;
+        foreach (var (line, left, right) in RowLines(overview))
+            if (line - 6 < y && line >= y)
+                return x > 0x63 ? right : left;
+        return null;
+    }
+
     public override void Update(InputState input)
     {
-        if (input.LeftClick || input.RightClick || input.Keys.Count > 0)
+        if (Host.Game is { } game && (InfoWindows.Nation.Update(input, game) | InfoWindows.Club.Update(input, game)))
+            return;
+        if (input.RightClick || input.Keys.Count > 0)
             Host.Show(_back);
+        else if (input.LeftClick && Host.Game is not null && ClubAt(Overview, input.MouseX, input.MouseY) is { } club)
+            InfoWindows.Show(club);
     }
 
     public override void Draw(Surface s)
@@ -234,5 +278,6 @@ public sealed class DebCupGamesScreen : Screen
             }
             line += RowPitch * Math.Max(group.Rows.Count - 1, 0) + RowPitch;
         }
+        InfoWindows.Draw(s, Assets, game);
     }
 }

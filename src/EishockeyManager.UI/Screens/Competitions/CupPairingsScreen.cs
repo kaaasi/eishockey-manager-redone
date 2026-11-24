@@ -36,8 +36,9 @@ public sealed record CupPairingRow(int Home, int Away, int HomeGoals, int AwayGo
 ///   (Datei 0x3AC75–0x3AC81).</item>
 /// <item>[ORIGINAL] Klick auf eine Flagge ruft das Gegner-Fenster 0x128:0x2A mit Seite 2 (Datei 0x302AA,
 ///   <see cref="FlagAt"/>, <see cref="TeamInfoWindow"/>).</item>
-/// <item>[APPROX] Rechtsklick und Esc kehren ins Menü zurück; gedrückte Pfeile (Quelle y + 10) werden nicht gezeigt; die
-///   zuletzt gewählte Seite (DGROUP 0x5127) wird nicht gemerkt.</item>
+/// <item>[ORIGINAL] Die zuletzt gewählte Seite (DGROUP 0x5127, Datei 0x458A2–0x458BB) merkt <see cref="WorldCupPairingsPages"/>
+///   (A293; B10 prüft A268, Runde 25).</item>
+/// <item>[APPROX] Rechtsklick und Esc kehren ins Menü zurück; gedrückte Pfeile (Quelle y + 10) werden nicht gezeigt.</item>
 /// </list>
 /// </remarks>
 public sealed class CupPairingsScreen : Screen

@@ -34,9 +34,14 @@ namespace EishockeyManager.UI.Screens.Competitions;
 /// <item>[ORIGINAL] „Spielplan“ öffnet den Spielplan des Gegners 0x05CA0 (<see cref="ClubScheduleWindow"/>; Klick Datei
 ///   0x4E505–0x4E539, nur Vereine 0x4D2F0); dessen „Info“ kehrt zurück, „Reicht mir“ und Rechtsklick schließen das Fenster.</item>
 /// <item>[ORIGINAL] Dritter Knopf (Markierung zum Zusehen) wie im Länderzweig (<see cref="TeamInfoWindow"/>), auch für Teams ab
-///   0x40 (Datei 0x4D750 springt nach 0x4D78A); Wettbewerbscode DGROUP 0xD0C2 ebenso [APPROX] nicht geführt.</item>
-/// <item>[APPROX] Bilanz, Bilanzzeichen und „Tore / Spiel“ aus den Ligaergebnissen der Saison (<see cref="GameState.Results"/>,
-///   wie der Tabellensatz, den nur Wettbewerbscode 7/8 füllt und der Saisonwechsel leert). Rekorde der Vereine tragen
+///   0x40 (Datei 0x4D750 springt nach 0x4D78A), nur bei Wettbewerbscode DGROUP 0xD0C2 = 0 (Datei 0x4D7AA,
+///   <see cref="CompetitionCode"/>); ebenso die Zeile „Historische Ergebnisse“ mit Liste (Datei 0x4E07A, B15/B16, A286).</item>
+/// <item>[ORIGINAL] Gesicht neben der Flagge aus den Bilanzzeichen wie im Länderzweig (<see cref="TeamInfoWindow.FormMood"/>,
+///   Datei 0x51AAF; A287).</item>
+/// <item>[ORIGINAL] Bilanz, Bilanzzeichen und „Tore / Spiel“ aus den Ligaergebnissen der Saison (<see cref="GameState.Results"/>):
+///   den Teamsatz schreibt 0x50283 nur bei Wettbewerbscode 7 (Liga) und 8 (WM-Gruppe), Pokal, Play-off und Freundschaftsspiel
+///   lassen ihn unverändert – dieselbe Menge (B16, A753; Beleg <c>b15_gegnerfenster.py</c> Teil 3, re-abweichungen B15/B16).
+///   [APPROX] Wann das Original den Teamsatz leert, ist nicht nachgebildet; das Remake nimmt die Ergebnisse der laufenden Saison. Rekorde der Vereine tragen
 ///   seit Runde 12 die Ligaspiele ein ([ORIGINAL] 0x50283 trägt nur bei Wettbewerbscode 7 (Liga) und 8 (WM-Gruppe, nur Länder) ein, Datei 0x5030D–0x5031B;
 ///   Pokal und Play-offs nicht, <c>ClubRecordsSeasonTests</c>; #619).</item>
 /// </list>
@@ -274,7 +279,7 @@ public sealed class ClubInfoWindow
         }
         y += 2;
 
-        if (HeadToHeadSlot(game, club) is { } slot)
+        if (CompetitionCode.IsMainMenu(game) && HeadToHeadSlot(game, club) is { } slot)
         {
             Add("Historische Ergebnisse gegen " + game.Clubs[game.ActiveManager.ClubIndex].Name, labelX);
             y += TeamInfoWindow.LineStep;
@@ -300,8 +305,8 @@ public sealed class ClubInfoWindow
         if (!foreign)
         {
             RankCurve.Draw(s, a, game.RankHistory(club), null, CurveX, CurveY);
-            Widgets.Smiley(s, a, Widgets.Mood.Same, TeamInfoWindow.MoodX, TeamInfoWindow.MoodY);
             var form = Form(game, club);
+            Widgets.Smiley(s, a, TeamInfoWindow.FormMood(form), TeamInfoWindow.MoodX, TeamInfoWindow.MoodY);
             for (var i = 0; i < form.Count; i++)
                 if (form[i] != 0)
                     Widgets.Smiley(s, a, form[i] == 3 ? Widgets.Mood.Up : form[i] == 1 ? Widgets.Mood.Down : Widgets.Mood.Same, 118 + 8 * i, 89);
@@ -313,7 +318,8 @@ public sealed class ClubInfoWindow
         DrawButton(s, a, CloseButton, "Reicht mir");
         if (HasSchedule(game, club))
             DrawButton(s, a, ScheduleButton, "Spielplan");
-        TeamInfoWindow.DrawWatchButton(s, a, game.Clubs[club].WatchMode);
+        if (CompetitionCode.IsMainMenu(game))
+            TeamInfoWindow.DrawWatchButton(s, a, game.Clubs[club].WatchMode);
         CompetitionWidgets.Centered(s, mini, Left, Left + 0xD8, Top + 0x3A, HeadLine(game, club), TeamInfoWindow.TextColor, null);
         if (Schedule.Visible)
         {

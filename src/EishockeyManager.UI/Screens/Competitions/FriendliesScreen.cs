@@ -118,6 +118,9 @@ public sealed class FriendliesScreen : Screen
         }
         switch (game.PlayFriendly(opponent, Home))
         {
+            case FriendlyResult.Played:
+                CompetitionCode.FriendlyPlayed(game); // [ORIGINAL] Code 0xD (Datei 0x30390) bis zum nächsten Hauptmenü (B15/B16, A286)
+                break;
             case FriendlyResult.TooMany:
                 // [ORIGINAL] Datei 0x3C2C5: Kurzmeldung 0x0C0B8 (ohne Knopf, schließt von selbst; Integration Runde 11, ui-meldungen, K2).
                 // [APPROX] „Sie haben nicht / genug Geld !“ darunter hat keinen eigenen Aufruf 0x0C0B8; es bleibt ein Meldungsfenster.

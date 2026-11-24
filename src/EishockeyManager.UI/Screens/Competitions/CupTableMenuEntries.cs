@@ -16,8 +16,8 @@ namespace EishockeyManager.UI.Screens.Competitions;
 ///   0x511F + Platz = 0x5123, Vorgabe 3 – derselbe Wert wie DGROUP 0x5126 bei „Europapokal“ der Paarungen: der
 ///   Gruppenbildschirm „Europacup Gruppe 1“ (<see cref="EuropeanCupScreen"/>) mit den Knöpfen zu Gruppe 2 und Endrunde.</item>
 /// </list>
-/// [APPROX] Das Original merkt sich die zuletzt gezeigte Seite je Kachel (die Funktion gibt sie zurück, Datei 0x45862);
-/// das Remake zeigt beim Öffnen immer Gruppe 1. Der Bildschirm zeigt nur vorhandenen Zustand.
+/// [ORIGINAL] Das Original merkt sich die zuletzt gezeigte Seite der Kachel (Rückgabe des Seitenwählers, Datei 0x45862,
+/// DGROUP 0x5123): <see cref="EuropeanCupPages"/> (B10, A269). Der Bildschirm zeigt nur vorhandenen Zustand.
 /// </remarks>
 internal static class CupTableMenuEntries
 {
@@ -25,5 +25,6 @@ internal static class CupTableMenuEntries
     private static Screen DebCupGames(ScreenHost host, Screen back) => new DebCupGamesScreen(host, back);
 
     [MenuEntry("Tabelle Europapokal")]
-    private static Screen EuropeanCup(ScreenHost host, Screen back) => new EuropeanCupScreen(host, back);
+    private static Screen EuropeanCup(ScreenHost host, Screen back) =>
+        EuropeanCupPages.FromTile(host, back, EuropeanCupPages.Tile.Table);
 }

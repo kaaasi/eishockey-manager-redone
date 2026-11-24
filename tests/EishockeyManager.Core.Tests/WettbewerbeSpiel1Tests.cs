@@ -67,9 +67,10 @@ public class WettbewerbeSpiel1Tests
             // #925 (b): stehender Gleichstand nur mit zwei Marken, Sieger der Heimverein (0x34C76 jnc).
             Assert.All(withMarks.Where(x => x.Match.HomeGoals == x.Match.AwayGoals),
                 x => Assert.Equal((2, x.Match.Home), (x.Marks, x.Match.Winner)));
-        // Minutenweg: Marke 1 Penaltyschießen, 2 Tor in der Verlängerung; schneller Weg: 2 (Wurf bei Gleichstand) oder 1 (Wurf einer
+        // Minutenweg: Marke 2 Penaltyschießen, 1 Tor in der Verlängerung (C07); schneller Weg: 2 (Wurf bei Gleichstand) oder 1 (Wurf einer
         // ungleichen Paarung mit offener Paarung dahinter, RR-01 – Endstand ungleich).
-        var expectedMarks = minuteLoop ? 1 : 2;
+        // C07 (Runde 25, wettbewerbe-anzeige, R15-E2 = C): [ORIGINAL] Verlängerungstor eine Marke, Penaltyschießen und Gleichstand im schnellen Weg zwei (Beleg c07_marken.py, re-abweichungen C07); vorher umgekehrt.
+        var expectedMarks = 2;
         if (!minuteLoop)
             Assert.All(fast.Where(x => x.Marks == 1),
                 x => Assert.NotEqual(x.Match.HomeGoals, x.Match.AwayGoals));
@@ -82,11 +83,11 @@ public class WettbewerbeSpiel1Tests
     }
 
     /// <summary>
-    /// Regressionstest (vorher rot): WM-Endrunde ebenso – Endstand ungleich, Marke 1 nach dem schnellen Weg (Code 10 nimmt
+    /// Regressionstest (vorher rot): WM-Endrunde ebenso – Endstand ungleich, Marke 2 nach dem schnellen Weg (C07, vorher 1) (Code 10 nimmt
     /// immer 0x3731F, R9S-02), Abstand höchstens 2 (random(0, 2) je Seite, 0x376F0).
     /// </summary>
     [Fact]
-    public void WorldCupKnockout_ShootoutInFinalScore_OneMark()
+    public void WorldCupKnockout_ShootoutInFinalScore_TwoMarks()
     {
         var marked = 0;
         for (var seed = 1; seed <= 6; seed++)
@@ -101,8 +102,9 @@ public class WettbewerbeSpiel1Tests
                     var m = wm.Knockout[stage][i];
                     Assert.NotEqual(m.HomeGoals, m.AwayGoals);
                     var marks = wm.MarksOf(stage, i);
-                    Assert.Equal(m.PenaltyWinner is null ? 0 : 1, marks);
-                    if (marks == 1)
+                    // C07 (Runde 25, wettbewerbe-anzeige, R15-E2 = C): [ORIGINAL] Verlängerungstor eine Marke, Penaltyschießen und Gleichstand im schnellen Weg zwei (Beleg c07_marken.py, re-abweichungen C07); vorher umgekehrt.
+                    Assert.Equal(m.PenaltyWinner is null ? 0 : 2, marks);
+                    if (marks == 2)
                     {
                         marked++;
                         Assert.InRange(Math.Abs(m.HomeGoals - m.AwayGoals), 1, 2);
@@ -113,9 +115,9 @@ public class WettbewerbeSpiel1Tests
     }
 
     /// <summary>
-    /// Endstand und Marken aus dem Spielbericht. [ORIGINAL] 0x37761 (schneller Weg) und 0x39789 (Minutenweg): eine Marke
-    /// + 30 auf dem Endstand nach dem Penaltyschießen; 0x38402: ein Tor in der Verlängerung schreibt Heim + 30 auf den
-    /// schon markierten Stand (zwei Punkte, eisbaeren_f44_01330 „4: 3..“).
+    /// Endstand und Marken aus dem Spielbericht. [ORIGINAL] C07 (Runde 25, Beleg c07_marken.py): Penaltyschießen zwei Marken
+    /// (0x32AA3 + 0x3901B, Datei 0x39770–0x397B3); ein Tor in der Verlängerung schreibt den Stand ohne Marken + Tor mit Heim + 30
+    /// (Datei 0x381FF–0x3824B, 0x38402) – eine Marke. Vorher umgekehrt nach eisbaeren_f44_01330 „4: 3..“.
     /// </summary>
     [Fact]
     public void FromReport_EndScoreAndMarks()
@@ -126,14 +128,15 @@ public class WettbewerbeSpiel1Tests
         var regular = CupMatch.FromReport(1, home, away, new MatchReport { HomeGoals = 3, AwayGoals = 1 });
         Assert.Equal((3, 1, 0, (int?)null), (regular.Match.HomeGoals, regular.Match.AwayGoals, regular.Marks, regular.Match.PenaltyWinner));
 
+        // C07 (Runde 25, wettbewerbe-anzeige, R15-E2 = C): [ORIGINAL] Verlängerungstor eine Marke, Penaltyschießen und Gleichstand im schnellen Weg zwei (Beleg c07_marken.py, re-abweichungen C07); vorher umgekehrt.
         var overtime = CupMatch.FromReport(1, home, away, new MatchReport { HomeGoals = 3, AwayGoals = 4, Overtime = true });
-        Assert.Equal((3, 4, 2, (int?)null), (overtime.Match.HomeGoals, overtime.Match.AwayGoals, overtime.Marks, overtime.Match.PenaltyWinner));
+        Assert.Equal((3, 4, 1, (int?)null), (overtime.Match.HomeGoals, overtime.Match.AwayGoals, overtime.Marks, overtime.Match.PenaltyWinner));
 
         var shootout = CupMatch.FromReport(1, home, away, new MatchReport
         {
             HomeGoals = 2, AwayGoals = 2, Overtime = true, ShootoutGoals = (3, 5), ShootoutHomeWins = false,
         });
-        Assert.Equal((5, 7, 1, (int?)away.Index), (shootout.Match.HomeGoals, shootout.Match.AwayGoals, shootout.Marks, shootout.Match.PenaltyWinner));
+        Assert.Equal((5, 7, 2, (int?)away.Index), (shootout.Match.HomeGoals, shootout.Match.AwayGoals, shootout.Marks, shootout.Match.PenaltyWinner));
 
         var forfeit = CupMatch.FromReport(1, home, away, new MatchReport { HomeGoals = 0, AwayGoals = 2, Forfeit = true });
         Assert.Equal(0, forfeit.Marks);

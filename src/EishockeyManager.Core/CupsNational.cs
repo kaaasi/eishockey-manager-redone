@@ -204,8 +204,9 @@ public sealed partial class NationalCoach
     }
 
     /// <summary>
-    /// Mittel aus Kondition und Technik eines Spielers (nur <see cref="NationalLineup.LineValue"/>). [APPROX] Die Reihenwerte der
-    /// Anzeige bildet das Original aus 0x977F (Datei 0x3B65C); den Wert liefert <see cref="GameState.NationalPanelLineValue"/>.
+    /// Mittel aus Kondition und Technik eines Spielers (nur <see cref="NationalLineup.LineValue"/>, ohne Anzeige). [ORIGINAL] Die
+    /// Reihenwerte der Anzeige bildet das Original aus 0x977F (Datei 0x3B65C); die Mannschaftsfelder nehmen dafür
+    /// <see cref="GameState.NationalPanelLineValue"/> (B17, Runde 25; Beleg re-abweichungen B17).
     /// </summary>
     public static int Value(Player p) => (p.Condition + p.Technique) / 2;
 
