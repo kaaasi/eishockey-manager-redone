@@ -194,7 +194,9 @@ public class ZufallsstromTeil4Tests
         ToCupDay(a, kind);
         ToCupDay(b, kind);
         Assert.Equal(a.Random.Capture(), b.Random.Capture());
-        for (var i = 0; i < 7; i++)
+        // Spur saison-geld Teil 1 (Runde 25, T03, R15-E2 = C): 8 statt 7 Würfe – mit dem Markt-Takt random(0, 3) je Markt-Platz (A829,
+        // Datei 0x07215) ergeben 7 zusätzliche Würfe zufällig dieselben Ergebnisse des DEB-Pokaltags; die Probe hängt an der Zahl.
+        for (var i = 0; i < 8; i++)
             _ = b.Random.Next();
         a.Continue();
         b.Continue();

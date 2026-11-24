@@ -197,4 +197,49 @@ public class SaisonGeldT03Tests
             Assert.InRange(club.Strength + v.AttackTechnique, 69, 94);
         }
     }
+
+    /// <summary>
+    /// Mehrsaisonprobe (4 Saisonwechsel, passiver und aktiver Manager): je Saison am 13. April kein Oberliga-Zug, am 29. April zwei
+    /// Absteiger und zwei verschiedene Nachrücker aus den Plätzen 36–41; nach der Wanderung liegen die Kondition- und Technikwerte jedes
+    /// Ligavereins in den Grenzen seiner neuen Liga, <see cref="GameState.StartNextSeason"/> wandert nicht mehr; Ligen 12/12/12.
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FourSeasonChanges_DrawAndDriftOn29April(bool active)
+    {
+        var game = TestGames.Create(13);
+        var clubSeasonOverSeen = 0;
+        string? candidates = null;
+        RngTwinProbeTests.Run(game, active,
+            afterStep: g =>
+            {
+                if (g.Phase == SeasonPhase.ClubSeasonOver && g.CurrentRecord is { } r)
+                {
+                    Assert.Empty(r.LeftOberliga);
+                    candidates = string.Join(",", g.OutsidePlaces().Take(GameState.OutsideDrawPlaces));
+                    clubSeasonOverSeen++;
+                }
+            },
+            beforeChange: g =>
+            {
+                var record = g.CurrentRecord!;
+                Assert.Equal(2, record.LeftOberliga.Count);
+                Assert.Equal(2, record.PromotedInto[League.Oberliga].Distinct().Count());
+                if (candidates is not null)
+                    Assert.All(record.PromotedInto[League.Oberliga].Where(c => !record.LeftOberliga.Contains(c)),
+                        c => Assert.Contains(c.ToString(), candidates.Split(',')));
+                foreach (var club in g.Clubs.Where(c => c.Index < NewGame.SelectableClubs && c.TeamValues is not null && !g.IsClubManaged(c.Index)))
+                {
+                    var (min, max) = MatchEngine.DriftBounds(record.NextLeague(club.Index, club.League));
+                    var v = club.TeamValues!.Value;
+                    foreach (var d in new[] { v.DefenseCondition, v.AttackCondition, v.DefenseTechnique, v.AttackTechnique })
+                        Assert.InRange(club.Strength + d, min, max);
+                }
+                candidates = null;
+            });
+        Assert.True(clubSeasonOverSeen >= 4, $"nur {clubSeasonOverSeen} Halte nach dem 13. April");
+        foreach (var league in Enum.GetValues<League>())
+            Assert.Equal(GameState.ClubsPerLeague, game.LeagueClubs(league).Count());
+    }
 }

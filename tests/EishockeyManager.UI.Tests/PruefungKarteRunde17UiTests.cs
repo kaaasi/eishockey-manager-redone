@@ -53,7 +53,9 @@ public class PruefungKarteRunde17UiTests
         // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A, R15-E2 = C): Saat 2 statt 5 – Pokalauslosungen (Datei 0x298B1, 0x43A8C) und Pokalspiele ziehen aus dem gemeinsamen Strom statt aus CupRandom, anderer Zufallsverlauf ab dem Spielstart; bei Saat 5 bekommt Manager 1 keine Prämie, unter 1–10 haben beide Manager bei 2 und 8 eine Prämie. Die Probe hängt an der Saat.
         // Runde 22, Spur kaderplatz-werte Teil 2 (A093; R21-D2 = A, R15-E2 = C): Saat 3 statt 2 – die Spielabrechnung 0x544C0 würfelt vor jedem Spiel eines Managervereins je Kaderplatz random(0, 4) (Datei 0x548A8–0x548E7) aus dem gemeinsamen Strom, anderer Zufallsverlauf ab dem ersten Managerspiel; bei Saat 2 bekommt ein Manager keine Prämie, unter 1–16 haben beide Manager bei 1, 3, 4, 6, 8
         // und 11 eine Prämie. Rückschaltprobe: src/ von faa64d2 mit Saat 3 rot (eine Prämie fehlt) – die Probe hängt an der Saat.
-        var (d, game) = StartAtSeasonEnd(nationalCoach: false, seed: 3);
+        // Runde 25, Spur saison-geld Teil 1 (T03, R21-D2 = A, R15-E2 = C): Saat 7 statt 3 – Markt-Takt random(0, 3) je Markt-Platz (A829, Datei 0x07215),
+        // anderer Zufallsverlauf; bei Saat 3 bekommt Manager 0 keine Prämie, unter 1–15 erfüllen 7, 8, 10–14 die Vorbedingung.
+        var (d, game) = StartAtSeasonEnd(nationalCoach: false, seed: 7);
         var records = game.History[^1].Managers;
         Assert.Equal(2, records.Count);
         Assert.All(records, r => Assert.True(r.Premium > 0, "Probe ohne Prämie prüft nichts"));

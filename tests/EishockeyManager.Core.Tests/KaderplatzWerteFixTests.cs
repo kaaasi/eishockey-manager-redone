@@ -111,7 +111,10 @@ public class KaderplatzWerteFixTests
         // Verletzung außerhalb des Spiels und die Alterung verlorener Pool-Spieler ändern den Zufallsverlauf; beim passiven Manager
         // trägt nach vier Saisonwechseln mit der gemeinsamen Saat kein Spieler mehr einen abweichenden Poolwert (Vorbedingung der
         // Probe). Rückschaltprobe: src/ von ce658d4 + gemeinsame Saat → grün (alter Zufallsverlauf). Die Probe hängt an der Saat.
-        var game = OriginalExportTests.NewGameForExport(database, 2);
+        // Spur saison-geld Teil 1 (Runde 25, T03, R21-D2 = A, R15-E2 = C): Saat 3 statt 2 – anderer Zufallsverlauf ab dem ersten Takttag
+        // (A829, Datei 0x07215); bei Saat 2 trägt der passive Manager nach vier Wechseln keinen abweichenden Poolwert mehr (Vorbedingung),
+        // unter 2–19 erfüllen 3, 8, 9 sie passiv und aktiv. Die Probe hängt an der Saat.
+        var game = OriginalExportTests.NewGameForExport(database, 3);
         RngTwinProbeTests.Run(game, active);
         var club = game.Clubs[game.Managers[0].ClubIndex];
         Assert.Contains(club.Players, p => p.PoolCondition is not null || p.PoolTechnique is not null);

@@ -141,6 +141,11 @@ public class AbgleichOriginalPaareTests
                 // Zufall: LANDSHUT steigt im Original in die Oberliga ab (Teamwerte auf deren Obergrenze, alle −33), im Remake
                 // nicht (Liga über den Saisonwechsel zufallsabhängig); Abstand 21–51 je Saat.
                 new($"{Landshut}.TeamValues.*", Chance, Optional: true),
+                // Zufall (Runde 25, Spur saison-geld Teil 1, T03/A829, R21-D2 = A): Mit dem Markt-Takt random(0, 3) je Markt-Platz
+                // (Datei 0x07215) geht bei Saat 4711 im Remake EC HEDOS MÜNCHEN als Partner des Zwangsabsteigers in die Oberliga
+                // (Doppelwechsel, Teamwerte an deren Grenze, alle −43), im Original bleibt er in der Bundesliga; wie LANDSHUT ein
+                // Zufallsfeld der Aufstiegsrunde, kein fester Befund.
+                new("Clubs[9 EC HEDOS MÜNCHEN].TeamValues.*", Chance, Optional: true),
                 // Zufall (Runde 22, Spur transfer-pool, A864/A391, R21-D2 = A): Nur mit der Saat 1993 weicht ein Teamwert von MEMMINGEN
                 // ab (Angriff Kondition −11 im Original, 27 im Remake); mit den fünf weiteren Saaten (Pair_OtherSeed_SameExpectedList)
                 // nicht. Die Wanderung der Teamwerte zieht aus dem gemeinsamen Strom, den die Verletzung außerhalb des Spiels

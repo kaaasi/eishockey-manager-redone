@@ -318,8 +318,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Spur aufstellung (Runde 25, K07/S07, R21-D2 = A, R15-E2 = C): neu – Manager.AutoLineupEnabled (A936) und Player.LastLine (A939): ein Verletzter spielt seine alte
     // Reihe ein (+0x02 aus +0x15, Datei 0x548A8–0x548E7), das ändert bei Level 4/5 die Technik im Spiel (Datei 0x09A65–0x09A8A) und damit den Verlauf. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von
     // 4433148 + dieser Test → rot (alte Werte).
-    [InlineData(false, "891F46E7A08CCED5")]
-    [InlineData(true, "06F8407E7774EE64")]
+    // Spur saison-geld Teil 1 (Runde 25, T03, R21-D2 = A, R15-E2 = C): neu – Markt-Takt random(0, 3) je Markt-Platz (A829, Datei
+    // 0x07215), Oberliga-Zug am 29. April (A661, Datei 0x56275), große Wanderung vor der Mischung (A843/A935, Datei 0x56448); anderer
+    // Zufallsverlauf ab dem ersten Takttag. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von 0c1811f → alte Werte.
+    [InlineData(false, "6489DD043E9AF40A")]
+    [InlineData(true, "3A110842C68E58E1")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -415,8 +418,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // #925/A873, A838, A105/A836, A071; Teil 2 Jugend nach den Menüs A384/A670, Ligamischung aus dem Strom #897; Teil 3 A101, A677,
     // A553) zusammen mit kader-regeln, transfer-pool und einzelpunkte ändern Spielrechnung und Zufallsverlauf; kein Originalsollwert,
     // nur interner Abdruck. Rückschaltprobe: src/ von f7f0410 + dieser Test → rot (alte Werte), src/ von 3ca753a + dieser Test → rot.
+    // Spur saison-geld Teil 1 (Runde 25, T03, R21-D2 = A, R15-E2 = C): neu – der Markt-Takt würfelt random(0, 3) je Markt-Platz
+    // (A829, Datei 0x07215), der Oberliga-Zug fällt am 29. April (A661, Datei 0x56275) und die große Wanderung vor der Mischung
+    // (A843/A935, Datei 0x56448); anderer Zufallsverlauf ab dem ersten Takttag. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von 0c1811f + dieser Test → rot (alte Werte).
     private const string WorldOnlyReference =
-        "WorldChampion=55|500000|WorldChampion=53|-1521730|WorldChampion=52|-4539081|WorldChampion=52|-9211561|WorldChampion=52|-16453791|R594569882";
+        "WorldChampion=52|500000|WorldChampion=52|-1523415|WorldChampion=52|-4541862|WorldChampion=53|-9216815|WorldChampion=63|-16456717|R765441391";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem

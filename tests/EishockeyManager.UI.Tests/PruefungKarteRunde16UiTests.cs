@@ -29,7 +29,10 @@ public class PruefungKarteRunde16UiTests
         // Runde 22, Spur transfer-pool (A864, A391, R21-D2 = A): Saat 1993 statt 1995 – Verletzung außerhalb des Spiels (Datei
         // 0x07462–0x07548) verschiebt den Zufallsverlauf; bei Saat 1995 bekommt der Manager keine Prämie, bei 1993 erfüllt er die
         // Vorbedingung. Rückschaltprobe: src/ von ce658d4 mit Saat 1993 rot (alter Verlauf) – die Probe hängt an der Saat.
-        var d = FlowTests.CreateDriver(1993);
+        // Runde 25, Spur saison-geld Teil 1 (T03, R21-D2 = A, R15-E2 = C): Saat 1994 statt 1993 – Markt-Takt random(0, 3) je Markt-Platz (A829, Datei
+        // 0x07215), anderer Zufallsverlauf ab dem ersten Takttag; bei Saat 1993 bekommt der Manager keine Prämie, unter 1990–2001 erfüllen
+        // 1990–1992, 1994, 1996, 1998, 1999, 2001 die Vorbedingung. Die Probe hängt an der Saat.
+        var d = FlowTests.CreateDriver(1994);
         d.StartNewGame();
         var game = d.Host.Game!;
         for (var guard = 0; d.Host.Current is not SeasonEndSummaryScreen && guard++ < 20000;)

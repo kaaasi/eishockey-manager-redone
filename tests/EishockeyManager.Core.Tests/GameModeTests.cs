@@ -497,8 +497,12 @@ public class GameModeTests
     // #925/A873, A838, A105/A836, A071; Teil 2 Jugend nach den Menüs A384/A670, Ligamischung aus dem Strom #897; Teil 3 A101, A677,
     // A553) zusammen mit kader-regeln, transfer-pool und einzelpunkte ändern Spielrechnung und Zufallsverlauf; kein Originalsollwert,
     // nur interner Abdruck. Rückschaltprobe: src/ von f7f0410 + dieser Test → rot (alte Werte), src/ von 3ca753a + dieser Test → rot.
+    // Spur saison-geld Teil 1 (Runde 25, T03, R21-D2 = A, R15-E2 = C): neu – der Markt-Takt würfelt random(0, 3) je Markt-Platz
+    // (A829, Datei 0x07215), der Oberliga-Zug fällt am 29. April (A661, Datei 0x56275) und die große Wanderung vor der Mischung
+    // (A843/A935, Datei 0x56448); anderer Zufallsverlauf ab dem ersten Takttag. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von 0c1811f + dieser Test → rot (alte Werte).
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=13,GermanChampion=1,EuropeanCupWinner=2|1100320,400000|WorldChampion=52,CupWinner=1,GermanChampion=6,EuropeanCupWinner=1|2219424,400000|WorldChampion=53,CupWinner=4,GermanChampion=5,EuropeanCupWinner=1|2321675,400000|WorldChampion=55,CupWinner=6,GermanChampion=4,EuropeanCupWinner=5|2947255,400000|WorldChampion=52,CupWinner=6,GermanChampion=4,EuropeanCupWinner=4|2898339,400000|R606224042";
+        "WorldChampion=52,CupWinner=0,GermanChampion=3,EuropeanCupWinner=2|1100000,400000|WorldChampion=52,CupWinner=14,GermanChampion=0,EuropeanCupWinner=3|2391297,400000|WorldChampion=52,CupWinner=14,GermanChampion=18,EuropeanCupWinner=3|2200548,400000|WorldChampion=52,CupWinner=0,GermanChampion=18,EuropeanCupWinner=18|3114361,500000|WorldChampion=52,CupWinner=18,GermanChampion=18,EuropeanCupWinner=18|2928623,500000|R346020608";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

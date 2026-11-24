@@ -320,10 +320,13 @@ public class RngTwinProbeTests
     // im Abdruck; ein Verletzter spielt seine alte Reihe ein (+0x02 aus +0x15, Datei 0x548A8–0x548E7), das ändert bei Level 4/5 die Technik
     // im Spiel (Datei 0x09A65–0x09A8A) und damit den Verlauf. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von
     // 4433148 + dieser Test → rot (alte Werte).
-    [InlineData(false, 3, "EC5330CBE873E6F0")]
-    [InlineData(true, 3, "E09B2F9B6C47563E")]
-    [InlineData(false, 11, "F9724FA55F723261")]
-    [InlineData(true, 11, "CCC7D2A7384E2393")]
+    // Spur saison-geld Teil 1 (Runde 25, T03, R21-D2 = A, R15-E2 = C): neu – Markt-Takt random(0, 3) je Markt-Platz (A829, Datei
+    // 0x07215), Oberliga-Zug am 29. April (A661, Datei 0x56275), große Wanderung vor der Mischung (A843/A935, Datei 0x56448); anderer
+    // Zufallsverlauf ab dem ersten Takttag. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von 0c1811f → alte Werte.
+    [InlineData(false, 3, "3AC7AEC28CD849F3")]
+    [InlineData(true, 3, "BAD4C93C9C6A26F6")]
+    [InlineData(false, 11, "DBCFB657169974D0")]
+    [InlineData(true, 11, "E8AAE75AA220A7A2")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -435,8 +438,11 @@ public class RngTwinProbeTests
     // im Abdruck; ein Verletzter spielt seine alte Reihe ein (+0x02 aus +0x15, Datei 0x548A8–0x548E7), das ändert bei Level 4/5 die Technik
     // im Spiel (Datei 0x09A65–0x09A8A) und damit den Verlauf. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von
     // 4433148 + dieser Test → rot (alte Werte).
-    [InlineData(false, "B3641C7559E5347A")]
-    [InlineData(true, "57885F606A837A25")]
+    // Spur saison-geld Teil 1 (Runde 25, T03, R21-D2 = A, R15-E2 = C): neu – Markt-Takt random(0, 3) je Markt-Platz (A829, Datei
+    // 0x07215), Oberliga-Zug am 29. April (A661, Datei 0x56275), große Wanderung vor der Mischung (A843/A935, Datei 0x56448); anderer
+    // Zufallsverlauf ab dem ersten Takttag. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von 0c1811f → alte Werte.
+    [InlineData(false, "662783DD6F3BA462")]
+    [InlineData(true, "D9A063901FD397CE")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

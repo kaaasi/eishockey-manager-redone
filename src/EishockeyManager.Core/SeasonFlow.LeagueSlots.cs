@@ -145,6 +145,9 @@ public sealed partial class GameState
     /// docs/analyse/re-runde-13.md): Datei 0x56448 ruft 0x9D1B mit Modus 10 ohne Modusprüfung. Spielstände FILE20 → FILE21 (Modus 1):
     /// Ligavereine Kondition/Technik (Felder 0x18–0x1B) gewandert und in den Ligagrenzen (Kaufbeuren 80 78 79 75 → 92 91 90 87,
     /// Düsseldorf 94 × 4 an der Obergrenze), alle zwölf Nationalteams dort unverändert, Form 0x1C–0x1E überall neu.
+    /// [APPROX] Ein Spielstand vom Bildschirm „Saisonende“ (Phase <see cref="SeasonPhase.SeasonOver"/>), gesichert vor Runde 25, hat
+    /// den 29. April ohne diese Wanderung abgeschlossen; da <see cref="StartNextSeason"/> nicht mehr wandert, entfällt sie für diesen
+    /// einen Saisonwechsel. Kein Schemafeld dafür (nur Spielstände genau dieses Bildschirms, Wirkung eine Wanderung).
     /// </remarks>
     private void DriftSeasonEnd(SeasonRecord record)
     {

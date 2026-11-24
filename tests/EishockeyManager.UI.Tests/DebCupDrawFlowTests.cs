@@ -348,6 +348,9 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // #925/A873, A838, A105/A836, A071; Teil 2 Jugend nach den Menüs A384/A670, Ligamischung aus dem Strom #897; Teil 3 A101, A677,
     // A553) zusammen mit kader-regeln, transfer-pool und einzelpunkte ändern Spielrechnung und Zufallsverlauf; kein Originalsollwert,
     // nur interner Abdruck. Rückschaltprobe: src/ von f7f0410 + dieser Test → rot (alte Werte), src/ von 3ca753a + dieser Test → rot.
+    // Runde 25, Spur saison-geld Teil 1 (T03, R21-D2 = A, R15-E2 = C): neu ab 1993 – der Markt-Takt würfelt random(0, 3) je
+    // Markt-Platz (A829, Datei 0x07215), Oberliga-Zug und große Wanderung am 29. April (A661, A843/A935); mit und ohne Anzeige
+    // weiter gleich. Rückschaltprobe: src/ von 0c1811f → alte Referenz.
     private const string Reference =
-        "1993: DEB 6, DM 6, Tab 15539 | 1994: DEB 1, DM 9, Tab 15823 | 1995: DEB 21, DM 2, Tab 15765 | 1996: DEB 4, DM 9, Tab 15160";
+        "1993: DEB 6, DM 5, Tab 15671 | 1994: DEB 6, DM 6, Tab 15790 | 1995: DEB 10, DM 2, Tab 15510 | 1996: DEB 5, DM 5, Tab 15795";
 }
