@@ -39,7 +39,7 @@ public enum PlayerStatisticsView
 ///   Bild kb\2 (17 | 179) 57 × 12, Text Mini zentriert x … x + 59, Grundlinie y + 7, Farbe 29, Schatten 1 (Datei
 ///   0x4C154–0x4C188). Texte der Ansicht „LIGA“/„MANAGER“ aus DGROUP 0x974/0x978 (Großbuchstaben; der Titel nutzt
 ///   „Liga“/„Manager“). Am Video bestätigt (<c>folge15_01007</c>, Spur statistiken-verein). Escape verlässt wie die
-///   rechte Maustaste ([APPROX]).</item>
+///   rechte Maustaste ([APPROX] Komfort, bleibt nach B11 = A, Nutzer 24.11.2026).</item>
 /// <item>[ORIGINAL] Linksklick auf eine Zeile öffnet das Spielerdaten-Fenster 0x041AC (Datei 0x26B13–0x26BF5), wenn der
 ///   Spieler im Kader eines Managers steht: Zeile = (y − erste Grundlinie + 4) / 7 des Blocks, dessen erste Grundlinie − 5
 ///   über y liegt (x wird nicht geprüft); das Fenster öffnet für diesen Manager (DGROUP 0xA70E vorübergehend gesetzt),

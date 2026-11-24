@@ -115,7 +115,9 @@ public sealed class HighscoreStore
 ///   Farbe 10, Einträge dieser Sitzung (gleiche Kennung) Farbe 7.</item>
 /// </list>
 /// Eintrag und Aufruf zu den Zeitpunkten des Originals: Kachel Highscore (Datei 0x45773), Spielende (0x5642E), Saisonwechsel (0x56647).
-/// [APPROX] Jede Taste und jeder Klick führt zurück. Die Punkte siehe <see cref="HighscoreRules"/>.
+/// [ORIGINAL] Danach Warten auf eine Maustaste (0x38:0x118, Datei 0x5DBD8; Mausereignis DGROUP 0x5A16 = 1 oder 3, Datei
+/// 0xB908): Tasten schließen nicht (B11 = A). [APPROX] Escape führt als Komfort des Remakes zurück (B11 = A, Nutzer 24.11.2026).
+/// Die Punkte siehe <see cref="HighscoreRules"/>.
 /// </remarks>
 public sealed class HighscoreScreen : Screen
 {
@@ -167,7 +169,7 @@ public sealed class HighscoreScreen : Screen
 
     public override void Update(InputState input)
     {
-        if (input.LeftClick || input.RightClick || input.Keys.Count > 0)
+        if (input.LeftClick || input.RightClick || input.Pressed(Key.Escape))
             Host.Show(_back);
     }
 

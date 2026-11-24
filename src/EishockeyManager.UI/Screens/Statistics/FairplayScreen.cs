@@ -18,7 +18,8 @@ namespace EishockeyManager.UI.Screens.Statistics;
 /// <item>[ORIGINAL] Zwölf Zeilen, Grundlinie 55 + 8 n (Datei 0x2A39B–0x2A5BD); Farbe 24 für Managervereine (Vereinsfeld
 ///   0x16 ≠ 0), sonst 30: „Platz. Verein“ (Mindestbreite 2) bei x = 38, „Minuten min.“ (Mindestbreite 3) bei x = 150,
 ///   je Spiel „M.HH min.“ (Mindestbreite 2, Hundertstel zweistellig) bei x = 205.</item>
-/// <item>[ORIGINAL] Danach Warten auf eine Maustaste (0x38:0x118, Datei 0x2A5DD). [APPROX] Tasten schließen ebenfalls.</item>
+/// <item>[ORIGINAL] Danach Warten auf eine Maustaste (0x38:0x118, Datei 0x2A5DD; Mausereignis DGROUP 0x5A16 = 1 oder 3, Datei
+///   0xB908): Tasten schließen nicht (B11 = A). [APPROX] Escape schließt als Komfort des Remakes (B11 = A, Nutzer 24.11.2026).</item>
 /// </list>
 /// </remarks>
 public sealed class FairplayScreen : Screen
@@ -46,7 +47,7 @@ public sealed class FairplayScreen : Screen
 
     public override void Update(InputState input)
     {
-        if (input.LeftClick || input.RightClick || input.Keys.Count > 0)
+        if (input.LeftClick || input.RightClick || input.Pressed(Key.Escape))
             Host.Show(_back);
     }
 

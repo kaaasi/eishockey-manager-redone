@@ -35,7 +35,8 @@ namespace EishockeyManager.UI.Screens.Competitions;
 ///   vergleicht den Spieltag mit DGROUP 0x7A9 + Liga + b; b = 1 nur aus den Paarungen (Seite 2, 0x5A; Datei 0x4F0C9–0x4F0DB) und
 ///   der Tabelle (Datei 0x5018C), weil dort der Zähler nach dem Spieltag noch nicht weitergezählt ist. Alle Aufrufer des Remakes
 ///   übergeben b = 0 (<see cref="Show"/>).</item>
-/// <item>[APPROX] Esc schließt wie der Rechtsklick (wie im Vereinsfenster des Remakes). Der Zähler 0x7A9 = 0 (Rückgabe 0 ohne
+/// <item>[APPROX] Esc schließt wie der Rechtsklick (wie im Vereinsfenster des Remakes; bleibt nach B11 = A, Nutzer
+///   24.11.2026). Der Zähler 0x7A9 = 0 (Rückgabe 0 ohne
 ///   Fenster, Datei 0x5CEC) kommt im Remake nicht vor.</item>
 /// </list>
 /// </remarks>
