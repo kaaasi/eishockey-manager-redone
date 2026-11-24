@@ -176,4 +176,46 @@ public class SaisonGeldTeil2Tests
         Assert.Equal(0, stadium.Seats);
         Assert.Equal(2, done.Count);
     }
+
+    // ---- Mehrsaisonprobe (Geld) --------------------------------------------------------------------
+
+    /// <summary>
+    /// Mehrsaisonprobe (4 Saisonwechsel, passiv/aktiv, zwei Manager): Der aktive Manager nimmt jedes Bandenangebot an, das passt
+    /// (Klick auf Feld 0). Je Schritt belegen die Bandenverträge höchstens sieben verschiedene Felder, die Werbeeinnahme ist die Summe
+    /// Betrag · Felder; aktiv entsteht mindestens ein Vertrag über mehrere Felder; zwei gleiche Läufe ergeben denselben Abdruck.
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FourSeasonChanges_BoardsPerFieldAndSummerPerManager(bool active)
+    {
+        (string Print, long Sponsors, int MultiField) Run()
+        {
+            var game = TwoManagers(7);
+            var me = game.Managers[0];
+            long sponsors = 0;
+            var multiField = 0;
+            var print = RngTwinProbeTests.Run(game, active, afterStep: g =>
+            {
+                var ads = g.Ads(me);
+                if (active && ads.Offers.TryGetValue(AdSlotKind.Bande, out var offers))
+                    foreach (var offer in offers.Values.ToArray())
+                        if (g.AcceptOffer(me, new AdSlot(AdSlotKind.Bande, 0), offer.Sponsor) is { Boards.Length: > 1 })
+                            multiField++;
+                var boards = ads.Contracts.Where(c => c.Kind == AdSlotKind.Bande).SelectMany(c => c.Boards).ToList();
+                Assert.Equal(boards.Count, boards.Distinct().Count());
+                Assert.All(boards, b => Assert.InRange(b, 0, Sponsoring.BoardCount - 1));
+                Assert.Equal(ads.Contracts.Sum(c => c.MonthlyAmount * Math.Max(1, c.Boards.Length)), ads.MonthlyIncome);
+            }, beforeChange: g => sponsors += g.Finance(me).Book.Current(FinanceCategory.Sponsoren));
+            return (print, sponsors, multiField);
+        }
+
+        var run = Run();
+        Assert.Equal(run, Run());
+        if (active)
+            Assert.True(run.MultiField > 0, "kein Bandenvertrag über mehrere Felder");
+        else
+            Assert.Equal(0, run.MultiField);
+        Assert.True(run.Sponsors > 0);
+    }
 }
