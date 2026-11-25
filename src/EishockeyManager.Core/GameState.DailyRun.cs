@@ -51,18 +51,33 @@ public sealed partial class GameState
         return events is not (DayEvents.None or DayEvents.SeasonEnd) && (byte)events != 9;
     }
 
+    private void MainPathDailyRun(int day) => MainPathDailyRunAndBuild(day, stadiumWeek: false);
+
     /// <summary>
     /// Hauptweg: am Takttag 0x07169 je Manager in Managerreihenfolge (Datei 0x55298–0x552D3), auch für entlassene Manager (#688,
     /// R688-06): Markt-Teil (bei Platz 0 Verfall, Lösen der Sperre und Gebotsverfall) wie im Original. [APPROX] Kaderplätze und
     /// Training hat ein entlassener Manager im Remake nicht mehr (er hat keinen Verein).
+    /// <para>
+    /// <paramref name="stadiumWeek"/>: Stadionbau 0x3D316 fällig (<see cref="AdvanceMainPathFinance"/>). [ORIGINAL] je Manager direkt
+    /// nach seinem 0x07169 (Datei 0x552A6–0x552C3, tagesabschluss/hauptweg.py Teil 1; Spur tagesabschluss Teil 2).
+    /// </para>
     /// </summary>
-    private void MainPathDailyRun(int day)
+    private void MainPathDailyRunAndBuild(int day, bool stadiumWeek)
     {
         TrainedUntil = (Season, day);
         if (!IsDailyRunDay(day))
+        {
+            // Nur mit Ladeversatz möglich (Finanztag = Tag + 1); dann ohne Tageslauf wie vor Teil 2.
+            if (stadiumWeek)
+                WeeklyFinances();
             return;
+        }
         foreach (var manager in Managers.ToList())
+        {
             ManagerDailyRun(day, manager);
+            if (stadiumWeek)
+                WeeklyManagerFinances(manager);
+        }
     }
 
     /// <summary>

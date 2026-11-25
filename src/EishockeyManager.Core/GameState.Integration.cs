@@ -104,7 +104,8 @@ public sealed partial class GameState
 
         // Finanzen: Tages-, Wochen- und Monatswechsel bis einschließlich heute. [ORIGINAL] Tagesabschluss 0x3ED01/0x3F833 je
         // Manager direkt nach dem Weiterzählen (Datei 0x5522B/0x55230), vor dem Takt.
-        AdvanceFinanceTo(day);
+        // Spur tagesabschluss Teil 2: den Stadionbau des Tages rechnet MainPathDailyRunAndBuild je Manager nach 0x07169 (Datei 0x552C3).
+        var stadiumWeek = AdvanceMainPathFinance(day);
 
         // Paket „wettbewerbe“: Ewige Tabelle, Ewige Bilanz und „Früher“ schreibt seit Spur saisonwechsel Teil 3 (S-K4)
         // FinishSeason nach Zwangsabstieg und Austausch fort (em.exe Datei 0x563AF).
@@ -122,7 +123,7 @@ public sealed partial class GameState
 
         // #678: Training, Markt (Verfall, Gebote, Angebote), Verträge, Heilung und Aufstellung nur am Takttag, je Manager
         // (0x07169, Datei 0x552A6; GameState.DailyRun.cs). Vorher als Näherung Training Mi/So, Markt und Verträge täglich.
-        MainPathDailyRun(day);
+        MainPathDailyRunAndBuild(day, stadiumWeek);
 
         // #688 (R688-07): an Tagen mit Ereignis vor den Zügen je Satz die Neuaufstellung (Datei 0x54D68–0x54DBA, 0x426BC bei
         // 0x54D9E). Vorher als Näherung täglich am Ende des Tageslaufs.

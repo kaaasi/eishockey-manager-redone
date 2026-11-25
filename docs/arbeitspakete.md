@@ -86,6 +86,8 @@ R26-D4 = B (ChatGPT GPT-6.2 Astra) mit Claude-Auswertung.
 - **Status:** Teil 1 fertig (Lauf 25.11.2026, Claude Code), Review offen. Beleg `tagesabschluss/hauptweg.py`: Hauptweg und WM-Schleife
   je Manager 0x3ED01 → 0x3F833; Talentsuche, Wanderung, 0x07169 und Bau danach. Umgesetzt: `DayClose(date, i)` für alle drei Wege,
   Talentsuche nach der Schleife, Monatsabschluss vor dem Bau, WM-Bau je Manager. Neu gefunden: Stadionschäden 0x3CFA0 fehlen im Remake.
+  Teil 2 (R26-E1 = B) fertig (Fortsetzung 1, 25.11.2026): Beleg `tagesabschluss/stadionschaeden.py`, Stadionschäden 0x3CFA0 zu Beginn
+  jedes Stadionbaus, Hauptweg-Bau je Manager nach 0x07169; Review offen.
 
 ### Spur `torszene-dauer` – Darstellung 2 „Dauer-Eisfeld“ (S02, Welle 1/1b)
 

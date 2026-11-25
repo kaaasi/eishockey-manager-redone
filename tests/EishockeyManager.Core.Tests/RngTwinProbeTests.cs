@@ -329,10 +329,14 @@ public class RngTwinProbeTests
     // Spur saison-geld Teil 3 (Runde 25, K11, R21-D2 = A, R15-E2 = C): neu – Rollenwert Pool +0x18 als Feld (Player.RoleValue, Datei
     // 0x5B3BB–0x5B49D), Torwürfe der Poolspieler mit dem gewürfelten Wert (Datei 0x5077–0x52CB); zugleich Rebase auf main 90d8394
     // (aufstellung). Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von 395a8f8 (Teil 2 auf main) → andere Werte.
-    [InlineData(false, 3, "942D417E13D82A1C")]
-    [InlineData(true, 3, "304F08DC6AF1B8D3")]
-    [InlineData(false, 11, "F333EE3EB4236952")]
-    [InlineData(true, 11, "1AA2DB04754E1A0C")]
+    // Spur tagesabschluss Teil 2 (Runde 26, R26-E1 = B, R21-D2 = A, R15-E2 = C): neu – die wöchentlichen Stadionschäden 0x3CFA0
+    // (Datei 0x3D330) würfeln je Manager und Bautag random(0, 2·d + 8) (Datei 0x3CFC5) und bei 0 je Projekt weiter; anderer
+    // Zufallsverlauf ab dem ersten Bautag, Stufen und Plätze können sinken. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von 36323e2 → alte Werte.
+    [InlineData(false, 3, "657797BB4B39FD5B")]
+    [InlineData(true, 3, "C0AE379B57FAA533")]
+    [InlineData(false, 11, "F2BD92047BCBE5EB")]
+    [InlineData(true, 11, "6A36CE04C7A517E6")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -453,8 +457,12 @@ public class RngTwinProbeTests
     // Spur saison-geld Teil 3 (Runde 25, K11, R21-D2 = A, R15-E2 = C): neu – Rollenwert Pool +0x18 als Feld (Player.RoleValue, Datei
     // 0x5B3BB–0x5B49D), Torwürfe der Poolspieler mit dem gewürfelten Wert (Datei 0x5077–0x52CB); zugleich Rebase auf main 90d8394
     // (aufstellung). Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von 395a8f8 (Teil 2 auf main) → andere Werte.
-    [InlineData(false, "69047994AD5F9F14")]
-    [InlineData(true, "C36825F27A2C6300")]
+    // Spur tagesabschluss Teil 2 (Runde 26, R26-E1 = B, R21-D2 = A, R15-E2 = C): neu – die wöchentlichen Stadionschäden 0x3CFA0
+    // (Datei 0x3D330) würfeln je Manager und Bautag random(0, 2·d + 8) (Datei 0x3CFC5) und bei 0 je Projekt weiter; anderer
+    // Zufallsverlauf ab dem ersten Bautag, Stufen und Plätze können sinken. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von 36323e2 → alte Werte.
+    [InlineData(false, "5F4F1F411F542B66")]
+    [InlineData(true, "AACA002CD2899C08")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

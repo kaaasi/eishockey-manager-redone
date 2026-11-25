@@ -138,8 +138,19 @@ public sealed partial class GameState
     /// (0x06FA5, Datei 0x5528A); false für die WM-Schleife (Datei 0x55570–0x55740 ruft sie nicht; Spur nationalteam, Review #674
     /// R14NT4-02/-07). Die Jugendteams rechnet seit Spur wettbewerbe-regeln Teil 2 <c>ProcessDayCore</c> nach den Menüs (A384/A670). Sonst gleich, damit beide Wege nicht auseinanderlaufen.
     /// </summary>
-    internal void AdvanceFinance(int day, bool clubDay)
+    internal void AdvanceFinance(int day, bool clubDay) => AdvanceFinance(day, clubDay, deferLastStadiumWeek: false);
+
+    /// <summary>
+    /// Tageswechsel der Finanzen im Hauptweg (<c>OnDayOpen</c>): wie <see cref="AdvanceFinanceTo"/>, aber der Stadionbau des letzten
+    /// Tages bleibt offen. Liefert true, wenn er fällig ist; dann baut <see cref="MainPathDailyRunAndBuild"/> je Manager nach dessen
+    /// Tageslauf 0x07169. [ORIGINAL] Datei 0x55298–0x552D3 (tagesabschluss/hauptweg.py Teil 1): je Manager 0x07169 (Datei 0x552A6), dann am
+    /// Zähler ≡ 0 sein Stadionbau 0x3D316 (Datei 0x552C3), hinter Talentsuche und kleiner Wanderung.
+    /// </summary>
+    internal bool AdvanceMainPathFinance(int day) => AdvanceFinance(day, clubDay: true, deferLastStadiumWeek: true);
+
+    private bool AdvanceFinance(int day, bool clubDay, bool deferLastStadiumWeek)
     {
+        var stadiumWeekDue = false;
         // Ladeeigenheit des Markierungstags (GameState.LoadQuirk.cs): Der Finanztag läuft dem Tag um den Ladeversatz voraus.
         var target = FinanceTarget(day);
         while (FinanceDay < target)
@@ -173,13 +184,19 @@ public sealed partial class GameState
                 DailyTalentSearch(FinanceDay);
             // #679: [ORIGINAL] Stadionbau 0x3D316 am Tageszähler 0x3B7 ≡ 0 (mod 7) nach dem Weiterzählen, im Tageslauf also Zähler
             // DayCounter.Of(Tag) – samstags, vorher montags. Nach dem Monatsabschluss des Tagesabschlusses (0x3F02C in 0x3ED01, #1018).
-            // [APPROX] Hauptweg: Das Original baut je Manager nach dessen Tageslauf 0x07169 (Datei 0x552A6–0x552C3, hinter der kleinen
-            // Wanderung 0x09D1B); das Remake baut hier für alle vor der Wanderung und vor MainPathDailyRun. Der Bau würfelt im Remake
-            // nicht (die Stadionschäden 0x3CFA0 aus Datei 0x3D330 fehlen), es ändert sich nur die Reihenfolge der Meldungen.
+            // [ORIGINAL] Hauptweg (Spur tagesabschluss Teil 2): Das Original baut je Manager nach dessen Tageslauf 0x07169 (Datei
+            // 0x552A6–0x552C3, hinter der kleinen Wanderung 0x09D1B); der Bau würfelt die Stadionschäden 0x3CFA0 (Datei 0x3D330). Den
+            // letzten Tag baut deshalb MainPathDailyRunAndBuild (AdvanceMainPathFinance); nachgeholte Tage davor ohne Tageslauf bauen hier.
             if (clubDay && DayCounter.Of(FinanceDay) % 7 == 0)
-                WeeklyFinances();
+            {
+                if (deferLastStadiumWeek && FinanceDay == target)
+                    stadiumWeekDue = true;
+                else
+                    WeeklyFinances();
+            }
             AdvanceStocks();
         }
+        return stadiumWeekDue;
     }
 
     /// <summary>Saisonwechsel für das Paket „saison“: Finanzbuch umstellen, Tageszähler zurücksetzen.</summary>
@@ -205,7 +222,7 @@ public sealed partial class GameState
             RefreshSponsorOffers(manager, noDice: false);
     }
 
-    private void WeeklyFinances()
+    internal void WeeklyFinances()
     {
         foreach (var manager in Managers)
             WeeklyManagerFinances(manager);
@@ -251,8 +268,13 @@ public sealed partial class GameState
     // Erweiterungspunkte für weitere Teile des Pakets (Werbung, Stadionbau, Jugend …).
     private long SponsorIncome(Manager manager) => Finance(manager).Sponsoring.MonthlyIncome;
     private long RecurringExpenses(Manager manager) => Finance(manager).YouthFunding;
+    /// <summary>
+    /// Stadionbau 0x3D316 eines Managers: zuerst die Stadionschäden 0x3CFA0 (Datei 0x3D330, <see cref="WeeklyStadiumDamage"/>),
+    /// dann der Baufortschritt. Aufrufer: Hauptweg (<see cref="MainPathDailyRunAndBuild"/>), WM-Schleife, Sommerpause.
+    /// </summary>
     private void WeeklyManagerFinances(Manager manager)
     {
+        WeeklyStadiumDamage(manager);
         foreach (var done in AdvanceConstruction(manager))
             ConstructionCompleted(manager, done);
     }

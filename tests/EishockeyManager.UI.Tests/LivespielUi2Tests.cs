@@ -308,7 +308,8 @@ public sealed class LivespielUi2Tests
         // Runde 25, Spur saison-geld Teil 1 (T03, R21-D2 = A, R15-E2 = C): Saat 1996 statt 1995 – der Markt-Takt würfelt random(0, 3) je Markt-Platz
         // (A829, Datei 0x07215), anderer Zufallsverlauf ab dem ersten Takttag; bei Saat 1995 erreicht Verein 42 die Play-offs nicht
         // (nächster Spieltag 216), unter 1990–2005 erfüllen 1991, 1993, 1996, 1997, 2001–2003, 2005 die Vorbedingung. Die Probe hängt an der Saat.
-        var game = NewGame.Create(d.Host.Assets.Database, setup, 1996);
+        // Spur tagesabschluss Teil 2 (Runde 26, R26-E1 = B, R21-D2 = A, R15-E2 = C): Saat 1997 statt 1996 – die wöchentlichen Stadionschäden 0x3CFA0 (Datei 0x3D330) würfeln je Manager und Bautag mindestens random(0, 2·d + 8) (Datei 0x3CFC5), anderer Zufallsverlauf ab dem ersten Bautag; bei Saat 1996 erreicht Verein 42 die Play-offs nicht (nächster Spieltag 216), unter 1990–2003 erfüllen 1990, 1994, 1995, 1997, 1998, 2002, 2003 die Vorbedingung. Die Probe hängt an der Saat.
+        var game = NewGame.Create(d.Host.Assets.Database, setup, 1997);
         d.Host.Game = game;
         d.Host.Show(new MainMenuScreen(d.Host));
         d.Frame();

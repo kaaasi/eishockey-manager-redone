@@ -305,7 +305,9 @@ public class StadiumAusbauTests
                 Assert.Equal(startMoney + cumulative + game.Finance(me).Book.CurrentTotal, me.Money);
                 for (var i = 0; i < Stadium.FeatureCount; i++)
                 {
-                    Assert.True(stadium.Level((StadiumFeature)i) >= levels[i]);
+                    // Spur tagesabschluss Teil 2 (R26-E1 = B, R15-E2 = C): Die Stadionschäden 0x3CFA0 senken eine Stufe um eins
+                    // (Datei 0x3D1CC/0x3D277, höchstens ein Schaden je Woche); sonst steigen Stufen nur durch den Bau.
+                    Assert.True(stadium.Level((StadiumFeature)i) >= levels[i] - 1);
                     levels[i] = stadium.Level((StadiumFeature)i);
                 }
                 Assert.True(stadium.Seats + stadium.Standing <= Stadium.MaxPlaces);

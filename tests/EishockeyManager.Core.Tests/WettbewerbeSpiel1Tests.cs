@@ -44,7 +44,8 @@ public class WettbewerbeSpiel1Tests
     // Fixlauf wettbewerbe-rest nach Rebase auf main 3cd9169 (R15-E2 = C): Minutenweg mit Saat 4 statt 5 – mit #784 und dem Spielplan
     // über die Satzfolge (A113, Datei 0x4E7C7) gibt es bei 5 kein Penaltyschießen (Vorbedingung); 1, 4, 7–10, 12 grün.
     // Rückschaltprobe: alter Code mit Saat 4 ebenfalls grün – die Probe hängt an der Saat.
-    [InlineData(4, true)]
+    // Spur tagesabschluss Teil 2 (Runde 26, R26-E1 = B, R21-D2 = A, R15-E2 = C): Minutenweg mit Saat 7 statt 4 – die wöchentlichen Stadionschäden 0x3CFA0 (Datei 0x3D330) würfeln je Manager und Bautag mindestens random(0, 2·d + 8) (Datei 0x3CFC5), anderer Zufallsverlauf ab dem ersten Bautag; bei 4 gibt es kein Penaltyschießen (Vorbedingung), unter 1–3, 5–10, 12 erfüllen 1–3, 5, 7–9 sie. Die Probe hängt an der Saat.
+    [InlineData(7, true)]
     [InlineData(11, true)]
     [InlineData(5, false)] // #621 (R13GN-04): Saat wieder 5 – die Änderung 5 → 4 (L13) war nicht nötig
     public void DebCup_NoMatchEndsLevel_ShootoutInFinalScore(int seed, bool minuteLoop)

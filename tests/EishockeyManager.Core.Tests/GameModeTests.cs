@@ -507,8 +507,12 @@ public class GameModeTests
     // Spur saison-geld Teil 2 (Runde 25, F06/F08, R21-D2 = A, R15-E2 = C): neu – Baufirmen 11 Würfe je Manager und Tag (A512, Datei
     // 0x3ED19–0x3ED48), Sommerpause je Manager verschränkt (A526, Datei 0x564D2–0x56593), Banden je Feld (A888, 0x3E657); anderer
     // Zufallsverlauf ab dem ersten Tagesabschluss. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von eaf8621 → alte Werte.
+    // Spur tagesabschluss Teil 2 (Runde 26, R26-E1 = B, R21-D2 = A, R15-E2 = C): neu – die wöchentlichen Stadionschäden 0x3CFA0
+    // (Datei 0x3D330) würfeln je Manager und Bautag random(0, 2·d + 8) (Datei 0x3CFC5) und bei 0 je Projekt weiter; anderer
+    // Zufallsverlauf ab dem ersten Bautag, Stufen und Plätze können sinken. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von 36323e2 → alte Werte.
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=18,GermanChampion=4,EuropeanCupWinner=2|1100000,400000|WorldChampion=53,CupWinner=13,GermanChampion=3,EuropeanCupWinner=4|2269643,400000|WorldChampion=54,CupWinner=3,GermanChampion=3,EuropeanCupWinner=3|2407050,500000|WorldChampion=54,CupWinner=3,GermanChampion=3,EuropeanCupWinner=3|2386649,500000|WorldChampion=63,CupWinner=3,GermanChampion=7,EuropeanCupWinner=3|2486148,400000|R1974361193";
+        "WorldChampion=63,CupWinner=16,GermanChampion=1,EuropeanCupWinner=2|1100000,400000|WorldChampion=52,CupWinner=10,GermanChampion=1,EuropeanCupWinner=1|2456064,400000|WorldChampion=52,CupWinner=14,GermanChampion=3,EuropeanCupWinner=1|2570172,400000|WorldChampion=52,CupWinner=12,GermanChampion=15,EuropeanCupWinner=3|2301108,400000|WorldChampion=52,CupWinner=5,GermanChampion=6,EuropeanCupWinner=3|2195537,400000|R2062587506";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

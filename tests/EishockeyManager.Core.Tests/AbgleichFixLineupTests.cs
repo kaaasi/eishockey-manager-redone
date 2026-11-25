@@ -97,12 +97,13 @@ public class AbgleichFixLineupTests
     // Spur saison-geld Teil 1 (Runde 25, T03, R21-D2 = A): Saat 1 → 5. Mit dem Markt-Takt random(0, 3) je Markt-Platz (A829, Datei
     // 0x07215) verletzt der Wurf außerhalb des Spiels bei Saat 1 (und 6) einen Aufgestellten: „Expected 11, Actual 10“ – Zufallsfeld wie
     // bei Saat 2 in Runde 22, kein Fehler der Aufstellung.
-    [InlineData(5)]
+    // Spur tagesabschluss Teil 2 (Runde 26, R26-E1 = B, R21-D2 = A, R15-E2 = C): Saaten 6 und 7 statt 5 und 3 – die wöchentlichen Stadionschäden 0x3CFA0 (Datei 0x3D330) würfeln je Manager und Bautag mindestens random(0, 2·d + 8) (Datei 0x3CFC5), anderer Zufallsverlauf ab dem ersten Bautag; bei 5 und 3 verletzt ein Wurf außerhalb des Spiels einen Aufgestellten („Expected 11, Actual 10“, Zufallsfeld wie oben), unter 1, 2, 6–12 nur 8 ebenso. Die Probe hängt an der Saat.
+    [InlineData(6)]
     // Runde 22, Spur transfer-pool (A864, R21-D2 = A): Saat 2 → 4 (Review P3-1). Mit Saat 2 verletzt der neue Wurf außerhalb des
     // Spiels (Datei 0x07462–0x07548) im Tageslauf einen Aufgestellten: „Expected 11, Actual 10“, die Lücke hat FILE46 nicht. Das
     // ist ein Zufallsfeld, kein Fehler der Aufstellung; Saat 4 zieht ihn nicht. Rückschaltprobe: src/ von ce658d4 + Saat 2 → grün.
     [InlineData(4)]
-    [InlineData(3)]
+    [InlineData(7)]
     [InlineData(77)]
     public void File44To46_HandLineup_KeepsGaps_FormLikeOriginal(int seed)
     {
