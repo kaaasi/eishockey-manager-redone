@@ -110,7 +110,8 @@ R26-D4 = B (ChatGPT GPT-6.2 Astra) mit Claude-Auswertung.
   und `LiveMatchScreen.cs` (je minimal, nach `live-verschraenkt`); Tests. **Prüfung:** Teil 1 Skripte mit
   `~/referenz/original/gamedata/EM.EXE`; Teil 2 `--schnell`, Bildschirmfoto-Ablauf Darstellung 2 über einen Spieltag mit Tor und
   Penaltyschießen, Vergleich mit Videobild.
-- **Status:** offen (Go 25.11.2026, Start nach Merge des Plans).
+- **Status:** Teil 1 fertig (PR #1033, Draft; Beleg `docs/analyse/torszene-dauer.md`, Abweichung bestätigt, Vorgaben T1–T8;
+  Entscheidungsbedarf T7 Penaltyschießen auch bei Darstellung 1). Teil 2 wartet auf Merge von `live-verschraenkt`.
 
 ### Spur `live-seiten-rest` – Aufstiegsrunde und Europapokal im Spielablauf (R26-E2 = C, Welle 1b)
 
