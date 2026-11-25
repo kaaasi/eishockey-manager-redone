@@ -285,6 +285,29 @@ public class HighscoreTests
         Assert.Equal(1250, capped); // 50 Mio. Drittel / 2000 = 25.000, geteilt durch 20
     }
 
+    /// <summary>
+    /// Befund #1007 (R25-H1): [ORIGINAL] Ligabyte = Platz + DGROUP 0x7C0[Liga] (0, 12, 24; Datei 0x55C0E–0x55C56, Beleg
+    /// <c>tools/reverse-engineering/abweichungen/h1_highscore_liga.py</c>: Zweite Liga Platz 1 → 13, Oberliga Platz 12 → 36). Vorher
+    /// schrieb <c>SeasonCodes.Of</c> den Platz ohne Versatz; Platz 1 der Zweiten Liga zählte wie Platz 1 der Bundesliga.
+    /// </summary>
+    [Theory]
+    [InlineData(League.Bundesliga, 1, 1)]
+    [InlineData(League.Bundesliga, 12, 12)]
+    [InlineData(League.ZweiteLiga, 1, 13)]
+    [InlineData(League.ZweiteLiga, 12, 24)]
+    [InlineData(League.Oberliga, 1, 25)]
+    [InlineData(League.Oberliga, 12, 36)]
+    public void SeasonCodes_LeagueByte_AddsLeagueOffset(League league, int rank, int expected)
+    {
+        var h = new ManagerSeasonHistory(1994, 3, league, rank, LeagueOutcome.Rank, CupOutcome.NotParticipating, 0, CupOutcome.NotParticipating, false);
+        Assert.Equal(expected, SeasonCodes.Of(h).League);
+        // Punkte des Saisonverlaufs 7 · (36 − Byte): Platz 1 der Zweiten Liga zählt weniger als Platz 1 der Bundesliga.
+        var second = new HighscoreInputs { Rank0 = 35, History = [SeasonCodes.Of(h)] };
+        var first = new HighscoreInputs { Rank0 = 35, History = [SeasonCodes.Of(h with { League = League.Bundesliga })] };
+        if (league != League.Bundesliga)
+            Assert.True(HighscoreRules.Points(first) > HighscoreRules.Points(second));
+    }
+
     [Fact]
     public void SeasonCodes_FromHistory()
     {

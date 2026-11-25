@@ -139,7 +139,7 @@ Gesamtreview ChatGPT (GPT-6.2 Astra) mit Claude-Auswertung.
 - **Teile:** 1. gesammelte P3 der Runde; 2. einziger Lauf `markerliste.py --write`, Klassenzeilen der geänderten IDs in
   `restliste-v1-klassen.csv`, Status je Thema in `abweichungen-v1.md` Abschnitt 0 („umgesetzt“/„keine Abweichung“ mit PR).
 - **Dateien:** `docs/analyse/*`, Kommentare der P3. **Prüfung:** `--schnell`. **Erstreview:** Sonnet 5.5.
-- **Status:** Go 24.11.2026, Start nach Merge aller Welle-1-Spuren.
+- **Status:** Teil 1 und Teil 2 fertig – PR #1022 (Base `075dc2c`, 24.11.2026): P3 #1007 (Highscore-Ligabyte, Beleg `h1_highscore_liga.py`), #1010, #1011, #1012, #1014, #1016, #1020, #1021 behoben; #1019 (T03-Stromlage) bleibt offen (kein Zugriff auf den Stromstand mitten in `FinishSeason` ohne Eingriff in `src/`). Generatorlauf und Abweichungsliste nachgezogen.
 
 **Modellwahl (Nutzer 17.11.2026):** je Lauf möglichst wenig Tokens für ein brauchbares Ergebnis – Haiku, Sonnet, Opus; Fable nur
 in Ausnahmefällen. **Läufe melden ihr Ende** per Push-Benachrichtigung (Nutzer 22.11.2026, `prozess/anhang.md` F).

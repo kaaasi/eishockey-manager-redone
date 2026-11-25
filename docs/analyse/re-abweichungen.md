@@ -524,11 +524,15 @@ DGROUP 0x5CF4 = 0 und leere Zeilen, „Zug“ = Hinzufügen nach der Europapokal
   0x29C9B–0x29CC3) oder 0x45CD0(r, 1) ihn in den ersten 2 · DGROUP (0x3B1 + 0x5CF4) Bytes ab DGROUP 0x5CFB + 32 findet;
   dann 0x36169(v, r, 0x80), auch bei r = v. Beide Umsetzungen des Remakes treffen das für ihren Zeitpunkt (Start:
   leere Zeile → nur Satz 0 gesperrt; Zug: Europapokal-Plätze und Satz 0); `Next(12)` und `Random16(0, n − 1)` sind
-  dieselbe Verteilung. **Randfall (Abweichung, Lesart):** Die Zahl der durchsuchten Bytes hängt an der Runde des
+  dieselbe Verteilung. **Randfall (Abweichung, Lesart – überholt, siehe Nachtrag unten):** Die Zahl der durchsuchten Bytes hängt an der Runde des
   Europapokals (DGROUP 0x5CF4, erhöht in 0x3489D, Datei 0x348DB/0x34AE3): ab Runde 3 (8 Bytes = die acht Plätze) ist
   Satz 0 wieder möglich, ab Runde 4 (4 Bytes) auch die hinteren Europapokal-Plätze; beim Start (Runde 0, 64 Bytes) zählt
   auch Zeile 2. Das Remake sperrt immer die acht Plätze und Satz 0. Was 0x3489D in späteren Runden in Zeile 1 schreibt,
   ist nicht nachgebildet.
+- **Nachtrag (Befund #1021, Review #1017 B4; Umsetzung `saison-geld`, PR #1006):** Der Randfall ist widerlegt. DGROUP 0x5CF4 ist im
+  Spiel nur 0 oder 1 (0x3489D = Datei 0x34F64; die Schleife Datei 0x34F10–0x34F71 läuft nur für Wettbewerb 0, 0x45CD0 zählt bis
+  `[0x3B1 + [0x5CF4]]`); „ab Runde 3 / 4“ tritt nie ein. Die Umsetzung (acht Plätze und Satz 0 immer gesperrt) passt zum Original,
+  der rote Test „Runde 3 mit Wurf 0 → Tausch mit Satz 0“ der Vorgabe entfällt.
 - **A463 (Verein ohne Wahl): keine Abweichung im Original.** Jeder Manager wählt im Original einen Verein (Datei 0x2964C,
   `NewGame.cs`); die Zufallszuteilung ist eine Erweiterung des Remakes und bleibt `[APPROX]`.
 - **Vorgabe (Aufräumen #936):** eine gemeinsame Abfrage für beide Wege: Ausschluss = Vereine früherer Manager ∪ die ersten

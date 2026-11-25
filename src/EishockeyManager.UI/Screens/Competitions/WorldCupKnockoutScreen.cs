@@ -138,6 +138,8 @@ public sealed class WorldCupKnockoutScreen : Screen
     {
         var sections = Sections;
         var (_, top) = FrameFor(sections.Sum(s => s.Rows.Count), sections.Count, _liveMinute is not null);
+        // [ORIGINAL] Datei 0x33AE4 prüft y gegen Oberkante + 26; im Remake wirkungslos, weil die erste Zeile frühestens bei
+        // top + 54 liegt (Band ab top + 49) – Nachbildung des Originals, bewusst beibehalten (Befund #1011, Review #1008: gleichwertig).
         if (y <= top + 16 + 10)
             return null;
         var line = top + 46;
