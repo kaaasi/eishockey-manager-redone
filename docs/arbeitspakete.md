@@ -8,29 +8,106 @@ Abgeschlossene Runden stehen in [archiv/](archiv/) und müssen beim Einstieg nic
 **Koordination:** Die Leitstelle verteilt Pakete, prüft und mergt Pull Requests und pflegt Fahrplan und Doku
 (Rollen: [prozess/zusammenarbeit.md](prozess/zusammenarbeit.md)).
 
-## Aktuelle Runde: Runde 26 – Planung offen (neue Leitstellen-Sitzung, `docs/vorlagen/leitstelle-start.md`)
+## Aktuelle Runde: Runde 26 – Live-Spieltag und Tagesabschluss je Manager (Plan 25.11.2026, Go ausstehend)
 
 Runde 25 abgeschlossen am 25.11.2026: [archiv/runde-25.md](archiv/runde-25.md). Stand: Restliste
-[analyse/restliste-v1.md](analyse/restliste-v1.md) **V = 0**, D 26, E 319, K 190; Schema 65. Abweichungsliste
+[analyse/restliste-v1.md](analyse/restliste-v1.md) **V = 0**, D 26, E 319, K 190; `main` `c59f7d5`, Schema 65. Abweichungsliste
 [analyse/abweichungen-v1.md](analyse/abweichungen-v1.md) Abschnitt 0: alle Themen außer Live umgesetzt bzw. geklärt.
-**Auftrag Runde 26:** Live-Spieltag nach Vormerkung unten (`live-verschraenkt`, danach `torszene-dauer`) und Spur für #1018
-(SG-01 = A, Nutzer 25.11.2026: Tagesabschluss im Hauptweg je Manager verschränkt wie Datei 0x5522B, eigene kleine Spur, Opus 5.5).
-**Danach:** Aufräumen #936 nach [analyse/aufraeumen-v1.md](analyse/aufraeumen-v1.md) (A1–A6, mit #978, #980, #1019, #1024), dann
-Abschlussprüfung. **Modellwahl (Nutzer 17.11.2026):** je Lauf möglichst wenig Tokens für ein brauchbares Ergebnis – Haiku, Sonnet,
-Opus; Fable nur in Ausnahmefällen. **Läufe melden ihr Ende** per Push-Benachrichtigung (Nutzer 22.11.2026, `prozess/anhang.md` F).
+**Ziel der Runde:** Die Live-Themen S01, S04, S05, S02 der Abweichungsliste (R25-D1 = D, R25-D2 = A) und #1018 (SG-01 = A,
+Nutzer 25.11.2026) sind „wie im Original“ umgesetzt oder mit Beleg als „keine Abweichung“ geklärt. **Nicht in dieser Runde:**
+Aufräumen #936 (mit #978, #980, #1019, #1024 Rest P3-2), D-Themen (DOSBox nach Lust), Abschlussprüfung. **Danach:** Aufräumen #936
+nach [analyse/aufraeumen-v1.md](analyse/aufraeumen-v1.md) (A1–A6), dann Abschlussprüfung.
+**Entscheidungen Nutzer:** offen (R26-D1 … R26-D4, Optionen im Plan-PR). **Go:** ausstehend.
+
+**Regeln wie Runde 25** (Archiv): Base = aktueller `main` beim Start der Spur, tatsächlicher Base-SHA in den Draft-PR; ein Branch
+`paket/<spur>`, ein PR, Teile als Commits, höchstens drei Fortsetzungen; Befund reproduzieren, roter Regressionstest mit Fundstelle
+`Datei 0x…`, dann grün; Mehrsaisonprobe (4 Wechsel, passiv/aktiv) bei Saisonwechsel, Kader oder Geld; `[ORIGINAL]`/`[APPROX]`;
+fremde Tests nach R15-E2 = C, erwartete Werte nach R21-D2 = A; keine geplanten Aufgaben aus Läufen (R15-E4). N2 = B, N6 = A
+gelten. **Beleg vor Umbau:** jede Lesart von em.exe als Nachbildung (Skript über die Bytes, `zusammenarbeit.md` §5 Punkt 7) in
+`tools/reverse-engineering/live/*.py` bzw. `…/tagesabschluss/*.py`, Ergebnis in `docs/analyse/live-spieltag.md` bzw. im PR. Zeigt
+der Beleg **keine** Abweichung: nur Marker mit Beleg nachziehen. **Bestehende Entscheidungen bleiben** (Vorschlag R26-D2 = A):
+Enter/Escape (A449, #205), Strahlrücklauf (A453, Plattform), Einstellung `ManagerDayMinuteLoop` mit Remake-Vorgabe (A541/A542,
+R14-D4 = A); bitgenaue Zufallsfolge erst mit dem Zufallsmodus nach v1.0 (A442/A547: Verteilung der Würfe je Minute wie im Original,
+Folge nicht bitgenau). **Markerliste:** kein `markerliste.py --write` in den Spuren; einziger Generatorlauf in `pruefung-karte`.
+**Migration:** keine erwartet (Live-Zustand wird nicht gespeichert, Testlücke #848); braucht eine Spur doch eine, nächste freie
+Nummer 66, Spuren mit Migration nacheinander mergen (`prozess/anhang.md` F). **Gemeinsame Dateien:** `GameState.DailyRun.cs`
+`live-verschraenkt` und `tagesabschluss` je minimal; `GameState.Manager.cs` nur `tagesabschluss`.
+
+**Folge (Vorschlag R26-D1 = B):** Welle 1 `live-verschraenkt`, `tagesabschluss` und `torszene-dauer` Teil 1 (nur Beleg) parallel;
+`torszene-dauer` Teil 2 nach Merge von `live-verschraenkt` (Fortsetzung auf demselben Branch, vorher Rebase); Welle 2
+`pruefung-karte` nach allen; dann Gesamtreview (R26-D4). Integration in der Reihenfolge der Fertigstellung.
+
+| Spur | Welle | Themen | Modell | Grund |
+|---|---|---|---|---|
+| `live-verschraenkt` | 1 | S01, S04, S05 | Opus 5.5 | Umbau des Live-Kerns (Minutenschleife 0x37A62 über alle Paarungen), Disassembly; Fehler wirken auf jeden Live-Spieltag |
+| `tagesabschluss` | 1 | #1018 (SG-01) | Opus 5.5 | Zufallsreihenfolge im Tageslauf, Geld; klein, aber Spielkern |
+| `torszene-dauer` | 1 (Teil 1), 1b (Teil 2) | S02 | Opus 5.5 | Spieltagsablauf 0x36B5D/0x3901B ungelesen, Umbau des Ablaufs der Darstellung 2 |
+| `pruefung-karte` | 2 | P3 der Runde, Generatorlauf, Abweichungsliste nachziehen | Sonnet 5.5 | mechanisch |
+
+Erstreviews: Opus 5.5, für `pruefung-karte` Sonnet 5.5. Fixläufe im Modell der Spur. Plan-Review Sonnet 5.5. Gesamtreview nach
+R26-D4 (ChatGPT GPT-6.2 Astra) mit Claude-Auswertung.
+
+### Spur `live-verschraenkt` – Paarungen je Minute verschränkt, Paarungsseiten, Reporter und Tasten (Welle 1)
+
+- **Teile:** 1. **Nachbildung** der Minutenschleife 0x37A62 über alle Paarungen eines Live-Spieltags (Reihenfolge der Paarungen und
+  der Würfe je Minute, Eingriffsabfrage je Managerpaarung A454, fertige Paarung A766, Anzeigereihen A554/A555, Tormeldungen
+  A909/A954), Skript mit Ausgabe, Vorgabe und erwartete Werte für die roten Tests in `docs/analyse/live-spieltag.md`, kein
+  Produktcode; 2. **Umbau S01** (A442, A450, A454, A541, A542, A547, A554, A555, A766, A909, A954): Live-Kern rechnet je Minute
+  alle Paarungen des Spieltags in der Reihenfolge des Originals, der Live-Bildschirm zeigt die Reihen gleichzeitig; Ergebnisse,
+  Statistik, Strafen, Verletzungen und Finanzen unverändert über den gemeinsamen Zufallsstrom; 3. **S04** (A292, A436, F068, F076:
+  „n.Minute“ auf den Paarungsseiten, Zwischenstände Datei 0x3183C, Penalty-Anzeige mit drei Farbstreifen Datei 0x35CBE);
+  4. **S05** (A448 Pause bei Geschwindigkeit 62–69, A456 Reihenfolge der Reportermeldungen in der Minute, A457 Farbe 0 des
+  Reporterbilds, A475 Mindestbreite Zuschauerzahl, Leertaste = Spielmodus-Optionen Datei 0x2CD1C; A449, A453 nur bestätigen).
+- **Dateien:** `Core/MatchEngine.Live*.cs`, `LiveClock.cs`, `MatchEngine.Intervention.cs`, `MatchEngine.Scoreboard.cs`,
+  `MatchEngine.Shootout.cs`, `MatchEngine.Minutes.cs`, `MatchEngine.MinuteCounters.cs` (je minimal), `GameState.DailyRun.cs`
+  (minimal); `UI/Screens/Live/*` außer `GoalScene*`, `UI/LiveWidgets.cs`, `UI/Screens/MatchDayScreen.cs`,
+  `Competitions/DebCupGamesScreen.cs`, `PlayoffGamesScreen.cs`, `WorldCupKnockoutScreen.cs` (S04, minimal);
+  `tools/reverse-engineering/live/*.py`, `docs/analyse/live-spieltag.md` (neu); Tests (Livespiel-Tests dürfen nach R15-E2 = C
+  angepasst werden). **Prüfung:** `--schnell`; Live-Spieltag mit zwei und drei Managerpaarungen (Liga, Play-off, Pokal mit
+  Penaltyschießen) als Bildschirmfoto-Ablauf, Vergleich mit Videobild bzw. DOSBox-Bild; Mehrsaisonprobe (4 Wechsel, zwei Manager,
+  Live an) – Ergebnisse und Geld plausibel.
+- **Status:** offen (wartet auf Go).
+
+### Spur `tagesabschluss` – Tagesabschluss im Hauptweg je Manager (#1018, Welle 1)
+
+- **Teile:** 1. Nachbildung des Hauptwegs Datei 0x5522B (`call 0x100:0x4D`, Tagesabschluss 0x3ED01 je Manager in einer Schleife:
+  Baufirmen 0x3ED19 mit 11 Würfen, Zins, Werbeangebote) mit Ausgabe, roter Test mit zwei Managern an einem Angebotstag
+  (Zufallsfolge je Manager verschränkt); Umbau zu `DayClose(date, manager)` je Manager wie `RunSummerDay`; WM-Schleife Datei
+  0x556B5 ff. mitprüfen (gleiches Muster → mitnehmen, sonst Marker). Börsentag bleibt einmal je Tag (Nutzer 30.10.2026, #188).
+- **Dateien:** `Core/GameState.Manager.cs`, `GameState.DailyRun.cs` (minimal), `FinanceSponsors.cs`, `FinanceStadium.cs`,
+  Zinsrechnung (Datei der Methode `AccrueDailyInterest`), `tools/reverse-engineering/tagesabschluss/*.py` (neu); Tests.
+  **Prüfung:** `--schnell`; Mehrsaisonprobe (4 Wechsel, passiv/aktiv, zwei Manager, Geld).
+- **Status:** offen (wartet auf Go).
+
+### Spur `torszene-dauer` – Darstellung 2 „Dauer-Eisfeld“ (S02, Welle 1/1b)
+
+- **Teile:** 1. **Beleg** (parallel zu `live-verschraenkt`, kein Produktcode): Spieltagsablauf 0x36B5D und Penaltyschießen 0x3901B
+  bei Darstellung 2 lesen und nachbilden (wann das Eisfeld aufgebaut, zwischen Szenen gehalten und abgebaut wird; Moduswechsel
+  und Hallenstufe Datei 0x568A9–0x568B6; Wechselwirkung mit den verschränkten Paarungen aus `live-verschraenkt` Teil 1), Ergebnis
+  in `docs/analyse/torszene-dauer.md` (eigene Datei, keine Kollision mit `live-spieltag.md`), Skripte
+  `tools/reverse-engineering/live/torszene_*.py`; 2. **Umsetzung A472** nach Merge von
+  `live-verschraenkt` (Rebase, Fortsetzung): bei Darstellung 2 zeigt der Spieltag durchgehend das Eisfeld wie im Original,
+  Torszenen darauf; Darstellung 0/1 unverändert.
+- **Dateien:** Teil 1 `docs/analyse/torszene-dauer.md` (neu), `tools/reverse-engineering/live/torszene_*.py`; Teil 2
+  `UI/Screens/Live/GoalScene*.cs`, `Core/MatchEngine.GoalScene.cs`, `Formats/GoalSceneRink.cs`, `UI/Screens/Live/LiveSession.cs`
+  und `LiveMatchScreen.cs` (je minimal, nach `live-verschraenkt`); Tests. **Prüfung:** Teil 1 Skripte mit
+  `~/referenz/original/gamedata/EM.EXE`; Teil 2 `--schnell`, Bildschirmfoto-Ablauf Darstellung 2 über einen Spieltag mit Tor und
+  Penaltyschießen, Vergleich mit Videobild.
+- **Status:** offen (wartet auf Go).
+
+### Spur `pruefung-karte` – Abschluss der Runde (Welle 2)
+
+- **Teile:** 1. gesammelte P3 der Runde; 2. einziger Lauf `markerliste.py --write`, Klassenzeilen der geänderten IDs in
+  `restliste-v1-klassen.csv`, Status S01, S02, S04, S05 in `abweichungen-v1.md` Abschnitt 0 („umgesetzt“/„keine Abweichung“ mit PR),
+  #1018 schließen.
+- **Dateien:** `docs/analyse/*`, Kommentare der P3. **Prüfung:** `--schnell`. **Erstreview:** Sonnet 5.5.
+- **Status:** offen (wartet auf Go).
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
 - R8-A01 (Spielstände aus Spurbranches laden nicht): Spurbranches sind keine Ausgabestände.
 
 ### Vormerkungen
-
-- **Runde 26 – Live-Spieltag (R25-D1 = D, R25-D2 = A):** Spur `live-verschraenkt` (Opus 5.5): S01 (A442, A450, A454, A541, A542,
-  A547, A554, A555, A766, A909, A954; je Minute alle Paarungen, 0x37A62) erst nachbilden, dann Live-Kern umbauen, dann S04 (A292,
-  A436, F068, F076; Quellen 0x3183C, 0x35CBE) und S05 (A448, A449, A453, A456, A457, A475); danach Spur `torszene-dauer` (S02,
-  A472; Spieltagsablauf 0x36B5D/0x3901B, Moduswechsel 0x568A9–0x568B6).
-- **Runde 26 – Tagesabschluss je Manager (#1018, SG-01 = A, Nutzer 25.11.2026):** eigene kleine Spur (Opus 5.5): Baufirmen (11 Würfe),
-  Zins und Werbeangebote je Manager in einer Schleife wie im Original (Datei 0x5522B, `call 0x100:0x4D`), Vorbild `RunSummerDay`.
 
 - **DOSBox-Aufnahme `runde-22` Sitzungen 2–6** und **Sitzung 7** (neue D aus Runde 22: A671, A713/A949, A896, A899, A910, A912,
   A918, A945; Liste nach R23-D3 in `vorlagen/dosbox-aufnahme.md`): Aufnahme nach Lust, Auswertung in der Runde danach.
