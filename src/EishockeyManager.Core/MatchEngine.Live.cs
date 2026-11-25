@@ -98,6 +98,26 @@ public static partial class MatchEngine
         public MatchReport? Report { get; set; }
     }
 
+    /// <summary>
+    /// Nimmt die Paarung den schnellen Pokalweg 0x3731F statt der Minutenschleife (ohne Spielwertung geprüft)? Gemeinsam für
+    /// <see cref="BeginMatch"/> und die Termine mit mehreren Paarungen (<see cref="PlayDate"/>, Spur live-verschraenkt Teil 2b).
+    /// Siehe die Fundstellen in <see cref="BeginMatch"/>.
+    /// </summary>
+    internal static bool FastCupPath(GameState game, Club home, Club away, MatchCompetition competition, bool knockOut)
+    {
+        var minuteLoop = competition == MatchCompetition.WorldCup && knockOut
+            ? false
+            : game.Options.CupMatchUsesMinuteLoop(competition);
+        if (GameState.ManagerDayFlag)
+            minuteLoop = true; // [ORIGINAL] Merker 0x36FEA: Managerverein spielt an diesem Tag → alle Paarungen Minute für Minute
+        // [APPROX] Der schnelle Pokalweg hängt wie bisher am Manager (Vereinsfeld 0x16), nicht an der Reihe: das Original
+        // entscheidet je Spieltag über den Merker 0x36FEA (siehe BeginMatch), nicht über die Reihenliste.
+        return !IsManaged(game, home) && !IsManaged(game, away) && competition is MatchCompetition.DebCup
+                or MatchCompetition.EuropeanCup or MatchCompetition.WorldCup or MatchCompetition.Playoff
+                or MatchCompetition.Relegation or MatchCompetition.Friendly
+            && !minuteLoop;
+    }
+
     /// <summary>Gemeinsame Vorbereitung von <see cref="PlayWithEvents"/> und Minutenschritt (bis vor die Minutenschleife).</summary>
     internal static MatchSetup BeginMatch(GameState game, Club home, Club away, MatchCompetition competition, bool knockOut,
         Random random)
@@ -162,17 +182,8 @@ public static partial class MatchEngine
         // je Paarung (Vorgabe, Entscheidung Nutzer 01.11.2026); das Verhalten des Originals gibt es als Einstellung
         // GameOptions.ManagerDayMinuteLoop (R14-D4 = A, #349). Den WM-Schalter setzt im Bundestrainer-Abschnitt
         // die Ernennung (0x5541F/0x5545F, Sicherung 0x22C) und stellt das Saisonende zurück (0x5575A; GameState.Watch.cs, A541).
-        var minuteLoop = competition == MatchCompetition.WorldCup && knockOut
-            ? false
-            : game.Options.CupMatchUsesMinuteLoop(competition);
-        if (GameState.ManagerDayFlag)
-            minuteLoop = true; // [ORIGINAL] Merker 0x36FEA: Managerverein spielt an diesem Tag → alle Paarungen Minute für Minute
         LastRules = rules;
-        // [APPROX] Der schnelle Pokalweg hängt wie bisher am Manager (Vereinsfeld 0x16), nicht an der Reihe: das Original
-        // entscheidet je Spieltag über den Merker 0x36FEA (siehe oben), nicht über die Reihenliste.
-        if (!homeManaged && !awayManaged && competition is MatchCompetition.DebCup or MatchCompetition.EuropeanCup or MatchCompetition.WorldCup
-                or MatchCompetition.Playoff or MatchCompetition.Relegation or MatchCompetition.Friendly
-            && !minuteLoop)
+        if (FastCupPath(game, home, away, competition, knockOut))
         {
             var h = OriginalMinutes.Strengths(homeTeam, awayTeam, 0);
             var a = OriginalMinutes.Strengths(awayTeam, homeTeam, 0);

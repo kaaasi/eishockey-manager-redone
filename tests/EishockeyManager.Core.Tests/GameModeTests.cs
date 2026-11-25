@@ -515,8 +515,12 @@ public class GameModeTests
     // Paarungen aus dem gemeinsamen Zufall (0x37A62, Datei 0x37DB7–0x380CD; docs/analyse/live-spieltag.md) statt Paarung für
     // Paarung; anderer Zufallsverlauf ab dem ersten Ligaspieltag. Kein Originalsollwert, nur interner Abdruck.
     // Rückschaltprobe: src/ von b322f69 + dieser Test → rot (alte Werte).
+    // Spur live-verschraenkt Teil 2b (Runde 26, S01, R21-D2 = A, R15-E2 = C): neu – Pokal-, Play-off-, Aufstiegsrunden-, Europapokal-
+    // und WM-Termine rechnen je Minute alle Paarungen des Termins mit Minutenweg (0x37A62 Datei 0x380D0–0x3853E,
+    // MatchEngine.PlayDate); anderer Zufallsverlauf ab dem ersten Pokaltermin. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von f8bb0ad + dieser Test → rot (alte Werte).
     internal const string Mode4Reference =
-        "WorldChampion=52,CupWinner=5,GermanChampion=5,EuropeanCupWinner=2|1165483,400000|WorldChampion=52,CupWinner=12,GermanChampion=5,EuropeanCupWinner=5|2241455,400000|WorldChampion=52,CupWinner=5,GermanChampion=12,EuropeanCupWinner=5|2070325,500000|WorldChampion=63,CupWinner=0,GermanChampion=4,EuropeanCupWinner=12|2301309,400000|WorldChampion=53,CupWinner=10,GermanChampion=5,EuropeanCupWinner=4|2413097,500000|R781478773";
+        "WorldChampion=52,CupWinner=13,GermanChampion=5,EuropeanCupWinner=2|1100849,400000|WorldChampion=63,CupWinner=0,GermanChampion=0,EuropeanCupWinner=5|2485945,400000|WorldChampion=52,CupWinner=4,GermanChampion=4,EuropeanCupWinner=0|2550592,500000|WorldChampion=63,CupWinner=17,GermanChampion=4,EuropeanCupWinner=4|2553819,400000|WorldChampion=63,CupWinner=0,GermanChampion=5,EuropeanCupWinner=4|2513111,500000|R713172762";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

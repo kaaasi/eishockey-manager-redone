@@ -337,10 +337,14 @@ public class RngTwinProbeTests
     // Paarungen aus dem gemeinsamen Zufall (0x37A62, Datei 0x37DB7–0x380CD; docs/analyse/live-spieltag.md) statt Paarung für
     // Paarung; anderer Zufallsverlauf ab dem ersten Ligaspieltag. Kein Originalsollwert, nur interner Abdruck.
     // Rückschaltprobe: src/ von b322f69 + dieser Test → rot (alte Werte).
-    [InlineData(false, 3, "91187EBB090A5C4B")]
-    [InlineData(true, 3, "2CBF865D8B764E01")]
-    [InlineData(false, 11, "6EC70BDD10098E6B")]
-    [InlineData(true, 11, "BC705DAA5F9FD5AD")]
+    // Spur live-verschraenkt Teil 2b (Runde 26, S01, R21-D2 = A, R15-E2 = C): neu – Pokal-, Play-off-, Aufstiegsrunden-, Europapokal-
+    // und WM-Termine rechnen je Minute alle Paarungen des Termins mit Minutenweg (0x37A62 Datei 0x380D0–0x3853E,
+    // MatchEngine.PlayDate); anderer Zufallsverlauf ab dem ersten Pokaltermin. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von f8bb0ad + dieser Test → rot (alte Werte).
+    [InlineData(false, 3, "49A11322D8FD4521")]
+    [InlineData(true, 3, "A65E4D8F8473F807")]
+    [InlineData(false, 11, "C169D77C3B9585D8")]
+    [InlineData(true, 11, "84672BC5B88AE78A")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -469,8 +473,12 @@ public class RngTwinProbeTests
     // Paarungen aus dem gemeinsamen Zufall (0x37A62, Datei 0x37DB7–0x380CD; docs/analyse/live-spieltag.md) statt Paarung für
     // Paarung; anderer Zufallsverlauf ab dem ersten Ligaspieltag. Kein Originalsollwert, nur interner Abdruck.
     // Rückschaltprobe: src/ von b322f69 + dieser Test → rot (alte Werte).
-    [InlineData(false, "0EA549BE380D037F")]
-    [InlineData(true, "1830741E2ACB4709")]
+    // Spur live-verschraenkt Teil 2b (Runde 26, S01, R21-D2 = A, R15-E2 = C): neu – Pokal-, Play-off-, Aufstiegsrunden-, Europapokal-
+    // und WM-Termine rechnen je Minute alle Paarungen des Termins mit Minutenweg (0x37A62 Datei 0x380D0–0x3853E,
+    // MatchEngine.PlayDate); anderer Zufallsverlauf ab dem ersten Pokaltermin. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von f8bb0ad + dieser Test → rot (alte Werte).
+    [InlineData(false, "3736573B050D53D2")]
+    [InlineData(true, "8652581E522150FA")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

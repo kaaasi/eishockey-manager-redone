@@ -21,10 +21,9 @@ public interface ILiveMatchDriver
 /// <item>[ORIGINAL] Ligaspieltag (S01, Spur live-verschraenkt): <see cref="PlayMatchDay"/> rechnet je Minute alle Paarungen des
 ///   Spieltags (0x37A62); der Treiber bekommt den ganzen Spieltag, alle Managerpaarungen laufen gleichzeitig. Ohne Eingriff ist
 ///   das Ergebnis über den Live-Bildschirm dasselbe wie ohne Anzeige.</item>
-/// <item>[APPROX] Pokal-, Play-off-, Europapokal- und WM-Termine rufen weiter <see cref="PlayWithEvents"/> je Paarung
-///   (Ablauf in <c>Playoffs.cs</c>, <c>CupsDeb.cs</c>, <c>CupsGroup.cs</c>, <c>CupsWorld.cs</c> außerhalb der Spur): dort läuft die
-///   Paarung mit Reihe für sich durch alle Minuten, mehrere Managerpaarungen eines Termins nacheinander; das Original rechnet
-///   auch dort je Minute alle Paarungen der Pokalzeilen (Datei 0x380D0–0x3853E).</item>
+/// <item>[ORIGINAL] Pokal-, Play-off-, Aufstiegsrunden-, Europapokal- und WM-Termine (Spur live-verschraenkt Teil 2b):
+///   <see cref="PlayDate"/> rechnet je Minute alle Paarungen des Termins mit Minutenweg (Pokalzeilen Datei 0x380D0–0x3853E, je
+///   Zeile in Paarungsreihenfolge); mehrere Managerpaarungen eines Termins laufen gleichzeitig.</item>
 /// <item>Zeit vergeht weiter nur über <see cref="GameState.Continue"/>: Der Treiber wird innerhalb dieses Aufrufs gerufen.</item>
 /// </list>
 /// </summary>
@@ -99,6 +98,56 @@ public static partial class MatchEngine
             }
         }
         return day.Finish();
+    }
+
+    /// <summary>
+    /// Ein Pokal-, Play-off-, Aufstiegsrunden-, Europapokal- oder WM-Termin (Spur live-verschraenkt Teil 2b, Entscheidung
+    /// Leitstelle 25.11.2026 zu PR #1032). [ORIGINAL] Mit Minutenweg rechnet 0x37A62 je Minute alle Paarungen der Pokalzeile in
+    /// Paarungsreihenfolge (Datei 0x380D0–0x3853E, ab 0xCFF8[Zeile] bis 0xFF) aus dem gemeinsamen Zufall: diese Paarungen laufen
+    /// über <see cref="PlayMatchDay"/> (ein Treiberaufruf je Termin). Paarungen des schnellen Wegs (<see cref="FastCupPath"/>) und
+    /// Spielwertungen rechnet <see cref="PlayWithEvents"/> einzeln, jede sofort mit Meldung an <paramref name="played"/> – die
+    /// Zusatzwürfe des schnellen Wegs zählen die schon gerechneten Paarungen des Termins (<see cref="DebCupExtraRoll"/>,
+    /// <see cref="FirstPlayoffPairingOfDate"/>, 0x376E1/0x32AA3 nach jeder Paarung).
+    /// [APPROX] Das Original entscheidet den Weg je Tag (Merker 0x36FEA: Managerverein spielt → alle Paarungen Minute für Minute,
+    /// Einstellung <see cref="GameOptions.ManagerDayMinuteLoop"/>); das Remake je Paarung (Nutzer 01.11.2026). An einem Termin mit
+    /// beiden Wegen rechnet die Minutenschleife zuerst (danach zählen ihre Paarungen für den schnellen Weg als gerechnet, wie die
+    /// Markierung 0x37211 nach Minute 60), dann die Paarungen des schnellen Wegs in ihrer Reihenfolge. Termine mit Paarungen
+    /// verschiedener Wettbewerbe (Maske 0xC: Play-off und Aufstiegsrunde) laufen je Wettbewerb, weil der Ablauf sie getrennt aufruft.
+    /// <paramref name="played"/> bekommt Index (Vorgabe) und Bericht jeder Paarung, sobald sie gerechnet ist; das Ergebnis hält die
+    /// Berichte in der Reihenfolge der Vorgabe.
+    /// </summary>
+    public static IReadOnlyList<MatchReport> PlayDate(GameState game, IReadOnlyList<LiveFixture> fixtures,
+        Action<int, MatchReport>? played = null)
+    {
+        ArgumentNullException.ThrowIfNull(game);
+        ArgumentNullException.ThrowIfNull(fixtures);
+        var reports = new MatchReport[fixtures.Count];
+        var loop = new List<int>();
+        var single = new List<int>();
+        for (var i = 0; i < fixtures.Count; i++)
+        {
+            var f = fixtures[i];
+            if (f.Home.ForfeitsMatch || f.Away.ForfeitsMatch || FastCupPath(game, f.Home, f.Away, f.Competition, f.KnockOut))
+                single.Add(i);
+            else
+                loop.Add(i);
+        }
+        if (loop.Count > 0)
+        {
+            var loopReports = PlayMatchDay(game, [.. loop.Select(i => fixtures[i])]);
+            for (var k = 0; k < loop.Count; k++)
+            {
+                reports[loop[k]] = loopReports[k];
+                played?.Invoke(loop[k], loopReports[k]);
+            }
+        }
+        foreach (var i in single)
+        {
+            var f = fixtures[i];
+            reports[i] = PlayWithEvents(game, f.Home, f.Away, f.Competition, f.KnockOut, f.Random);
+            played?.Invoke(i, reports[i]);
+        }
+        return reports;
     }
 
     private sealed class Restore(Action action) : IDisposable

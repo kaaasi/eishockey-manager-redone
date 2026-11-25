@@ -22,8 +22,8 @@ namespace EishockeyManager.UI.Screens.Live;
 ///   <see cref="MatchDayScreen"/>, Entscheidung Nutzer 31.10.2026, #205); die Leertaste (Spielmodus-Optionen 0x2CD1C) ist
 ///   nicht angeschlossen.</item>
 /// <item>[ORIGINAL] Reihen: die Paarungen mit Anzeigereihe des Termins (<see cref="LiveSession.Shown"/>), am Ligaspieltag alle von
-///   Minute 1 an (S01, <c>MatchEngine.PlayMatchDay</c>). [APPROX] An Pokal-, Play-off- und WM-Terminen rechnet das Remake die
-///   Paarungen nacheinander (<c>MatchEngine.LiveDriver.cs</c>): spätere Managerpaarungen erscheinen dort erst mit ihrem Spiel.</item>
+///   Minute 1 an (S01, <c>MatchEngine.PlayMatchDay</c>), an Pokal-, Play-off- und WM-Terminen ebenso (<c>MatchEngine.PlayDate</c>,
+///   Pokalzeilen Datei 0x380D0–0x3853E).</item>
 /// <item>[ORIGINAL] Torszene je Chance vor der Reporter-Meldung (0x53C57 → 0x567C8 vor 0x541D9/0x52520, Spur torszenen C3,
 ///   <see cref="GoalSceneCall"/>): Pause 30, Abspieler <see cref="GoalSceneScreen"/> mit der Szene des Spielkerns, Pause 20,
 ///   „r“/„w“ wiederholt bis zu dreimal.</item>
@@ -221,7 +221,7 @@ public sealed class LiveMatchScreen : Screen
                 continue;
             var match = _session.Shown[p];
             // [ORIGINAL] entschiedene Paarung rechnet in der Verlängerung nicht und wird nicht abgefragt (Datei 0x3825F–0x3826C vor
-            // 0x38D96); [APPROX] an Pokalterminen (je Paarung gerechnet) gilt das auch für die schon fertig gerechnete Paarung.
+            // 0x38D96).
             if (!match.Running)
                 continue;
             var side = mx > 160 ? 1 : 0;

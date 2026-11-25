@@ -231,19 +231,23 @@ public sealed partial class WorldCup : ISeasonCompetition
         if (date < GroupDates)
         {
             played = [];
-            foreach (var group in _groups)
-                foreach (var (home, away) in group.Pairings(date))
-                {
-                    // Spielvorbereitung 0x8365 je Paarung in der Spielberechnung (#192, A494: MatchEngine.PrepareNationalMatch).
-                    var report = MatchEngine.PlayWithEvents(game, game.RatedNation(home), game.RatedNation(away),
-                        MatchCompetition.WorldCup, knockOut: false, random);
-                    reports.Add((home, away, report));
-                    var (hg, ag) = (report.HomeGoals, report.AwayGoals);
-                    var match = new KnockoutMatch(day, home, away, hg, ag);
-                    group.Results.Add(match);
-                    played.Add(match);
-                    game.EnterNationalResult(home, away, hg, ag, NationalMatchKind.WorldCupGroup); // 0x50283, Code 8
-                }
+            // S01 (Spur live-verschraenkt Teil 2b): [ORIGINAL] je Minute alle Paarungen beider Gruppen (0x37A62 Pokalzeile 3,
+            // MatchEngine.PlayDate). Spielvorbereitung 0x8365 je Paarung in der Spielberechnung (#192, A494:
+            // MatchEngine.PrepareNationalMatch).
+            var pairings = _groups.SelectMany(g => g.Pairings(date).Select(p => (Group: g, p.Home, p.Away))).ToList();
+            var groupReports = MatchEngine.PlayDate(game, [.. pairings.Select(p =>
+                new LiveFixture(game.RatedNation(p.Home), game.RatedNation(p.Away), MatchCompetition.WorldCup, false, random))]);
+            for (var i = 0; i < pairings.Count; i++)
+            {
+                var (group, home, away) = pairings[i];
+                var report = groupReports[i];
+                reports.Add((home, away, report));
+                var (hg, ag) = (report.HomeGoals, report.AwayGoals);
+                var match = new KnockoutMatch(day, home, away, hg, ag);
+                group.Results.Add(match);
+                played.Add(match);
+                game.EnterNationalResult(home, away, hg, ag, NationalMatchKind.WorldCupGroup); // 0x50283, Code 8
+            }
             // A109 (Spur national Teil 1): [ORIGINAL] Nach allen Spielen des Termins (0x36B5D, Datei 0x30F65) trägt 0x30852
             // (Datei 0x30F7E, Schleife Gruppe, Paarung) jedes Ergebnis über 0x50283 mit Code 8 ein; dort Tagesform 0x4F527 des
             // Heimlandes (Datei 0x50586), dann des Gastes (Datei 0x5059F). Die WM-Endrunde (Code 10) führt sie nicht nach.
@@ -266,15 +270,17 @@ public sealed partial class WorldCup : ISeasonCompetition
         else
         {
             var stage = date - GroupDates;
-            var results = KnockoutPairings(stage)
-                .Select(p =>
-                {
-                    // Spielvorbereitung 0x8365 je Paarung in der Spielberechnung (#192, A494: MatchEngine.PrepareNationalMatch).
-                    var (home, away) = (game.RatedNation(p.Home), game.RatedNation(p.Away));
-                    var report = MatchEngine.PlayWithEvents(game, home, away, MatchCompetition.WorldCup, knockOut: true, random);
-                    reports.Add((p.Home, p.Away, report));
-                    return CupMatch.FromReport(day, home, away, report);
-                }).ToList();
+            // S01 (Spur live-verschraenkt Teil 2b): [ORIGINAL] je Minute alle Paarungen der Runde (0x37A62 Pokalzeile 3,
+            // MatchEngine.PlayDate; ohne Merker 0x36FEA immer der schnelle Weg). Spielvorbereitung 0x8365 je Paarung (#192, A494).
+            var stagePairings = KnockoutPairings(stage).ToList();
+            var nations = stagePairings.Select(p => (Home: game.RatedNation(p.Home), Away: game.RatedNation(p.Away))).ToList();
+            var stageReports = MatchEngine.PlayDate(game, [.. nations.Select(n =>
+                new LiveFixture(n.Home, n.Away, MatchCompetition.WorldCup, true, random))]);
+            var results = stagePairings.Select((p, i) =>
+            {
+                reports.Add((p.Home, p.Away, stageReports[i]));
+                return CupMatch.FromReport(day, nations[i].Home, nations[i].Away, stageReports[i]);
+            }).ToList();
             played = results.Select(r => r.Match).ToList();
             while (_knockoutMarks.Count < _knockout.Count)
                 _knockoutMarks.Add(_knockout[_knockoutMarks.Count].Select(m => m.PenaltyWinner is null ? 0 : 1).ToList());

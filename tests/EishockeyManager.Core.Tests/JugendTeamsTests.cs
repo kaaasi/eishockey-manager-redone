@@ -311,8 +311,12 @@ public class JugendTeamsTests
     // Paarungen aus dem gemeinsamen Zufall (0x37A62, Datei 0x37DB7–0x380CD; docs/analyse/live-spieltag.md) statt Paarung für
     // Paarung; anderer Zufallsverlauf ab dem ersten Ligaspieltag. Kein Originalsollwert, nur interner Abdruck.
     // Rückschaltprobe: src/ von b322f69 + dieser Test → rot (alte Werte).
+    // Spur live-verschraenkt Teil 2b (Runde 26, S01, R21-D2 = A, R15-E2 = C): neu – Pokal-, Play-off-, Aufstiegsrunden-, Europapokal-
+    // und WM-Termine rechnen je Minute alle Paarungen des Termins mit Minutenweg (0x37A62 Datei 0x380D0–0x3853E,
+    // MatchEngine.PlayDate); anderer Zufallsverlauf ab dem ersten Pokaltermin. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von f8bb0ad + dieser Test → rot (alte Werte).
     private const string ExpectedActive =
-        "0:Schueler:2/11/64;0:Jugend:2/11/62;0:Junioren:2/12/62;1:Schueler:1/11/75;1:Jugend:1/11/76;1:Junioren:2/6/71;2:Schueler:1/6/80;2:Jugend:1/6/80;2:Junioren:1/12/77;3:Schueler:1/6/83;3:Jugend:1/6/82;3:Junioren:1/6/81";
+        "0:Schueler:2/11/65;0:Jugend:2/11/65;0:Junioren:2/11/65;1:Schueler:1/11/72;1:Jugend:1/11/73;1:Junioren:1/11/73;2:Schueler:1/6/82;2:Jugend:1/6/80;2:Junioren:1/6/78;3:Schueler:1/6/85;3:Jugend:1/6/84;3:Junioren:1/6/84";
     // kader-start Teil 2 (U15-a, L13): neu, siehe oben.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     // Review #662 (R14NT-01, Leitstelle Runde 14): neu – der passive Bundesligist wird Bundestrainer; nach der Ernennung läuft die
@@ -425,8 +429,12 @@ public class JugendTeamsTests
     // Paarungen aus dem gemeinsamen Zufall (0x37A62, Datei 0x37DB7–0x380CD; docs/analyse/live-spieltag.md) statt Paarung für
     // Paarung; anderer Zufallsverlauf ab dem ersten Ligaspieltag. Kein Originalsollwert, nur interner Abdruck.
     // Rückschaltprobe: src/ von b322f69 + dieser Test → rot (alte Werte).
+    // Spur live-verschraenkt Teil 2b (Runde 26, S01, R21-D2 = A, R15-E2 = C): neu – Pokal-, Play-off-, Aufstiegsrunden-, Europapokal-
+    // und WM-Termine rechnen je Minute alle Paarungen des Termins mit Minutenweg (0x37A62 Datei 0x380D0–0x3853E,
+    // MatchEngine.PlayDate); anderer Zufallsverlauf ab dem ersten Pokaltermin. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von f8bb0ad + dieser Test → rot (alte Werte).
     private const string ExpectedPassive =
-        "0:Schueler:2/2/68;0:Jugend:1/6/66;0:Junioren:1/6/70;1:Schueler:2/6/56;1:Jugend:2/2/50;1:Junioren:2/2/54;2:Schueler:3/2/45;2:Jugend:3/2/43;2:Junioren:3/2/43;3:Schueler:3/6/44;3:Jugend:3/6/41;3:Junioren:3/6/40";
+        "0:Schueler:1/6/72;0:Jugend:2/2/68;0:Junioren:2/2/67;1:Schueler:2/2/60;1:Jugend:3/2/57;1:Junioren:2/6/59;2:Schueler:3/2/49;2:Jugend:3/6/48;2:Junioren:2/6/48;3:Schueler:3/6/46;3:Jugend:3/6/46;3:Junioren:3/2/44";
 }
 
 public class JugendTeamsMigrationTests

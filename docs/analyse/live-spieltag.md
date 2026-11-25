@@ -106,8 +106,49 @@ ist nicht geprüft – Meldung an die Leitstelle.
   Meldungen der Reihen und die Tormeldungen der Paarungen ohne Reihe in Paarungsreihenfolge.
 - **A454:** Klicks wirken zwischen zwei Minuten statt an der Abfragestelle je Paarung; gleiche Wirkung, weil 0x38D96 keinen
   Zufall zieht und nur die Felder der eigenen Paarung schreibt (Aufrufe 0x53453, 0x534BC, 0x53508, 0x5434C, 0x08E5F, 0x0C097).
-- **Offen (`[APPROX]`, Entscheidung):** Pokal-, Play-off-, Europapokal- und WM-Termine rufen weiter je Paarung
-  `PlayWithEvents` – die Abläufe liegen in `Playoffs.cs`, `CupsDeb.cs`, `CupsGroup.cs`, `CupsWorld.cs` außerhalb der Dateien der
-  Spur. `PlayMatchDay` ist dafür nutzbar (je Termin die Paarungen sammeln, Berichte danach auswerten).
 - **Tests:** `LiveVerschraenktTests` (E1, E2, E4, Mehrsaisonprobe 4 Wechsel passiv/aktiv), `LiveVerschraenktUiTests`;
   Szenarien `live-verschraenkt-2`, `live-verschraenkt-3` (drei Reihen in Minute 21 gleichzeitig).
+
+## 7. Umsetzung Teil 2b (S01, Pokaltermine)
+
+Entscheidung Leitstelle 25.11.2026 (PR #1032): Pokaltermine wie im Original verschränken, Dateigrenzen um `Playoffs.cs`,
+`CupsDeb.cs`, `CupsGroup.cs`, `CupsWorld.cs` erweitert (je minimal).
+
+- **Kern:** `MatchEngine.PlayDate` (`Core/MatchEngine.LiveDriver.cs`): Paarungen eines Termins mit Minutenweg laufen über
+  `PlayMatchDay` (je Minute alle Paarungen der Pokalzeile in Paarungsreihenfolge, Datei 0x380D0–0x3853E; ein Treiberaufruf je
+  Termin); Paarungen des schnellen Wegs (`MatchEngine.FastCupPath`, aus `BeginMatch` herausgelöst) und Spielwertungen einzeln über
+  `PlayWithEvents`. Jede Paarung wird gemeldet, sobald sie gerechnet ist, damit die Zusatzwürfe des schnellen Wegs die schon
+  gerechneten Paarungen zählen (`DebCupExtraRoll`, `FirstPlayoffPairingOfDate`).
+- **Anschluss:** DEB-Pokal (`DebCup.PlayDay`, Zeile 0), Play-offs (`Playoffs.PlayDate`, Zeile 2), Aufstiegsrunde
+  (`RelegationGroup.PlayDate`), Europapokal je Gruppe (`CupGroup.Play`, Zeile 1), WM-Gruppen beider Gruppen und WM-Endrunde
+  (`WorldCup.PlayDay`, Zeile 3).
+- **[APPROX]:** (1) Der Weg (Minutenschleife oder schneller Weg) gilt im Remake je Paarung (Nutzer 01.11.2026), im Original je Tag
+  (Merker 0x36FEA); an einem Termin mit beiden Wegen rechnet die Minutenschleife zuerst, danach die Paarungen des schnellen Wegs in
+  ihrer Reihenfolge (sie zählen die Paarungen der Minutenschleife als gerechnet, wie die Markierung 0x37211 nach Minute 60).
+  Mit `GameOptions.ManagerDayMinuteLoop` laufen alle Paarungen des Termins durch die Minutenschleife wie im Original.
+  (2) Termine mit Paarungen verschiedener Wettbewerbe in einer Schleife (Maske 0xC: Play-off und Aufstiegsrunde; zwei
+  Europapokalgruppen) rechnet das Remake je Wettbewerb bzw. Gruppe, weil der Ablauf sie getrennt aufruft.
+- **Tests:** `LiveVerschraenktPokalTests` (DEB-Pokaltermin mit zwei Managerpaarungen: ein Treiberaufruf, rot vorher; erste Saison
+  mit = ohne Treiber; Reihenfolge der Wege in `PlayDate`), Mehrsaisonprobe aus Teil 2 deckt die Pokaltermine mit ab.
+
+## 8. Vorarbeit Teil 3 (S04, gelesen, noch ohne Nachbildung)
+
+Gelesen mit `disasm.py em.exe 0x36B5D 0x3901B` und `0x3A88A 0x3ACE3`; **Lesart, keine Nachbildung** – vor dem Umbau nach
+`zusammenarbeit.md` §5 Punkt 7 als Skript `tools/reverse-engineering/live/drittelseiten.py` nachzuspielen.
+
+- **Aufrufe nach jedem Drittel** (Ende von 0x37A62, Datei 0x3858C–0x386CD, Argument Drittelende 20/40/60/70; auch ohne Anzeige):
+  - Liga (Ligamaske ≠ 0): 0x369C7(2, 0) schreibt die laufenden Stände in die Ergebnistabelle; je Liga der Maske bei Minute 60
+    0x50B45, 0x51049, 0x052CF (Tabellen), dann ohne Darstellung 2 (`DGROUP 0x5A55` = 0) Seite 7 (Ligapaarungen 0x4E8A3) mit
+    Liga und Minute (Datei 0x385A9–0x38601).
+  - Pokal (Pokalmaske ≠ 0): 0x369C7(2, 1); Wettbewerbscode `DGROUP 0xD0C2` = 1 (Play-offs/Aufstiegsrunde): Seite 1 (0x32E23
+    Wettbewerb 2 = „Play-Off Spiele“), bei Spiel 0xCCA3 ∈ {0, 2} die Aufstiegsrunde (Minute 60: Tabelle 0x30852) und Seite 2
+    mit Wettbewerb 1 und 2 (Datei 0x3862E–0x386B6); sonst Seite = `DGROUP 0xD0C2` mit Wettbewerb 0 (Datei 0x386B8–0x386C5).
+  - Nach dem Penaltyschießen (Datei 0x37297–0x372AC): Seite `DGROUP 0xD0C2`, Minute 70.
+- **Seitenwähler 0x3A88A mit Minute ≠ 0** (Datei 0x3A8A3–0x3AA01): Minute 20/40 setzt einen Merker; Seiten erscheinen nur bei
+  eingeschalteter Meldung bzw. Anzeige des Wettbewerbs (Meldungsmatrix DGROUP 0x21D + 3 · Liga + Zeile, WM 0x229, Europapokal
+  0x228, DEB-Pokal 0x227); mit Darstellung 2 nur die Seiten 1, 2, 9. Vor der Seite die Live-Tore in die Tortabellen:
+  Play-off 0x5C8B/0x5C8C → 0xCCB2 (Datei 0x3AA30–0x3AA84), Aufstiegsrunde/Europapokal/WM-Gruppen 0x3183C (F068; Datei 0x3A96F,
+  0x3AAF3, 0x3AC21), bei Minute 60 statt dessen die Tabelle 0x30852. Jede Seite gibt die nächste Seite zurück (0 = Ende,
+  Datei 0x3AC96–0x3ACC1); WM-Endrunde 0x32E23 mit Wettbewerb 3 (A292), Play-off-Spiele mit Wettbewerb 2 (A436).
+- **Offen:** Anzeige „n.Minute“ und Rahmen im Spielablauf in 0x32E23 (vorbereitet: `WorldCupKnockoutScreen.LiveLine`),
+  Ligapaarungen 0x4E8A3 mit Minute, Penalty-Anzeige 0x35CBE (F076, Aufrufer 0x3901B; berührt `torszene-dauer` Teil 1).

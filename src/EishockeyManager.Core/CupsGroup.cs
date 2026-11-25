@@ -122,12 +122,14 @@ public sealed class CupGroup(int number, IReadOnlyList<int> teams)
     public IReadOnlyList<KnockoutMatch> Play(int round, int day, GameState game, Random random)
     {
         var clubs = game.Clubs;
-        var played = Pairings(round).Select(p =>
-        {
-            var report = MatchEngine.PlayWithEvents(game, clubs[p.Home], clubs[p.Away], MatchCompetition.EuropeanCup, knockOut: false, random);
-            var (hg, ag) = (report.HomeGoals, report.AwayGoals);
-            return new KnockoutMatch(day, p.Home, p.Away, hg, ag);
-        }).ToList();
+        // S01 (Spur live-verschraenkt Teil 2b): [ORIGINAL] je Minute alle Paarungen der Gruppe (0x37A62 Pokalzeile 1,
+        // MatchEngine.PlayDate). [APPROX] Zwei Gruppen eines Termins rechnet das Original in einer Schleife; der Ablauf
+        // (CupsEurope.cs) ruft sie je Gruppe.
+        var pairings = Pairings(round).ToList();
+        var reports = MatchEngine.PlayDate(game, [.. pairings.Select(p =>
+            new LiveFixture(clubs[p.Home], clubs[p.Away], MatchCompetition.EuropeanCup, false, random))]);
+        var played = pairings.Select((p, i) => new KnockoutMatch(day, p.Home, p.Away, reports[i].HomeGoals, reports[i].AwayGoals))
+            .ToList();
         Results.AddRange(played);
         return played;
     }

@@ -365,6 +365,10 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // Paarungen aus dem gemeinsamen Zufall (0x37A62, Datei 0x37DB7–0x380CD; docs/analyse/live-spieltag.md) statt Paarung für
     // Paarung; anderer Zufallsverlauf ab dem ersten Ligaspieltag. Kein Originalsollwert, nur interner Abdruck.
     // Rückschaltprobe: src/ von b322f69 + dieser Test → rot (alte Werte).
+    // Spur live-verschraenkt Teil 2b (Runde 26, S01, R21-D2 = A, R15-E2 = C): neu – Pokal-, Play-off-, Aufstiegsrunden-, Europapokal-
+    // und WM-Termine rechnen je Minute alle Paarungen des Termins mit Minutenweg (0x37A62 Datei 0x380D0–0x3853E,
+    // MatchEngine.PlayDate); anderer Zufallsverlauf ab dem ersten Pokaltermin. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von f8bb0ad + dieser Test → rot (alte Werte).
     private const string Reference =
-        "1993: DEB 4, DM 4, Tab 15636 | 1994: DEB 8, DM 8, Tab 16042 | 1995: DEB 6, DM 6, Tab 16147 | 1996: DEB 9, DM 3, Tab 15772";
+        "1993: DEB 8, DM 2, Tab 15535 | 1994: DEB 8, DM 2, Tab 16046 | 1995: DEB 1, DM 1, Tab 16207 | 1996: DEB 1, DM 11, Tab 16134";
 }

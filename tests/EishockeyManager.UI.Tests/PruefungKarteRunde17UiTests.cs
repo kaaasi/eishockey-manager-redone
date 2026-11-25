@@ -58,7 +58,11 @@ public class PruefungKarteRunde17UiTests
         // Spur live-verschraenkt Teil 2 (Runde 26, S01, R21-D2 = A, R15-E2 = C): Saat 1 statt 7 – der Ligaspieltag rechnet je
         // Minute alle Paarungen aus dem gemeinsamen Zufall (0x37A62, docs/analyse/live-spieltag.md), anderer Zufallsverlauf ab dem
         // ersten Ligaspieltag; mit 7 ist die Vorbedingung verfehlt. Rückschaltprobe siehe PR #1032. Die Probe hängt an der Saat.
-        var (d, game) = StartAtSeasonEnd(nationalCoach: false, seed: 1);
+        // Spur live-verschraenkt Teil 2b (Runde 26, S01, R21-D2 = A, R15-E2 = C): Saat 2 statt 1 – Pokal-, Play-off- und WM-Termine
+        // rechnen je Minute alle Paarungen des Termins (0x37A62 Datei 0x380D0–0x3853E, MatchEngine.PlayDate), anderer Zufallsverlauf ab
+        // dem ersten Pokaltermin; mit 1 ist die Vorbedingung verfehlt, unter 1–15 erfüllen 2, 3, 6, 7, 9–15 sie. Rückschaltprobe siehe
+        // PR #1032. Die Probe hängt an der Saat.
+        var (d, game) = StartAtSeasonEnd(nationalCoach: false, seed: 2);
         var records = game.History[^1].Managers;
         Assert.Equal(2, records.Count);
         Assert.All(records, r => Assert.True(r.Premium > 0, "Probe ohne Prämie prüft nichts"));

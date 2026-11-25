@@ -96,7 +96,11 @@ public class FeldspielerSechsTeil3Tests
     [InlineData(true)]
     public void MultiSeason_SixthSkaterLineupStaysConsistent(bool active)
     {
-        var game = TestGames.Create(23);
+        // Spur live-verschraenkt Teil 2b (Runde 26, S01, R21-D2 = A, R15-E2 = C): Saat 10 statt 23 – Pokal-, Play-off- und WM-Termine
+        // rechnen je Minute alle Paarungen (0x37A62 Datei 0x380D0–0x3853E, MatchEngine.PlayDate), anderer Zufallsverlauf ab dem ersten
+        // Pokaltermin; bei 23 spielt der aktive Verein in Saison 3 nie ohne Torhüter (Vorbedingung), unter 7–16, 23–26 erfüllen 9, 10,
+        // 11, 12, 14, 16 sie. Rückschaltprobe siehe PR #1032. Die Probe hängt an der Saat.
+        var game = TestGames.Create(10);
         var manager = game.ActiveManager;
         var club = game.Clubs[manager.ClubIndex];
         Assert.True(Open(club), "sechster Platz vor Saison 1 nicht zu öffnen");

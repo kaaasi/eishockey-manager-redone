@@ -72,7 +72,7 @@ R26-D4 = B (ChatGPT GPT-6.2 Astra) mit Claude-Auswertung.
   angepasst werden). **Prüfung:** `--schnell`; Live-Spieltag mit zwei und drei Managerpaarungen (Liga, Play-off, Pokal mit
   Penaltyschießen) als Bildschirmfoto-Ablauf, Vergleich mit Videobild bzw. DOSBox-Bild; Mehrsaisonprobe (4 Wechsel, zwei Manager,
   Live an) – Ergebnisse und Geld plausibel.
-- **Status:** in Arbeit (PR #1032, Claude Code): Teil 1 und 2 fertig (Teil 2 nur Ligaspieltag; Pokaltermine brauchen fremde Dateien – Entscheidung offen), Teile 3–4 offen.
+- **Status:** in Arbeit (PR #1032, Claude Code): Teil 1, 2 und 2b (Pokaltermine, Dateigrenzen erweitert um `Core/Playoffs.cs`, `CupsDeb.cs`, `CupsGroup.cs`, `CupsWorld.cs` – Leitstelle 25.11.2026) fertig, Teile 3–4 offen.
 
 ### Spur `tagesabschluss` – Tagesabschluss im Hauptweg je Manager (#1018, Welle 1)
 

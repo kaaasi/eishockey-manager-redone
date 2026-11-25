@@ -124,7 +124,11 @@ public class KaderplatzWerteFixTests
         // Spur live-verschraenkt Teil 2 (Runde 26, S01, R21-D2 = A, R15-E2 = C): Saat 7 statt 3 – der Ligaspieltag rechnet je
         // Minute alle Paarungen aus dem gemeinsamen Zufall (0x37A62, docs/analyse/live-spieltag.md), anderer Zufallsverlauf ab dem
         // ersten Ligaspieltag; mit 3 ist die Vorbedingung verfehlt. Rückschaltprobe siehe PR #1032. Die Probe hängt an der Saat.
-        var game = OriginalExportTests.NewGameForExport(database, 7);
+        // Spur live-verschraenkt Teil 2b (Runde 26, S01, R21-D2 = A, R15-E2 = C): Saat 10 statt 7 – Pokal-, Play-off- und WM-Termine
+        // rechnen je Minute alle Paarungen (0x37A62 Datei 0x380D0–0x3853E, MatchEngine.PlayDate); bei 7 trägt der passive Manager nach
+        // vier Wechseln keinen abweichenden Poolwert mehr, unter 7–16, 24–26 erfüllen 10, 11, 14, 15, 24, 25 die Vorbedingung passiv und
+        // aktiv. Rückschaltprobe siehe PR #1032. Die Probe hängt an der Saat.
+        var game = OriginalExportTests.NewGameForExport(database, 10);
         RngTwinProbeTests.Run(game, active);
         var club = game.Clubs[game.Managers[0].ClubIndex];
         Assert.Contains(club.Players, p => p.PoolCondition is not null || p.PoolTechnique is not null);
