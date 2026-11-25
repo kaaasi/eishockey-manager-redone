@@ -541,13 +541,6 @@ public sealed partial class GameState
         }
     }
 
-    /// <summary>Tagesabschluss aller Manager für das Stadion (<see cref="ForgiveBuilders"/>).</summary>
-    private void DailyStadium()
-    {
-        foreach (var manager in Managers)
-            ForgiveBuilders(manager);
-    }
-
     /// <summary>Wöchentlich: Baufortschritt. Liefert die abgeschlossenen Bauten (je eine Meldung im Posteingang).</summary>
     private IReadOnlyList<StadiumConstruction> AdvanceConstruction(Manager manager) => Finance(manager).Stadium.AdvanceWeek();
 }

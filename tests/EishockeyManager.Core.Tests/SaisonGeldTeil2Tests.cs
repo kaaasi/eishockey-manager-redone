@@ -191,7 +191,9 @@ public class SaisonGeldTeil2Tests
     {
         (string Print, long Sponsors, int MultiField) Run()
         {
-            var game = TwoManagers(7);
+            // Startwert 8 statt 7 seit Spur tagesabschluss (#1018): Der Tagesabschluss je Manager verschiebt den Strom; mit 7 kam
+            // aktiv zufällig kein Vertrag über mehrere Felder mehr zustande (Zusicherung unten).
+            var game = TwoManagers(8);
             var me = game.Managers[0];
             long sponsors = 0;
             var multiField = 0;

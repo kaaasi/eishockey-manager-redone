@@ -84,7 +84,10 @@ public sealed class PlayoffSemifinalTests
         // Spur saison-geld Teil 2 (Runde 25, F08 A512/A526, R15-E2 = C): Saat 8 → 9. Mit 11 Würfen der Baufirmen je Manager und Tag
         // (Datei 0x3ED19–0x3ED48) und der verschränkten Sommerpause hat bei Saat 8 in fünf Saisons kein schlechter Platzierter Heimrecht
         // (gleicher Grund wie oben; 9, 10, 11, 14, 15 mit Fall, 12, 13 ohne).
-        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 9);
+        // Runde 26, Spur tagesabschluss (#1018, SG-01, R15-E2 = C): Saat 9 → 10. Mit dem Tagesabschluss je Manager (Datei
+        // 0x55217–0x55251) und der Talentsuche danach (Datei 0x5528A) hat bei Saat 9 in fünf Saisons kein schlechter Platzierter
+        // Heimrecht (gleicher Grund wie oben; 8, 10–15 mit Fall, 9, 16 ohne). Rückschaltprobe: src/ von 56b7f7c mit Saat 10 grün.
+        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 10);
         var active = game.Managers[1];
         var upsets = 0;
         var transfers = 0;

@@ -408,24 +408,11 @@ public sealed partial class GameState
             var manager = Managers[i];
             if (counter % 7 == 0)
                 WeeklyManagerFinances(manager);
-            SummerDayClose(date, i);
+            DayClose(date, i);
             if (PlayerInjuries.IsHealingDay(counter) && !manager.Dismissed)
                 HealSquad(Clubs[manager.ClubIndex]);
         }
         AdvanceStocks();
-    }
-
-    /// <summary>Tagesabschluss 0x3ED01 eines Managers an einem Tag der Sommerpause (siehe <see cref="RunSummerBreak"/>; Teile wie <see cref="AdvanceFinance"/>).</summary>
-    private void SummerDayClose(DateOnly date, int i)
-    {
-        var manager = Managers[i];
-        ForgiveBuilders(manager);
-        AccrueDailyInterest(date, i);
-        DailySponsorOffers(date, manager);
-        if (date.Day == 1)
-            CountDownSponsorContracts(manager);
-        if (date.Day == DateTime.DaysInMonth(date.Year, date.Month))
-            MonthlyFinances(manager);
     }
 }
 

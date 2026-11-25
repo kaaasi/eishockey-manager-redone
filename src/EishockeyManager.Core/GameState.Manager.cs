@@ -149,31 +149,35 @@ public sealed partial class GameState
             ExpireMessages();
             // Jugendteams (0x39DEC) nicht im Tageswechsel: Spur wettbewerbe-regeln Teil 2 (A384/A670) – sie laufen nach den Menüs
             // vor den Ligaspielen (Datei 0x55003–0x5502C, YouthAfterMenus in ProcessDayCore).
-            // [ORIGINAL] Tageslauf 0x54C9F, Datei 0x5528A: Talentsuche an Tagen mit Zähler 0x3B7 ≡ 0, 4 (mod 7) (Spur geld Teil 6).
-            if (clubDay)
-                DailyTalentSearch(FinanceDay);
             // [ORIGINAL] Tagesabschluss 0x3ED01: Zinskonto, Werbeangebote (Monatsletzter, Monatsmitte), am 1.
             // Restlaufzeiten der Werbeverträge (0x3EF52), am Monatsletzten der Monatsabschluss (0x3F02C, #134);
             // danach die Werbebewertung neu (0x5569F). Zuerst die „beleidigten“ Baufirmen (0x3ED19, Spur geld).
             // Spur tagesablauf (#699 Punkt 2): auch an Tag 0 (10. September, Zähler 1) – der erste Tageswechsel des Spiels und
             // jeder Saison läuft vor dem ersten Menü (Datei 0x54D5C → 0x55073 → 0x55204, je Manager 0x3ED01/0x3F833 bei Datei
             // 0x5522B/0x55230). Vorher als Näherung erst ab Tag 1.
-            DailyStadium();
-            AccrueDailyInterest(date);
-            DailySponsorOffers(date);
-            if (date.Day == 1)
-                foreach (var manager in Managers)
-                    CountDownSponsorContracts(manager);
-            // #679: [ORIGINAL] Stadionbau 0x3D316 am Tageszähler 0x3B7 ≡ 0 (mod 7) nach dem Weiterzählen (Hauptweg Datei 0x552AB–0x552C3,
-            // WM-Schleife Datei 0x556B5–0x556CD), im Tageslauf also Zähler DayCounter.Of(Tag) – samstags, vorher montags.
-            if (DayCounter.Of(FinanceDay) % 7 == 0)
+            // [ORIGINAL] #1018 (SG-01, Spur tagesabschluss; tools/reverse-engineering/tagesabschluss/hauptweg.py): je Manager in einer
+            // Schleife erst der Tagesabschluss 0x3ED01, dann die Werbebewertung 0x3F833, dann der nächste Manager (Hauptweg Datei
+            // 0x55217–0x55251, WM-Schleife Datei 0x55683–0x5571F). Vorher Baufirmen, Zins, Angebote und Bewertungen je für alle.
+            RecordRankSlots();
+            for (var i = 0; i < Managers.Count; i++)
+            {
+                DayClose(date, i);
+                UpdateSponsorRating(Managers[i]);
+                // [ORIGINAL] WM-Schleife: Stadionbau 0x3D316 am Zähler ≡ 0 je Manager direkt nach seiner Bewertung (Datei 0x556B5–0x556CD).
+                if (!clubDay && DayCounter.Of(FinanceDay) % 7 == 0)
+                    WeeklyManagerFinances(Managers[i]);
+            }
+            // [ORIGINAL] Tageslauf 0x54C9F, Datei 0x5528A: Talentsuche an Tagen mit Zähler 0x3B7 ≡ 0, 4 (mod 7) nach der Schleife des
+            // Tagesabschlusses (Spur geld Teil 6; vor #1018 davor).
+            if (clubDay)
+                DailyTalentSearch(FinanceDay);
+            // #679: [ORIGINAL] Stadionbau 0x3D316 am Tageszähler 0x3B7 ≡ 0 (mod 7) nach dem Weiterzählen, im Tageslauf also Zähler
+            // DayCounter.Of(Tag) – samstags, vorher montags. Nach dem Monatsabschluss des Tagesabschlusses (0x3F02C in 0x3ED01, #1018).
+            // [APPROX] Hauptweg: Das Original baut je Manager nach dessen Tageslauf 0x07169 (Datei 0x552A6–0x552C3, hinter der kleinen
+            // Wanderung 0x09D1B); das Remake baut hier für alle vor der Wanderung und vor MainPathDailyRun. Der Bau würfelt im Remake
+            // nicht (die Stadionschäden 0x3CFA0 aus Datei 0x3D330 fehlen), es ändert sich nur die Reihenfolge der Meldungen.
+            if (clubDay && DayCounter.Of(FinanceDay) % 7 == 0)
                 WeeklyFinances();
-            if (date.Day == DateTime.DaysInMonth(date.Year, date.Month))
-                MonthlyFinances();
-            DailySponsorRatings();
-            // Börsentag (em.exe 0x3ED4A, Tagesrechnung 0x5784A). Das Original rechnet ihn im Tagesabschluss jedes
-            // menschlichen Managers, also n-mal je Kalendertag. Entscheidung Nutzer (30.10.2026, #188): einmal je
-            // Kalendertag, nach dem Tagesabschluss des letzten Managers – kein Manager hat einen Vorteil.
             AdvanceStocks();
         }
     }
@@ -207,9 +211,22 @@ public sealed partial class GameState
             WeeklyManagerFinances(manager);
     }
 
-    private void MonthlyFinances()
+    /// <summary>
+    /// Tagesabschluss 0x3ED01 eines Managers ([ORIGINAL] Datei 0x3ED01–0x3F184, tagesabschluss/hauptweg.py Teil 3): Baufirmen (11 Würfe,
+    /// Datei 0x3ED20), Zinskonto, Werbeangebote mit Preis der Talentsuche (Monatsletzter, Monatsmitte; 0x3FB47, Datei 0x3EEB2/0x3EEC7),
+    /// am 1. die Restlaufzeiten der Werbeverträge (0x3EF52), am Monatsletzten der Monatsabschluss (0x3F02C). Der Börsentag 0x5784A
+    /// (Datei 0x3ED4A) läuft im Remake einmal je Tag nach dem letzten Manager (Entscheidung Nutzer 30.10.2026, #188). Aufrufer:
+    /// Hauptweg und WM-Schleife (<see cref="AdvanceFinance"/>), Sommerpause (<see cref="RunSummerDay"/>).
+    /// </summary>
+    private void DayClose(DateOnly date, int i)
     {
-        foreach (var manager in Managers)
+        var manager = Managers[i];
+        ForgiveBuilders(manager);
+        AccrueDailyInterest(date, i);
+        DailySponsorOffers(date, manager);
+        if (date.Day == 1)
+            CountDownSponsorContracts(manager);
+        if (date.Day == DateTime.DaysInMonth(date.Year, date.Month))
             MonthlyFinances(manager);
     }
 

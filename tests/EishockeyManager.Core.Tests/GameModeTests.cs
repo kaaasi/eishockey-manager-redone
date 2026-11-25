@@ -341,6 +341,9 @@ public class GameModeTests
     /// derselben Liga; in den Spielwertungen 2–30 (Manager 1 nicht spielfähig) zieht Manager 0 jetzt vor dem Eintrag Zuschauer und
     /// eingespielte Reihen (0x544C0 bis Datei 0x547AA) statt der Zuschauer erst in der Abrechnung. Saisons 1–3 unverändert;
     /// Gegenprobe ohne <c>PrepareForfeitGate</c>: alter Abdruck.
+    /// Runde 26, Spur tagesabschluss (#1018, SG-01): alle Werte neu – Tagesabschluss 0x3ED01 und Werbebewertung 0x3F833 je Manager
+    /// verschränkt (Datei 0x55217–0x55251; Baufirmen, Angebote und Bewertung von Manager 0, dann von Manager 1), Talentsuche danach
+    /// (Datei 0x5528A); anderer Zufallsverbrauch ab dem ersten Tag. Gegenprobe auf 56b7f7c: alter Abdruck.
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -505,7 +508,7 @@ public class GameModeTests
     // 0x3ED19–0x3ED48), Sommerpause je Manager verschränkt (A526, Datei 0x564D2–0x56593), Banden je Feld (A888, 0x3E657); anderer
     // Zufallsverlauf ab dem ersten Tagesabschluss. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von eaf8621 → alte Werte.
     internal const string Mode4Reference =
-        "WorldChampion=54,CupWinner=19,GermanChampion=1,EuropeanCupWinner=2|1100000,400000|WorldChampion=52,CupWinner=12,GermanChampion=4,EuropeanCupWinner=1|2506736,400000|WorldChampion=52,CupWinner=17,GermanChampion=17,EuropeanCupWinner=4|2718075,500000|WorldChampion=63,CupWinner=17,GermanChampion=17,EuropeanCupWinner=17|2735736,500000|WorldChampion=54,CupWinner=16,GermanChampion=16,EuropeanCupWinner=17|2443437,500000|R360091148";
+        "WorldChampion=52,CupWinner=18,GermanChampion=4,EuropeanCupWinner=2|1100000,400000|WorldChampion=53,CupWinner=13,GermanChampion=3,EuropeanCupWinner=4|2269643,400000|WorldChampion=54,CupWinner=3,GermanChampion=3,EuropeanCupWinner=3|2407050,500000|WorldChampion=54,CupWinner=3,GermanChampion=3,EuropeanCupWinner=3|2386649,500000|WorldChampion=63,CupWinner=3,GermanChampion=7,EuropeanCupWinner=3|2486148,400000|R1974361193";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

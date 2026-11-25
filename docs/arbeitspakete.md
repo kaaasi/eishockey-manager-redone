@@ -83,7 +83,9 @@ R26-D4 = B (ChatGPT GPT-6.2 Astra) mit Claude-Auswertung.
 - **Dateien:** `Core/GameState.Manager.cs`, `GameState.DailyRun.cs` (minimal), `FinanceSponsors.cs`, `FinanceStadium.cs`,
   `FinanceMonthly.cs` (Zinsrechnung `AccrueDailyInterest`), `tools/reverse-engineering/tagesabschluss/*.py` (neu); Tests.
   **Prüfung:** `--schnell`; Mehrsaisonprobe (4 Wechsel, passiv/aktiv, zwei Manager, Geld).
-- **Status:** offen (Go 25.11.2026, Start nach Merge des Plans).
+- **Status:** Teil 1 fertig (Lauf 25.11.2026, Claude Code), Review offen. Beleg `tagesabschluss/hauptweg.py`: Hauptweg und WM-Schleife
+  je Manager 0x3ED01 → 0x3F833; Talentsuche, Wanderung, 0x07169 und Bau danach. Umgesetzt: `DayClose(date, i)` für alle drei Wege,
+  Talentsuche nach der Schleife, Monatsabschluss vor dem Bau, WM-Bau je Manager. Neu gefunden: Stadionschäden 0x3CFA0 fehlen im Remake.
 
 ### Spur `torszene-dauer` – Darstellung 2 „Dauer-Eisfeld“ (S02, Welle 1/1b)
 
