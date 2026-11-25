@@ -223,6 +223,10 @@ Sitzungen sind unabhängig und einzeln aufnehmbar; Reihenfolge nach Lust.
 1. Bis kurz vor dem 29. April spielen. Vorher den Kader eines Managers auf 29 Spieler auffüllen und einen eigenen Spieler auf die
    Transferliste setzen (A706); sichern als **FILE77** (Pool vor dem Wechsel: A128, A131, A132, A630; Leihe A629).
 2. Nach dem Saisonwechsel im ersten Hauptmenü sichern als **FILE78**; Kader und Transferliste beider Manager fotografieren.
+3. **Zusatz Runde 26 (R26-D3 = B, Live-Spieltag; vor Nr. 1 aus FILE76 aufnehmen):** einen Ligaspieltag ansehen, an dem beide Manager eine
+   eigene Paarung haben (nicht gegeneinander), möglichst als Video (Verschränkung der Paarungen je Minute, Reihenfolge der
+   Tormeldungen: S01, A450, A909, A954). Einmal mit Darstellung 1, einmal mit Darstellung 2 „Dauer-Eisfeld“ (S02, A472). Einmal
+   die Leertaste drücken und die Spielmodus-Optionen fotografieren (S05, Datei 0x2CD1C).
 
 ### Sitzung 3 – Spiel und Sperre
 
@@ -257,7 +261,9 @@ Was je ID abzulesen ist: Feld „Beleg“ in `restliste-v1-klassen.csv`. Nummern
 3. Verletzung während der Live-Anzeige abwarten (ggf. mehrere Spieltage), direkt danach sichern als **FILE88** (A912).
 4. Reihe 1 ohne Torhüter, einen Feldspieler ins Tor stellen, Spiel spielen; Spielerstatistik des Feldspielers vor/nach
    fotografieren, danach sichern als **FILE89** (A899).
-5. Penaltyschießen im Live-Spiel (Pokal oder Play-off) ansehen, jeden Schuss fotografieren (A910).
+5. Penaltyschießen im Live-Spiel (Pokal oder Play-off) ansehen, jeden Schuss fotografieren (A910). **Zusatz Runde 26
+   (R26-D3 = B):** während des Spiels die Paarungsseite mit „n.Minute“ und Zwischenständen fotografieren, dazu die Penalty-Anzeige
+   mit den drei Farbstreifen (S04: A292, A436, F068, F076).
 6. Modus „nur Weltkugel“ (Sitzung 4, FILE18): Freundschaftsspiel des Bundestrainers, davor/danach sichern als **FILE90/FILE91**
    (A918). Stand mit Managerverein auf den letzten Oberligaplätzen kurz vor dem Saisonende (Leitstelle legt ihn auf Wunsch per
    `hok-patch` ab); vor/nach dem Wechsel sichern als **FILE92/FILE93**, Konto fotografieren (A671).
