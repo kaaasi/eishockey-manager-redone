@@ -13,7 +13,7 @@ der Leitstelle), alle Gegenbeispiele bestätigt.
 
 **Abschluss (25.11.2026):** Alle Themen aus `analyse/abweichungen-v1.md` Abschnitt 0 außer den Live-Themen umgesetzt bzw. mit Beleg
 als „keine Abweichung“ geklärt (Status dort). Offen: Runde 26 Live-Spieltag (S01, S04, S05, S02) und #1018 (SG-01 = A); #1019 und
-#1024 (Rest P3-2/P3-3) im Aufräumen #936; #978, #980; D 26 (DOSBox nach Lust); Abschlussprüfung.
+#1024 (Rest P3-2) im Aufräumen #936; #978, #980; D 26 (DOSBox nach Lust); Abschlussprüfung.
 
 **Entscheidungen während der Runde:** Nutzer 24.11.2026: R25-D1 = D, R25-D2 = A, R25-D3 = B, R25-D4 = A, Go. Leitstelle:
 `aufstellung` Dateigrenzen um `SaveGame*`, `MatchEngine.Live.cs`, `MatchEngine.National.cs` erweitert (Schema 64 an
