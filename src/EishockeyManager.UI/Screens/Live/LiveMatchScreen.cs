@@ -21,9 +21,9 @@ namespace EishockeyManager.UI.Screens.Live;
 /// <item>[APPROX] Enter oder Escape rechnen die restlichen Minuten ohne Anzeige (wie die Vorspultaste in
 ///   <see cref="MatchDayScreen"/>, Entscheidung Nutzer 31.10.2026, #205); die Leertaste (Spielmodus-Optionen 0x2CD1C) ist
 ///   nicht angeschlossen.</item>
-/// <item>[APPROX] Reihen: die Paarungen mit Anzeigereihe des Spieltags, die schon begonnen haben (<see cref="LiveSession.Shown"/>);
-///   das Remake rechnet sie nacheinander (<c>MatchEngine.LiveDriver.cs</c>), spätere Managerpaarungen erscheinen erst mit
-///   ihrem Spiel.</item>
+/// <item>[ORIGINAL] Reihen: die Paarungen mit Anzeigereihe des Termins (<see cref="LiveSession.Shown"/>), am Ligaspieltag alle von
+///   Minute 1 an (S01, <c>MatchEngine.PlayMatchDay</c>). [APPROX] An Pokal-, Play-off- und WM-Terminen rechnet das Remake die
+///   Paarungen nacheinander (<c>MatchEngine.LiveDriver.cs</c>): spätere Managerpaarungen erscheinen dort erst mit ihrem Spiel.</item>
 /// <item>[ORIGINAL] Torszene je Chance vor der Reporter-Meldung (0x53C57 → 0x567C8 vor 0x541D9/0x52520, Spur torszenen C3,
 ///   <see cref="GoalSceneCall"/>): Pause 30, Abspieler <see cref="GoalSceneScreen"/> mit der Szene des Spielkerns, Pause 20,
 ///   „r“/„w“ wiederholt bis zu dreimal.</item>
@@ -154,10 +154,19 @@ public sealed class LiveMatchScreen : Screen
                 yield return true;
             if (!_session.Step())
                 break;
-            foreach (var message in Messages(day.Matches[0], minute))
-                foreach (var f in message)
-                    yield return f;
-            foreach (var f in Notices(minute)) // Spur zusehen-rest, A832 (LiveGoalNotice.cs)
+            // S01/A456/A909: [ORIGINAL] je Minute die Paarungen in ihrer Reihenfolge (0x37A62): Meldungen der Paarung mit Reihe,
+            // Tormeldung der Paarung ohne Reihe an ihrer Stelle (Abschluss 0xA484, Datei 0xABB4–0xAD71).
+            foreach (var match in day.Matches)
+            {
+                var parts = match.Row is not null
+                    ? Messages(match, minute)
+                    : [Notices(minute, n => n.HomeClub == match.Home.Index && n.AwayClub == match.Away.Index)];
+                foreach (var part in parts)
+                    foreach (var f in part)
+                        yield return f;
+            }
+            // Spur zusehen-rest, A832: Meldungen früher gerechneter Paarungen (Pokaltermine, je Paarung gerechnet).
+            foreach (var f in Notices(minute, n => !day.Matches.Any(m => m.Home.Index == n.HomeClub && m.Away.Index == n.AwayClub)))
                 yield return f;
             yield return true; // [ORIGINAL] 0x3854A: Anzeigetafel am Minutenende
             if (minute is 60 or 70 && _clock.WaitsForClick(minute, display: true))
@@ -193,8 +202,10 @@ public sealed class LiveMatchScreen : Screen
     /// <summary>
     /// Eingriffsmenü Datei 0x38D96 (§10, B3): Lampe „Schnelldurchlauf“, dann je Reihe p (45p &lt; y &lt; 45p + 43) mit
     /// Managerverein auf der angeklickten Seite (x &gt; 160 Gast) Einsatz, Angriff, Reihe auf dem Eis und Kopf/Logo.
-    /// [APPROX] Das Original fragt die Maus in der Minutenschleife je Managerpaarung ab, das Remake je Bild; die Befehle wirken
-    /// in beiden Fällen ab der nächsten Rechnung (<see cref="MatchIntervention"/>).
+    /// [APPROX] Das Original fragt die Maus in der Minutenschleife je Managerpaarung unmittelbar vor deren Rechnung ab (Datei
+    /// 0x37EB5/0x382B3, <c>docs/analyse/live-spieltag.md</c> §2), das Remake je Bild zwischen zwei Minuten. Die Wirkung ist
+    /// gleich: 0x38D96 zieht keinen Zufall und schreibt nur die Felder der eigenen Paarung, die deren nächste Rechnung liest
+    /// (<see cref="MatchIntervention"/>); anders ist nur, welche Meldungen der Minute beim Klick schon zu sehen waren.
     /// </summary>
     private void Click(int mx, int my, bool right)
     {
@@ -209,8 +220,10 @@ public sealed class LiveMatchScreen : Screen
             if (my <= RowStep * p || my >= RowStep * p + 43)
                 continue;
             var match = _session.Shown[p];
+            // [ORIGINAL] entschiedene Paarung rechnet in der Verlängerung nicht und wird nicht abgefragt (Datei 0x3825F–0x3826C vor
+            // 0x38D96); [APPROX] an Pokalterminen (je Paarung gerechnet) gilt das auch für die schon fertig gerechnete Paarung.
             if (!match.Running)
-                continue; // [APPROX] fertige Paarung des Remakes (nacheinander gerechnet) nimmt keine Befehle mehr
+                continue;
             var side = mx > 160 ? 1 : 0;
             if ((side == 0 ? match.HomeTeam : match.AwayTeam) is not { Managed: true } team)
                 continue;
@@ -379,9 +392,9 @@ public sealed class LiveMatchScreen : Screen
     public LiveGoalNotice GoalNotice => _notice;
 
     /// <summary>Tormeldungen der Minute aus <see cref="LiveSession.PendingNotices"/> (A832, <see cref="LiveGoalNotice"/>).</summary>
-    private IEnumerable<bool> Notices(int minute)
+    private IEnumerable<bool> Notices(int minute, Func<GoalNotice, bool> filter)
     {
-        foreach (var notice in _session.PendingNotices.Where(n => n.Minute == minute))
+        foreach (var notice in _session.PendingNotices.Where(n => n.Minute == minute && filter(n)))
         {
             foreach (var f in _notice.Show(notice))
                 yield return f;

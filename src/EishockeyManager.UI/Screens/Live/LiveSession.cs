@@ -28,7 +28,7 @@ public sealed class LiveSession : ILiveMatchDriver
 
     private LiveSession(GameState game) => _game = game;
 
-    /// <summary>Wartender Minutenschritt (eine Managerpaarung) oder null.</summary>
+    /// <summary>Wartender Minutenschritt (Ligaspieltag: alle Paarungen; Pokaltermin: eine Managerpaarung) oder null.</summary>
     public LiveMatchDay? Day { get; private set; }
 
     /// <summary>Ergebnis von <see cref="GameState.Continue"/>, sobald der Aufruf fertig ist; sonst null.</summary>
@@ -45,9 +45,11 @@ public sealed class LiveSession : ILiveMatchDriver
 
     /// <summary>
     /// Tormeldungen der Paarungen ohne Reihe (A832, <see cref="LiveScoreboard.Notices"/>), die seit dem vorigen Halt desselben
-    /// Ablaufs gerechnet wurden; der Live-Bildschirm zeigt sie in ihrer Minute (<see cref="LiveGoalNotice"/>).
+    /// Ablaufs gerechnet wurden – auch die der Paarungen, die mit dem wartenden Minutenschritt gerechnet werden (S01); der
+    /// Live-Bildschirm zeigt sie in ihrer Minute (<see cref="LiveGoalNotice"/>).
     /// </summary>
-    public IReadOnlyList<GoalNotice> PendingNotices { get; private set; } = [];
+    public IReadOnlyList<GoalNotice> PendingNotices =>
+        _noticeBoard is { } board && Day is not null ? [.. board.Notices.Skip(_noticesTaken)] : [];
 
     private LiveScoreboard? _noticeBoard;
     private int _noticesTaken;
@@ -105,19 +107,23 @@ public sealed class LiveSession : ILiveMatchDriver
         if (_shownKey != key)
             _shown.Clear();
         _shownKey = key;
-        _shown.Add(day.Matches[0]);
+        // S01: [ORIGINAL] alle Paarungen mit Reihe des Termins von Minute 1 an (0x544C0 vor den Minuten, Tafel 0x52BD6 je Minute).
+        foreach (var match in day.Matches)
+        {
+            if (match.Row is not null && !_shown.Contains(match))
+                _shown.Add(match);
+        }
         var board = _game.LiveScoreboard;
         if (!ReferenceEquals(board, _noticeBoard))
             _noticesTaken = 0;
         _noticeBoard = board;
-        PendingNotices = board is null ? [] : [.. board.Notices.Skip(_noticesTaken)];
-        _noticesTaken = board?.Notices.Count ?? 0;
         _toUi.Release();
         while (true)
         {
             _toWorker.Wait();
             if (_command == Command.Release)
             {
+                _noticesTaken = board?.Notices.Count ?? 0;
                 Day = null;
                 return; // der Spielkern rechnet weiter; der nächste Halt oder das Ende gibt _toUi frei
             }

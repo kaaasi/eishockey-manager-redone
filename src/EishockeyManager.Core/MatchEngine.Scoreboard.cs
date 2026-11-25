@@ -273,10 +273,11 @@ public static partial class MatchEngine
     /// läuft (DGROUP 0x5A56 ≠ 0, Datei 0xABB4) und Heim- oder Gastverein zum Zusehen markiert ist (Vereinsfeld 0x34
     /// <c>test 0xC0</c>, Modus ≠ 0, Datei 0xABD7/0xABEE). 0x5A56 setzt die Spielabrechnung 0x544C0, die für alle Paarungen vor
     /// der Minutenschleife läuft (Datei 0x54C63–0x54C94): Es gilt also für den ganzen Ablauf, sobald eine Paarung eine Reihe hat.
-    /// [APPROX] Das Remake rechnet die Paarungen nacheinander (<c>MatchEngine.LiveDriver.cs</c>) und weiß bei früheren Paarungen
-    /// noch nicht, ob eine Reihe folgt: Es legt die Meldung für jede markierte Paarung ohne Reihe in der Reihenliste des Ablaufs
-    /// ab; angezeigt wird sie nur mit Live-Bildschirm, also nur mit Reihe (<see cref="LiveScoreboard.Active"/>). Die Markierung
-    /// gilt zu Beginn der Paarung.
+    /// [ORIGINAL] Am Ligaspieltag (<see cref="PlayMatchDay"/>, S01) wird das Ziel erst nach der Vorbereitung aller Paarungen
+    /// bestimmt (<see cref="LiveMatchDay.Begin"/>). [APPROX] An Pokalterminen rechnet das Remake die Paarungen nacheinander
+    /// (<c>MatchEngine.LiveDriver.cs</c>) und weiß bei früheren Paarungen noch nicht, ob eine Reihe folgt: Es legt die Meldung
+    /// für jede markierte Paarung ohne Reihe in der Reihenliste des Ablaufs ab; angezeigt wird sie nur mit Live-Bildschirm, also
+    /// nur mit Reihe (<see cref="LiveScoreboard.Active"/>). Die Markierung gilt zu Beginn der Paarung.
     /// </summary>
     internal static GoalNoticeTarget? NoticeTarget(MatchSetup match)
     {

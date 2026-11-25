@@ -23,6 +23,9 @@ public sealed class LivespielUi2DriverTests
     {
         public List<(int Home, int Away, int Minutes)> Runs { get; } = [];
 
+        /// <summary>Anzahl der Paarungen je Minutenschritt eines Ligaspieltags.</summary>
+        public List<int> LeagueDayPairings { get; } = [];
+
         public void Run(LiveMatchDay day)
         {
             var minutes = 0;
@@ -31,7 +34,12 @@ public sealed class LivespielUi2DriverTests
                 minutes++;
                 perMinute?.Invoke(day);
             }
-            Runs.Add((day.Matches[0].Home.Index, day.Matches[0].Away.Index, minutes));
+            // Spur live-verschraenkt (S01, R15-E2 = C): der Ligaspieltag kommt als ein Minutenschritt über alle Paarungen
+            // ([ORIGINAL] 0x37A62, docs/analyse/live-spieltag.md); die Managerpaarung ist die Paarung mit Reihe.
+            var row = day.Matches.First(m => m.Row is not null);
+            Runs.Add((row.Home.Index, row.Away.Index, minutes));
+            if (row.Competition == MatchCompetition.League)
+                LeagueDayPairings.Add(day.Matches.Count);
         }
     }
 
@@ -58,6 +66,8 @@ public sealed class LivespielUi2DriverTests
             Assert.NotEmpty(driver.Runs);
             Assert.All(driver.Runs, r => Assert.True(r.Home == ManagedClub || r.Away == ManagedClub));
             Assert.All(driver.Runs, r => Assert.InRange(r.Minutes, 60, 70));
+            Assert.NotEmpty(driver.LeagueDayPairings);
+            Assert.All(driver.LeagueDayPairings, n => Assert.True(n > 1)); // S01: alle Paarungen des Spieltags
         }
     }
 

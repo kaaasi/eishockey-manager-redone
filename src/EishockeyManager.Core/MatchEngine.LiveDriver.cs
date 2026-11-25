@@ -18,12 +18,13 @@ public interface ILiveMatchDriver
 ///   Anzeigereihe (Managerpaarung, <see cref="LiveScoreboard"/>) in <see cref="PlayWithEvents"/> über
 ///   <see cref="LiveMatchDay"/> mit derselben Vorgabe und demselben Zufall; der Treiber rechnet die Minuten auf Befehl.
 ///   Paarungen ohne Reihe, Spielwertungen und der schnelle Weg laufen wie bisher.</item>
-/// <item>[APPROX] Zufall: Das Original rechnet je Minute alle Paarungen des Spieltags (0x37A62), das Remake Paarung für
-///   Paarung aus dem gemeinsamen Spielzufall (<see cref="GameState.PlayNextMatchDay"/>, Wettbewerbe). Der Anschluss behält
-///   diese Reihenfolge: Die Paarung mit Reihe läuft für sich durch alle Minuten, bevor die nächste Paarung beginnt. Ohne
-///   Eingriff ist das Ergebnis eines Spieltags über den Live-Bildschirm damit genau das ohne Anzeige (Minutenschritt einer
-///   Paarung = <see cref="PlayWithEvents"/>, Spur livespiel-kern A5); mehrere Managerpaarungen eines Spieltags laufen
-///   nacheinander statt gleichzeitig.</item>
+/// <item>[ORIGINAL] Ligaspieltag (S01, Spur live-verschraenkt): <see cref="PlayMatchDay"/> rechnet je Minute alle Paarungen des
+///   Spieltags (0x37A62); der Treiber bekommt den ganzen Spieltag, alle Managerpaarungen laufen gleichzeitig. Ohne Eingriff ist
+///   das Ergebnis über den Live-Bildschirm dasselbe wie ohne Anzeige.</item>
+/// <item>[APPROX] Pokal-, Play-off-, Europapokal- und WM-Termine rufen weiter <see cref="PlayWithEvents"/> je Paarung
+///   (Ablauf in <c>Playoffs.cs</c>, <c>CupsDeb.cs</c>, <c>CupsGroup.cs</c>, <c>CupsWorld.cs</c> außerhalb der Spur): dort läuft die
+///   Paarung mit Reihe für sich durch alle Minuten, mehrere Managerpaarungen eines Termins nacheinander; das Original rechnet
+///   auch dort je Minute alle Paarungen der Pokalzeilen (Datei 0x380D0–0x3853E).</item>
 /// <item>Zeit vergeht weiter nur über <see cref="GameState.Continue"/>: Der Treiber wird innerhalb dieses Aufrufs gerufen.</item>
 /// </list>
 /// </summary>
@@ -70,6 +71,34 @@ public static partial class MatchEngine
             }
         }
         return day.Finish()[0];
+    }
+
+    /// <summary>
+    /// Ein Spieltag mit Minutenweg über alle Paarungen eines Termins (S01, Spur live-verschraenkt Teil 2;
+    /// <c>docs/analyse/live-spieltag.md</c>): [ORIGINAL] 0x36B5D bereitet alle Paarungen vor und ruft die Minutenschleife 0x37A62
+    /// je Drittel für alle Paarungen zugleich – Minute für Minute jede Paarung in der Reihenfolge der Vorgabe, alle aus dem
+    /// gemeinsamen Zufall (Liga Datei 0x37DB7–0x380CD: Ligen 0 → 2, je Liga die Paarungen des Spieltags). Mit eingesetztem Treiber
+    /// und mindestens einer Paarung mit Reihe bekommt der Treiber den ganzen Termin (<see cref="ILiveMatchDriver.Run"/> einmal);
+    /// ohne Eingriff ist das Ergebnis dasselbe wie ohne Treiber. Liefert die Berichte in der Reihenfolge der Vorgabe.
+    /// </summary>
+    public static IReadOnlyList<MatchReport> PlayMatchDay(GameState game, IReadOnlyList<LiveFixture> fixtures)
+    {
+        ArgumentNullException.ThrowIfNull(game);
+        ArgumentNullException.ThrowIfNull(fixtures);
+        var day = LiveMatchDay.Begin(game, fixtures);
+        if (liveDriver is { } driver && day.Matches.Any(m => m.Stepped && m.Row is not null))
+        {
+            liveDriver = null; // keine verschachtelten Treiberaufrufe
+            try
+            {
+                driver.Run(day);
+            }
+            finally
+            {
+                liveDriver = driver;
+            }
+        }
+        return day.Finish();
     }
 
     private sealed class Restore(Action action) : IDisposable
