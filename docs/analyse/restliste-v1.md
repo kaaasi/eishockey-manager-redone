@@ -17,7 +17,7 @@ am Markt-Platz, Datei 0x4786A) als echte Restlücken aus den PR-Angaben. 644 `[A
 
 **Runde 25 (Generatorlauf `pruefung-karte`, 24.11.2026):** Markerangaben der Spuren `re-abweichungen`, `bedienung`,
 `wettbewerbe-anzeige`, `statistik-anzeige`, `aufstellung`, `saison-geld` eingeordnet (36 neue IDs A974–A1009; 69 Klassenzeilen der
-umgesetzten oder mit Beleg geklärten Themen auf X gesetzt, Marker entfallen). Stand `main` `075dc2c` + PR der Spur: 535
+umgesetzten oder mit Beleg geklärten Themen auf X gesetzt, Marker entfallen; Nachtrag Leitstelle 25.11.2026: A102, A404, A486, A907 auf X, #1024 P3-1). Stand `main` `075dc2c` + PR der Spur: 535
 `[APPROX]`-Zeilen in 222 Dateien, V 0, D 26, E 319, K 190. Abweichungsliste: Status je Thema in
 [abweichungen-v1.md](abweichungen-v1.md) Abschnitt 0.
 
@@ -881,7 +881,7 @@ IDs ohne Markerzeile: aus `inventur.md` (Stelle @ Stand, letzter Eintrag „Stan
 | A098 | `Core/MatchEngine.Minutes.cs:454 (zuletzt im Block)` | `60328ee722` | b · Ergebnismarken +10/+30 als MatchReport.Overtime abgebildet | X |
 | A099 | `Core/MatchEngine.Minutes.cs:499 @ 2d0b081` | `b7abca8358` | a · P3 · MANUELL: eigene Werte ohne Energieabzug statt kein Schreiben |  |
 | A101 | `Core/MatchEngine.Shootout.cs:19 (zuletzt im Block)` | `fb4845ceee` | d · P2 · Penaltyschießen ohne Live-Anzeige, Tore getrennt | V |
-| A102 | `Core/MatchEngine.Statistics.cs:31 (zuletzt im Block)` | `4934797e0e` | d · P3 · Rollenwert 0x18 als Spannenmitte (33/83) | K |
+| A102 | `Core/MatchEngine.Statistics.cs:31 (zuletzt im Block)` | `4934797e0e` | d · P3 · Rollenwert 0x18 als Spannenmitte (33/83) | X |
 | A104 | `Core/MatchEngine.Statistics.cs:119 (zuletzt im Block)` | `e3dd32c5f9` | b · Torhüterreihenfolge: aufgestellter zuerst statt Poolreihenfolge | V |
 | A105 | `Core/MatchEngine.TeamValues.cs:52 (zuletzt im Block)` | `a15d2116e9` | a · P3 · Datenbankbyte 1 (Sturm) durch Byte 0 ersetzt | V |
 | A106 | `Core/MatchEngine.TeamValues.cs:54 (zuletzt im Block)` | `c67cb880c6` | b · Teamwerte beim ersten Spiel statt beim Programmstart gezogen |  |
@@ -1075,7 +1075,7 @@ IDs ohne Markerzeile: aus `inventur.md` (Stelle @ Stand, letzter Eintrag „Stan
 | A395 | `Core/Squad.Setup.cs:171 (zuletzt im Block)` | `5ec696c6ae` | b · Computervereine mit Datenbankspielern im Kader (neu Runde 15; ebenso `Core/Squad.Setu… |  |
 | A396 | `Core/OriginalImport.Market.cs:100 @ 7fbf9b6` | `1603ba023b` | Stand Runde 16 (PR #766, Teil 3; Spur `abgleich-rest`, #732, R16-D2 = A): erledigt – der Import übernimmt im Modus 1 de… |  |
 | A401 | `Core/OriginalExport.League.cs:14 @ 7fbf9b6` | `881064b06f` | Stand Runde 18 (PR #812, Teil 3; #804): Vereinsfelder +0x26/+0x2C werden importiert und exportiert (`ApplyTeamValues`,… |  |
-| A404 | `Core/OriginalExport.Squads.cs:7 (zuletzt im Block)` | `e89fd88ed5` | d · P3 · Export: Kader und Pool – Rollenwert +0x18, Poolplatz der Managerspieler, Gegento… | E |
+| A404 | `Core/OriginalExport.Squads.cs:7 (zuletzt im Block)` | `e89fd88ed5` | d · P3 · Export: Kader und Pool – Rollenwert +0x18, Poolplatz der Managerspieler, Gegento… | X |
 | A409 | `Core/MatchEngine.Managed.cs:504 @ 0803e91` | `dfaf583c6f` | Stand Runde 19 (PR #866, Spur `abgleich-dosbox-19`, Teil 1): Reihenwahl für Spieltag 1–3 belegt (`AbgleichDosboxLinesTe… |  |
 | A410 | `Core/MatchEngine.Preparation.cs:22 (zuletzt im Block)` | `9275d9564a` | d · P3 · Spielvorbereitung 0x8365: Stärke 0x368B1 mit Reihe 0 statt der Reihen 0x2E/0x30… |  |
 | A412 | `Core/OriginalImport.National.cs:22 (zuletzt im Block)` | `9a40c8a037` | b · Modus 1: Werte des Satzes 5 gelten auch für Spieler aus dem Kader von Satz 0 (ein Wer… | V |
@@ -1101,7 +1101,7 @@ IDs ohne Markerzeile: aus `inventur.md` (Stelle @ Stand, letzter Eintrag „Stan
 | A468 | `Core/MatchGate.cs:19 (zuletzt im Block)` | `19a5c8b600` | b · Vorbereitete Zuschauer sind kein Spielstand und verfallen am nächsten Tagesanfang (ne… | X |
 | A482 | `Core/Cups.Tiebreak.cs:26 (zuletzt im Block)` | `8c1f25696d` | Wortlaut geändert oder entfernt (Herkunft neu) | X |
 | A485 | `Core/CupsNational.GameState.cs:84 (zuletzt im Block)` | `4ec6e2844b` | Wortlaut geändert oder entfernt (Herkunft neu) |  |
-| A486 | `Core/CupsNational.GameState.cs:135 (zuletzt im Block)` | `9120a8ab7c` | Wortlaut geändert oder entfernt (Herkunft neu) | E |
+| A486 | `Core/CupsNational.GameState.cs:135 (zuletzt im Block)` | `9120a8ab7c` | Wortlaut geändert oder entfernt (Herkunft neu) | X |
 | A487 | `Core/CupsNational.GameState.cs:208 (zuletzt im Block)` | `ab7f3953cd` | Wortlaut geändert oder entfernt (Herkunft neu) | V |
 | A490 | `Core/CupsNational.Lineup.cs:211 (zuletzt im Block)` | `40a07ceaf4` | Wortlaut geändert oder entfernt (Herkunft neu) | V |
 | A492 | `Core/CupsNational.Lineup.cs:285 (zuletzt im Block)` | `0a6d602873` | Wortlaut geändert oder entfernt (Herkunft neu) | V |
@@ -1248,7 +1248,7 @@ IDs ohne Markerzeile: aus `inventur.md` (Stelle @ Stand, letzter Eintrag „Stan
 | A898 | `Core/MatchEngine.LiveLineup.cs:20 (zuletzt im Block)` | `607cc03b0d` | Wortlaut geändert oder entfernt (Herkunft neu) | X |
 | A899 | `Core/MatchEngine.Managed.cs:110 (zuletzt im Block)` | `caaf79d8de` | Wortlaut geändert oder entfernt (Herkunft neu) | D |
 | A905 | `Core/MatchEngine.National.cs:189 (zuletzt im Block)` | `c28bf5a13a` | Wortlaut geändert oder entfernt (Herkunft neu) | X |
-| A907 | `Core/MatchEngine.PenaltyBoxQuery.cs:16 (zuletzt im Block)` | `16f753d42f` | Wortlaut geändert oder entfernt (Herkunft neu) | K |
+| A907 | `Core/MatchEngine.PenaltyBoxQuery.cs:16 (zuletzt im Block)` | `16f753d42f` | Wortlaut geändert oder entfernt (Herkunft neu) | X |
 | A913 | `Core/MatchGate.cs:75 (zuletzt im Block)` | `2ac1ac3300` | Wortlaut geändert oder entfernt (Herkunft neu) | V |
 | A916 | `Core/OriginalExport.Rest.cs:72 (zuletzt im Block)` | `eeefb5b43f` | Wortlaut geändert oder entfernt (Herkunft neu) | K |
 | A924 | `Core/Playoffs.cs:111 (zuletzt im Block)` | `ef40cfc0eb` | Wortlaut geändert oder entfernt (Herkunft neu) | X |

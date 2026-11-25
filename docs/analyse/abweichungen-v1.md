@@ -38,7 +38,7 @@ Grundlage: Vergleich der Bewertungen von ChatGPT ([PR #992](abweichungen-bewertu
 | B17 (= Aufräumkonzept K9) | umgesetzt (Reihenwerte über 0x977F) | #1003 |
 | B18 | Markierung (A301) und Feld neben dem Kopf (A297) umgesetzt; Kurve (A302) und Lampe (A331) keine Abweichung | #1002 |
 | B25, B28 | umgesetzt (Symbol, Pokalbild; Kodierung Platz + 12 · Liga, Pokalbalken) | #1005 |
-| B29 | Smiley/Bilanzzeichen (A361) umgesetzt; Managervereine (A699) keine Abweichung; Startwerte (A700) schon erfüllt; kein neues Feld | #1005 |
+| B29 | Smiley/Bilanzzeichen (A361) umgesetzt; Managervereine (A699) Marker bleibt (K); Startwerte (A700) schon erfüllt; kein neues Feld | #1005 |
 | B33 | Spielerfenster (A372) umgesetzt; „Gegentore beim Verein“ (A957) keine Abweichung (Original schreibt +0x22 nie) | #1005 |
 | B31 | umgesetzt (Verlassen von Aufstellung/Taktik als Kern-Ereignis) | #1004 |
 | K07 | umgesetzt (Automatik je Manager, Verletzte, sechster Feldspieler; Schema 64); A165, A807 nur Marker | #1004 |
@@ -49,7 +49,7 @@ Grundlage: Vergleich der Bewertungen von ChatGPT ([PR #992](abweichungen-bewertu
 | F08 (prüfen) | A509, A512, A526 umgesetzt; A468, A695 keine Abweichung im Ergebnis (nur Marker) | #1006 |
 | Aufräumkonzept K2 | umgesetzt (Strafbank beim Bundestrainer) | #1004 |
 | Aufräumkonzept K11 | umgesetzt (Rollenwert als Feld, Schema 65) | #1006 |
-| Aufräumkonzept K13 | eine gemeinsame Platzwahl; Randfall widerlegt (DGROUP 0x5CF4 nur 0 oder 1), A463 bleibt `[APPROX]` (Erweiterung) | #1006 |
+| Aufräumkonzept K13 | eine gemeinsame Platzwahl; Randfall widerlegt (DGROUP 0x5CF4 nur 0 oder 1), A463 entfallen, Marker lebt als A977 (E, Erweiterung) weiter | #1006 |
 | S01, S02, S04, S05 | Runde 26 (R25-D1 = D) | – |
 
 Belege und Beschlüsse zu den Befunden der Erstreviews: Highscore-Ligabyte (Verdacht #1007) bestätigt und behoben (Beleg
