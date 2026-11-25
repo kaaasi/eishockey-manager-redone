@@ -42,15 +42,17 @@ public static partial class SaveGame
             return FailVersion($"Der Spielstand stammt aus einer neueren Version (Schema {schema}, unterstützt bis {SchemaVersion}).");
 
         var loadedSchema = schema;
-        for (; schema < SchemaVersion; schema++)
-        {
-            if (!Migrations.TryGetValue(schema, out var migrate))
-                return FailVersion($"Spielstände mit Schema {schema} können nicht mehr geladen werden.");
-            root = migrate(root);
-        }
-
         try
         {
+            // R25-G1 (#1026): Migrationen lesen Felder einer fremden, womöglich beschädigten Datei (z. B. GetValue<int>() auf eine
+            // Zeichenkette, doppelte Schlüssel). Ihre Ausnahmen landen deshalb im selben Fehlerhandler wie der Reader.
+            for (; schema < SchemaVersion; schema++)
+            {
+                if (!Migrations.TryGetValue(schema, out var migrate))
+                    return FailVersion($"Spielstände mit Schema {schema} können nicht mehr geladen werden.");
+                root = migrate(root);
+            }
+
             using var document = JsonDocument.Parse(root.ToJsonString(), new JsonDocumentOptions { MaxDepth = 1024 });
             var game = new Reader(document.RootElement).Read();
             AfterLoadPool(game, loadedSchema); // Spur pool (#743): Managerkader in den Pool (SaveGame.Migration.Pool.cs)
