@@ -151,9 +151,24 @@ public sealed class DebCupGamesScreen : Screen
     public DebCupGamesScreen(ScreenHost host, Screen back) : base(host) => _back = back;
 
     /// <summary>Feste Übersicht statt des laufenden Pokals, z. B. für Bildschirmfotos wie im Video; <paramref name="highlighted"/>
-    /// sind die gelb gezeigten Vereine (sonst die Vereine der Manager).</summary>
-    public DebCupGamesScreen(ScreenHost host, Screen back, DebCupOverview overview, IReadOnlyCollection<int>? highlighted = null)
-        : base(host) => (_back, _fixed, _highlighted) = (back, overview, highlighted);
+    /// sind die gelb gezeigten Vereine (sonst die Vereine der Manager). <paramref name="liveMinute"/> zeigt die Seite im
+    /// Spielablauf (S04, <see cref="LiveLine"/> statt der Datumszeile, <c>Live/LivePageScreens.cs</c>).</summary>
+    public DebCupGamesScreen(ScreenHost host, Screen back, DebCupOverview overview, IReadOnlyCollection<int>? highlighted = null,
+        int? liveMinute = null)
+        : base(host) => (_back, _fixed, _highlighted, _liveMinute) = (back, overview, highlighted, liveMinute);
+
+    private readonly int? _liveMinute;
+
+    /// <summary>Minute der Seite im Spielablauf oder null (Seite aus dem Hauptmenü).</summary>
+    public int? LiveMinute => _liveMinute;
+
+    /// <summary>
+    /// [ORIGINAL] Zeile im Spielablauf (S04): mit Minute ≠ 0 schreibt 0x32E23 statt Rundenname und Datum sieben Leerzeichen
+    /// (DGROUP 0x4E5F), die Minute und „.Minute“ (0x37A4A) auf dieselbe Grundlinie (Datei 0x33256–0x332A4; Nachbildung
+    /// <c>tools/reverse-engineering/live/pokalseiten.py</c>: „       20.Minute“ für alle drei Wettbewerbe). Bedienung wie ohne
+    /// Minute (Datei 0x33A70: nur der Knopf entfällt): Rechtsklick oder Taste weiter, Linksklick auf einen Verein öffnet sein Fenster.
+    /// </summary>
+    public static string LiveLine(int minute) => WorldCupKnockoutScreen.LiveLine(minute);
 
     public DebCupOverview? Overview => _fixed ?? (Host.Game is { } game ? DebCupOverview.Of(game) : null);
 
@@ -239,7 +254,9 @@ public sealed class DebCupGamesScreen : Screen
 
         CompetitionWidgets.Centered(s, Assets.Bold, 0, 319, y + 19, Title, Colors.White, DebCupDrawScreen.TitleShadow);
         var heading = overview.RoundName;
-        if (overview.NextDay is { } day)
+        if (_liveMinute is { } minute)
+            heading = LiveLine(minute);
+        else if (overview.NextDay is { } day)
         {
             var date = SeasonCalendar.LayoutDate(day);
             heading += $"    {date.Day}.{date.Month}.";

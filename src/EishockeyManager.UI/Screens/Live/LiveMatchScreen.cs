@@ -24,6 +24,8 @@ namespace EishockeyManager.UI.Screens.Live;
 /// <item>[ORIGINAL] Reihen: die Paarungen mit Anzeigereihe des Termins (<see cref="LiveSession.Shown"/>), am Ligaspieltag alle von
 ///   Minute 1 an (S01, <c>MatchEngine.PlayMatchDay</c>), an Pokal-, Play-off- und WM-Terminen ebenso (<c>MatchEngine.PlayDate</c>,
 ///   Pokalzeilen Datei 0x380D0–0x3853E).</item>
+/// <item>[ORIGINAL] Nach jedem Drittel (Minute 20, 40, 60, 65, 70) und nach dem Penaltyschießen die Seiten des Seitenwählers
+///   0x3A88A mit Minute und laufenden Ständen (S04, <see cref="LivePages"/>, <see cref="LivePageScreens"/>).</item>
 /// <item>[ORIGINAL] Torszene je Chance vor der Reporter-Meldung (0x53C57 → 0x567C8 vor 0x541D9/0x52520, Spur torszenen C3,
 ///   <see cref="GoalSceneCall"/>): Pause 30, Abspieler <see cref="GoalSceneScreen"/> mit der Szene des Spielkerns, Pause 20,
 ///   „r“/„w“ wiederholt bis zu dreimal.</item>
@@ -176,6 +178,34 @@ public sealed class LiveMatchScreen : Screen
                 while (!_input.LeftClick && !_input.RightClick)
                     yield return true;
                 WaitingForClick = false;
+            }
+            // S04: [ORIGINAL] Ende des Aufrufs von 0x37A62 (Datei 0x3858C–0x386CD, nach dem Warten auf den Klick 0x3855F): Seiten
+            // des Seitenwählers 0x3A88A mit der Minute; nach Minute 70 und Penaltyschießen noch einmal (Datei 0x37297–0x372AC).
+            if (LivePages.IsPeriodEnd(minute))
+            {
+                foreach (var f in Pages(day, minute, afterShootout: false))
+                    yield return f;
+                if (minute == LiveMatchDay.LastMinute && day.Matches.Any(m => m.Stepped && m.Report.ShootoutHomeWins is not null))
+                    foreach (var f in Pages(day, minute, afterShootout: true))
+                        yield return f;
+            }
+        }
+    }
+
+    /// <summary>Wird gerade eine Seite nach dem Drittel gezeigt (S04)?</summary>
+    public bool ShowingPage { get; private set; }
+
+    /// <summary>Zeigt die Seiten nach dem Drittel nacheinander (<see cref="LivePageScreens"/>); jede kehrt hierher zurück.</summary>
+    private IEnumerable<bool> Pages(LiveMatchDay day, int minute, bool afterShootout)
+    {
+        foreach (var page in LivePageScreens.For(Game, day, minute, afterShootout))
+        {
+            foreach (var screen in LivePageScreens.Create(Host, this, day, page, minute, afterShootout))
+            {
+                ShowingPage = true;
+                Host.Show(screen);
+                yield return true; // weiter, sobald die Seite zu diesem Bildschirm zurückkehrt
+                ShowingPage = false;
             }
         }
     }

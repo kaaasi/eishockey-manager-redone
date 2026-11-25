@@ -23,6 +23,9 @@ public sealed class LiveMatch
     public Club Away => Setup.Away;
     public MatchCompetition Competition => Setup.Competition;
 
+    /// <summary>K.-o.-Spiel (Verlängerung bei Gleichstand; bei der WM die Endrunde, Seite 10 statt 8 in <see cref="LivePages"/>).</summary>
+    public bool KnockOut => Setup.KnockOut;
+
     /// <summary>Mannschaft des Heimvereins für die Minutenrechnung (Ziel der Befehle aus <see cref="MatchIntervention"/>); null bei Spielwertung.</summary>
     public LiveTeam? HomeTeam => Setup.Forfeit ? null : Setup.HomeTeam;
 

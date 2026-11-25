@@ -116,7 +116,9 @@ public sealed record PlayoffOverview(IReadOnlyList<PlayoffSection> Sections, int
 /// <item>[ORIGINAL] Bedienung (Datei 0x33A70–0x33B43): Knopf „Liga“ (136 | 201) → Ligapaarungen (Rückgabe 7); Klick auf einen
 ///   Namen (Zeile y − 6 &lt; Maus-y ≤ y, rechts ab x = 100) → Vereinsfenster 0x128:0x2A; Rechtsklick oder Taste → Hauptmenü;
 ///   andere Linksklicks bewirken nichts.</item>
-/// <item>[APPROX] Die Anzeige im Spielablauf („n.Minute“) gibt es im Remake noch nicht (Spur livespiel).</item>
+/// <item>[ORIGINAL] Im Spielablauf (S04, A436; Seitenwähler 0x3A88A Seite 1 mit Minute, <c>Live/LivePageScreens.cs</c>) ohne Knopf
+///   „Liga“ (Datei 0x33A70–0x33A7C) und mit „       n.Minute“ statt der Datumszeile (<see cref="DebCupGamesScreen.LiveLine"/>); das
+///   laufende Spiel steht in seiner Spalte (Nachbildung <c>tools/reverse-engineering/live/pokalseiten.py</c>: Spiel 1 bei x = 213).</item>
 /// </list>
 /// </remarks>
 public sealed class PlayoffGamesScreen : Screen
@@ -138,9 +140,17 @@ public sealed class PlayoffGamesScreen : Screen
 
     public PlayoffGamesScreen(ScreenHost host, Screen back) : base(host) => _back = back;
 
-    /// <summary>Feste Runden statt des Spielstands (Bildschirmfotos wie im Video), ohne Datumszeile.</summary>
-    public PlayoffGamesScreen(ScreenHost host, Screen back, IReadOnlyList<PlayoffSection> sections, IReadOnlyCollection<int>? highlighted = null)
-        : base(host) => (_back, _fixed, _highlighted) = (back, new PlayoffOverview(sections, Math.Max(sections.Count, 1), null), highlighted);
+    /// <summary>Feste Runden statt des Spielstands (Bildschirmfotos wie im Video), ohne Datumszeile; <paramref name="liveMinute"/>
+    /// zeigt die Seite im Spielablauf (S04, ohne Knopf, „n.Minute“; <c>Live/LivePageScreens.cs</c>).</summary>
+    public PlayoffGamesScreen(ScreenHost host, Screen back, IReadOnlyList<PlayoffSection> sections, IReadOnlyCollection<int>? highlighted = null,
+        int? liveMinute = null)
+        : base(host) => (_back, _fixed, _highlighted, _liveMinute) =
+            (back, new PlayoffOverview(sections, Math.Max(sections.Count, 1), null), highlighted, liveMinute);
+
+    private readonly int? _liveMinute;
+
+    /// <summary>Minute der Seite im Spielablauf oder null (Seite aus dem Hauptmenü).</summary>
+    public int? LiveMinute => _liveMinute;
 
     public PlayoffOverview? Overview => _fixed ?? (Host.Game is { } game ? PlayoffOverview.Of(game) : null);
 
@@ -148,8 +158,8 @@ public sealed class PlayoffGamesScreen : Screen
     public InfoBarWindows InfoWindows { get; } = new();
 
     /// <summary>Rahmenteile und Oberkante.</summary>
-    public static (int Parts, int Y) FrameFor(PlayoffOverview? overview) =>
-        WorldCupKnockoutScreen.FrameFor(overview?.Sections.Sum(s => s.Rows.Count) ?? 0, overview?.Headings ?? 1, live: false);
+    public static (int Parts, int Y) FrameFor(PlayoffOverview? overview, bool live = false) =>
+        WorldCupKnockoutScreen.FrameFor(overview?.Sections.Sum(s => s.Rows.Count) ?? 0, overview?.Headings ?? 1, live);
 
     /// <summary>Grundlinien der Zeilen mit ihren Vereinen, wie <see cref="Draw"/> sie legt.</summary>
     public static IReadOnlyList<(int Y, int Left, int Right)> RowLines(PlayoffOverview? overview, int top)
@@ -187,7 +197,7 @@ public sealed class PlayoffGamesScreen : Screen
             return;
         if (input.RightClick || input.Keys.Count > 0)
             Host.Show(_back);
-        else if (input.Clicked(Button))
+        else if (_liveMinute is null && input.Clicked(Button))
             Host.Show(LeaguePairingsPages.Open(Host, _back, League.Bundesliga, LeaguePairingsPages.Pairings));
         else if (input.LeftClick && Host.Game is not null && ClubAt(Overview, input.MouseX, input.MouseY) is { } club)
             InfoWindows.Show(club);
@@ -198,16 +208,21 @@ public sealed class PlayoffGamesScreen : Screen
         s.Palette = Assets.Palette;
         s.Blit(Assets.Image(MainMenuScreen.Background), 0, 0);
         var overview = Overview;
-        var (parts, y) = FrameFor(overview);
-        Widgets.Frame(s, Assets, Button, FrameStyle.Orange);
-        CompetitionWidgets.Centered(s, Assets.Mini, 160, 160, 221, ButtonText, Colors.White, null);
+        var (parts, y) = FrameFor(overview, _liveMinute is not null);
+        if (_liveMinute is null)
+        {
+            Widgets.Frame(s, Assets, Button, FrameStyle.Orange);
+            CompetitionWidgets.Centered(s, Assets.Mini, 160, 160, 221, ButtonText, Colors.White, null);
+        }
         Widgets.Frame(s, Assets, new Rect(DebCupGamesScreen.FrameX, y, DebCupGamesScreen.FramePartWidth * DebCupGamesScreen.FrameParts,
             DebCupGamesScreen.FramePartHeight * parts), FrameStyle.Orange);
         var trophies = Assets.Image(DebCupGamesScreen.TrophyGraphic);
         s.Blit(trophies, TrophySource, 13, y + 4);
         s.Blit(trophies, TrophySource, 286, y + 4);
         CompetitionWidgets.Centered(s, Assets.Bold, 0, 319, y + 19, Title, Colors.White, DebCupDrawScreen.TitleShadow);
-        if (overview is null)
+        if (_liveMinute is { } minute)
+            CompetitionWidgets.Centered(s, Assets.Flow, 0, 319, y + 34, DebCupGamesScreen.LiveLine(minute), Colors.TileBackground, Colors.Black);
+        else if (overview is null)
             CompetitionWidgets.Centered(s, Assets.Flow, 0, 319, y + 34, WorldCupKnockoutScreen.NotYetKnown, Colors.TileBackground, Colors.Black);
         else if (overview.NextDay is { } day)
         {

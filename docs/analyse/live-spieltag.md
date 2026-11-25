@@ -131,24 +131,52 @@ Entscheidung Leitstelle 25.11.2026 (PR #1032): Pokaltermine wie im Original vers
 - **Tests:** `LiveVerschraenktPokalTests` (DEB-Pokaltermin mit zwei Managerpaarungen: ein Treiberaufruf, rot vorher; erste Saison
   mit = ohne Treiber; Reihenfolge der Wege in `PlayDate`), Mehrsaisonprobe aus Teil 2 deckt die Pokaltermine mit ab.
 
-## 8. Vorarbeit Teil 3 (S04, gelesen, noch ohne Nachbildung)
+## 8. Teil 3 (S04): Seiten nach dem Drittel
 
-Gelesen mit `disasm.py em.exe 0x36B5D 0x3901B` und `0x3A88A 0x3ACE3`; **Lesart, keine Nachbildung** – vor dem Umbau nach
-`zusammenarbeit.md` §5 Punkt 7 als Skript `tools/reverse-engineering/live/drittelseiten.py` nachzuspielen.
+Gelesen mit `disasm.py em.exe 0x36B5D 0x3901B` und `0x3A88A 0x3ACE3`, **nachgebildet** mit
+`tools/reverse-engineering/live/drittelseiten.py` (Ende von 0x37A62 Datei 0x3855F–0x386CD und Seitenwähler 0x3A88A aus den
+Bytes, Seitenfunktionen als Stubs) und `tools/reverse-engineering/live/pokalseiten.py` (0x32E23 mit Minute 0/20/60, Texte und
+Lage aus den Zeichenaufrufen 0x0B6A5/0x0B651).
 
-- **Aufrufe nach jedem Drittel** (Ende von 0x37A62, Datei 0x3858C–0x386CD, Argument Drittelende 20/40/60/70; auch ohne Anzeige):
-  - Liga (Ligamaske ≠ 0): 0x369C7(2, 0) schreibt die laufenden Stände in die Ergebnistabelle; je Liga der Maske bei Minute 60
-    0x50B45, 0x51049, 0x052CF (Tabellen), dann ohne Darstellung 2 (`DGROUP 0x5A55` = 0) Seite 7 (Ligapaarungen 0x4E8A3) mit
-    Liga und Minute (Datei 0x385A9–0x38601).
-  - Pokal (Pokalmaske ≠ 0): 0x369C7(2, 1); Wettbewerbscode `DGROUP 0xD0C2` = 1 (Play-offs/Aufstiegsrunde): Seite 1 (0x32E23
-    Wettbewerb 2 = „Play-Off Spiele“), bei Spiel 0xCCA3 ∈ {0, 2} die Aufstiegsrunde (Minute 60: Tabelle 0x30852) und Seite 2
-    mit Wettbewerb 1 und 2 (Datei 0x3862E–0x386B6); sonst Seite = `DGROUP 0xD0C2` mit Wettbewerb 0 (Datei 0x386B8–0x386C5).
-  - Nach dem Penaltyschießen (Datei 0x37297–0x372AC): Seite `DGROUP 0xD0C2`, Minute 70.
-- **Seitenwähler 0x3A88A mit Minute ≠ 0** (Datei 0x3A8A3–0x3AA01): Minute 20/40 setzt einen Merker; Seiten erscheinen nur bei
-  eingeschalteter Meldung bzw. Anzeige des Wettbewerbs (Meldungsmatrix DGROUP 0x21D + 3 · Liga + Zeile, WM 0x229, Europapokal
-  0x228, DEB-Pokal 0x227); mit Darstellung 2 nur die Seiten 1, 2, 9. Vor der Seite die Live-Tore in die Tortabellen:
-  Play-off 0x5C8B/0x5C8C → 0xCCB2 (Datei 0x3AA30–0x3AA84), Aufstiegsrunde/Europapokal/WM-Gruppen 0x3183C (F068; Datei 0x3A96F,
-  0x3AAF3, 0x3AC21), bei Minute 60 statt dessen die Tabelle 0x30852. Jede Seite gibt die nächste Seite zurück (0 = Ende,
-  Datei 0x3AC96–0x3ACC1); WM-Endrunde 0x32E23 mit Wettbewerb 3 (A292), Play-off-Spiele mit Wettbewerb 2 (A436).
-- **Offen:** Anzeige „n.Minute“ und Rahmen im Spielablauf in 0x32E23 (vorbereitet: `WorldCupKnockoutScreen.LiveLine`),
-  Ligapaarungen 0x4E8A3 mit Minute, Penalty-Anzeige 0x35CBE (F076, Aufrufer 0x3901B; berührt `torszene-dauer` Teil 1).
+- **Aufrufe** (auch ohne Anzeige): am Ende jedes Aufrufs von 0x37A62, also nach Minute 20, 40, 60 und in der Verlängerung 65, 70
+  (Datei 0x37192–0x37276), sowie nach dem Penaltyschießen, wenn 0x32AA3(Schalter 1) eines meldet (Datei 0x37297–0x372AC, Minute
+  70, nur die Seite des Wettbewerbscodes). Liga: vorher 0x369C7(2, 0) (laufende Stände), bei Minute 60 die Tabellen 0x50B45,
+  0x51049, 0x052CF; je Liga der Maske Seite 7 (0x4E8A3(Liga, 2, Minute, 1)). Pokal: 0x369C7(2, 1), dann nach Code DGROUP 0xD0C2:
+  1 → Seite 1 (Play-off 0x32E23(2, Minute)) und bei Spiel DGROUP 0xCCA3 ∈ {0, 2} Seite 2 (Aufstiegsrunde 0x31CD5, bei Minute 60
+  vorher Tabelle 0x30852); sonst Seite = Code (6 DEB-Pokal 0x32E23(0, m), 3 Europapokal 0x31CD5, 8 WM-Gruppen 0x2FC2F beider
+  Gruppen, 10 WM-Endrunde 0x32E23(3, m), 13 Freundschaftsspiel: keine).
+- **Filter** (Datei 0x3A8A3–0x3AA01, Ausgabe Fall 1–4): Merker „Drittelpause“ = Minute 20 oder 40.
+
+  | Seite | nach 20/40 | nach 60 (65, 70) |
+  |---|---|---|
+  | 7 Liga l | Matrix 3l + 0 („Drittelpause“) | Matrix 3l + 1 („Ergebnisse“) |
+  | 1 Play-Off Spiele | Index 0 | Index 1 |
+  | 2 Aufstiegsrunde | Index 3 | Index 4 bei 60, Index 3 bei 65/70 |
+  | 6 DEB-Pokal | Index 0 | Schalter DEB-Pokal (Index 10) |
+  | 3 Europapokal | Schalter 11 und Index 0 | Schalter 11 |
+  | 8 WM-Gruppen, 10 WM-Endrunde | Schalter 12 und Index 0 | Schalter 12 |
+
+  „Tabelle“ (Zeile 2) zeigt im Spiel keine Seite. Mit dauerhaftem Eisfeld (DGROUP 0x5A55 = 1: Darstellung 2 mit Anzeige, Datei
+  0x37112/0x37227) erscheint keine Seite (die Live-Tore werden trotzdem abgelegt). Mit den Anfangswerten (nur DEB-Pokal an)
+  erscheint also genau „DEB-Pokalspiele“ ab Minute 60.
+- **Live-Tore** (F068): Play-off kopiert DGROUP 0x5C8B/0x5C8C → 0xCCB2 + 14 · Spiel (Datei 0x3AA30–0x3AA84), Aufstiegsrunde,
+  Europapokal und WM-Gruppen 0x3183C (bei Minute 60 statt dessen die Tabelle 0x30852); die Seiten zeigen damit den laufenden Stand
+  wie ein gespieltes Ergebnis.
+- **0x32E23 mit Minute** (A292, A436; `pokalseiten.py`): statt Rundenname und Datum „       n.Minute“ (sieben Leerzeichen DGROUP
+  0x4E5F, Minute, 0x37A4A) auf derselben Grundlinie, ohne Knopf (Play-off/WM; Datei 0x33A70); DEB-Pokal: Spalten nach den
+  vergangenen Terminen wie ohne Minute (x = 207 − 10 · (n − 1)), der laufende Termin als Spalte n dahinter (2. Termin: 207 und
+  243; 1. Termin: 217); Play-off: laufendes Spiel in seiner Spalte (Spiel 1: x = 213); Bedienung wie ohne Minute (Rechtsklick
+  oder Taste weiter, Linksklick auf einen Verein öffnet sein Fenster).
+- **Marken:** die erste setzt 0x32AA3(Schalter 0) erst nach den Seiten der Minute 60 (Datei 0x37211) – ein Punkt ab Minute 65,
+  nach dem Penaltyschießen zwei Punkte mit Treffern (C07).
+
+**Umsetzung:** `LivePages.After` (`Core/MatchEngine.LivePages.cs`, Filter wie oben), `LivePageScreens`
+(`UI/Screens/Live/LivePageScreens.cs`, Seiten mit Minute und laufendem Stand), `LiveMatchScreen` zeigt sie nach dem Drittel bzw.
+nach dem Penaltyschießen; „DEB-Pokalspiele“ und „Play-Off Spiele“ haben eine Ansicht mit Minute, „WM-Endrundenspiele“ und die
+WM-Gruppenpaarungen nutzen ihre vorhandene. Tests: `LivePagesTests` (Filter, Werte aus `drittelseiten.py`), `LiveSeitenUiTests`
+(DEB-Pokaltag mit Anfangswerten und mit Drittelpause; rot vorher: keine Seite).
+
+**[APPROX]/offen:** (1) Ligapaarungen (Seite 7), Aufstiegsrunde (Seite 2) und Europapokal (Seite 3) haben keine Ansicht im
+Spielablauf – die Bildschirme (`LeaguePairingsScreen`, `PromotionRoundScreen`, `EuropeanCupScreen`) liegen außerhalb der
+Dateigrenzen; die Seiten entfallen. (2) Ohne Live-Anzeige („Spiele laufen“) rechnet das Remake den Tag vorab in
+`GameState.Continue`; die Seiten erscheinen nur im Live-Bildschirm. (3) Penalty-Anzeige 0x35CBE (F076) noch offen.
