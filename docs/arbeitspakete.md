@@ -8,7 +8,7 @@ Abgeschlossene Runden stehen in [archiv/](archiv/) und müssen beim Einstieg nic
 **Koordination:** Die Leitstelle verteilt Pakete, prüft und mergt Pull Requests und pflegt Fahrplan und Doku
 (Rollen: [prozess/zusammenarbeit.md](prozess/zusammenarbeit.md)).
 
-## Aktuelle Runde: Runde 26 – Live-Spieltag und Tagesabschluss je Manager (Plan 25.11.2026, Go ausstehend)
+## Aktuelle Runde: Runde 26 – Live-Spieltag und Tagesabschluss je Manager (Plan 25.11.2026, Go 25.11.2026)
 
 Runde 25 abgeschlossen am 25.11.2026: [archiv/runde-25.md](archiv/runde-25.md). Stand: Restliste
 [analyse/restliste-v1.md](analyse/restliste-v1.md) **V = 0**, D 26, E 319, K 190; `main` `c59f7d5`, Schema 65. Abweichungsliste
@@ -17,7 +17,12 @@ Runde 25 abgeschlossen am 25.11.2026: [archiv/runde-25.md](archiv/runde-25.md). 
 Nutzer 25.11.2026) sind „wie im Original“ umgesetzt oder mit Beleg als „keine Abweichung“ geklärt. **Nicht in dieser Runde:**
 Aufräumen #936 (mit #978, #980, #1019, #1024 Rest P3-2), D-Themen (DOSBox nach Lust), Abschlussprüfung. **Danach:** Aufräumen #936
 nach [analyse/aufraeumen-v1.md](analyse/aufraeumen-v1.md) (A1–A6), dann Abschlussprüfung.
-**Entscheidungen Nutzer:** offen (R26-D1 … R26-D4, Optionen im Plan-PR). **Go:** ausstehend.
+**Entscheidungen Nutzer 25.11.2026** (Optionen im Plan-PR #1030): R26-D1 = B (`torszene-dauer` Teil 1 nur Beleg parallel,
+Umsetzung nach Merge von `live-verschraenkt`), R26-D2 = A (frühere Entscheidungen A449, A453, A541/A542, A442/A547 bleiben),
+R26-D3 = B (DOSBox nach Lust, keine eigene Aufnahme `runde-26`: Zusätze in `runde-22` Sitzung 2 und Sitzung 7 Nr. 5,
+`vorlagen/dosbox-aufnahme.md`; Auswertung spätestens in der Abschlussprüfung), R26-D4 = B (enges Gesamtreview Live-Spieltag und
+Tagesabschluss, ChatGPT GPT-6.2 Astra). **Go Nutzer 25.11.2026** (alle Spuren samt Folgeläufen, Modelle wie unten; Start nach Merge
+des Plans).
 
 **Regeln wie Runde 25** (Archiv): Base = aktueller `main` beim Start der Spur, tatsächlicher Base-SHA in den Draft-PR; ein Branch
 `paket/<spur>`, ein PR, Teile als Commits, höchstens drei Fortsetzungen; Befund reproduzieren, roter Regressionstest mit Fundstelle
@@ -25,7 +30,7 @@ nach [analyse/aufraeumen-v1.md](analyse/aufraeumen-v1.md) (A1–A6), dann Abschl
 fremde Tests nach R15-E2 = C, erwartete Werte nach R21-D2 = A; keine geplanten Aufgaben aus Läufen (R15-E4). N2 = B, N6 = A
 gelten. **Beleg vor Umbau:** jede Lesart von em.exe als Nachbildung (Skript über die Bytes, `zusammenarbeit.md` §5 Punkt 7) in
 `tools/reverse-engineering/live/*.py` bzw. `…/tagesabschluss/*.py`, Ergebnis in `docs/analyse/live-spieltag.md` bzw. im PR. Zeigt
-der Beleg **keine** Abweichung: nur Marker mit Beleg nachziehen. **Bestehende Entscheidungen bleiben** (Vorschlag R26-D2 = A):
+der Beleg **keine** Abweichung: nur Marker mit Beleg nachziehen. **Bestehende Entscheidungen bleiben** (R26-D2 = A):
 Enter/Escape (A449, #205), Strahlrücklauf (A453, Plattform), Einstellung `ManagerDayMinuteLoop` mit Remake-Vorgabe (A541/A542,
 R14-D4 = A); bitgenaue Zufallsfolge erst mit dem Zufallsmodus nach v1.0 (A442/A547: Verteilung der Würfe je Minute wie im Original,
 Folge nicht bitgenau). **Markerliste:** kein `markerliste.py --write` in den Spuren; einziger Generatorlauf in `pruefung-karte`.
@@ -33,9 +38,9 @@ Folge nicht bitgenau). **Markerliste:** kein `markerliste.py --write` in den Spu
 Nummer 66, Spuren mit Migration nacheinander mergen (`prozess/anhang.md` F). **Gemeinsame Dateien:** `GameState.DailyRun.cs`
 `live-verschraenkt` und `tagesabschluss` je minimal; `GameState.Manager.cs` nur `tagesabschluss`.
 
-**Folge (Vorschlag R26-D1 = B):** Welle 1 `live-verschraenkt`, `tagesabschluss` und `torszene-dauer` Teil 1 (nur Beleg) parallel;
+**Folge (R26-D1 = B):** Welle 1 `live-verschraenkt`, `tagesabschluss` und `torszene-dauer` Teil 1 (nur Beleg) parallel;
 `torszene-dauer` Teil 2 nach Merge von `live-verschraenkt` (Fortsetzung auf demselben Branch, vorher Rebase); Welle 2
-`pruefung-karte` nach allen; dann Gesamtreview (R26-D4). Integration in der Reihenfolge der Fertigstellung.
+`pruefung-karte` nach allen; dann Gesamtreview (R26-D4 = B). Integration in der Reihenfolge der Fertigstellung.
 
 | Spur | Welle | Themen | Modell | Grund |
 |---|---|---|---|---|
@@ -44,8 +49,8 @@ Nummer 66, Spuren mit Migration nacheinander mergen (`prozess/anhang.md` F). **G
 | `torszene-dauer` | 1 (Teil 1), 1b (Teil 2) | S02 | Opus 5.5 | Spieltagsablauf 0x36B5D/0x3901B ungelesen, Umbau des Ablaufs der Darstellung 2 |
 | `pruefung-karte` | 2 | P3 der Runde, Generatorlauf, Abweichungsliste nachziehen | Sonnet 5.5 | mechanisch |
 
-Erstreviews: Opus 5.5, für `pruefung-karte` Sonnet 5.5. Fixläufe im Modell der Spur. Plan-Review Sonnet 5.5. Gesamtreview nach
-R26-D4 (ChatGPT GPT-6.2 Astra) mit Claude-Auswertung.
+Erstreviews: Opus 5.5, für `pruefung-karte` Sonnet 5.5. Fixläufe im Modell der Spur. Plan-Review Sonnet 5.5. Gesamtreview eng nach
+R26-D4 = B (ChatGPT GPT-6.2 Astra) mit Claude-Auswertung.
 
 ### Spur `live-verschraenkt` – Paarungen je Minute verschränkt, Paarungsseiten, Reporter und Tasten (Welle 1)
 
@@ -66,7 +71,7 @@ R26-D4 (ChatGPT GPT-6.2 Astra) mit Claude-Auswertung.
   angepasst werden). **Prüfung:** `--schnell`; Live-Spieltag mit zwei und drei Managerpaarungen (Liga, Play-off, Pokal mit
   Penaltyschießen) als Bildschirmfoto-Ablauf, Vergleich mit Videobild bzw. DOSBox-Bild; Mehrsaisonprobe (4 Wechsel, zwei Manager,
   Live an) – Ergebnisse und Geld plausibel.
-- **Status:** offen (wartet auf Go).
+- **Status:** offen (Go 25.11.2026, Start nach Merge des Plans).
 
 ### Spur `tagesabschluss` – Tagesabschluss im Hauptweg je Manager (#1018, Welle 1)
 
@@ -77,7 +82,7 @@ R26-D4 (ChatGPT GPT-6.2 Astra) mit Claude-Auswertung.
 - **Dateien:** `Core/GameState.Manager.cs`, `GameState.DailyRun.cs` (minimal), `FinanceSponsors.cs`, `FinanceStadium.cs`,
   Zinsrechnung (Datei der Methode `AccrueDailyInterest`), `tools/reverse-engineering/tagesabschluss/*.py` (neu); Tests.
   **Prüfung:** `--schnell`; Mehrsaisonprobe (4 Wechsel, passiv/aktiv, zwei Manager, Geld).
-- **Status:** offen (wartet auf Go).
+- **Status:** offen (Go 25.11.2026, Start nach Merge des Plans).
 
 ### Spur `torszene-dauer` – Darstellung 2 „Dauer-Eisfeld“ (S02, Welle 1/1b)
 
@@ -93,7 +98,7 @@ R26-D4 (ChatGPT GPT-6.2 Astra) mit Claude-Auswertung.
   und `LiveMatchScreen.cs` (je minimal, nach `live-verschraenkt`); Tests. **Prüfung:** Teil 1 Skripte mit
   `~/referenz/original/gamedata/EM.EXE`; Teil 2 `--schnell`, Bildschirmfoto-Ablauf Darstellung 2 über einen Spieltag mit Tor und
   Penaltyschießen, Vergleich mit Videobild.
-- **Status:** offen (wartet auf Go).
+- **Status:** offen (Go 25.11.2026, Start nach Merge des Plans).
 
 ### Spur `pruefung-karte` – Abschluss der Runde (Welle 2)
 
@@ -101,7 +106,7 @@ R26-D4 (ChatGPT GPT-6.2 Astra) mit Claude-Auswertung.
   `restliste-v1-klassen.csv`, Status S01, S02, S04, S05 in `abweichungen-v1.md` Abschnitt 0 („umgesetzt“/„keine Abweichung“ mit PR),
   #1018 schließen.
 - **Dateien:** `docs/analyse/*`, Kommentare der P3. **Prüfung:** `--schnell`. **Erstreview:** Sonnet 5.5.
-- **Status:** offen (wartet auf Go).
+- **Status:** offen (Go 25.11.2026, Start nach Merge des Plans).
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
