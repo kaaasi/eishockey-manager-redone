@@ -62,7 +62,8 @@ R26-D4 = B (ChatGPT GPT-6.2 Astra) mit Claude-Auswertung.
   Statistik, Strafen, Verletzungen und Finanzen unverändert über den gemeinsamen Zufallsstrom; 3. **S04** (A292, A436, F068, F076:
   „n.Minute“ auf den Paarungsseiten, Zwischenstände Datei 0x3183C, Penalty-Anzeige mit drei Farbstreifen Datei 0x35CBE);
   4. **S05** (A448 Pause bei Geschwindigkeit 62–69, A456 Reihenfolge der Reportermeldungen in der Minute, A457 Farbe 0 des
-  Reporterbilds, A475 Mindestbreite Zuschauerzahl, Leertaste = Spielmodus-Optionen Datei 0x2CD1C; A449, A453 nur bestätigen).
+  Reporterbilds, A475 Mindestbreite Zuschauerzahl, Leertaste = Spielmodus-Optionen Datei 0x2CD1C als offener Teil von A449; Enter/Escape aus A449 bleiben nach #205, A453 nur
+  bestätigen).
 - **Dateien:** `Core/MatchEngine.Live*.cs`, `LiveClock.cs`, `MatchEngine.Intervention.cs`, `MatchEngine.Scoreboard.cs`,
   `MatchEngine.Shootout.cs`, `MatchEngine.Minutes.cs`, `MatchEngine.MinuteCounters.cs` (je minimal), `GameState.DailyRun.cs`
   (minimal); `UI/Screens/Live/*` außer `GoalScene*`, `UI/LiveWidgets.cs`, `UI/Screens/MatchDayScreen.cs`,
@@ -80,7 +81,7 @@ R26-D4 = B (ChatGPT GPT-6.2 Astra) mit Claude-Auswertung.
   (Zufallsfolge je Manager verschränkt); Umbau zu `DayClose(date, manager)` je Manager wie `RunSummerDay`; WM-Schleife Datei
   0x556B5 ff. mitprüfen (gleiches Muster → mitnehmen, sonst Marker). Börsentag bleibt einmal je Tag (Nutzer 30.10.2026, #188).
 - **Dateien:** `Core/GameState.Manager.cs`, `GameState.DailyRun.cs` (minimal), `FinanceSponsors.cs`, `FinanceStadium.cs`,
-  Zinsrechnung (Datei der Methode `AccrueDailyInterest`), `tools/reverse-engineering/tagesabschluss/*.py` (neu); Tests.
+  `FinanceMonthly.cs` (Zinsrechnung `AccrueDailyInterest`), `tools/reverse-engineering/tagesabschluss/*.py` (neu); Tests.
   **Prüfung:** `--schnell`; Mehrsaisonprobe (4 Wechsel, passiv/aktiv, zwei Manager, Geld).
 - **Status:** offen (Go 25.11.2026, Start nach Merge des Plans).
 
@@ -105,7 +106,8 @@ R26-D4 = B (ChatGPT GPT-6.2 Astra) mit Claude-Auswertung.
 - **Teile:** 1. gesammelte P3 der Runde; 2. einziger Lauf `markerliste.py --write`, Klassenzeilen der geänderten IDs in
   `restliste-v1-klassen.csv`, Status S01, S02, S04, S05 in `abweichungen-v1.md` Abschnitt 0 („umgesetzt“/„keine Abweichung“ mit PR),
   #1018 schließen.
-- **Dateien:** `docs/analyse/*`, Kommentare der P3. **Prüfung:** `--schnell`. **Erstreview:** Sonnet 5.5.
+- **Dateien:** `docs/analyse/*` (auch die in Welle 1 neuen `live-spieltag.md`, `torszene-dauer.md`), Kommentare der P3 in den
+  Dateien der Spuren dieser Runde. **Prüfung:** `--schnell`. **Erstreview:** Sonnet 5.5.
 - **Status:** offen (Go 25.11.2026, Start nach Merge des Plans).
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
@@ -115,7 +117,8 @@ R26-D4 = B (ChatGPT GPT-6.2 Astra) mit Claude-Auswertung.
 ### Vormerkungen
 
 - **DOSBox-Aufnahme `runde-22` Sitzungen 2–6** und **Sitzung 7** (neue D aus Runde 22: A671, A713/A949, A896, A899, A910, A912,
-  A918, A945; Liste nach R23-D3 in `vorlagen/dosbox-aufnahme.md`): Aufnahme nach Lust, Auswertung in der Runde danach.
+  A918, A945; Liste nach R23-D3 in `vorlagen/dosbox-aufnahme.md`; Zusätze Runde 26 nach R26-D3 = B): Aufnahme nach Lust, Auswertung
+  in der Runde danach, spätestens in der Abschlussprüfung.
 - **Abschlussprüfung:** 24 X-Funktionszeilen sind im Generator ausgeblendet (#976) – dort bestätigen. P3 #978, #980 im Aufräumen
   (R24-D2 = B).
 - **Vor v1.0 (R20-D3-Zusatz):** Abweichungsliste vorgelegt und entschieden (24.11.2026, Runde 24).

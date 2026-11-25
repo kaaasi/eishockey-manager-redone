@@ -223,7 +223,7 @@ Sitzungen sind unabhängig und einzeln aufnehmbar; Reihenfolge nach Lust.
 1. Bis kurz vor dem 29. April spielen. Vorher den Kader eines Managers auf 29 Spieler auffüllen und einen eigenen Spieler auf die
    Transferliste setzen (A706); sichern als **FILE77** (Pool vor dem Wechsel: A128, A131, A132, A630; Leihe A629).
 2. Nach dem Saisonwechsel im ersten Hauptmenü sichern als **FILE78**; Kader und Transferliste beider Manager fotografieren.
-3. **Zusatz Runde 26 (R26-D3 = B, Live-Spieltag):** vor dem 29. April einen Ligaspieltag ansehen, an dem beide Manager eine
+3. **Zusatz Runde 26 (R26-D3 = B, Live-Spieltag; vor Nr. 1 aus FILE76 aufnehmen):** einen Ligaspieltag ansehen, an dem beide Manager eine
    eigene Paarung haben (nicht gegeneinander), möglichst als Video (Verschränkung der Paarungen je Minute, Reihenfolge der
    Tormeldungen: S01, A450, A909, A954). Einmal mit Darstellung 1, einmal mit Darstellung 2 „Dauer-Eisfeld“ (S02, A472). Einmal
    die Leertaste drücken und die Spielmodus-Optionen fotografieren (S05, Datei 0x2CD1C).
