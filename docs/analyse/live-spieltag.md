@@ -94,3 +94,20 @@ je Wettbewerb, wenn der Ablauf des Remakes sie getrennt aufruft.
 Pokal-Verlängerung, beide Seiten treffen in derselben Minute: 0x36AAA bekommt nur das Gasttor (Datei 0x383D7–0x383DB `[bp-0x4]` = 2
 überschreibt 1, Datei 0x383EB–0x38412), der Rest der Minute dieser Paarung entfällt (Datei 0x38418). Ob das Remake das so rechnet,
 ist nicht geprüft – Meldung an die Leitstelle.
+
+## 6. Umsetzung Teil 2 (S01)
+
+- **Kern:** `MatchEngine.PlayMatchDay` (`Core/MatchEngine.LiveDriver.cs`) rechnet einen Ligaspieltag als einen `LiveMatchDay`
+  über alle Paarungen aller Ligen (Reihenfolge §2 Punkt 3) aus dem gemeinsamen Zufall; `GameState.PlayNextMatchDay` ruft es
+  einmal je Spieltag (gemeinsame Datei, minimal). Mit Live-Treiber bekommt der Treiber den ganzen Spieltag (ein `Run`).
+  `LiveMatchDay.Step` schließt Paarungen (Reihe, Penaltyschießen) erst nach der Minute aller Paarungen ab (0x32AA3 nach
+  0x37A62); das Ziel der Tormeldung steht nach der Vorbereitung aller Paarungen fest (A909).
+- **Oberfläche:** `LiveSession.Shown` = alle Paarungen mit Reihe des Termins ab Minute 1; `LiveMatchScreen` zeigt je Minute die
+  Meldungen der Reihen und die Tormeldungen der Paarungen ohne Reihe in Paarungsreihenfolge.
+- **A454:** Klicks wirken zwischen zwei Minuten statt an der Abfragestelle je Paarung; gleiche Wirkung, weil 0x38D96 keinen
+  Zufall zieht und nur die Felder der eigenen Paarung schreibt (Aufrufe 0x53453, 0x534BC, 0x53508, 0x5434C, 0x08E5F, 0x0C097).
+- **Offen (`[APPROX]`, Entscheidung):** Pokal-, Play-off-, Europapokal- und WM-Termine rufen weiter je Paarung
+  `PlayWithEvents` – die Abläufe liegen in `Playoffs.cs`, `CupsDeb.cs`, `CupsGroup.cs`, `CupsWorld.cs` außerhalb der Dateien der
+  Spur. `PlayMatchDay` ist dafür nutzbar (je Termin die Paarungen sammeln, Berichte danach auswerten).
+- **Tests:** `LiveVerschraenktTests` (E1, E2, E4, Mehrsaisonprobe 4 Wechsel passiv/aktiv), `LiveVerschraenktUiTests`;
+  Szenarien `live-verschraenkt-2`, `live-verschraenkt-3` (drei Reihen in Minute 21 gleichzeitig).
