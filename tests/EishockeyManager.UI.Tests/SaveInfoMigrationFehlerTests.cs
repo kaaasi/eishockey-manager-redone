@@ -17,6 +17,6 @@ public class SaveInfoMigrationFehlerTests
         var data = Encoding.UTF8.GetBytes(json);
 
         Assert.Null(SaveInfo.FromRemake(data));
-        Assert.Null(SaveInfo.Read(data, SaveEntryKind.Remake));
+        Assert.Null(SaveInfo.Read(data, SaveEntryKind.Save));
     }
 }
