@@ -331,8 +331,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // (Datei 0x3D330) würfeln je Manager und Bautag random(0, 2·d + 8) (Datei 0x3CFC5) und bei 0 je Projekt weiter; anderer
     // Zufallsverlauf ab dem ersten Bautag, Stufen und Plätze können sinken. Kein Originalsollwert, nur interner Abdruck.
     // Rückschaltprobe: src/ von 36323e2 → alte Werte.
-    [InlineData(false, "18E3BF599E483A9A")]
-    [InlineData(true, "D1B8EB139E37C937")]
+    // Spur live-verschraenkt Teil 2 (Runde 26, S01, R21-D2 = A, R15-E2 = C): neu – der Ligaspieltag rechnet je Minute alle
+    // Paarungen aus dem gemeinsamen Zufall (0x37A62, Datei 0x37DB7–0x380CD; docs/analyse/live-spieltag.md) statt Paarung für
+    // Paarung; anderer Zufallsverlauf ab dem ersten Ligaspieltag. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von b322f69 + dieser Test → rot (alte Werte).
+    [InlineData(false, "8E42327C3DC0286F")]
+    [InlineData(true, "A74210087955B6E7")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

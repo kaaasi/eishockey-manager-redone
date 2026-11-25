@@ -151,7 +151,10 @@ public class TransferVertraegeKomplettTeil3Tests
     [InlineData(true)]
     public void MultiSeason_FourChanges_UnsolicitedOffers(bool active)
     {
-        var game = TestGames.Create(23);
+        // Spur live-verschraenkt Teil 2 (Runde 26, S01, R21-D2 = A, R15-E2 = C): Saat 24 statt 23 – der Ligaspieltag rechnet je
+        // Minute alle Paarungen aus dem gemeinsamen Zufall (0x37A62, docs/analyse/live-spieltag.md), anderer Zufallsverlauf ab dem
+        // ersten Ligaspieltag; mit 23 ist die Vorbedingung verfehlt. Rückschaltprobe siehe PR #1032. Die Probe hängt an der Saat.
+        var game = TestGames.Create(24);
         var offers = 0;
         for (var change = 0; change < 4; change++)
         {

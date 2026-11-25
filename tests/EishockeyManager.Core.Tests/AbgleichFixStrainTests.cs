@@ -40,13 +40,16 @@ public class AbgleichFixStrainTests
     /// der Spiele ab (Original ja, Remake je Saat).
     /// Runde 20 (#872, R15-E2 = C): Mit den Reihen aus dem Vorspiel kippt MENDE bei 37 von 40 Saaten (1 … 40; alter Code 40 von 40);
     /// bei 3, 25 und 28 steht er nach Spieltag 3 bei 125–126, also im letzten Zahn vor 128. Saat 3 deshalb durch 4 ersetzt.
+    /// Runde 26, Spur live-verschraenkt Teil 2 (S01, R15-E2 = C): Mit dem verschränkten Ligaspieltag (0x37A62, alle Paarungen je
+    /// Minute aus dem gemeinsamen Zufall) kippt MENDE wieder bei 37 von 40 Saaten (nicht 17, 21; dazu 77 mit 122, letzter Zahn).
+    /// Saat 77 deshalb durch 5 ersetzt.
     /// </summary>
     [GameDataTheory]
     [InlineData(1993)]
     [InlineData(1)]
     [InlineData(2)]
     [InlineData(4)]
-    [InlineData(77)]
+    [InlineData(5)]
     public void File02_ThreeMatchDays_MendeFallsTo50(int seed)
     {
         var game = GameState.ImportOriginal(OriginalSaveGame.Read(File.ReadAllBytes(OriginalImportTests.OriginalSave("FILE02.HOK"))),

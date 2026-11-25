@@ -397,7 +397,10 @@ public class SpielstaerkeManager2Tests
         // Aufstellung samt Torhüter (Belastung im Mittel 130), also kein fehlender Torhüter; Saat 4 bleibt unter 20 Toren.
         // Spur wettbewerbe-regeln Teil 3 (A101, R15-E2 = C): Penaltyschießen der markierten Managervereine Schuss für Schuss, anderer
         // Zufallsverlauf; mit Saat 4 ein Spiel mit 20 Toren (aktiv). Saat 4 → 5; alter Code mit Saat 5 ebenfalls grün (geprüft).
-        var game = GameModeTests.Create(5, true, true, 2, 30);
+        // Spur live-verschraenkt Teil 2 (Runde 26, S01, R21-D2 = A, R15-E2 = C): Saat 6 statt 5 – der Ligaspieltag rechnet je
+        // Minute alle Paarungen aus dem gemeinsamen Zufall (0x37A62, docs/analyse/live-spieltag.md), anderer Zufallsverlauf ab dem
+        // ersten Ligaspieltag; mit 5 ist die Vorbedingung verfehlt. Rückschaltprobe siehe PR #1032. Die Probe hängt an der Saat.
+        var game = GameModeTests.Create(6, true, true, 2, 30);
         long goals = 0, games = 0, maxGoals = 0;
         RngTwinProbeTests.Run(game, active, beforeChange: g =>
         {

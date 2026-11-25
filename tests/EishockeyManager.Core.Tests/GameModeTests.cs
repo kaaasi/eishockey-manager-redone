@@ -511,8 +511,12 @@ public class GameModeTests
     // (Datei 0x3D330) würfeln je Manager und Bautag random(0, 2·d + 8) (Datei 0x3CFC5) und bei 0 je Projekt weiter; anderer
     // Zufallsverlauf ab dem ersten Bautag, Stufen und Plätze können sinken. Kein Originalsollwert, nur interner Abdruck.
     // Rückschaltprobe: src/ von 36323e2 → alte Werte.
+    // Spur live-verschraenkt Teil 2 (Runde 26, S01, R21-D2 = A, R15-E2 = C): neu – der Ligaspieltag rechnet je Minute alle
+    // Paarungen aus dem gemeinsamen Zufall (0x37A62, Datei 0x37DB7–0x380CD; docs/analyse/live-spieltag.md) statt Paarung für
+    // Paarung; anderer Zufallsverlauf ab dem ersten Ligaspieltag. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von b322f69 + dieser Test → rot (alte Werte).
     internal const string Mode4Reference =
-        "WorldChampion=63,CupWinner=16,GermanChampion=1,EuropeanCupWinner=2|1100000,400000|WorldChampion=52,CupWinner=10,GermanChampion=1,EuropeanCupWinner=1|2456064,400000|WorldChampion=52,CupWinner=14,GermanChampion=3,EuropeanCupWinner=1|2570172,400000|WorldChampion=52,CupWinner=12,GermanChampion=15,EuropeanCupWinner=3|2301108,400000|WorldChampion=52,CupWinner=5,GermanChampion=6,EuropeanCupWinner=3|2195537,400000|R2062587506";
+        "WorldChampion=52,CupWinner=5,GermanChampion=5,EuropeanCupWinner=2|1165483,400000|WorldChampion=52,CupWinner=12,GermanChampion=5,EuropeanCupWinner=5|2241455,400000|WorldChampion=52,CupWinner=5,GermanChampion=12,EuropeanCupWinner=5|2070325,500000|WorldChampion=63,CupWinner=0,GermanChampion=4,EuropeanCupWinner=12|2301309,400000|WorldChampion=53,CupWinner=10,GermanChampion=5,EuropeanCupWinner=4|2413097,500000|R781478773";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

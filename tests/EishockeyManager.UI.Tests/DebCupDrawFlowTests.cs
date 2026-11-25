@@ -361,6 +361,10 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // (Datei 0x3D330) würfeln je Manager und Bautag random(0, 2·d + 8) (Datei 0x3CFC5) und bei 0 je Projekt weiter; anderer
     // Zufallsverlauf ab dem ersten Bautag, Stufen und Plätze können sinken. Kein Originalsollwert, nur interner Abdruck.
     // Rückschaltprobe: src/ von 36323e2 → alte Werte.
+    // Spur live-verschraenkt Teil 2 (Runde 26, S01, R21-D2 = A, R15-E2 = C): neu – der Ligaspieltag rechnet je Minute alle
+    // Paarungen aus dem gemeinsamen Zufall (0x37A62, Datei 0x37DB7–0x380CD; docs/analyse/live-spieltag.md) statt Paarung für
+    // Paarung; anderer Zufallsverlauf ab dem ersten Ligaspieltag. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von b322f69 + dieser Test → rot (alte Werte).
     private const string Reference =
-        "1993: DEB 5, DM 8, Tab 15629 | 1994: DEB 10, DM 5, Tab 16026 | 1995: DEB 10, DM 2, Tab 15370 | 1996: DEB 2, DM 23, Tab 15301";
+        "1993: DEB 4, DM 4, Tab 15636 | 1994: DEB 8, DM 8, Tab 16042 | 1995: DEB 6, DM 6, Tab 16147 | 1996: DEB 9, DM 3, Tab 15772";
 }

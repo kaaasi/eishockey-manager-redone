@@ -87,6 +87,9 @@ public sealed class PlayoffSemifinalTests
         // Runde 26, Spur tagesabschluss (#1018, SG-01, R15-E2 = C): Saat 9 → 10. Mit dem Tagesabschluss je Manager (Datei
         // 0x55217–0x55251) und der Talentsuche danach (Datei 0x5528A) hat bei Saat 9 in fünf Saisons kein schlechter Platzierter
         // Heimrecht (gleicher Grund wie oben; 8, 10–15 mit Fall, 9, 16 ohne). Rückschaltprobe: src/ von 56b7f7c mit Saat 10 grün.
+        // Spur live-verschraenkt Teil 2 (Runde 26, S01, R21-D2 = A, R15-E2 = C): Saat 10 statt 9 – der Ligaspieltag rechnet je
+        // Minute alle Paarungen aus dem gemeinsamen Zufall (0x37A62, docs/analyse/live-spieltag.md), anderer Zufallsverlauf ab dem
+        // ersten Ligaspieltag; mit 9 ist die Vorbedingung verfehlt. Rückschaltprobe siehe PR #1032. Die Probe hängt an der Saat.
         var game = NewGame.Create(TestGames.CreateDatabase(), setup, 10);
         var active = game.Managers[1];
         var upsets = 0;
