@@ -138,7 +138,7 @@ R26-D4 = B (ChatGPT GPT-6.2 Astra) mit Claude-Auswertung.
   #1018 schließen.
 - **Dateien:** `docs/analyse/*` (auch die in Welle 1 neuen `live-spieltag.md`, `torszene-dauer.md`), Kommentare der P3 in den
   Dateien der Spuren dieser Runde. **Prüfung:** `--schnell`. **Erstreview:** Sonnet 5.5.
-- **Status:** offen (Go 25.11.2026, Start nach Merge des Plans).
+- **Status:** Teil 1 und Teil 2 fertig im Draft-PR #1047 (26.11.2026), Erstreview offen (Sonnet 5.5).
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
