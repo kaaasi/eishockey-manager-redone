@@ -19,9 +19,8 @@ namespace EishockeyManager.UI.Screens.Live;
 ///   DGROUP 0x5C4B/0x5C4C vor den Schüssen auf 0). Mindestbreite DGROUP 0x374 = 1: mit Darstellung 0 baut Datei 0x39421 den
 ///   Live-Bildschirm 0x5353C auf, dessen Grafiklader 0xC17D 0x374 = 1 setzt (Datei 0x0C1A1); [APPROX] mit Darstellung 1/2
 ///   (eigenes Eis, T7) nicht verfolgt.</item>
-/// <item>[APPROX] Die Schüsse selbst (Datei 0x3941A–0x39588: Live-Bildschirm bzw. eigenes Eis, Torszene je Schuss, Spielstand
-///   0x51FEA, Pause 80) zeigt das Remake noch nicht – Teil 2 der Spur <c>torszene-dauer</c> (T7, Entscheidung Leitstelle
-///   26.11.2026); zwischen Ankündigung und Endergebnis nur die Pause 50.</item>
+/// <item>Die Schüsse dazwischen (Datei 0x3941A–0x39588) zeigt <see cref="LiveMatchScreen"/>: mit Darstellung 1/2 auf eigenem Eis
+///   (T7, Spur torszene-dauer Teil 2); [APPROX] mit Darstellung 0 noch nicht, dort nur die Pause 50.</item>
 /// </list>
 /// </summary>
 public sealed class LivePenaltyScreen : Screen

@@ -167,7 +167,9 @@ public static partial class MatchEngine
         CountAtKickOff(game, away, awayTeam, competition);
         PrepareFromClubFields(game, home, away, homeTeam, awayTeam, homeManaged, awayManaged);
         // A071: Merker [0xA70E] des Spieltagsablaufs für die Minutenschleife (MatchEngine.TurnManager.cs).
-        homeTeam.TurnManager = awayTeam.TurnManager = TurnManagerOf(game, competition, game.LiveScoreboard?.Active ?? false);
+        // A472 (Spur torszene-dauer): mit Dauer-Eisfeld ist 0x5A56 in den Minuten 0 (OriginalMinutes.PermanentRink).
+        homeTeam.TurnManager = awayTeam.TurnManager = TurnManagerOf(game, competition,
+            (game.LiveScoreboard?.Active ?? false) && !OriginalMinutes.PermanentRink(game.Options));
         MatchReport? report = null;
         // [ORIGINAL] Datei 0x3702E–0x37085: Pokalspiel mit eingeschaltetem Anzeigeschalter (DGROUP 0x227 DEB-Pokal, Code 6;
         // 0x228 Europapokal, Code 3/5; 0x229 WM-Gruppe, Code 8; GameOptions.CupMatchUsesMinuteLoop) läuft durch die
@@ -271,7 +273,9 @@ public static partial class MatchEngine
             // überspringt 0x32D13–0x32D1F, Europapokal (0x314A4), WM-Gruppe (0x30F58) und Freundschaftsspiel (0x30395)
             // haben keinen K.-o.-Merker. Das ist genau knockOut des Remakes (Liga, Aufstiegsrunde, Gruppen: false).
             // [APPROX] Plätze mit Ergebnisbyte > 0x63 (DGROUP 0xD014/0xCCB2, Paarung ohne Spiel) führt das Remake nicht.
-            var goals = OriginalMinutes.Shootout(match.Random, match.Home.WatchedLive || match.Away.WatchedLive); // A101
+            // A101; A472/T7 (Spur torszene-dauer): Schüsse und Szenen für das eigene Eis des Penaltyschießens.
+            var goals = OriginalMinutes.Shootout(match.Random, match.Home.WatchedLive || match.Away.WatchedLive, report,
+                match.Game.Options);
             report.ShootoutGoals = goals;
             report.ShootoutHomeWins = goals.Home > goals.Away;
         }

@@ -29,7 +29,10 @@ namespace EishockeyManager.UI.Screens.Live;
 public static class LivePageScreens
 {
     /// <summary>Seiten nach <paramref name="minute"/> des Termins <paramref name="day"/> (siehe <see cref="LivePages.After"/>).</summary>
-    public static IReadOnlyList<LivePage> For(GameState game, LiveMatchDay day, int minute, bool afterShootout = false)
+    /// <param name="permanentRink">Läuft das Dauer-Eisfeld (DGROUP 0x5A55)? Ohne Angabe Darstellung 2; nach einem angezeigten
+    /// Penaltyschießen ist es abgebaut (Spur torszene-dauer, T5/T7).</param>
+    public static IReadOnlyList<LivePage> For(GameState game, LiveMatchDay day, int minute, bool afterShootout = false,
+        bool? permanentRink = null)
     {
         if (day.Matches.Count == 0)
             return [];
@@ -37,16 +40,16 @@ public static class LivePageScreens
         var playoffGame = PlayoffGame(game);
         // [APPROX] DGROUP 0x5A55 = 1 nur mit Anzeige und Darstellung 2 (Datei 0x37112, 0x37227); ob die Torszene 0x567C8 dabei
         // abbricht (Datei 0x37168), bleibt unberücksichtigt.
-        var permanentRink = game.Options.LiveMode == GameOptions.PermanentRinkLiveMode;
+        var rink = permanentRink ?? game.Options.LiveMode == GameOptions.PermanentRinkLiveMode;
         var pages = LivePages.After(game.Options, minute, first.Competition,
             day.Matches.Where(m => m.Competition == MatchCompetition.League && m.Home.League is not null).Select(m => m.Home.League!.Value),
             worldCupKnockout: first.Competition == MatchCompetition.WorldCup && first.KnockOut,
             playoffGame: playoffGame,
-            permanentRink: permanentRink,
+            permanentRink: rink,
             afterShootout: afterShootout).ToList();
         // [ORIGINAL] Datei 0x386AD–0x386C5: nach Gruppe 0 (0x3A88A(2, 1, Minute)) die zweite Gruppe 0x3A88A(2, 2, Minute) mit Index
         // 3 · 2 + (Minute = 60) – „Drittelpause Oberliga“ bzw. „Ergebnisse Oberliga“ (Datei 0x3A8C5–0x3A8F5).
-        if (first.Competition is MatchCompetition.Playoff or MatchCompetition.Relegation && !afterShootout && !permanentRink
+        if (first.Competition is MatchCompetition.Playoff or MatchCompetition.Relegation && !afterShootout && !rink
             && playoffGame is 0 or 2 && LivePages.IsPeriodEnd(minute) && game.Options.Reports[6 + (minute == 60 ? 1 : 0)])
             pages.Add(new LivePage(LivePageKind.PromotionRound, League.Oberliga));
         return pages;

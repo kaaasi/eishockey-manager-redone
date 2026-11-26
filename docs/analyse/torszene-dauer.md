@@ -152,3 +152,20 @@ T7 ändert auch Darstellung 1 (Penaltyschießen); falls das außerhalb von A472 
 (Überschneidung mit S04 „Penalty-Anzeige“ in `live-verschraenkt`). Prüfung Teil 2: Bildschirmfoto-Ablauf Darstellung 2 über
 einen Spieltag mit Tor und Penaltyschießen; ein Videobild mit Darstellung 2 ist im Index `docs/referenz-videos.md` nicht
 verzeichnet – Vergleich nur gegen die Einzelszene (gleiches Bild) und gegen diese Lesart; DOSBox-Probe nach R26-D3 = B.
+
+## 11. Umsetzung Teil 2 (A472, Fortsetzung 1)
+
+| Nr. | Remake | Test |
+|---|---|---|
+| T1 | `GoalSceneRinkView.ForMatchDay` im Konstruktor von `LiveMatchScreen` (Darstellung 2 und `tore\` vorhanden): letzte Paarung mit Anzeigereihe, 0 : 0, Minute 0, Text leer, Stufe aus `GoalSceneCall.Spectators`, mit mehreren Managern 2 (`BuildHallLevel`); Bild Eis ab (0 \| 0) ohne Figuren, Palette `kb\247` | `TorszeneDauerUiTests.PermanentRink_WholeMatchDayOnRink`, `BuildHallLevel_TwoManagers_Two` |
+| T2 | `LiveMatchScreen.RinkScript`: je Minute nur die Minutenzeile, keine Pause, kein Zwinkern, keine Leertaste, kein Reporter, keine Tormeldung | wie T1 (`MessagesShown` leer, keine Optionen) |
+| T3 | Szenen der Managerpaarungen in Rechenreihenfolge, Modus 2 mit der Halle des Aufbaus; letztes Bild und Kopfzeile bleiben stehen (`GoalSceneRinkView.Keep`) | wie T1 |
+| T4 | kein Eingriffsmenü; Spielkern: kein Strafgrund-Zug (`OriginalMinutes.PermanentRink`, `PenaltyReason`), Merker „Manager am Zug“ wie ohne Live-Anzeige (`MatchEngine.Live.cs`, eine Zeile); automatische Aufstellung nach Verletzung war schon der Weg ohne Live-Anzeige | `TorszeneDauerTests.PenaltyReason_NotDrawnOnPermanentRink`, `TurnManager_NoLiveDisplayOnPermanentRink` |
+| T5 | Verlängerung auf demselben Eis, kein Klick, keine Seiten; nach angezeigtem Penaltyschießen Seiten normal (`LivePageScreens.For(…, permanentRink)`, Parameter neu) | wie T1 (Gegenprobe Darstellung 1 wartet) |
+| T6 | Abbau am Ende (`Rink` = null) | wie T1 |
+| T7 | `OriginalMinutes.Shootout(…, report, options)` legt die Schüsse ab (`ShootoutShots`) und zieht mit Darstellung ≠ 0 je Schuss die Szene (Penalty); `LiveMatchScreen.Shootouts`: Abbau, Ankündigung, eigenes Eis (Minute 70, Stufe 2), Szene je Schuss mit Treffern vor dem Schuss, Pause 80, Abbau (Hintergrund `kb\22`), Pause 50, Endergebnis | `TorszeneDauerTests.ShootoutWithDisplay_ShotsAndScenesInOriginalOrder`, `TorszeneDauerUiTests.Shootout_OwnRinkWithShots` (Darstellung 0/1/2) |
+| T8 | Darstellung 0/1 unverändert bis auf T7 | bestehende Live-Tests |
+
+Bildschirmfoto-Ablauf `torszene-dauer` (`src/EishockeyManager.Tools/Scenarios/TorszeneDauer.cs`). Neue `[APPROX]`: ohne
+`tore\` Live-Bildschirm statt Eis; Paarung der Kopfzeile nur unter den höchstens vier Reihen; Torschütze 0x541D9 im
+Penaltyschießen zieht weiterhin nicht; Schüsse bei Darstellung 0 weiterhin nicht gezeigt.

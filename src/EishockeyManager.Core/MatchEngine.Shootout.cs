@@ -1,4 +1,12 @@
+using System.Runtime.CompilerServices;
+
 namespace EishockeyManager.Core;
+
+/// <summary>
+/// Ein Schuss des Penaltyschießens mit Anzeige (A101, T7): Seite des Schützen (0 Heim, 1 Gast), Treffer und – mit Darstellung
+/// ≠ 0 – die Szene der Torszene 0x53C57 (sonst null).
+/// </summary>
+public readonly record struct ShootoutShot(int Side, bool Goal, GoalSceneChoice? Scene);
 
 /// <summary>
 /// Penaltyschießen nach der Verlängerung (Spur spielberechnung-komplett, Teil 5). Fundstellen:
@@ -21,17 +29,35 @@ public static partial class OriginalMinutes
     /// <item>Datei 0x39770–0x397B3: Die Treffer kommen auf den Spielstand (Heim + Marke 30 bleibt, also Endstand
     ///   Gleichstand + Penaltytore).</item>
     /// </list>
-    /// [APPROX] Das Remake hat für den Zweig mit Bit 7 keine Anzeige (Szene 0x130:0x7F und Meldung 0x130:0x2A je Schuss, Datei
-    /// 0x394C5/0x394E3; ob sie Zufallszahlen ziehen, ist nicht gelesen – das Remake zieht dort keine) und führt die
-    /// Penaltytore getrennt (<see cref="MatchReport.ShootoutGoals"/>), der Spielstand bleibt der Gleichstand.
+    /// Im Zweig mit Bit 7 je Schuss die Torszene 0x130:0x7F (Datei 0x394C5; Szenenwahl und Schüsse siehe
+    /// <see cref="Shootout(Random, bool, MatchReport, GameOptions)"/>). [APPROX] Das Remake führt die Penaltytore getrennt
+    /// (<see cref="MatchReport.ShootoutGoals"/>), der Spielstand bleibt der Gleichstand.
     /// </summary>
     /// <param name="watched">Heim- oder Gastverein zum Zusehen markiert (<see cref="Club.WatchedLive"/>).</param>
-    public static (int Home, int Away) Shootout(Random random, bool watched = false)
+    public static (int Home, int Away) Shootout(Random random, bool watched = false) => Shootout(random, watched, null, null);
+
+    /// <summary>
+    /// Penaltyschießen wie <see cref="Shootout(Random, bool)"/>; im Zweig mit Anzeige die Schüsse an <paramref name="report"/>
+    /// (<see cref="ShootoutShots"/>). A472/T7 (Spur torszene-dauer Teil 2, <c>docs/analyse/torszene-dauer.md</c> §6):
+    /// [ORIGINAL] Je Schuss ruft 0x3901B die Torszene 0x53C57 mit Art = Treffer, Penalty-Kennzeichen 1 und Minute 0x78
+    /// (Datei 0x39479–0x394C5). Mit Darstellung <c>[0x226]</c> ≠ 0 läuft sie auf dem eigenen Eis des Penaltyschießens
+    /// (Datei 0x3937F–0x393D8: <c>0x5A55</c> = 1) und spielt die Szene; deren Wahl 0x575C3 zieht wie im Spiel aus dem
+    /// Spielzufall (R18-D3 = A, <see cref="GoalSceneSelection.Choose"/> mit Penalty, also nach den beiden ersten Zügen
+    /// random(2, Penalty)). [APPROX] Der Torschütze 0x541D9 (Art 0/1, ohne Bedingung) zieht im Original danach weiter; das
+    /// Remake zieht dort wie bisher nichts.
+    /// </summary>
+    public static (int Home, int Away) Shootout(Random random, bool watched, MatchReport? report, GameOptions? options)
     {
         var first = OriginalMatch.Rnd(random, 0, 1);
         int home, away;
         if (watched)
-            return ShotByShot(random, first);
+        {
+            var shots = new List<ShootoutShot>();
+            var result = ShotByShot(random, first, shots, options is { LiveMode: not 0 });
+            if (report is not null)
+                Shots.AddOrUpdate(report, shots);
+            return result;
+        }
         do
         {
             home = OriginalMatch.Rnd(random, 2, 5);
@@ -42,15 +68,21 @@ public static partial class OriginalMinutes
     }
 
     /// <summary>Schussfolge des Zweigs mit Anzeige (A101, siehe <see cref="Shootout"/>).</summary>
-    private static (int Home, int Away) ShotByShot(Random random, int first)
+    private static (int Home, int Away) ShotByShot(Random random, int first, List<ShootoutShot> shots, bool scenes)
     {
         var goals = new int[2];
         var side = first;
         var rounds = 0;
         do
         {
-            if (OriginalMatch.Rnd(random, 0, 10) > 6)
+            var goal = OriginalMatch.Rnd(random, 0, 10) > 6;
+            if (goal)
                 goals[side]++;
+            // [ORIGINAL] Datei 0x394C5: Torszene je Schuss; Szenenwahl nur mit Darstellung ≠ 0 (Datei 0x53DD2–0x53DE3).
+            var scene = scenes
+                ? GoalSceneSelection.Choose(goal, penalty: true, side, sixSkaters: false, GoalSceneSelection.OriginalCounts, random)
+                : (GoalSceneChoice?)null;
+            shots.Add(new ShootoutShot(side, goal, scene));
             side ^= 1;
             if (side == first)
                 rounds++;
@@ -58,6 +90,12 @@ public static partial class OriginalMinutes
         while (rounds < ShootoutRounds || goals[0] == goals[1] || side != first);
         return (goals[0], goals[1]);
     }
+
+    private static readonly ConditionalWeakTable<MatchReport, List<ShootoutShot>> Shots = new();
+
+    /// <summary>Schüsse des Penaltyschießens mit Anzeige in ihrer Reihenfolge; leer ohne Anzeigezweig (Darstellungszustand).</summary>
+    public static IReadOnlyList<ShootoutShot> ShootoutShots(MatchReport report) =>
+        Shots.TryGetValue(report, out var shots) ? shots : [];
 
     /// <summary>[ORIGINAL] Mindestens fünf Runden (Datei 0x39507: <c>cmp byte [bp-0x6],0x5</c>).</summary>
     public const int ShootoutRounds = 5;

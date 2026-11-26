@@ -29,11 +29,10 @@ namespace EishockeyManager.UI.Screens.Live;
 ///   Original zieht im Abspieler neu (0x575C3, Datei 0x56BBC); originalgetreu erst mit dem bitgenauen Zufallsmodus.</item>
 /// <item>[APPROX] Taste: <c>48h:2E1Eh</c> liest ein Zeichen aus dem Tastaturpuffer; das Remake nimmt das erste Zeichen, das
 ///   während der Szene oder der Pause 20 getippt wurde.</item>
-/// <item>[APPROX] Dauer-Eisfeld: Das Original zeigt bei Darstellung 2 den ganzen Spieltag das Eis (Modus 1/3 aus dem
-///   Spieltagsablauf 0x36B5D/0x3901B, Minutenzeile <c>0x130:0xAC</c>); das Remake spielt die Szene in Modus 2 (ohne Pause 6)
-///   und zeigt danach wieder den Live-Bildschirm. Damit entfällt auch die Hallenstufe 2 bei mehreren Managern
-///   (Datei 0x568A9–0x568B6: <c>[0x386]</c> &gt; 1 und <c>[bp+0x20]</c> ≠ 0 → Stufe 2), die nur der Aufbau in Modus 1 setzt
-///   (Modus 2 springt bei Datei 0x5680A am Laden vorbei); hier gilt immer der Füllgrad (<see cref="Spectators"/>, #862 P3-3).</item>
+/// <item>[ORIGINAL] Dauer-Eisfeld (A472, Spur torszene-dauer Teil 2): Bei Darstellung 2 zeigt der Spieltag durchgehend das Eis
+///   (Modus 1/3 aus dem Spieltagsablauf 0x36B5D, <see cref="GoalSceneRinkView"/>); die Szene läuft darauf in Modus 2 mit der
+///   Halle des Aufbaus (Hallenstufe 2 bei mehreren Managern, Datei 0x568A9–0x568B6) – die Stufe aus <see cref="Spectators"/>
+///   gilt dort nur für den Aufbau (<see cref="LiveMatchScreen"/> ersetzt sie im Auftrag).</item>
 /// </list>
 /// </summary>
 public static class GoalSceneCall
