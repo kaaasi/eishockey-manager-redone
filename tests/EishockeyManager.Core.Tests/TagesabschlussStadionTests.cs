@@ -222,6 +222,114 @@ public class TagesabschlussStadionTests
         Assert.Equal(oracle.Random.Next(), game.Random.Next());
     }
 
+    private static string Signature(GameState game)
+    {
+        var parts = game.Managers.Select((m, i) =>
+        {
+            var snap = Snapshot(game, m);
+            return $"{string.Join(",", snap.Levels)}/{snap.Seats}/{snap.Standing}/{m.Money}/"
+                + string.Join("|", game.Finance(m).Inbox.Select(x => string.Join("~", x.Lines)));
+        });
+        return string.Join(";", parts) + "#" + game.Random.Next();
+    }
+
+    private static int BuildDay(Func<DateOnly, int, bool> extra) =>
+        Enumerable.Range(1, SeasonCalendar.ClubSeasonEnd - 1).First(d =>
+        {
+            var date = SeasonCalendar.LayoutDate(d);
+            return DayCounter.Of(d) % 7 == 0 && !SponsorRules.IsOfferDay(date) && date.Day != 1
+                && date.Day != DateTime.DaysInMonth(date.Year, date.Month) && extra(date, d);
+        });
+
+    /// <summary>
+    /// R1034-01 (#1036): [ORIGINAL] WM-Schleife Datei 0x556B5–0x556CD (hauptweg.py Teil 2): je Manager erst Tagesabschluss 0x3ED01 und
+    /// Werbebewertung 0x3F833, dann sein Stadionbau 0x3D316 (mit den Schäden 0x3CFA0), dann der nächste Manager; die Börse einmal am
+    /// Tagesende (#188). Orakel aus den Einzelteilen an einem Bautag, Level 5, zwei Manager. Gegenprobe „Bau für alle erst nach der
+    /// Schleife“ ergibt eine andere Zufallsfolge und muss sich unterscheiden (Empfindlichkeit). Rot bei der Mutation
+    /// <c>WeeklyFinances()</c> hinter der Schleife in <c>AdvanceFinance</c>.
+    /// </summary>
+    [Fact]
+    public void WorldCupLoopBuildDay_BuildPerManagerAfterItsRating()
+    {
+        var day = BuildDay((_, _) => true);
+        var found = false;
+        for (var seed = 1; seed <= 400 && !found; seed++)
+        {
+            string Oracle(bool buildAfterLoop)
+            {
+                var g = TwoManagers(seed, level: 5);
+                g.AdvanceFinance(day - 1, clubDay: true);
+                Call(g, "ExpireMessages");
+                g.RecordRankSlots();
+                for (var i = 0; i < 2; i++)
+                {
+                    Call(g, "DayClose", SeasonCalendar.LayoutDate(day), i);
+                    g.UpdateSponsorRating(g.Managers[i]);
+                    if (!buildAfterLoop)
+                        Call(g, "WeeklyManagerFinances", g.Managers[i]);
+                }
+                if (buildAfterLoop)
+                    foreach (var m in g.Managers)
+                        Call(g, "WeeklyManagerFinances", m);
+                g.AdvanceStocks();
+                return Signature(g);
+            }
+
+            var expected = Oracle(buildAfterLoop: false);
+            if (expected == Oracle(buildAfterLoop: true))
+                continue;
+            found = true;
+            var game = TwoManagers(seed, level: 5);
+            game.AdvanceFinance(day - 1, clubDay: true);
+            game.AdvanceFinance(day, clubDay: false);
+            Assert.Equal(expected, Signature(game));
+        }
+        Assert.True(found, "keine Saat gefunden, bei der die Reihenfolge des Baus sichtbar wird");
+    }
+
+    /// <summary>
+    /// R1034-01 (#1036): [ORIGINAL] Sommerpause Datei 0x564F5–0x56512 (A526): je Kalendertag und Manager erst der Stadionbau 0x3D316
+    /// (Zähler ≡ 0 mod 7), dann der Tagesabschluss 0x3ED01, dann die Heilung; die Börse einmal am Tagesende. Orakel aus den Einzelteilen,
+    /// Level 5, zwei Manager; Gegenprobe „Bau nach <c>DayClose</c>“ muss sich unterscheiden. Rot bei der Mutation „Bau nach DayClose“
+    /// in <c>RunSummerDay</c>.
+    /// </summary>
+    [Fact]
+    public void SummerDay_BuildBeforeDayClosePerManager()
+    {
+        var counter = GameState.SummerBreakCounters().First(c => c % 7 == 0);
+        var found = false;
+        for (var seed = 1; seed <= 400 && !found; seed++)
+        {
+            string Oracle(bool buildAfterClose)
+            {
+                var g = TwoManagers(seed, level: 5);
+                var date = SeasonCalendar.LayoutDate(counter - 1);
+                for (var i = 0; i < 2; i++)
+                {
+                    var m = g.Managers[i];
+                    if (!buildAfterClose)
+                        Call(g, "WeeklyManagerFinances", m);
+                    Call(g, "DayClose", date, i);
+                    if (buildAfterClose)
+                        Call(g, "WeeklyManagerFinances", m);
+                    if (PlayerInjuries.IsHealingDay(counter) && !m.Dismissed)
+                        Call(g, "HealSquad", g.Clubs[m.ClubIndex]);
+                }
+                g.AdvanceStocks();
+                return Signature(g);
+            }
+
+            var expected = Oracle(buildAfterClose: false);
+            if (expected == Oracle(buildAfterClose: true))
+                continue;
+            found = true;
+            var game = TwoManagers(seed, level: 5);
+            Call(game, "RunSummerDay", counter);
+            Assert.Equal(expected, Signature(game));
+        }
+        Assert.True(found, "keine Saat gefunden, bei der die Reihenfolge des Baus sichtbar wird");
+    }
+
     /// <summary>
     /// Mehrsaisonprobe (4 Saisonwechsel, passiv/aktiv, zwei Manager, Geld), Level 5: Schäden treten auf (Stufe oder Plätze sinken ohne
     /// Bau, mit Meldung, soweit der Nachrichtenspeicher Platz hat), Plätze bleiben ≥ 0, zwei gleiche Läufe ergeben denselben Abdruck und dieselben Kontostände. Vor Teil 2
