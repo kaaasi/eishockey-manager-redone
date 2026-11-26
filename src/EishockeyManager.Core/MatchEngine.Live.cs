@@ -91,8 +91,11 @@ public static partial class MatchEngine
         public MatchRules Rules { get; init; }
         public LiveScoreboardRow? Row { get; init; }
 
-        /// <summary>Live-Anzeige am Spieltag (DGROUP 0x5A56) beim Anlegen dieser Paarung.</summary>
-        public bool DayActive { get; init; }
+        /// <summary>
+        /// Live-Anzeige am Spieltag (DGROUP 0x5A56). Beim Anlegen der Stand bis zu dieser Paarung; im Minutenschritt setzt
+        /// <see cref="LiveMatchDay.Begin"/> nach der Vorbereitung aller Paarungen den Wert des ganzen Ablaufs (R26-G1).
+        /// </summary>
+        public bool DayActive { get; set; }
 
         public bool Forfeit { get; init; }
         public MatchReport? Report { get; set; }

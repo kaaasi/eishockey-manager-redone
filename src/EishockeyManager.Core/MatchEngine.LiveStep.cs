@@ -202,10 +202,22 @@ public sealed class LiveMatchDay
         }
         // A909: [ORIGINAL] 0x544C0 läuft für alle Paarungen vor der Minutenschleife und setzt die Live-Anzeige des Tages (DGROUP
         // 0x5A56, Datei 0x54C63–0x54C94); das Ziel der Tormeldung steht damit für alle Paarungen erst nach der Vorbereitung fest.
+        // R26-G1: [ORIGINAL] Strafgrund (Datei 0x35C1C–0x35C7B → 0x52520, Rückkehr bei 0x5A56 = 0 in Datei 0x5252A) und
+        // Verletzungsregister (Datei 0x5419A) lesen in den Minuten diesen Tageswert, nicht den Stand bei der Vorbereitung
+        // der eigenen Paarung; auch Paarungen vor der ersten Reihe. Mit Dauer-Eisfeld ist 0x5A56 in den Minuten 0
+        // (A472, Datei 0x3710B–0x37171): das Register gilt dann ohne Anzeige, der Strafgrund prüft das Eisfeld selbst
+        // (OriginalMinutes.PenaltyReason).
+        var dayActive = game.LiveScoreboard is { } board && board.Season == game.Season && board.Day == game.Day && board.Active;
         foreach (var match in list)
         {
-            if (match.Stepped)
-                match.Notice = MatchEngine.NoticeTarget(match.Setup);
+            if (!match.Stepped)
+                continue;
+            match.Setup.DayActive = dayActive;
+            if (match.Setup.HomeTeam.TurnManager is { } register)
+                register.LiveDisplay = dayActive && !OriginalMinutes.PermanentRink(game.Options);
+            if (match.Setup.AwayTeam.TurnManager is { } awayRegister)
+                awayRegister.LiveDisplay = dayActive && !OriginalMinutes.PermanentRink(game.Options);
+            match.Notice = MatchEngine.NoticeTarget(match.Setup);
         }
         return new LiveMatchDay(game, list);
     }
