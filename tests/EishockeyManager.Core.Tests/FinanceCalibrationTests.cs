@@ -232,8 +232,12 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                 var moneyAtStart = manager.Money;
                 var stadium = game.Finance(manager).Stadium;
                 var costLeague = game.Finance(manager).CostLeague;
-                var fixedPerMonth = FinanceRules.ToMarks(ExpectedBaseExpenseThirds(manager.Level, costLeague))
-                                    + FinanceRules.ToMarks(ExpectedUpkeepThirds(stadium));
+                // Spur tagesabschluss Teil 2 (R26-E1 = B, R15-E2 = C): Die Stadionschäden 0x3CFA0 (Datei 0x3D330) senken Stufen und
+                // Plätze im Lauf der Saison, also auch den Unterhalt. Die Spanne des Unterhalts folgt dem kleinsten und größten
+                // Stadion nach jedem Schritt (ohne Schaden und Ausbau wie bisher genau der Unterhalt des Startstadions).
+                long upkeepMin = ExpectedUpkeepThirds(stadium), upkeepMax = upkeepMin;
+                long FixedPerMonth(long upkeep) => FinanceRules.ToMarks(ExpectedBaseExpenseThirds(manager.Level, costLeague))
+                                                   + FinanceRules.ToMarks(upkeep);
                 var wagesPerMonth = club.Players.Sum(p => (long)p.MonthlySalary);
                 long minTickets = 0, maxTickets = 0;
                 var settledHomeGames = 0;
@@ -269,6 +273,8 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                     var price = stadium.TicketPrice;
                     var capacity = stadium.Capacity;
                     game.Continue();
+                    upkeepMin = Math.Min(upkeepMin, ExpectedUpkeepThirds(stadium));
+                    upkeepMax = Math.Max(upkeepMax, ExpectedUpkeepThirds(stadium));
                     shortHandedSeen |= game.IsShortHanded(club);
                     maxRoster = Math.Max(maxRoster, club.Players.Count);
                     minRoster = Math.Min(minRoster, club.Players.Count);
@@ -329,7 +335,7 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                     Assert.Equal(0, maxContracts);
                     var minSponsors = MonthEnds * FinanceRules.ToMarks(5L * minRoster * 4);
                     Assert.True(sponsors >= minSponsors, $"Sponsoren {sponsors} unter {minSponsors}");
-                    Assert.Equal(-MonthEnds * fixedPerMonth, InSeason(FinanceCategory.Unterhalt));
+                    Assert.InRange(InSeason(FinanceCategory.Unterhalt), -MonthEnds * FixedPerMonth(upkeepMax), -MonthEnds * FixedPerMonth(upkeepMin));
                     Assert.Equal(-MonthEnds * wagesPerMonth, InSeason(FinanceCategory.Gehaelter));
                     // Spur heimspiel-statistik (#136): Mit gehaltenem Kader rutscht der passive Oberligist ab Saison 3 ins Minus;
                     // dann fallen Überziehungszinsen an (0x3ED4F: 10 % des negativen Kontos je Monat, höchstens zwölf Monate).
@@ -339,12 +345,12 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                         Assert.True(InSeason(category) == 0,
                             $"{category} = {InSeason(category)} beim passiven Manager");
                     // Kontokorridor der Saison aus den Spannen oben.
-                    var fixedCosts = MonthEnds * (fixedPerMonth + wagesPerMonth);
-                    Assert.InRange(total - interest, minTickets + minSponsors - fixedCosts, maxTickets + maxSponsors + PossiblePremiums.Max() - fixedCosts);
+                    Assert.InRange(total - interest, minTickets + minSponsors - MonthEnds * (FixedPerMonth(upkeepMax) + wagesPerMonth),
+                        maxTickets + maxSponsors + PossiblePremiums.Max() - MonthEnds * (FixedPerMonth(upkeepMin) + wagesPerMonth));
                 }
                 else
                 {
-                    Assert.True(InSeason(FinanceCategory.Unterhalt) <= -MonthEnds * fixedPerMonth, "Unterhalt nach Ausbau nicht kleiner");
+                    Assert.True(InSeason(FinanceCategory.Unterhalt) <= -MonthEnds * FixedPerMonth(upkeepMin), "Unterhalt nach Ausbau nicht kleiner");
                     foreach (var category in Enum.GetValues<FinanceCategory>().Except([FinanceCategory.Eintritt, FinanceCategory.Sponsoren, FinanceCategory.Praemien]))
                         Assert.True(InSeason(category) - 0 <= 0,
                             $"{category} = {InSeason(category)} beim aktiven Manager");
@@ -357,6 +363,7 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                 // „Weniger als neun Spieler“ (200.000 DM je Spiel) führt zur Entlassung.
                 if (!active)
                     TestSeason.KeepSquad(game, manager);
+                var upkeepBeforeSummer = ExpectedUpkeepThirds(stadium);
                 game.StartNextSeason();
                 var summerWages = FinanceRules.MonthlyWages(game, club); // Kader der Sommerpause, vor dem Auffüllen unten
                 // Integration Runde 11 (Entscheidung Nutzer, C): Kader des passiven Managers zu Saisonbeginn spielfähig halten
@@ -376,12 +383,13 @@ public class FinanceCalibrationTests(ITestOutputHelper output)
                 summerBook = [.. Enum.GetValues<FinanceCategory>().Select(c => finance.Current(c))];
                 summerTotal = finance.CurrentTotal;
                 Assert.Equal(-4 * summerWages, finance.Current(FinanceCategory.Gehaelter));
-                var summerFixed = FinanceRules.ToMarks(ExpectedBaseExpenseThirds(manager.Level, game.Finance(manager).CostLeague))
-                                  + FinanceRules.ToMarks(ExpectedUpkeepThirds(stadium));
+                long SummerFixed(long upkeep) => FinanceRules.ToMarks(ExpectedBaseExpenseThirds(manager.Level, game.Finance(manager).CostLeague))
+                                                 + FinanceRules.ToMarks(upkeep);
                 if (active)
                     Assert.True(finance.Current(FinanceCategory.Unterhalt) < 0, "Unterhalt der Sommerpause"); // Ausbau kann im Sommer fertig werden
-                else
-                    Assert.Equal(-4 * summerFixed, finance.Current(FinanceCategory.Unterhalt));
+                else // Stadionschäden der Sommerpause (Datei 0x564F5–0x5650D → 0x3D316 → 0x3CFA0): zwischen Stand vor und nach ihr
+                    Assert.InRange(finance.Current(FinanceCategory.Unterhalt), -4 * SummerFixed(upkeepBeforeSummer),
+                        -4 * SummerFixed(ExpectedUpkeepThirds(stadium)));
                 Assert.Equal(0, finance.Current(FinanceCategory.Eintritt));
                 Assert.Equal(0, finance.Current(FinanceCategory.Praemien));
                 // Spur kader (#698): ab 1995 bis zu zwei Junioren je Saisonende (0x26F20).

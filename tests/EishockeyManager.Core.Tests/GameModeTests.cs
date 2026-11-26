@@ -341,6 +341,9 @@ public class GameModeTests
     /// derselben Liga; in den Spielwertungen 2–30 (Manager 1 nicht spielfähig) zieht Manager 0 jetzt vor dem Eintrag Zuschauer und
     /// eingespielte Reihen (0x544C0 bis Datei 0x547AA) statt der Zuschauer erst in der Abrechnung. Saisons 1–3 unverändert;
     /// Gegenprobe ohne <c>PrepareForfeitGate</c>: alter Abdruck.
+    /// Runde 26, Spur tagesabschluss (#1018, SG-01): alle Werte neu – Tagesabschluss 0x3ED01 und Werbebewertung 0x3F833 je Manager
+    /// verschränkt (Datei 0x55217–0x55251; Baufirmen, Angebote und Bewertung von Manager 0, dann von Manager 1), Talentsuche danach
+    /// (Datei 0x5528A); anderer Zufallsverbrauch ab dem ersten Tag. Gegenprobe auf 56b7f7c: alter Abdruck.
     /// </summary>
     [Fact]
     public void Mode4_ReferenceValues_Unchanged()
@@ -504,8 +507,12 @@ public class GameModeTests
     // Spur saison-geld Teil 2 (Runde 25, F06/F08, R21-D2 = A, R15-E2 = C): neu – Baufirmen 11 Würfe je Manager und Tag (A512, Datei
     // 0x3ED19–0x3ED48), Sommerpause je Manager verschränkt (A526, Datei 0x564D2–0x56593), Banden je Feld (A888, 0x3E657); anderer
     // Zufallsverlauf ab dem ersten Tagesabschluss. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von eaf8621 → alte Werte.
+    // Spur tagesabschluss Teil 2 (Runde 26, R26-E1 = B, R21-D2 = A, R15-E2 = C): neu – die wöchentlichen Stadionschäden 0x3CFA0
+    // (Datei 0x3D330) würfeln je Manager und Bautag random(0, 2·d + 8) (Datei 0x3CFC5) und bei 0 je Projekt weiter; anderer
+    // Zufallsverlauf ab dem ersten Bautag, Stufen und Plätze können sinken. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von 36323e2 → alte Werte.
     internal const string Mode4Reference =
-        "WorldChampion=54,CupWinner=19,GermanChampion=1,EuropeanCupWinner=2|1100000,400000|WorldChampion=52,CupWinner=12,GermanChampion=4,EuropeanCupWinner=1|2506736,400000|WorldChampion=52,CupWinner=17,GermanChampion=17,EuropeanCupWinner=4|2718075,500000|WorldChampion=63,CupWinner=17,GermanChampion=17,EuropeanCupWinner=17|2735736,500000|WorldChampion=54,CupWinner=16,GermanChampion=16,EuropeanCupWinner=17|2443437,500000|R360091148";
+        "WorldChampion=63,CupWinner=16,GermanChampion=1,EuropeanCupWinner=2|1100000,400000|WorldChampion=52,CupWinner=10,GermanChampion=1,EuropeanCupWinner=1|2456064,400000|WorldChampion=52,CupWinner=14,GermanChampion=3,EuropeanCupWinner=1|2570172,400000|WorldChampion=52,CupWinner=12,GermanChampion=15,EuropeanCupWinner=3|2301108,400000|WorldChampion=52,CupWinner=5,GermanChampion=6,EuropeanCupWinner=3|2195537,400000|R2062587506";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

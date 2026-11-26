@@ -303,8 +303,12 @@ public class JugendTeamsTests
     // Spur saison-geld Teil 2 (Runde 25, F06/F08, R21-D2 = A, R15-E2 = C): neu – Baufirmen 11 Würfe je Manager und Tag (A512, Datei
     // 0x3ED19–0x3ED48), Sommerpause je Manager verschränkt (A526, Datei 0x564D2–0x56593), Banden je Feld (A888, 0x3E657); anderer
     // Zufallsverlauf ab dem ersten Tagesabschluss. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von eaf8621 → alte Werte.
+    // Spur tagesabschluss Teil 2 (Runde 26, R26-E1 = B, R21-D2 = A, R15-E2 = C): neu – die wöchentlichen Stadionschäden 0x3CFA0
+    // (Datei 0x3D330) würfeln je Manager und Bautag random(0, 2·d + 8) (Datei 0x3CFC5) und bei 0 je Projekt weiter; anderer
+    // Zufallsverlauf ab dem ersten Bautag, Stufen und Plätze können sinken. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von 36323e2 → alte Werte.
     private const string ExpectedActive =
-        "0:Schueler:2/11/70;0:Jugend:2/11/68;0:Junioren:2/11/65;1:Schueler:1/11/77;1:Jugend:1/11/77;1:Junioren:1/11/77;2:Schueler:1/6/81;2:Jugend:1/6/81;2:Junioren:1/6/81;3:Schueler:1/6/82;3:Jugend:1/6/84;3:Junioren:1/6/83";
+        "0:Schueler:2/11/59;0:Jugend:2/11/63;0:Junioren:2/11/68;1:Schueler:1/12/71;1:Jugend:1/12/69;1:Junioren:1/11/73;2:Schueler:1/6/77;2:Jugend:1/6/79;2:Junioren:1/6/78;3:Schueler:1/6/83;3:Jugend:1/6/83;3:Junioren:1/6/81";
     // kader-start Teil 2 (U15-a, L13): neu, siehe oben.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     // Review #662 (R14NT-01, Leitstelle Runde 14): neu – der passive Bundesligist wird Bundestrainer; nach der Ernennung läuft die
@@ -409,8 +413,12 @@ public class JugendTeamsTests
     // Spur saison-geld Teil 2 (Runde 25, F06/F08, R21-D2 = A, R15-E2 = C): neu – Baufirmen 11 Würfe je Manager und Tag (A512, Datei
     // 0x3ED19–0x3ED48), Sommerpause je Manager verschränkt (A526, Datei 0x564D2–0x56593), Banden je Feld (A888, 0x3E657); anderer
     // Zufallsverlauf ab dem ersten Tagesabschluss. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von eaf8621 → alte Werte.
+    // Spur tagesabschluss Teil 2 (Runde 26, R26-E1 = B, R21-D2 = A, R15-E2 = C): neu – die wöchentlichen Stadionschäden 0x3CFA0
+    // (Datei 0x3D330) würfeln je Manager und Bautag random(0, 2·d + 8) (Datei 0x3CFC5) und bei 0 je Projekt weiter; anderer
+    // Zufallsverlauf ab dem ersten Bautag, Stufen und Plätze können sinken. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von 36323e2 → alte Werte.
     private const string ExpectedPassive =
-        "0:Schueler:1/6/69;0:Jugend:2/2/65;0:Junioren:2/2/66;1:Schueler:2/2/55;1:Jugend:3/2/51;1:Junioren:3/2/53;2:Schueler:3/2/47;2:Jugend:3/6/45;2:Junioren:3/6/44;3:Schueler:3/6/41;3:Jugend:3/6/41;3:Junioren:3/6/40";
+        "0:Schueler:2/2/69;0:Jugend:2/2/69;0:Junioren:1/6/71;1:Schueler:2/6/59;1:Jugend:3/2/56;1:Junioren:2/2/58;2:Schueler:2/6/49;2:Jugend:3/6/50;2:Junioren:3/2/50;3:Schueler:3/2/43;3:Jugend:3/6/42;3:Junioren:3/6/42";
 }
 
 public class JugendTeamsMigrationTests

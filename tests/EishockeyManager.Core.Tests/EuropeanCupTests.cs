@@ -256,7 +256,8 @@ public class EuropeanCupTests
     [Fact]
     public void MultiSeasonProbe_FourSeasonChanges_PassiveAndActiveManager()
     {
-        var game = Create(8, true, EuropeanCup.InitialChampion, 7);
+        // Spur tagesabschluss Teil 2 (Runde 26, R26-E1 = B, R21-D2 = A, R15-E2 = C): Saat 9 statt 8 – die wöchentlichen Stadionschäden 0x3CFA0 (Datei 0x3D330) würfeln je Manager und Bautag mindestens random(0, 2·d + 8) (Datei 0x3CFC5), anderer Zufallsverlauf ab dem ersten Bautag; bei Saat 8 sperrt ein Schaden die 9 Sitzplätze des passiven Managers (Datei 0x3D083–0x3D0C0), die Probe rechnet den Eintritt aber mit fester Kapazität; unter 9–15 nur 14 ebenso. Die Probe hängt an der Saat.
+        var game = Create(9, true, EuropeanCup.InitialChampion, 7);
         var passive = game.Managers[0];
         var active = game.Managers[1];
         foreach (var manager in game.Managers)

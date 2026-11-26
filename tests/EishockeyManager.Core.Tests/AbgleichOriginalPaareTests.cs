@@ -54,6 +54,17 @@ public class AbgleichOriginalPaareTests
     private static readonly Known[] SeasonStart = [new("Invariante.PoolMittel.Strain", NoOriginalField)];
 
     /// <summary>
+    /// Zufall, kein Befund (Spur tagesabschluss Teil 2, R26-E1 = B): wöchentliche Stadionschäden 0x3CFA0 (Datei 0x3D330; je Woche und
+    /// Manager etwa 1 % bei Level 3) – über eine Sommerpause bei manchen Saaten eine Stufe oder Plätze weniger als im Original.
+    /// </summary>
+    private static readonly Known[] StadiumDamage =
+    [
+        new("Managers[*].FinanceData.Stadium._levels[*]", Chance, Optional: true),
+        new("Managers[*].FinanceData.Stadium.Seats", Chance, Optional: true),
+        new("Managers[*].FinanceData.Stadium.Standing", Chance, Optional: true),
+    ];
+
+    /// <summary>
     /// Obergrenze der Belastung am Spielstand: Seit #730 (abgleich-fix, Training begrenzt vorzeichenbehaftet, 0x4BD56 `cbw`) steigt
     /// sie mit den Einsätzen bis über 127 und fällt beim nächsten Training auf 50; an allen Paaren und Prüfsaaten liegt das Remake
     /// bei höchstens 127. Ein Remake, in dem die Belastung nicht mehr auf 50 fällt, läuft bis 150 und wird rot (Review B1).
@@ -163,7 +174,7 @@ public class AbgleichOriginalPaareTests
             // AbgleichFixWorldOnlyTests); Gehalt, Preis und Konto durch abgleich-rest Teil 3 (Import des Kaders von Satz 0,
             // Tagesabschluss für Satz 0 in Sommerpause und WM-Schleife; AbgleichRestWorldOnlyTests). Teamwerte des Managervereins
             // (Original leer) seit #747 (abgleich-fix) auch im Remake leer.
-            ["FILE20→FILE21"] = [.. SeasonStart,
+            ["FILE20→FILE21"] = [.. SeasonStart, .. StadiumDamage,
                 // Form und Belastung der Spieler, die zugleich im Nationalkader stehen (je nach Saat andere, Remake Belastung 70).
                 new($"{Landshut}.Players[*].Form", NationalValueSet, Optional: true),
                 new($"{Landshut}.Players[*].Strain", NationalValueSet, Optional: true)],
@@ -186,7 +197,7 @@ public class AbgleichOriginalPaareTests
             ["FILE39→FILE40"] = [StrainSawtooth("5 KÖLNER EC")],
             // Formwerte KÖLN (#738) behoben durch abgleich-fix (Handbetrieb ohne Nachrücken, Import ohne Reihenspieler ohne
             // „eingesetzt“). Platz 196 KJELLBERG (#749) behoben durch abgleich-fix (Import: Besitzer Manager ohne Kader = vergeben).
-            ["FILE44→FILE46"] = [.. SeasonStart],
+            ["FILE44→FILE46"] = [.. SeasonStart, .. StadiumDamage],
             // „nur Weltkugel“: Teamwerte nicht mehr neu gewürfelt (#747 behoben durch abgleich-fix).
             ["FILE18→FILE48"] = [],
             // DOSBox-Aufnahme `runde-17` (#730, Spur abgleich-dosbox Teil 1): 1. Spieltag aus FILE02 im Live-Spiel ohne Mausklick

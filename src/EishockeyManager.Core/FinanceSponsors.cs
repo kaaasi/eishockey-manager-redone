@@ -293,34 +293,15 @@ public sealed partial class GameState
     }
 
     /// <summary>
-    /// Tagesabschluss der Werbung ([ORIGINAL] 0x3EE6B): am Monatsletzten und zur Monatsmitte neue Angebote (#133).
+    /// Tagesabschluss der Werbung eines Managers ([ORIGINAL] 0x3EE6B): am Monatsletzten und zur Monatsmitte neue Angebote (#133);
+    /// je Manager verschränkt (<see cref="DayClose"/>; Sommerpause A526, Hauptweg und WM-Schleife #1018).
     /// </summary>
-    private void DailySponsorOffers(DateOnly date)
-    {
-        if (!SponsorRules.IsOfferDay(date))
-            return;
-        foreach (var manager in Managers)
-            DailySponsorOffers(date, manager);
-    }
-
-    /// <summary>Werbeangebote eines Managers im Tagesabschluss 0x3EE6B (Sommerpause je Manager verschränkt, Spur saison-geld A526).</summary>
     private void DailySponsorOffers(DateOnly date, Manager manager)
     {
         if (!SponsorRules.IsOfferDay(date))
             return;
         RefreshSponsorOffers(manager, noDice: false);
         RollTalentSearchPrice(manager); // [ORIGINAL] Datei 0x3EEAB, direkt nach 0x3FB47(0) (Spur geld, Teil 6)
-    }
-
-    /// <summary>
-    /// Nach jedem Tagesabschluss: Bewertung aller Manager neu speichern ([ORIGINAL] 0x5569F nach 0x100:0x4D). Vorher die
-    /// Platzfelder der gespielten Ligaspieltage sichern (<see cref="RecordRankSlots"/>, Spur geld Teil 2).
-    /// </summary>
-    private void DailySponsorRatings()
-    {
-        RecordRankSlots();
-        foreach (var manager in Managers)
-            UpdateSponsorRating(manager);
     }
 
     /// <summary>

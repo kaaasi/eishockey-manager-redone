@@ -113,7 +113,25 @@ Ablauf ab Auswahl eines Projekts `p` (0–10), Datei 0x3DE71–0x3E490:
 Aufruf aus dem Tagesablauf Datei 0x54C9F je menschlichem Manager, wenn Tageszähler `DGROUP 0x3B7` durch 7 teilbar ist
 (Datei 0x552B5–0x552C3, 0x556B5–0x556CD, 0x564F5–0x5650D). Je Projekt p = 0–10 mit Restwochen > 0: −1; erreicht es 0:
 Stufe = Zielstufe, Zielstufe = 0 (Teile) bzw. Plätze = Zielplätze, Zielplätze = 0. Dann Meldung „Der Stadion-Ausbau (Name)
-ist abgeschlossen.“ (`DGROUP 0xDE8`, `0xDEC`) über `120h:34h`. Vorher ruft sie Datei 0x3CFA0 (umgesetzt).
+ist abgeschlossen.“ (`DGROUP 0xDE8`, `0xDEC`) über `120h:34h`. Vorher ruft sie die Stadionschäden Datei 0x3CFA0 (Datei 0x3D330, folgender Abschnitt; bis Runde 26 fehlten sie im Remake,
+obwohl hier „umgesetzt“ stand).
+
+### Datei 0x3CFA0 – Stadionschäden (wöchentlich)
+
+Nachbildung `tools/reverse-engineering/tagesabschluss/stadionschaeden.py` (Spur tagesabschluss Teil 2, R26-E1 = B). d = DGROUP
+0xED8 (5 − Level), Liga = DGROUP 0x9746 + 0x1AF · Manager (0 = Bundesliga); alle Würfe random(a, b) mit beiden Grenzen:
+
+1. random(0, 2·d + 8) ≠ 0 → Ende (Datei 0x3CFC5).
+2. Je Projekt p = 0 … 10: Chancenwurf random(0, N) < 20 · (5 − d), N = 5000 für die Bereiche (Datei 0x3D21E), 2500 für
+   Sitzkomfort und Zustand (Datei 0x3D173), 3000 für Sitz- und Stehplätze (Datei 0x3D003); Kühlanlage und Verkehrsanbindung
+   (p = 2, 5) nur bei d = 0. Trifft er: random(1, 3) > Liga, dann Stufe bzw. Plätze ≠ 0; sonst nächstes Projekt.
+3. Bereich: Stufe − 1, Meldung „Der Zahn der Zeit nagt auch an IHREM Stadion...“ / „Er knabberte etwas an Ihre(r|m) <Name>.“
+   (Sitzkomfort und Zustand: „Ihre Fans sind einfach zu stürmisch...“ mit eigener zweiter Zeile). Plätze:
+   ((random(P / 20, P / 6) + 150) / 100) · 100 gesperrt, „Der DEB hat die Sicherheit Ihres Stadions gerügt !“ / „n Sitzplätze
+   wurden gesperrt.“ (Zahl mit Tausenderpunkt). Danach Ende – höchstens ein Schaden je Woche. Keine Kosten.
+
+Remake: `Core/FinanceStadiumDamage.cs` (`StadiumDamageRules.Draw`), zu Beginn jedes Stadionbaus; im Hauptweg je Manager nach
+dessen Tageslauf 0x07169 (Datei 0x552A6–0x552C3, `MainPathDailyRunAndBuild`).
 
 ### Datei 0x3E52B – Kostenzeile
 

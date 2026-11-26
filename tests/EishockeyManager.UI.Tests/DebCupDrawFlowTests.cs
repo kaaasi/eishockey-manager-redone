@@ -357,6 +357,10 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // Runde 25, Spur saison-geld Teil 3 (K11, R21-D2 = A, R15-E2 = C): neu ab 1994 – Torwürfe der Poolspieler mit dem gewürfelten
     // Rollenwert Pool +0x18 (Datei 0x5B3BB–0x5B49D, 0x5077–0x52CB), zugleich Rebase auf main 90d8394 (aufstellung); mit und ohne Anzeige
     // weiter gleich. Rückschaltprobe: src/ von 395a8f8 → andere Referenz (rot).
+    // Spur tagesabschluss Teil 2 (Runde 26, R26-E1 = B, R21-D2 = A, R15-E2 = C): neu – die wöchentlichen Stadionschäden 0x3CFA0
+    // (Datei 0x3D330) würfeln je Manager und Bautag random(0, 2·d + 8) (Datei 0x3CFC5) und bei 0 je Projekt weiter; anderer
+    // Zufallsverlauf ab dem ersten Bautag, Stufen und Plätze können sinken. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von 36323e2 → alte Werte.
     private const string Reference =
-        "1993: DEB 8, DM 1, Tab 15504 | 1994: DEB 0, DM 8, Tab 16011 | 1995: DEB 9, DM 5, Tab 16327 | 1996: DEB 5, DM 4, Tab 16420";
+        "1993: DEB 5, DM 8, Tab 15629 | 1994: DEB 10, DM 5, Tab 16026 | 1995: DEB 10, DM 2, Tab 15370 | 1996: DEB 2, DM 23, Tab 15301";
 }

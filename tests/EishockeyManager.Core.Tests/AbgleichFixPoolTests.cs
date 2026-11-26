@@ -69,7 +69,8 @@ public class AbgleichFixPoolTests
     [InlineData(true)]
     public void File44_FourSeasonChanges_PoolMeansStable(bool active)
     {
-        var game = Import("FILE44.HOK", 3);
+        // Spur tagesabschluss Teil 2 (Runde 26, R26-E1 = B, R21-D2 = A, R15-E2 = C): Saat 4 statt 3 – die wöchentlichen Stadionschäden 0x3CFA0 (Datei 0x3D330) würfeln je Manager und Bautag mindestens random(0, 2·d + 8) (Datei 0x3CFC5), anderer Zufallsverlauf ab dem ersten Bautag; bei Saat 3 (aktiv) steigt ein Pool-Mittel an einem Wechsel um 6,8 (36,4 → 43,2, Schwelle 5), unter 4–11 scheitert nur 7 – Eigenschaft der Probe wie oben, kein systematischer Zuwachs. Die Probe hängt an der Saat.
+        var game = Import("FILE44.HOK", 4);
         var manager = game.Managers[0];
         for (var season = 0; season < 4; season++)
         {

@@ -373,6 +373,7 @@ public class FinanceWerbungTests
         var bookings = 0;
         var signed = 0;
         var negotiated = 0;
+        var damaged = false;
 
         RngTwinProbeTests.Run(game, active, g =>
         {
@@ -388,11 +389,15 @@ public class FinanceWerbungTests
             }
             (lastDay, lastSeason, lastSponsors) = (g.FinanceDay, g.Season, sponsors);
 
+            // Spur tagesabschluss Teil 2 (R26-E1 = B, R15-E2 = C): Die Stadionschäden 0x3CFA0 (Datei 0x3D330) können HALLE bzw.
+            // MEGAFROST um eine Stufe senken; ein Vertrag auf der Eisfläche läuft dann weiter (Annahme prüft die Fläche, die Laufzeit
+            // nicht). Die Fläche wird deshalb nur geprüft, solange beide Stufen nie gesunken sind.
+            damaged |= active && (finance.Stadium.Level(StadiumFeature.Ueberdachung) < 2 || finance.Stadium.Level(StadiumFeature.Kuehlanlage) < 2);
             foreach (var contract in finance.Sponsoring.Contracts)
             {
                 Assert.True(contract.MonthsLeft >= 0);
                 Assert.True(contract.MonthsLeft > 0 || contract.OptionMonths > 0, "abgelaufener Vertrag ohne Option");
-                Assert.True(g.IsAdSlotAvailable(me, new AdSlot(contract.Kind, contract.Boards.FirstOrDefault())));
+                Assert.True(damaged || g.IsAdSlotAvailable(me, new AdSlot(contract.Kind, contract.Boards.FirstOrDefault())));
             }
             if (!active)
                 return;

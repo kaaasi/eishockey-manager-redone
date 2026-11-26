@@ -327,8 +327,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Spur saison-geld Teil 3 (Runde 25, K11, R21-D2 = A, R15-E2 = C): neu – Rollenwert Pool +0x18 als Feld (Player.RoleValue, Datei
     // 0x5B3BB–0x5B49D), Torwürfe der Poolspieler mit dem gewürfelten Wert (Datei 0x5077–0x52CB); zugleich Rebase auf main 90d8394
     // (aufstellung). Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von 395a8f8 (Teil 2 auf main) → andere Werte.
-    [InlineData(false, "FC829CC80C34E185")]
-    [InlineData(true, "E28514E7CAAF1433")]
+    // Spur tagesabschluss Teil 2 (Runde 26, R26-E1 = B, R21-D2 = A, R15-E2 = C): neu – die wöchentlichen Stadionschäden 0x3CFA0
+    // (Datei 0x3D330) würfeln je Manager und Bautag random(0, 2·d + 8) (Datei 0x3CFC5) und bei 0 je Projekt weiter; anderer
+    // Zufallsverlauf ab dem ersten Bautag, Stufen und Plätze können sinken. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von 36323e2 → alte Werte.
+    [InlineData(false, "18E3BF599E483A9A")]
+    [InlineData(true, "D1B8EB139E37C937")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -431,8 +435,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Spur saison-geld Teil 2 (Runde 25, F06/F08, R21-D2 = A, R15-E2 = C): neu – Baufirmen 11 Würfe je Manager und Tag (A512, Datei
     // 0x3ED19–0x3ED48), Sommerpause je Manager verschränkt (A526, Datei 0x564D2–0x56593), Banden je Feld (A888, 0x3E657); anderer
     // Zufallsverlauf ab dem ersten Tagesabschluss. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von eaf8621 → alte Werte.
+    // Spur tagesabschluss Teil 2 (Runde 26, R26-E1 = B, R21-D2 = A, R15-E2 = C): neu – die wöchentlichen Stadionschäden 0x3CFA0
+    // (Datei 0x3D330) würfeln je Manager und Bautag random(0, 2·d + 8) (Datei 0x3CFC5) und bei 0 je Projekt weiter; anderer
+    // Zufallsverlauf ab dem ersten Bautag, Stufen und Plätze können sinken. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von 36323e2 → alte Werte.
     private const string WorldOnlyReference =
-        "WorldChampion=63|500000|WorldChampion=52|-1519287|WorldChampion=53|-4527595|WorldChampion=63|-9187410|WorldChampion=52|-16408084|R1420374789";
+        "WorldChampion=54|500000|WorldChampion=63|-1523793|WorldChampion=52|-4543809|WorldChampion=53|-9183673|WorldChampion=52|-16371873|R747929484";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem

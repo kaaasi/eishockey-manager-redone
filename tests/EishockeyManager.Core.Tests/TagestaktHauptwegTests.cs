@@ -203,7 +203,10 @@ public class TagestaktHauptwegTests
         // Platztausch ändern den Zufallsverbrauch; bei 8 und 10 fehlt dieselbe Vorbedingung. Unter 1–16 erfüllen 1, 3, 4, 7, 9, 11, 14, 15.
         // Spur einzelpunkte Fixlauf Rebase auf main 21f341a (R21-D2 = A, R15-E2 = C): Saaten 5/6 statt 3/4 – mit dem Zufallsverlauf nach A665/A582 fehlt bei 3 und 4 dieselbe
         // Vorbedingung (kein Angebot auf den Markt-Platz von Manager 0 in der WM-Schleife); unter 1–16 erfüllen einzeln 5, 6, 8, 14, 15. Rückschaltprobe: src/ von 21f341a mit 5/6 ebenfalls grün (nur Saatwechsel) – die Probe hängt an der Saat.
-        foreach (var seed in new[] { 5, 6 })
+        // Runde 26, Spur tagesabschluss (#1018, SG-01, R15-E2 = C): Saaten 4/6 statt 5/6 – mit dem Tagesabschluss je Manager (Datei
+        // 0x55217–0x55251) fehlt bei 5 dieselbe Vorbedingung (Markt nach der Vereinssaison voll); unter 1–16 erfüllen einzeln 1–4, 6,
+        // 8, 9, 13–16. Rückschaltprobe: src/ von 56b7f7c mit 4/6 grün (nur Saatwechsel) – die Probe hängt an der Saat.
+        foreach (var seed in new[] { 4, 6 })
         {
             var second = Enumerable.Range(0, 200).First(i => NewGame.DatabaseLeague(i) == League.ZweiteLiga);
             var game = GameModeTests.Create(seed, true, true, 2, second);

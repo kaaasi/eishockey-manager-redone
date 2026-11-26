@@ -136,16 +136,10 @@ public sealed partial class GameState
     }
 
     /// <summary>
-    /// Täglicher Zinslauf: (Zinsertrag [2 % Manager, 1 % Sparbuch] − Kreditzinsen − 10 % eines negativen
-    /// Kontostands) / (Tage des Monats + 1) in Drittel-DM aufs Zinskonto. [ORIGINAL] 0x3ED4F–0x3EE6B.
+    /// Täglicher Zinslauf eines Managers (Teil des Tagesabschlusses 0x3ED01 je Manager, <see cref="DayClose"/>): (Zinsertrag
+    /// [2 % Manager, 1 % Sparbuch] − Kreditzinsen − 10 % eines negativen Kontostands) / (Tage des Monats + 1) in Drittel-DM aufs
+    /// Zinskonto. [ORIGINAL] 0x3ED4F–0x3EE6B.
     /// </summary>
-    private void AccrueDailyInterest(DateOnly date)
-    {
-        for (var i = 0; i < Managers.Count; i++)
-            AccrueDailyInterest(date, i);
-    }
-
-    /// <summary>Zinslauf eines Managers (Teil des Tagesabschlusses 0x3ED01 je Manager; Sommerpause, Spur saison-geld A526).</summary>
     private void AccrueDailyInterest(DateOnly date, int i)
     {
         var days = DateTime.DaysInMonth(date.Year, date.Month) + 1;
