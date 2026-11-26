@@ -146,7 +146,9 @@ public static partial class OriginalMinutes
     /// <see cref="PenaltyReason"/>) und der Merker „Manager am Zug“ bei einer Verletzung (Datei 0x5419A,
     /// <see cref="TurnManagerRegister.LiveDisplay"/>). Die Szenenwahl läuft weiter (Modus <c>2 · [0x5A55]</c>, Datei 0x53F75).
     /// [APPROX] Den Rückfall bei zu wenig Speicher (Abspieler Modus 1 gibt 0 zurück, Datei 0x37150–0x37171) kennt das Remake
-    /// nicht; Darstellung 2 baut immer auf.
+    /// nicht; Darstellung 2 baut immer auf. [APPROX] Ebenso prüft der Spielkern nicht, ob die Szenen-Dateien (<c>tore\</c>)
+    /// vorhanden sind: ohne sie zeigt die UI den Live-Bildschirm, der Kern läuft trotzdem wie mit Dauer-Eisfeld (Review
+    /// torszene-dauer R3; mit vollständigen Originaldaten nicht erreichbar).
     /// </summary>
     public static bool PermanentRink(GameOptions? options) => options?.LiveMode == GameOptions.PermanentRinkLiveMode;
 

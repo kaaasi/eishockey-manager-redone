@@ -106,6 +106,10 @@ public sealed class LiveMatchScreen : Screen
     /// <summary>
     /// Läuft der Spieltag auf dem Dauer-Eisfeld (Darstellung 2, A472)? [APPROX] Ohne Szenen-Dateien (<c>tore\</c>) zeigt das
     /// Remake den Live-Bildschirm wie bei Darstellung 1; das Original kennt nur den Rückfall bei zu wenig Speicher.
+    /// [APPROX] Der Spielkern (<see cref="OriginalMinutes.PermanentRink"/>) prüft dabei nur die Option: ohne <c>tore\</c> zieht er
+    /// trotz Reporter und Eingriffsmenü keinen Strafgrund und setzt den Merker „Manager am Zug“ wie ohne Live-Anzeige; das Original
+    /// setzt beim gescheiterten Aufbau 0x5A56 = 1 (<c>torszene_dauer.py</c> Ausgabe A „Aufbau scheitert“). Mit vollständigen
+    /// Originaldaten nicht erreichbar (Review torszene-dauer R3).
     /// </summary>
     public bool PermanentRink { get; }
 

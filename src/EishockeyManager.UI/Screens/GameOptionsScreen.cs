@@ -159,7 +159,9 @@ public sealed class GameOptionsScreen : Screen
                 options.Reports[index] ^= true;
                 break;
             case GoalScenesSwitch:
-                options.NextLiveMode();
+                // [ORIGINAL] Datei 0x2D349–0x2D35D: Wert 2 wird bei DGROUP 0x5A56 ≠ 0 sofort 0; 0x5A56 = 1 während eines
+                // Live-Spieltags, also aus dem Live-Bildschirm keine Darstellung 2 (Review torszene-dauer R1).
+                options.NextLiveMode(permanentRinkBlocked: _back is Live.LiveMatchScreen);
                 if (options.LiveMode == GameOptions.PermanentRinkLiveMode && !_newModeShown)
                 {
                     _newModeShown = true;

@@ -118,9 +118,10 @@ also keine Paarungsseite.
 
 ## 8. Randfälle des Originals
 
-- **Optionen mitten im Spiel auf 2** (Leertaste nur mit Live-Bildschirm): die Verlängerung setzt `0x5A55` = 1 ohne Aufbau
-  (Ausgabe A, letzter Fall) – Szenen in Modus 2 und Abbau Modus 3 mit nicht geladenen Bildern. Vorschlag Teil 2:
-  `[APPROX]` Aufbau nachholen statt Fehlerbild.
+- **Optionen mitten im Spiel auf 2** sind im Original nicht erreichbar: der Optionen-Bildschirm setzt Wert 2 bei
+  `DGROUP 0x5A56` ≠ 0 sofort auf 0 (Datei 0x2D349–0x2D35D), und während eines Live-Spieltags ist `0x5A56` = 1. Der Fall
+  „Verlängerung setzt `0x5A55` = 1 ohne Aufbau“ (Ausgabe A, letzter Fall) tritt daher nicht ein. Das Remake sperrt Darstellung 2
+  ebenso, wenn die Optionen aus dem Live-Spieltag geöffnet sind (`GameOptionsScreen`, Review R1).
 - **Szenenwahl −1** (50 Fehlversuche, nur bei fehlenden `tore\`-Dateien): Modus 2 gibt die Bilder frei und baut den
   Live-Bildschirm auf (Datei 0x56BC7 → 0x56E42), `0x5A55` bleibt 1. Mit vollständigen Daten nicht erreichbar.
 - **Zu wenig Speicher** beim Aufbau: Darstellung 0 bis zum Ende des Spieltags und dauerhaft (`0xE19C` = 0 wird zurück

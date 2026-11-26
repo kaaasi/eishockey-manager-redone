@@ -3,6 +3,7 @@ using EishockeyManager.Formats;
 using EishockeyManager.Tests.Support;
 using EishockeyManager.UI.Screens;
 using EishockeyManager.UI.Screens.Live;
+using EishockeyManager.UI.Screens.Team;
 using EishockeyManager.UI.Testing;
 
 namespace EishockeyManager.UI.Tests;
@@ -247,5 +248,198 @@ public sealed class TorszeneDauerUiTests
             return;
         }
         Assert.Fail("kein Penaltyschießen der Managerpaarung entstanden");
+    }
+
+    /// <summary>Ersten Ligaspieltag eines neuen Spiels (Startwert <paramref name="seed"/>) mit Darstellung <paramref name="liveMode"/>
+    /// bis zum Live-Bildschirm führen.</summary>
+    private static (ScreenDriver Driver, LiveMatchScreen Live) OpenLeagueDay(int liveMode, int speed, int seed = 5,
+        params ManagerSetup[] managers)
+    {
+        var d = FlowTests.CreateDriver();
+        var setup = new GameSetup();
+        foreach (var m in managers.Length == 0 ? [new ManagerSetup { Name = "M0", Head = 0, ClubIndex = 2 }] : managers)
+            setup.Managers.Add(m);
+        var game = Core.NewGame.Create(d.Host.Assets.Database, setup, seed);
+        game.Options.MatchSpeed = speed;
+        game.Options.LiveMode = liveMode;
+        d.Host.Game = game;
+        d.Host.Show(new MainMenuScreen(d.Host));
+        d.Frame();
+        for (var guard = 0; guard < 5000; guard++)
+        {
+            if (d.Host.Current is MainMenuScreen)
+                d.NextDay();
+            else if (d.Host.Current is LiveMatchScreen screen && screen.Session.Day?.Matches[0].Competition == MatchCompetition.League)
+                return (d, screen);
+            else if (d.Host.Current is LiveMatchScreen)
+                d.Press(Key.Escape);
+            else
+                d.Frame();
+        }
+        throw new InvalidOperationException("kein Live-Ligaspieltag");
+    }
+
+    /// <summary>
+    /// Review torszene-dauer R1: [ORIGINAL] Datei 0x2D349–0x2D35D – im Optionen-Bildschirm wird Darstellung 2 bei DGROUP 0x5A56 ≠ 0
+    /// sofort 0; während eines Live-Spieltags ist 0x5A56 = 1. Aus dem Live-Bildschirm (Leertaste, Darstellung 1) springt der Schalter
+    /// also auf 0, und der Spielkern zieht weiter Strafgründe. Vor dem Fix rot: Darstellung 2 und
+    /// <see cref="OriginalMinutes.PermanentRink"/> mitten im Spieltag. Gegenprobe: aus dem Hauptmenü bleibt Darstellung 2 erreichbar.
+    /// </summary>
+    [GameDataFact]
+    public void GameOptions_FromLiveMatchDay_PermanentRinkBlocked()
+    {
+        var (d, live) = OpenLeagueDay(liveMode: 1, speed: 60);
+        var game = d.Host.Game!;
+        for (var i = 0; i < 20000 && live.DisplayMinute < 5; i++)
+            d.Frame();
+        d.Press(Key.Space);
+        for (var i = 0; i < 20000 && d.Host.Current is not GameOptionsScreen; i++)
+            d.Frame();
+        Assert.IsType<GameOptionsScreen>(d.Host.Current);
+        var sw = GameOptionsScreen.SwitchRect(GameOptionsScreen.GoalScenesSwitch);
+        d.Click(sw.X + 2, sw.Y + 2);
+        Assert.Equal(0, game.Options.LiveMode);
+        Assert.False(live.PermanentRink);
+        Assert.False(OriginalMinutes.PermanentRink(game.Options));
+
+        // Gegenprobe außerhalb des Spieltags: 1 → 2.
+        game.Options.LiveMode = 1;
+        d.Host.Show(new GameOptionsScreen(d.Host, new MainMenuScreen(d.Host)));
+        d.Frame();
+        d.Click(sw.X + 2, sw.Y + 2);
+        Assert.Equal(GameOptions.PermanentRinkLiveMode, game.Options.LiveMode);
+    }
+
+    /// <summary>
+    /// Review torszene-dauer R2 (M4), T4: [ORIGINAL] Eingriffsmenü 0x38D96 kehrt mit Dauer-Eisfeld sofort zurück (Datei
+    /// 0x38DA2–0x38DAA) – der Klick auf das Wappen des Managervereins öffnet keine Aufstellung. Gegenprobe Darstellung 1: derselbe
+    /// Klick öffnet sie (Datei 0x38FC0–0x38FED).
+    /// </summary>
+    [GameDataTheory]
+    [InlineData(1)]
+    [InlineData(GameOptions.PermanentRinkLiveMode)]
+    public void CrestClick_OnPermanentRink_NoIntervention(int liveMode)
+    {
+        var (d, live) = OpenLeagueDay(liveMode, speed: 60);
+        Assert.Equal(liveMode == GameOptions.PermanentRinkLiveMode, live.PermanentRink);
+        for (var i = 0; i < 20000 && live.DisplayMinute < 3; i++)
+            d.Frame();
+        Assert.Same(live, d.Host.Current);
+        var shown = live.Session.Shown[0];
+        var side = shown.HomeTeam is { Managed: true } ? 0 : 1;
+        d.Click(LiveMatchScreen.CrestX(side) + 10, 20);
+        if (liveMode == GameOptions.PermanentRinkLiveMode)
+        {
+            Assert.Equal(LiveMatchScreen.ClickResult.None, live.LastClick);
+            Assert.Same(live, d.Host.Current);
+        }
+        else
+        {
+            Assert.Equal(LiveMatchScreen.ClickResult.Crest, live.LastClick);
+            Assert.IsType<LineupScreen>(d.Host.Current);
+        }
+    }
+
+    /// <summary>
+    /// Review torszene-dauer R2 (M5), T5: DEB-Pokaltag mit Darstellung 2, ein nicht gezeigtes Spiel endet im Penaltyschießen, die
+    /// Managerpaarung nicht. [ORIGINAL] Datei 0x37297–0x372AC ruft den Seitenwähler, mit noch stehendem Eis (DGROUP 0x5A55 = 1)
+    /// liefert er keine Seite (Datei 0x3A9E5) – trotz „DEB-Pokal zeigen“. Aufbau: Gleichstand der übrigen Paarungen, Führung der
+    /// Managerpaarung ab Minute 50 (Vorbedingung).
+    /// </summary>
+    [GameDataFact]
+    public void PermanentRink_OtherShootout_NoPagesWhileRinkStands()
+    {
+        for (var seed = 1; seed <= 16; seed++)
+        {
+            var d = FlowTests.CreateDriver();
+            var setup = new GameSetup();
+            setup.Managers.Add(new ManagerSetup { Name = "M0", Head = 0, ClubIndex = 2 });
+            var game = Core.NewGame.Create(d.Host.Assets.Database, setup, seed);
+            game.Options.MatchSpeed = 60;
+            game.Options.LiveMode = GameOptions.PermanentRinkLiveMode;
+            game.Options.ShowDebCup = true;
+            d.Host.Game = game;
+            d.Host.Show(new MainMenuScreen(d.Host));
+            d.Frame();
+            LiveMatchScreen? live = null;
+            for (var guard = 0; guard < 20000 && live is null; guard++)
+            {
+                if (d.Host.Current is MainMenuScreen)
+                    d.NextDay();
+                else if (d.Host.Current is LiveMatchScreen screen && screen.Session.Day?.Matches[0].Competition == MatchCompetition.DebCup)
+                    live = screen;
+                else if (d.Host.Current is LiveMatchScreen)
+                    d.Press(Key.Escape);
+                else
+                    d.Frame();
+            }
+            Assert.NotNull(live);
+            Assert.True(live.PermanentRink);
+            var day = live.Session.Day!;
+            var shown = Assert.Single(live.Session.Shown);
+            var page = false;
+            for (var i = 0; i < 400000 && !live.Done; i++)
+            {
+                if (day is { Minute: >= 50 and < 60 })
+                {
+                    foreach (var m in day.Matches)
+                    {
+                        if (ReferenceEquals(m, shown))
+                            m.Report.HomeGoals = m.Report.AwayGoals + 1;
+                        else
+                            m.Report.AwayGoals = m.Report.HomeGoals;
+                    }
+                }
+                page |= live.ShowingPage;
+                if (d.Host.Current == live)
+                    d.Frame();
+                else if (d.Host.Current is GoalSceneScreen)
+                    d.Frame();
+                else
+                    d.RightClick(5, 5);
+            }
+            Assert.True(live.Done);
+            if (shown.Report.ShootoutGoals is not null
+                || !day.Matches.Any(m => m.Stepped && m.Report.ShootoutHomeWins is not null))
+                continue;
+            Assert.False(page);
+            Assert.Single(live.RinksBuilt);
+            return;
+        }
+        Assert.Fail("kein Penaltyschießen außerhalb der Managerpaarung entstanden");
+    }
+
+    /// <summary>
+    /// Review torszene-dauer R2 (M7), T3: [ORIGINAL] Modus 2 lädt nichts (Datei 0x5680A) – die Torszenen auf dem stehenden Eis
+    /// nutzen dessen Hallenstufe, mit zwei Managern also 2 (Datei 0x568A9–0x568B6), nicht die Zuschauerstufe der Paarung.
+    /// Aufbau: Startwert mit mindestens einer Szene, deren Zuschauerstufe ≠ 2 ist (sonst prüft der Test nichts).
+    /// </summary>
+    [GameDataFact]
+    public void PermanentRink_TwoManagers_ScenesUseRinkHall()
+    {
+        for (var seed = 1; seed <= 16; seed++)
+        {
+            var (d, live) = OpenLeagueDay(GameOptions.PermanentRinkLiveMode, speed: 60, seed,
+                new ManagerSetup { Name = "M0", Head = 0, ClubIndex = 2 }, new ManagerSetup { Name = "M1", Head = 1, ClubIndex = 5 });
+            var game = d.Host.Game!;
+            Assert.True(live.PermanentRink);
+            for (var i = 0; i < 400000 && !live.Done; i++)
+            {
+                if (d.Host.Current == live || d.Host.Current is GoalSceneScreen)
+                    d.Frame();
+                else
+                    d.RightClick(5, 5);
+            }
+            Assert.True(live.Done);
+            var rink = Assert.Single(live.RinksBuilt);
+            Assert.Equal(GoalSceneCall.DefaultHallLevel, rink.HallLevel);
+            var differs = live.ScenesShown.Any(r => live.Session.Shown.Any(m => m.Home.Name == r.Header.HomeName
+                && GoalSceneCall.Spectators(game, m.Home, m.Away).HallLevel != GoalSceneCall.DefaultHallLevel));
+            if (!differs)
+                continue;
+            Assert.All(live.ScenesShown, r => Assert.Equal(GoalSceneCall.DefaultHallLevel, r.HallLevel));
+            return;
+        }
+        Assert.Fail("keine Szene mit abweichender Zuschauerstufe");
     }
 }
