@@ -60,7 +60,7 @@ Belege und Beschlüsse zu den Befunden der Erstreviews: Highscore-Ligabyte (Verd
 | Thema | Ergebnis | PR |
 |---|---|---|
 | S01 | umgesetzt (Minutenschleife 0x37A62 über alle Paarungen eines Termins verschränkt, Liga und Pokaltermine; A442, A450, A547, A766, A909, A954); bitgenaue Zufallsfolge bleibt A100 (R26-D2 = A) | #1032 |
-| S02 | umgesetzt (Dauer-Eisfeld über den Spieltag, Penaltyschießen auf eigenem Eis, T1–T8); Reste mit Beleg als Marker A1013, A1014, A1025–A1027, A1029–A1031 (K/E) | #1033 |
+| S02 | umgesetzt (Dauer-Eisfeld über den Spieltag, Penaltyschießen auf eigenem Eis, T1–T8); Reste mit Beleg als Marker A1013, A1014, A1025, A1026, A1029, A1030, A1032–A1034 (K/E); A1027, A1031 mit #1049 umgesetzt (R26-E3 = A) | #1033 |
 | S04 | umgesetzt (Minute und Zwischenstände auf den Paarungsseiten, Penalty-Bildschirm F076, F068; Aufstiegsrunde und Europapokal im Spielablauf, PW-04); Reste A1020, A1021 (K) | #1032, #1042 |
 | S05 | umgesetzt (Reporterreihenfolge, Leertaste, Pause 0x130EE, Farbe 0, Zuschauerbreite); Enter/Escape (A449), Strahlrücklauf (A453) bleiben nach R26-D2 = A | #1032 |
 | SG-01 (#1018) | umgesetzt (Tagesabschluss 0x3ED01 und Werbebewertung 0x3F833 je Manager im Hauptweg, in der WM-Schleife und in der Sommerpause; Stadionschäden 0x3CFA0, R26-E1 = B); Börse bleibt einmal je Tag (#188), Marker A1011, A1012 (K); Issue schon geschlossen | #1034 |
