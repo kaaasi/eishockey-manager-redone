@@ -72,7 +72,7 @@ R26-D4 = B (ChatGPT GPT-6.2 Astra) mit Claude-Auswertung.
   angepasst werden). **Prüfung:** `--schnell`; Live-Spieltag mit zwei und drei Managerpaarungen (Liga, Play-off, Pokal mit
   Penaltyschießen) als Bildschirmfoto-Ablauf, Vergleich mit Videobild bzw. DOSBox-Bild; Mehrsaisonprobe (4 Wechsel, zwei Manager,
   Live an) – Ergebnisse und Geld plausibel.
-- **Status:** in Arbeit (PR #1032, Claude Code): Teil 1, 2 und 2b (Pokaltermine, Dateigrenzen erweitert um `Core/Playoffs.cs`, `CupsDeb.cs`, `CupsGroup.cs`, `CupsWorld.cs` – Leitstelle 25.11.2026) fertig; Teil 3 (S04) Seiten nach dem Drittel für DEB-Pokal, Play-off, WM-Gruppen und WM-Endrunde fertig – offen: Ligapaarungen, Aufstiegsrunde, Europapokal (fremde Bildschirme) und Penalty-Anzeige F076 (Überschneidung `torszene-dauer` T7), Entscheidung Leitstelle; Teil 4 offen.
+- **Status:** in Arbeit (PR #1032, Claude Code): Teil 1, 2, 2b, 3 fertig; Teil 4 (S05) fertig; Teil 3b (Leitstelle 26.11.2026, Dateigrenzen um `LeaguePairingsScreen.cs`, `PromotionRoundScreen.cs`, `EuropeanCupScreen.cs` erweitert): Ligapaarungen mit Minute und Penalty-Bildschirm F076 fertig – offen Aufstiegsrunde und Europapokal im Spielablauf (0x31CD5 mit Merker „im Spiel“, `docs/analyse/live-spieltag.md` §10); Fortsetzungen erschöpft – Entscheidung Nutzer.
 
 ### Spur `tagesabschluss` – Tagesabschluss im Hauptweg je Manager (#1018, Welle 1)
 
