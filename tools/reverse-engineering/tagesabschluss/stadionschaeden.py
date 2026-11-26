@@ -2,7 +2,8 @@
 
 Replays straight from the bytes of em.exe (emu16, no original data written). Stadium record of the manager
 DGROUP 0x9771 + 0x1AF · m (re-geld.md „Datensatz“): level +2p (p = 0 … 8), places word +0x1D + 4j (j = 0 seats, 1 standing,
-project p = 9 + j). Level index DGROUP 0xED8 (game level 1 … 5 → 0 … 4), league DGROUP 0x9746 + 0x1AF · m (0 = Bundesliga).
+project p = 9 + j). Level value d = DGROUP 0xED8 = 5 − game level (`TrainingRules.LevelValue`, re-geld.md: game level 1 … 5 → d = 4 … 0; the script
+sets 0xED8 directly, so d is what "level" means below), league DGROUP 0x9746 + 0x1AF · m (0 = Bundesliga).
 
 Every random call 0x0C037 (random(lo, hi), both bounds inclusive) is answered from a script and printed with caller and
 project [bp-0x5]. The number to text call 0x0BAB2 is stubbed (DGROUP 0x38D = 0 during the call: thousands point, printed

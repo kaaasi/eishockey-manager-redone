@@ -50,10 +50,23 @@ Grundlage: Vergleich der Bewertungen von ChatGPT ([PR #992](abweichungen-bewertu
 | Aufräumkonzept K2 | umgesetzt (Strafbank beim Bundestrainer) | #1004 |
 | Aufräumkonzept K11 | umgesetzt (Rollenwert als Feld, Schema 65) | #1006 |
 | Aufräumkonzept K13 | eine gemeinsame Platzwahl; Randfall widerlegt (DGROUP 0x5CF4 nur 0 oder 1), A463 entfallen, Marker lebt als A977 (E, Erweiterung) weiter | #1006 |
-| S01, S02, S04, S05 | Runde 26 (R25-D1 = D) | – |
+| S01, S02, S04, S05 | umgesetzt in Runde 26 (siehe unten) | #1032, #1033, #1042 |
 
 Belege und Beschlüsse zu den Befunden der Erstreviews: Highscore-Ligabyte (Verdacht #1007) bestätigt und behoben (Beleg
 `h1_highscore_liga.py`, PR #1022).
+
+**Stand nach Runde 26 (Spur `pruefung-karte`, 26.11.2026; Belege `live-spieltag.md`, `torszene-dauer.md`, PRs der Spuren gemergt):**
+
+| Thema | Ergebnis | PR |
+|---|---|---|
+| S01 | umgesetzt (Minutenschleife 0x37A62 über alle Paarungen eines Termins verschränkt, Liga und Pokaltermine; A442, A450, A547, A766, A909, A954); bitgenaue Zufallsfolge bleibt A100 (R26-D2 = A) | #1032 |
+| S02 | umgesetzt (Dauer-Eisfeld über den Spieltag, Penaltyschießen auf eigenem Eis, T1–T8); Reste mit Beleg als Marker A1013, A1014, A1025–A1027, A1029–A1031 (K/E) | #1033 |
+| S04 | umgesetzt (Minute und Zwischenstände auf den Paarungsseiten, Penalty-Bildschirm F076, F068; Aufstiegsrunde und Europapokal im Spielablauf, PW-04); Reste A1020, A1021 (K) | #1032, #1042 |
+| S05 | umgesetzt (Reporterreihenfolge, Leertaste, Pause 0x130EE, Farbe 0, Zuschauerbreite); Enter/Escape (A449), Strahlrücklauf (A453) bleiben nach R26-D2 = A | #1032 |
+| SG-01 (#1018) | umgesetzt (Tagesabschluss 0x3ED01 und Werbebewertung 0x3F833 je Manager im Hauptweg, in der WM-Schleife und in der Sommerpause; Stadionschäden 0x3CFA0, R26-E1 = B); Börse bleibt einmal je Tag (#188), Marker A1011, A1012 (K); Issue schon geschlossen | #1034 |
+
+Belege zu den Befunden der Erstreviews: P3 der Runde in #1036, #1037, #1041, #1045 (Testlücken und Kopf von `stadionschaeden.py`, PR der Spur
+`pruefung-karte`).
 
 ## 1. Themen mit Vorschlag „ändern“ (15 Themen, 44 IDs)
 

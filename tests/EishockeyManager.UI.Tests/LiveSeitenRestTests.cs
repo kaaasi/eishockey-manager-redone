@@ -113,6 +113,12 @@ public sealed class LiveSeitenRestTests
         Assert.Equal([LivePageKind.PromotionRound, LivePageKind.PromotionRound], pages.Select(p => p.Kind));
         Assert.Equal([League.ZweiteLiga, League.Oberliga], pages.Select(LivePageScreens.PromotionLeague));
 
+        // R1042-P3-1 (#1045): [ORIGINAL] Meldungsfilter der zweiten Gruppe Datei 0x3A8C5–0x3A8F5: Index 6 (Drittelpause Oberliga) bzw.
+        // 7 (Ergebnisse Oberliga) – bei „Oberliga“ aus bleibt nur die Seite der Gruppe 0. Rot bei entfernter Bedingung in LivePageScreens.For.
+        game.Options.Reports[6] = false;
+        Assert.Equal([League.ZweiteLiga], LivePageScreens.For(game, day, 20).Select(LivePageScreens.PromotionLeague));
+        game.Options.Reports[6] = true;
+
         var (host, menu) = Host(game);
         var screen = Assert.IsType<PromotionRoundScreen>(Assert.Single(LivePageScreens.Create(host, menu, day, pages[0], 20)));
         Assert.Equal(League.ZweiteLiga, screen.League);
@@ -140,6 +146,9 @@ public sealed class LiveSeitenRestTests
         StepTo(day, 60);
         // nach 60: Index 4 aus, 7 an – nur die Seite der Gruppe 1
         Assert.Equal(League.Oberliga, LivePageScreens.PromotionLeague(Assert.Single(LivePageScreens.For(game, day, 60))));
+        game.Options.Reports[7] = false;
+        Assert.Empty(LivePageScreens.For(game, day, 60));
+        game.Options.Reports[7] = true;
         var table = new PromotionRoundScreen(host, menu, League.ZweiteLiga, new GroupLive(60, game.CurrentDay,
             (l, r) => LivePageScreens.Score(day, l, r, 60, false))).Page!.Table;
         var goals = day.Matches.Sum(m => m.Report.HomeGoals + m.Report.AwayGoals);

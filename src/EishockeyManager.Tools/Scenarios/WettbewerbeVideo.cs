@@ -235,12 +235,20 @@ internal static class WettbewerbeVideo
         Show("folge04_01243", 2, endrunde);
         Show("folge04_01247", 2, endrunde);
 
-        // Eisbären Berlin als Manager-Verein (gelb)
+        // Eisbären Berlin als Manager-Verein (gelb). Beide Bilder sind Seiten im Spielablauf nach Minute 60 (live-seiten-rest, PW-04,
+        // docs/analyse/live-spieltag.md §11: Live-Eis davor und danach, keine Termine offener Spiele), nicht das Hauptmenü – daher
+        // die Live-Ansicht (GroupLive, Spielstände stehen schon als Ergebnis in der Gruppe), wie im Ablauf live-aufstieg-europapokal.
+        var dates = SeasonCalendar.DaysOf(DayEvents.EuropeanCup);
         game.Managers[0].ClubIndex = Club(game, "EISB");
-        Show("eisbaeren_f51_03346", 1, EuropeanGroup(game, 2, 0, ["JOKERIT HELSINKI", "AMBRI-PIOTTA", "EISB", "IFK HELSINKI"],
-            "4:3|6:2", "1:1|1:3", "3:3|2:2"));
-        Show("eisbaeren_f58_01323", 2, EuropeanGroup(game, 3, final, ["EISB", "VITKOVICE", "KOSICE", "DUKLA TRENCIN"],
-            "3:2/2:0|3:4/0:5", "3:2|4:3", "3:0|6:3"));
+        void ShowLive(string name, int view, CupGroup group, int date)
+        {
+            d.Host.Show(new EuropeanCupScreen(d.Host, back, view, group, new GroupLive(60, dates[date], (_, _) => null)));
+            d.Move(0, 239); d.Save(name);
+        }
+        ShowLive("eisbaeren_f51_03346", 1, EuropeanGroup(game, 2, 0, ["JOKERIT HELSINKI", "AMBRI-PIOTTA", "EISB", "IFK HELSINKI"],
+            "4:3|6:2", "1:1|1:3", "3:3|2:2"), 2);
+        ShowLive("eisbaeren_f58_01323", 2, EuropeanGroup(game, 3, final, ["EISB", "VITKOVICE", "KOSICE", "DUKLA TRENCIN"],
+            "3:2/2:0|3:4/0:5", "3:2|4:3", "3:0|6:3"), final + 3);
     }
     /// <summary>Abschnitt aus Zeilen „Links|Rechts|l:r“ mit Punkten am Ende („4:3..“).</summary>
     private static WorldCupKnockoutSection Section(GameState game, string title, params string[] rows) =>

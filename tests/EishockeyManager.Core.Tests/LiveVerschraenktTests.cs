@@ -134,6 +134,73 @@ public sealed class LiveVerschraenktTests
         Assert.True(found, "kein Spieltag mit Verlängerung und entschiedener Paarung gefunden");
     }
 
+    /// <summary>Minute-70-Tag: acht K.-o.-Paarungen über den Minutenweg mit einem gemeinsamen Zufallsstrom, bis Minute 69 gerechnet.</summary>
+    private static (LiveMatchDay Day, GameState Game) KnockOutDayAt69(int seed)
+    {
+        var game = NewGame(seed);
+        var random = new Random(seed);
+        var fixtures = Enumerable.Range(0, 8)
+            .Select(i => new LiveFixture(game.Clubs[2 * i], game.Clubs[2 * i + 1], MatchCompetition.League, true, random))
+            .ToList();
+        var day = LiveMatchDay.Begin(game, fixtures);
+        while (day.Minute < 69 && day.Step())
+        {
+        }
+        return (day, game);
+    }
+
+    /// <summary>Minute 70 von Hand: erst alle laufenden Paarungen rechnen, dann abschließen (Reihenfolge des Originals) oder je Paarung sofort.</summary>
+    private static string PlayMinute70((LiveMatchDay Day, GameState Game) run, bool completeImmediately, out int shootouts)
+    {
+        var day = run.Day;
+        var completed = new List<LiveMatch>();
+        foreach (var match in day.Matches.Where(m => m.Running).ToList())
+        {
+            if (match.Play(70, run.Game.Options))
+            {
+                if (completeImmediately)
+                    match.Complete();
+                else
+                    completed.Add(match);
+            }
+        }
+        foreach (var match in completed)
+            match.Complete();
+        shootouts = day.Matches.Count(m => m.Report.HomeGoals == m.Report.AwayGoals);
+        return Signature(day);
+    }
+
+    private static string Signature(LiveMatchDay day) =>
+        string.Join(";", day.Matches.Select(m => $"{m.Report.HomeGoals}:{m.Report.AwayGoals}:{m.Report.ShootoutGoals}:{m.Report.ShootoutHomeWins}"));
+
+    /// <summary>
+    /// P3-1 (#1041, Review #1032): [ORIGINAL] 0x32AA3 nach 0x37A62: das Penaltyschießen (0x3901B nach Minute 70, Datei 0x3728B)
+    /// beginnt erst, nachdem **alle** Paarungen die Minute 70 gerechnet haben; die Penaltywürfe ziehen aus demselben Zufallsstrom wie
+    /// die Minuten. Orakel von Hand mit gemeinsamem Zufallsstrom: erst alle <c>Play(70)</c>, dann alle <c>Complete</c>; die
+    /// Gegenprobe (jede Paarung sofort abschließen) ergibt andere Schützen und muss sich unterscheiden (Empfindlichkeit). Rot bei der
+    /// Mutation <c>completed.Add(match)</c> → <c>match.Complete()</c> in <c>LiveMatchDay.Step</c>.
+    /// </summary>
+    [Fact]
+    public void KnockOutDay_ShootoutsOnlyAfterMinute70OfAllPairings()
+    {
+        var found = false;
+        for (var seed = 0; seed < 400 && !found; seed++)
+        {
+            var (day, _) = KnockOutDayAt69(seed);
+            if (day.Minute < 69)
+                continue;
+            var order = PlayMinute70(KnockOutDayAt69(seed), completeImmediately: false, out var shootouts);
+            var wrong = PlayMinute70(KnockOutDayAt69(seed), completeImmediately: true, out _);
+            if (shootouts < 2 || order == wrong)
+                continue;
+            found = true;
+            Assert.True(day.Step());
+            Assert.Equal(order, Signature(day));
+            Assert.NotEqual(wrong, Signature(day));
+        }
+        Assert.True(found, "kein Spieltag mit mindestens zwei Penaltyschießen und abweichender Reihenfolge gefunden");
+    }
+
     /// <summary>
     /// Mehrsaisonprobe (AGENTS.md §5): vier Saisonwechsel mit zwei Managern, Live an (Treiber rechnet jede Minute), passiv und
     /// aktiv (Kader halten). Spielstand mit Treiber = ohne Treiber nach jedem „Tag weiter“; Ligaspieltage mit allen Paarungen;
