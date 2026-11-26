@@ -23,6 +23,11 @@ R26-D3 = B (DOSBox nach Lust, keine eigene Aufnahme `runde-26`: Zusätze in `run
 `vorlagen/dosbox-aufnahme.md`; Auswertung spätestens in der Abschlussprüfung), R26-D4 = B (enges Gesamtreview Live-Spieltag und
 Tagesabschluss, ChatGPT GPT-6.2 Astra). **Go Nutzer 25.11.2026** (alle Spuren samt Folgeläufen, Modelle wie unten; Start nach Merge
 des Plans).
+**Entscheidungen während der Runde:** Nutzer: R26-E1 = B (Stadionschäden 0x3CFA0 als Teil 2 von `tagesabschluss`), R26-E2 = C
+(Rest S04 als eigene Spur `live-seiten-rest`). Leitstelle: T7 (Eis des Penaltyschießens, Darstellung 1 und 2) an
+`torszene-dauer` Teil 2, Penalty-Bildschirm F076 an `live-verschraenkt`; Pokaltermine verschränkt, Dateigrenzen von
+`live-verschraenkt` um `Playoffs.cs`, `Cups*.cs`, `LeaguePairingsScreen.cs` (je minimal) erweitert; `PromotionRoundScreen.cs` und
+`EuropeanCupScreen.cs` gehen mit dem Rest an `live-seiten-rest`.
 
 **Regeln wie Runde 25** (Archiv): Base = aktueller `main` beim Start der Spur, tatsächlicher Base-SHA in den Draft-PR; ein Branch
 `paket/<spur>`, ein PR, Teile als Commits, höchstens drei Fortsetzungen; Befund reproduzieren, roter Regressionstest mit Fundstelle
@@ -39,7 +44,8 @@ Nummer 66, Spuren mit Migration nacheinander mergen (`prozess/anhang.md` F). **G
 `live-verschraenkt` und `tagesabschluss` je minimal; `GameState.Manager.cs` nur `tagesabschluss`.
 
 **Folge (R26-D1 = B):** Welle 1 `live-verschraenkt`, `tagesabschluss` und `torszene-dauer` Teil 1 (nur Beleg) parallel;
-`torszene-dauer` Teil 2 nach Merge von `live-verschraenkt` (Fortsetzung auf demselben Branch, vorher Rebase); Welle 2
+`torszene-dauer` Teil 2 und `live-seiten-rest` (R26-E2 = C) nach Merge von `live-verschraenkt` (Teil 2 als Fortsetzung auf
+demselben Branch, vorher Rebase); Welle 2
 `pruefung-karte` nach allen; dann Gesamtreview (R26-D4 = B). Integration in der Reihenfolge der Fertigstellung.
 
 | Spur | Welle | Themen | Modell | Grund |
@@ -47,6 +53,7 @@ Nummer 66, Spuren mit Migration nacheinander mergen (`prozess/anhang.md` F). **G
 | `live-verschraenkt` | 1 | S01, S04, S05 | Opus 5.5 | Umbau des Live-Kerns (Minutenschleife 0x37A62 über alle Paarungen), Disassembly; Fehler wirken auf jeden Live-Spieltag |
 | `tagesabschluss` | 1 | #1018 (SG-01) | Opus 5.5 | Zufallsreihenfolge im Tageslauf, Geld; klein, aber Spielkern |
 | `torszene-dauer` | 1 (Teil 1), 1b (Teil 2) | S02 | Opus 5.5 | Spieltagsablauf 0x36B5D/0x3901B ungelesen, Umbau des Ablaufs der Darstellung 2 |
+| `live-seiten-rest` | 1b | Rest S04 (Aufstiegsrunde, Europapokal; R26-E2 = C) | Opus 5.5 | Disassembly 0x31CD5, nach Merge von `live-verschraenkt` |
 | `pruefung-karte` | 2 | P3 der Runde, Generatorlauf, Abweichungsliste nachziehen | Sonnet 5.5 | mechanisch |
 
 Erstreviews: Opus 5.5, für `pruefung-karte` Sonnet 5.5. Fixläufe im Modell der Spur. Plan-Review Sonnet 5.5. Gesamtreview eng nach
@@ -104,6 +111,21 @@ R26-D4 = B (ChatGPT GPT-6.2 Astra) mit Claude-Auswertung.
   `~/referenz/original/gamedata/EM.EXE`; Teil 2 `--schnell`, Bildschirmfoto-Ablauf Darstellung 2 über einen Spieltag mit Tor und
   Penaltyschießen, Vergleich mit Videobild.
 - **Status:** offen (Go 25.11.2026, Start nach Merge des Plans).
+
+### Spur `live-seiten-rest` – Aufstiegsrunde und Europapokal im Spielablauf (R26-E2 = C, Welle 1b)
+
+- **Teile:** 1. Rest von S04 aus `live-verschraenkt` (#1032, Übergabe 26.11.2026): Nachbildung von Datei 0x31CD5 mit den Argumenten
+  aus dem Seitenwähler Datei 0x3AB43–0x3ABCE (Wettbewerb 2/3, Gruppe, Merker „im Spiel“ [bp+0xA] = Minute ≠ 0, Terminzahl
+  min(DGROUP 0x7AF, 6 bzw. − 6) + (Minute ∈ {0, 60}) − 1; Wirkung bei Datei 0x32294 und 0x32515, Stände aus 0x3183C), Skript wie
+  `pokalseiten.py`; dann je eine Ansicht mit Minute in Aufstiegsrunde (Seite 2) und Europapokal (Seite 3) und der Fall in
+  `LivePageScreens.Create`; löst PW-04 (`[APPROX]` zu [bp+0xA] in `EuropeanCupScreen`, Stand in `docs/wettbewerbe.md` und
+  `PixelWettbewerbeTests.cs` nachziehen).
+- **Dateien:** `UI/Screens/Competitions/PromotionRoundScreen.cs`, `EuropeanCupScreen.cs`, `UI/Screens/Live/LivePageScreens.cs`
+  (minimal), `tools/reverse-engineering/live/aufstieg_europapokal.py` (neu), Abschnitt in `docs/analyse/live-spieltag.md`,
+  `docs/wettbewerbe.md` (PW-04, minimal); Tests (auch `PixelWettbewerbeTests.cs`, PW-04).
+  Start nach Merge von #1032, parallel zu `torszene-dauer` Teil 2 (keine gemeinsamen Dateien). **Prüfung:** `--schnell`; Bildschirmfoto Aufstiegsrunde und Europapokal im Spielablauf. **Modell:** Opus 5.5,
+  Erstreview Opus 5.5.
+- **Status:** offen (Start nach Merge von #1032).
 
 ### Spur `pruefung-karte` – Abschluss der Runde (Welle 2)
 
