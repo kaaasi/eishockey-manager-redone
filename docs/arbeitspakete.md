@@ -125,7 +125,8 @@ R26-D4 = B (ChatGPT GPT-6.2 Astra) mit Claude-Auswertung.
   `docs/wettbewerbe.md` (PW-04, minimal); Tests (auch `PixelWettbewerbeTests.cs`, PW-04).
   Start nach Merge von #1032, parallel zu `torszene-dauer` Teil 2 (keine gemeinsamen Dateien). **Prüfung:** `--schnell`; Bildschirmfoto Aufstiegsrunde und Europapokal im Spielablauf. **Modell:** Opus 5.5,
   Erstreview Opus 5.5.
-- **Status:** offen (Start nach Merge von #1032).
+- **Status:** Teil 1 fertig (PR #1042, Claude Code): Nachbildung `aufstieg_europapokal.py`, Aufstiegsrunde (beide Gruppen) und
+  Europapokal im Spielablauf, PW-04 aufgelöst (Hauptmenü zeigt Termine offener Spiele). Review offen.
 
 ### Spur `pruefung-karte` – Abschluss der Runde (Welle 2)
 

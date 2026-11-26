@@ -18,8 +18,12 @@ namespace EishockeyManager.UI.Screens.Live;
 ///   (wie <see cref="CupMatch"/>).</item>
 /// <item>[ORIGINAL] Ligapaarungen (Seite 7, 0x4E8A3 Modus 2, Teil 3b): <see cref="LeaguePairingsScreen"/> mit Minute, laufender
 ///   Stand je Paarung des Termins (0x369C7(2, 0), Datei 0x38598).</item>
-/// <item>[APPROX] Aufstiegsrunde (Seite 2) und Europapokal (Seite 3, je 0x31CD5 mit Merker „im Spiel“ [bp+0xA] und Terminzahl,
-///   Datei 0x3AB43–0x3ABCE) haben im Remake noch keine Ansicht im Spielablauf; diese Seiten entfallen.</item>
+/// <item>[ORIGINAL] Aufstiegsrunde (Seite 2) und Europapokal (Seite 3 bzw. 5 in der Endrunde, Code DGROUP 0xD0C2 = 3 bzw. 5,
+///   Datei 0x31490–0x314A1): 0x31CD5 mit Merker „im Spiel“ [bp+0xA] und Terminzahl (Datei 0x3AAA4–0x3ABCE, Nachbildung
+///   <c>aufstieg_europapokal.py</c>; spur live-seiten-rest): <see cref="PromotionRoundScreen"/> bzw. <see cref="EuropeanCupScreen"/>
+///   mit <see cref="GroupLive"/>. Die Aufstiegsrunde ruft der Spieltag zweimal (Datei 0x38699–0x386C5: Seite 2 mit Gruppe 1 und 2),
+///   gefiltert mit Zeile 3 · Gruppe + (Minute = 60) der Meldungsmatrix (Datei 0x3A8C5–0x3A8F5): Gruppe 0 „2.Liga“ (Index 3/4,
+///   <see cref="LivePages.After"/>), Gruppe 1 „Oberliga“ (Index 6/7, hier in <see cref="For"/>).</item>
 /// </list>
 /// </summary>
 public static class LivePageScreens
@@ -30,15 +34,33 @@ public static class LivePageScreens
         if (day.Matches.Count == 0)
             return [];
         var first = day.Matches[0];
-        return LivePages.After(game.Options, minute, first.Competition,
+        var playoffGame = PlayoffGame(game);
+        // [APPROX] DGROUP 0x5A55 = 1 nur mit Anzeige und Darstellung 2 (Datei 0x37112, 0x37227); ob die Torszene 0x567C8 dabei
+        // abbricht (Datei 0x37168), bleibt unberücksichtigt.
+        var permanentRink = game.Options.LiveMode == GameOptions.PermanentRinkLiveMode;
+        var pages = LivePages.After(game.Options, minute, first.Competition,
             day.Matches.Where(m => m.Competition == MatchCompetition.League && m.Home.League is not null).Select(m => m.Home.League!.Value),
             worldCupKnockout: first.Competition == MatchCompetition.WorldCup && first.KnockOut,
-            playoffGame: PlayoffGame(game),
-            // [APPROX] DGROUP 0x5A55 = 1 nur mit Anzeige und Darstellung 2 (Datei 0x37112, 0x37227); ob die Torszene 0x567C8 dabei
-            // abbricht (Datei 0x37168), bleibt unberücksichtigt.
-            permanentRink: game.Options.LiveMode == GameOptions.PermanentRinkLiveMode,
-            afterShootout: afterShootout);
+            playoffGame: playoffGame,
+            permanentRink: permanentRink,
+            afterShootout: afterShootout).ToList();
+        // [ORIGINAL] Datei 0x386AD–0x386C5: nach Gruppe 0 (0x3A88A(2, 1, Minute)) die zweite Gruppe 0x3A88A(2, 2, Minute) mit Index
+        // 3 · 2 + (Minute = 60) – „Drittelpause Oberliga“ bzw. „Ergebnisse Oberliga“ (Datei 0x3A8C5–0x3A8F5).
+        if (first.Competition is MatchCompetition.Playoff or MatchCompetition.Relegation && !afterShootout && !permanentRink
+            && playoffGame is 0 or 2 && LivePages.IsPeriodEnd(minute) && game.Options.Reports[6 + (minute == 60 ? 1 : 0)])
+            pages.Add(new LivePage(LivePageKind.PromotionRound, League.Oberliga));
+        return pages;
     }
+
+    /// <summary>Liga der Aufstiegsseite: Gruppe 0 (2. Liga → „Aufstieg  1.Liga“) oder Gruppe 1 (Oberliga → „Aufstieg  2.Liga“).</summary>
+    public static League PromotionLeague(LivePage page) => page.League == League.Oberliga ? League.Oberliga : League.ZweiteLiga;
+
+    /// <summary>
+    /// [ORIGINAL] Ansicht der Europapokalseite: Gruppe 1 (Seite 3, Code 3) in den Gruppenterminen, Endrunde (Seite 5, Code 5) ab dem
+    /// siebten Termin (DGROUP 0x7AF &gt; 5, Datei 0x31490–0x314A1).
+    /// </summary>
+    public static int EuropeanCupView(GameState game) =>
+        SeasonCalendar.DaysOf(DayEvents.EuropeanCup).Count(d => d < game.CurrentDay) >= EuropeanCup.GroupDates ? 2 : 0;
 
     /// <summary>[ORIGINAL] Spiel der laufenden Play-off-Runde (DGROUP 0xCCA3): Termin des Tages modulo fünf.</summary>
     public static int PlayoffGame(GameState game)
@@ -75,6 +97,8 @@ public static class LivePageScreens
     {
         var game = host.Game!;
         DebCupResult? ScoreOf(int left, int right) => Score(day, left, right, minute, afterShootout);
+        // [ORIGINAL] Gruppenseiten zeigen Tore ohne Marken (0x31CD5, Datei 0x3255D–0x325D0).
+        DebCupResult? LiveScore(int left, int right) => ScoreOf(left, right) is { } r ? r with { Dots = 0 } : null;
         switch (page.Kind)
         {
             case LivePageKind.LeaguePairings:
@@ -139,6 +163,10 @@ public static class LivePageScreens
                 }
                 return screens;
             }
+            case LivePageKind.PromotionRound:
+                return [new PromotionRoundScreen(host, back, PromotionLeague(page), new GroupLive(minute, game.CurrentDay, LiveScore))];
+            case LivePageKind.EuropeanCupTable:
+                return [new EuropeanCupScreen(host, back, EuropeanCupView(game), live: new GroupLive(minute, game.CurrentDay, LiveScore))];
             default:
                 return [];
         }
