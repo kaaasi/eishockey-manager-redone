@@ -114,6 +114,8 @@ R26-D4 = B (ChatGPT GPT-6.2 Astra) mit Claude-Auswertung.
   fertig (Fortsetzung 1, 26.11.2026): Dauer-Eisfeld T1–T6, T8, Penaltyschießen auf eigenem Eis bei Darstellung 1/2 (T7, Leitstelle
   25.11.2026); Umsetzung `docs/analyse/torszene-dauer.md` §11. Erstreview (#1044): R1 (P2) Sperre der Darstellung 2 im
   Live-Spieltag (`GameOptionsScreen.cs` eine Stelle, Leitstelle), R2/R3 (P3) im Fixlauf 26.11.2026 behoben; Delta-Prüfung offen.
+  Fixlauf A1027 (R26-E3 = A, 26.11.2026, PR #1049): Penaltyschießen mit Darstellung 0 zeigt jeden Schuss im Live-Bildschirm;
+  Erstreview offen.
 
 ### Spur `live-seiten-rest` – Aufstiegsrunde und Europapokal im Spielablauf (R26-E2 = C, Welle 1b)
 
