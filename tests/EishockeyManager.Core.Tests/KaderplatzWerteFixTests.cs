@@ -121,7 +121,19 @@ public class KaderplatzWerteFixTests
         // Rollenwert (Datei 0x5077–0x52CB), zugleich Rebase auf main 90d8394; bei Saat 5 trägt der passive Manager nach vier Wechseln
         // keinen abweichenden Poolwert mehr, unter 2–15 erfüllen 3, 6, 7, 11, 15 die Vorbedingung passiv und aktiv. Die Probe hängt an der Saat.
         // Spur tagesabschluss Teil 2 (Runde 26, R26-E1 = B, R21-D2 = A, R15-E2 = C): Saat 5 statt 3 – die wöchentlichen Stadionschäden 0x3CFA0 (Datei 0x3D330) würfeln je Manager und Bautag mindestens random(0, 2·d + 8) (Datei 0x3CFC5), anderer Zufallsverlauf ab dem ersten Bautag; bei Saat 3 trägt der passive Manager nach vier Wechseln keinen abweichenden Poolwert mehr (Vorbedingung), unter 4–12 erfüllen 5, 6, 8, 9, 11, 12 sie passiv und aktiv. Die Probe hängt an der Saat.
-        var game = OriginalExportTests.NewGameForExport(database, 5);
+        // Spur live-verschraenkt Teil 2 (Runde 26, S01, R21-D2 = A, R15-E2 = C): Saat 7 statt 3 – der Ligaspieltag rechnet je
+        // Minute alle Paarungen aus dem gemeinsamen Zufall (0x37A62, docs/analyse/live-spieltag.md), anderer Zufallsverlauf ab dem
+        // ersten Ligaspieltag; mit 3 ist die Vorbedingung verfehlt. Rückschaltprobe siehe PR #1032. Die Probe hängt an der Saat.
+        // Spur live-verschraenkt Teil 2b (Runde 26, S01, R21-D2 = A, R15-E2 = C): Saat 10 statt 7 – Pokal-, Play-off- und WM-Termine
+        // rechnen je Minute alle Paarungen (0x37A62 Datei 0x380D0–0x3853E, MatchEngine.PlayDate); bei 7 trägt der passive Manager nach
+        // vier Wechseln keinen abweichenden Poolwert mehr, unter 7–16, 24–26 erfüllen 10, 11, 14, 15, 24, 25 die Vorbedingung passiv und
+        // aktiv. Rückschaltprobe siehe PR #1032. Die Probe hängt an der Saat.
+        // Fixlauf live-verschraenkt, Rebase auf main 9d9ae39 (Runde 26, R21-D2 = A, R15-E2 = C): Saat 12 statt 10 – verschränkte
+        // Liga- und Pokaltermine (0x37A62, #1032) und Stadionschäden je Manager (0x3CFA0, Datei 0x3D330, #1034) zusammen ergeben
+        // einen anderen Zufallsverlauf als jede Änderung allein; bei 10 trägt der passive Manager nach vier Wechseln keinen
+        // abweichenden Poolwert mehr (Vorbedingung), 11 ebenfalls nicht, 12 passiv und aktiv. Rückschaltprobe: src/ von 9d9ae39
+        // (main) + Saat 12 grün, src/ von 5d491e5 (alter Head) + Saat 12 passiv rot. Die Probe hängt an der Saat.
+        var game = OriginalExportTests.NewGameForExport(database, 12);
         RngTwinProbeTests.Run(game, active);
         var club = game.Clubs[game.Managers[0].ClubIndex];
         Assert.Contains(club.Players, p => p.PoolCondition is not null || p.PoolTechnique is not null);

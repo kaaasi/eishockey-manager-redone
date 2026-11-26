@@ -23,6 +23,9 @@ public sealed class LiveMatch
     public Club Away => Setup.Away;
     public MatchCompetition Competition => Setup.Competition;
 
+    /// <summary>K.-o.-Spiel (Verlängerung bei Gleichstand; bei der WM die Endrunde, Seite 10 statt 8 in <see cref="LivePages"/>).</summary>
+    public bool KnockOut => Setup.KnockOut;
+
     /// <summary>Mannschaft des Heimvereins für die Minutenrechnung (Ziel der Befehle aus <see cref="MatchIntervention"/>); null bei Spielwertung.</summary>
     public LiveTeam? HomeTeam => Setup.Forfeit ? null : Setup.HomeTeam;
 
@@ -50,7 +53,23 @@ public sealed class LiveMatch
     /// <summary>Bericht, während des Spiels laufend fortgeschrieben (Stand, Ereignisse).</summary>
     public MatchReport Report { get; }
 
-    internal void Play(int minute, GameOptions options)
+    /// <summary>
+    /// Ziel der Tormeldung dieser Paarung ohne Reihe (A832, <see cref="MatchEngine.NoticeTarget"/>); gesetzt, wenn alle
+    /// Paarungen vorbereitet sind (<see cref="LiveMatchDay.Begin"/>), sonst null.
+    /// </summary>
+    internal GoalNoticeTarget? Notice { get; set; }
+
+    /// <summary>
+    /// Rechnet eine Minute dieser Paarung. Liefert true, wenn die Minutenschleife der Paarung mit dieser Minute endet; den
+    /// Abschluss (<see cref="Complete"/>) macht <see cref="LiveMatchDay.Step"/> erst nach der Minute aller Paarungen.
+    /// </summary>
+    internal bool Play(int minute, GameOptions options) => Play(minute, options, skip: false);
+
+    /// <summary>
+    /// Wie <see cref="Play(int, GameOptions)"/>; mit <paramref name="skip"/> entfällt die Rechnung der Minute (Leertaste, S05),
+    /// Drittelpause und Ende der Schleife bleiben ([ORIGINAL] 0x37A86 vor der Minutenschleife, 0x32AA3 nach ihr).
+    /// </summary>
+    internal bool Play(int minute, GameOptions options, bool skip)
     {
         var home = Setup.HomeTeam;
         var away = Setup.AwayTeam;
@@ -60,6 +79,8 @@ public sealed class LiveMatch
             OriginalMinutes.RecoverEnergy(home);
             OriginalMinutes.RecoverEnergy(away);
         }
+        if (skip)
+            return EndOfMinute(minute);
         var periodEnd = minute switch
         {
             <= 20 => 20,
@@ -69,7 +90,7 @@ public sealed class LiveMatch
             _ => 70,
         };
         var previous = OriginalMinutes.Display;
-        OriginalMinutes.Display = new LiveDisplay(Row, Setup.DayActive || Row is not null, options);
+        OriginalMinutes.Display = new LiveDisplay(Row, Setup.DayActive || Row is not null, options, Notice);
         try
         {
             OriginalMinutes.PlayMinute(home, away, Setup.Rules, minute, periodEnd, Report, Setup.Random);
@@ -78,6 +99,11 @@ public sealed class LiveMatch
         {
             OriginalMinutes.Display = previous;
         }
+        return EndOfMinute(minute);
+    }
+
+    private bool EndOfMinute(int minute)
+    {
         LastMinute = minute;
         if (minute == 60)
         {
@@ -85,14 +111,16 @@ public sealed class LiveMatch
             if (Setup.KnockOut && Report.HomeGoals == Report.AwayGoals)
                 Report.Overtime = true;
             else
-                Complete();
+                return true;
         }
-        else if (minute == 70)
-            Complete();
+        return minute == 70;
     }
 
-    /// <summary>Ende der Minutenschleife: wie <see cref="OriginalMinutes.Play"/> und <c>MatchEngine.PlayWithScoreboard</c>.</summary>
-    private void Complete()
+    /// <summary>
+    /// Ende der Minutenschleife: wie <see cref="OriginalMinutes.Play"/> und <c>MatchEngine.PlayWithScoreboard</c> (mit
+    /// Penaltyschießen nach der Verlängerung).
+    /// </summary>
+    internal void Complete()
     {
         Report.HomePenaltyMinutes = Setup.HomeTeam.PenaltyMinutes;
         Report.AwayPenaltyMinutes = Setup.AwayTeam.PenaltyMinutes;
@@ -125,9 +153,9 @@ public sealed class LiveMatch
 /// Zufall: Jede Paarung zieht aus dem <see cref="LiveFixture.Random"/> ihrer Vorgabe. Mit einem eigenen Generator je Paarung
 /// liefert der Minutenschritt ohne Eingriff dieselben Ergebnisse wie <see cref="MatchEngine.PlayWithEvents"/> mit diesem
 /// Generator. Teilen sich Paarungen einen Generator, ziehen sie in der verschränkten Reihenfolge des Originals (0x37A62: Minute
-/// für Minute alle Paarungen) und damit anders als die Spieltage des Remakes, die Paarung für Paarung rechnen
-/// (<c>GameState.PlayNextMatchDay</c>). [APPROX] Wie der Spieltagsablauf den Zufall auf die Paarungen verteilt, wenn er über
-/// den Minutenschritt läuft, entscheidet der Anschluss (B2/B3, Leitstelle); der Minutenschritt ändert keinen Spieltag.
+/// für Minute alle Paarungen, <c>docs/analyse/live-spieltag.md</c>); so rechnet der Ligaspieltag
+/// (<see cref="MatchEngine.PlayMatchDay"/>, S01). Das Ende der Minutenschleife (Reihe abschließen, Penaltyschießen) folgt erst
+/// nach der Minute aller Paarungen, in Paarungsreihenfolge ([ORIGINAL] 0x32AA3 nach 0x37A62, Datei 0x37211/0x3728B).
 /// </para>
 /// Darstellungszustand: nicht im Spielstand; Zeit vergeht weiter nur über <c>GameState.Continue()</c> (der Aufrufer rechnet
 /// den Spieltag innerhalb seines Schritts).
@@ -172,6 +200,13 @@ public sealed class LiveMatchDay
                 OriginalMinutes.MinuteLoopCalls++; // wie OriginalMinutes.Play (Testzähler)
             list.Add(match);
         }
+        // A909: [ORIGINAL] 0x544C0 läuft für alle Paarungen vor der Minutenschleife und setzt die Live-Anzeige des Tages (DGROUP
+        // 0x5A56, Datei 0x54C63–0x54C94); das Ziel der Tormeldung steht damit für alle Paarungen erst nach der Vorbereitung fest.
+        foreach (var match in list)
+        {
+            if (match.Stepped)
+                match.Notice = MatchEngine.NoticeTarget(match.Setup);
+        }
         return new LiveMatchDay(game, list);
     }
 
@@ -184,13 +219,43 @@ public sealed class LiveMatchDay
         if (ended || !Running || Minute >= LastMinute)
             return false;
         Minute++;
+        var completed = new List<LiveMatch>();
         foreach (var match in matches)
         {
-            if (match.Running)
-                match.Play(Minute, game.Options);
+            if (!match.Running)
+                continue; // A766: [ORIGINAL] entschiedene Paarung rechnet in der Verlängerung nicht (Datei 0x3825F–0x3826C)
+            if (match.Play(Minute, game.Options))
+                completed.Add(match);
         }
+        // [ORIGINAL] 0x36B5D: Ende der Schleife erst nach der Minute aller Paarungen (0x32AA3 nach Minute 60 Datei 0x37211, mit
+        // Penaltyschießen 0x3901B nach Minute 70 Datei 0x3728B) – in Paarungsreihenfolge.
+        foreach (var match in completed)
+            match.Complete();
         return true;
     }
+
+    /// <summary>
+    /// Leertaste in der Live-Anzeige (S05, Teil von A449): die nächste Minute vergeht für **keine** Paarung gerechnet. [ORIGINAL]
+    /// Datei 0x37D0B–0x37D89: nach Taste 0x20 Spielmodus-Optionen 0x2CD1C, Neuaufbau 0x5353C, dann <c>jmp 0x38551</c> an das
+    /// Minutenende – ohne Rechnung und ohne Tafel; die Schleife zählt weiter, Drittelpause (0x37A86) und Ende der Schleife
+    /// (0x32AA3, Verlängerung bei Gleichstand nach 60) bleiben. Liefert false wie <see cref="Step"/>, wenn nichts mehr läuft.
+    /// </summary>
+    public bool Skip()
+    {
+        if (ended || !Running || Minute >= LastMinute)
+            return false;
+        Minute++;
+        var completed = new List<LiveMatch>();
+        foreach (var match in matches)
+        {
+            if (match.Running && match.Play(Minute, game.Options, skip: true))
+                completed.Add(match);
+        }
+        foreach (var match in completed)
+            match.Complete();
+        return true;
+    }
+
 
     /// <summary>
     /// Rechnet die restlichen Minuten und schließt alle Paarungen in ihrer Reihenfolge ab (wie

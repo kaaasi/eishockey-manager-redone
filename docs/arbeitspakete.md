@@ -79,7 +79,7 @@ R26-D4 = B (ChatGPT GPT-6.2 Astra) mit Claude-Auswertung.
   angepasst werden). **Prüfung:** `--schnell`; Live-Spieltag mit zwei und drei Managerpaarungen (Liga, Play-off, Pokal mit
   Penaltyschießen) als Bildschirmfoto-Ablauf, Vergleich mit Videobild bzw. DOSBox-Bild; Mehrsaisonprobe (4 Wechsel, zwei Manager,
   Live an) – Ergebnisse und Geld plausibel.
-- **Status:** offen (Go 25.11.2026, Start nach Merge des Plans).
+- **Status:** Review offen (PR #1032, Claude Code): Teil 1, 2, 2b, 3, 4 fertig; Teil 3b: Ligapaarungen mit Minute und Penalty-Bildschirm F076 fertig. Rest Teil 3b (Aufstiegsrunde und Europapokal im Spielablauf, 0x31CD5, `docs/analyse/live-spieltag.md` §10) ist eigene Spur `live-seiten-rest` (R26-E2 = C). Fixlauf 26.11.2026: Rebase auf `main` 9d9ae39 (nach `tagesabschluss` #1034), erwartete Werte fremder Tests neu begründet (R21-D2 = A).
 
 ### Spur `tagesabschluss` – Tagesabschluss im Hauptweg je Manager (#1018, Welle 1)
 

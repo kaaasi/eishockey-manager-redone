@@ -59,13 +59,25 @@ public sealed class LivespielUi2Tests
         Assert.False(reporter.Busy);
     }
 
-    /// <summary>Pause n ≤ 0 (Geschwindigkeit 62 … 69 mit Zwinkern, #823) wartet nicht; n / 3 Ticks sonst.</summary>
+    /// <summary>
+    /// Pause n (0x130EE): n / 3 mit Vorzeichen, als vorzeichenloses Wort Ticks. n = 0, −1, −2 → keine Pause; n = −3, −4
+    /// (Geschwindigkeit 66 … 69 mit Zwinkern, #823) → 0xFFFF Ticks (A448, live-verschraenkt Teil 4; vorher als „keine Pause“
+    /// genähert). Solche Geschwindigkeiten setzt der Regler nicht (nur Zehner).
+    /// </summary>
     [Fact]
-    public void PauseFrames_NonPositiveIsNoPause()
+    public void PauseFrames_OriginalTickWord()
     {
-        Assert.Equal(0, LiveReporter.PauseFrames(-4));
         Assert.Equal(0, LiveReporter.PauseFrames(0));
+        Assert.Equal(0, LiveReporter.PauseFrames(-2));
+        Assert.Equal(ShortMessage.FramesFor(3 * 0xFFFF), LiveReporter.PauseFrames(-3));
+        Assert.Equal(ShortMessage.FramesFor(3 * 0xFFFF), LiveReporter.PauseFrames(-4));
         Assert.Equal(ShortMessage.FramesFor(45), LiveReporter.PauseFrames(45));
+        var options = new GameOptions();
+        for (var speed = -5; speed <= 100; speed++)
+        {
+            options.SetMatchSpeed(speed);
+            Assert.Equal(0, options.MatchSpeed % 10); // [ORIGINAL] Regler nur Zehner (Datei 0x2CD1C)
+        }
     }
 
     /// <summary>

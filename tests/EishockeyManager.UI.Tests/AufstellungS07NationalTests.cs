@@ -1,6 +1,7 @@
 using EishockeyManager.Core;
 using EishockeyManager.Formats;
 using EishockeyManager.Tests.Support;
+using EishockeyManager.UI.Screens.Competitions;
 using EishockeyManager.UI.Screens.Live;
 
 namespace EishockeyManager.UI.Tests;
@@ -42,11 +43,16 @@ public sealed class AufstellungS07NationalTests
         var keeper = coach.SourceOf(Assert.IsType<Player>(coach.Lineup().Goalkeeper));
         var minutes = keeper.GoalieMinutes;
 
-        for (var frames = 0; d.Host.Current is LiveMatchScreen; frames++)
+        // Spur live-verschraenkt Teil 3 (S04, R15-E2 = C): [ORIGINAL] nach dem Drittel zeigt der Seitenwähler 0x3A88A die
+        // WM-Seiten mit Minute (Schalter WM-Spiele, beim Bundestrainer an; Datei 0x3858C–0x386CD, drittelseiten.py); Rechtsklick
+        // führt zurück ins Spiel.
+        for (var frames = 0; d.Host.Current is LiveMatchScreen or CupPairingsScreen or WorldCupKnockoutScreen; frames++)
         {
             Assert.True(frames < 200_000, "Spiel endet nicht");
             if (d.Host.Current is LiveMatchScreen { WaitingForClick: true })
                 d.Click(160, 120);
+            else if (d.Host.Current is CupPairingsScreen or WorldCupKnockoutScreen)
+                d.RightClick(5, 5);
             else
                 d.Frame();
         }

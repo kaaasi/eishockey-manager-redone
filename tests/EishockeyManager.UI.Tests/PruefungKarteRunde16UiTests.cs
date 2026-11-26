@@ -32,7 +32,10 @@ public class PruefungKarteRunde16UiTests
         // Runde 25, Spur saison-geld Teil 1 (T03, R21-D2 = A, R15-E2 = C): Saat 1994 statt 1993 – Markt-Takt random(0, 3) je Markt-Platz (A829, Datei
         // 0x07215), anderer Zufallsverlauf ab dem ersten Takttag; bei Saat 1993 bekommt der Manager keine Prämie, unter 1990–2001 erfüllen
         // 1990–1992, 1994, 1996, 1998, 1999, 2001 die Vorbedingung. Die Probe hängt an der Saat.
-        var d = FlowTests.CreateDriver(1994);
+        // Spur live-verschraenkt Teil 2 (Runde 26, S01, R21-D2 = A, R15-E2 = C): Saat 1992 statt 1994 – der Ligaspieltag rechnet je
+        // Minute alle Paarungen aus dem gemeinsamen Zufall (0x37A62, docs/analyse/live-spieltag.md), anderer Zufallsverlauf ab dem
+        // ersten Ligaspieltag; mit 1994 ist die Vorbedingung verfehlt. Rückschaltprobe siehe PR #1032. Die Probe hängt an der Saat.
+        var d = FlowTests.CreateDriver(1992);
         d.StartNewGame();
         var game = d.Host.Game!;
         for (var guard = 0; d.Host.Current is not SeasonEndSummaryScreen && guard++ < 20000;)

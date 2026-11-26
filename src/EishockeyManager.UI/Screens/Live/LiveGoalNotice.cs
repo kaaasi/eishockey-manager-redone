@@ -15,12 +15,12 @@ namespace EishockeyManager.UI.Screens.Live;
 ///   x + 21, x + 30 wie die Anzeigetafel –, Pause 70.</item>
 /// <item>[ORIGINAL] Datei 0xAD52–0xAD6E: Rechteck (196 | 184) 118 × 32 aus der Hintergrundkopie (VGA-Seite 1, 0x4B00)
 ///   zurückholen – die Meldung verschwindet samt einem Reportertext darunter.</item>
-/// <item>[APPROX] Das Original meldet das Tor während der Minutenrechnung aller Paarungen; das Remake rechnet die Paarungen
-///   nacheinander und zeigt die Meldungen, die vor dem Halt an der Paarung mit Reihe gerechnet wurden, nach den Meldungen des
-///   Reporters in ihrer Minute (<see cref="LiveMatchScreen"/>). Tore von Paarungen nach der letzten Paarung mit Reihe des
-///   Ablaufs und aus Minuten, die die Paarung mit Reihe nicht spielt (Verlängerung), erscheinen nicht; Enter überspringt sie
-///   wie den Rest der Anzeige. Die Hintergrundkopie ist hier das Leeren des Reporterkastens
-///   (<see cref="LiveReporter.ClearLines"/>).</item>
+/// <item>[ORIGINAL] Das Original meldet das Tor während der Minutenrechnung aller Paarungen an der Stelle der Paarung; so zeigt
+///   der Live-Bildschirm am Ligaspieltag die Meldungen in Paarungsreihenfolge zwischen den Meldungen der Reihen (S01,
+///   <see cref="LiveMatchScreen"/>), an Pokalterminen für die Paarungen mit Minutenweg ebenso (<c>MatchEngine.PlayDate</c>).
+///   [APPROX] Paarungen des schnellen Pokalwegs (<c>MatchEngine.FastCupPath</c>, Remake je Paarung statt je Tag) rechnet das
+///   Remake nach der Minutenschleife; ihre Tore meldet der Live-Bildschirm nicht. Enter überspringt die Meldungen wie den Rest
+///   der Anzeige. Die Hintergrundkopie ist hier das Leeren des Reporterkastens (<see cref="LiveReporter.ClearLines"/>).</item>
 /// </list>
 /// </summary>
 public sealed class LiveGoalNotice

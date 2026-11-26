@@ -55,7 +55,19 @@ public class PruefungKarteRunde17UiTests
         // und 11 eine Prämie. Rückschaltprobe: src/ von faa64d2 mit Saat 3 rot (eine Prämie fehlt) – die Probe hängt an der Saat.
         // Runde 25, Spur saison-geld Teil 1 (T03, R21-D2 = A, R15-E2 = C): Saat 7 statt 3 – Markt-Takt random(0, 3) je Markt-Platz (A829, Datei 0x07215),
         // anderer Zufallsverlauf; bei Saat 3 bekommt Manager 0 keine Prämie, unter 1–15 erfüllen 7, 8, 10–14 die Vorbedingung.
-        var (d, game) = StartAtSeasonEnd(nationalCoach: false, seed: 7);
+        // Spur live-verschraenkt Teil 2 (Runde 26, S01, R21-D2 = A, R15-E2 = C): Saat 1 statt 7 – der Ligaspieltag rechnet je
+        // Minute alle Paarungen aus dem gemeinsamen Zufall (0x37A62, docs/analyse/live-spieltag.md), anderer Zufallsverlauf ab dem
+        // ersten Ligaspieltag; mit 7 ist die Vorbedingung verfehlt. Rückschaltprobe siehe PR #1032. Die Probe hängt an der Saat.
+        // Spur live-verschraenkt Teil 2b (Runde 26, S01, R21-D2 = A, R15-E2 = C): Saat 2 statt 1 – Pokal-, Play-off- und WM-Termine
+        // rechnen je Minute alle Paarungen des Termins (0x37A62 Datei 0x380D0–0x3853E, MatchEngine.PlayDate), anderer Zufallsverlauf ab
+        // dem ersten Pokaltermin; mit 1 ist die Vorbedingung verfehlt, unter 1–15 erfüllen 2, 3, 6, 7, 9–15 sie. Rückschaltprobe siehe
+        // PR #1032. Die Probe hängt an der Saat.
+        // Fixlauf live-verschraenkt, Rebase auf main 9d9ae39 (Runde 26, R21-D2 = A, R15-E2 = C): Saat 3 statt 2 – verschränkte
+        // Liga- und Pokaltermine (0x37A62, #1032) und Stadionschäden je Manager (0x3CFA0, Datei 0x3D330, #1034) zusammen ergeben
+        // einen anderen Zufallsverlauf als jede Änderung allein; bei 2 bekommt der zweite Manager (Platz 5) keine Prämie, die Probe
+        // prüft dann nichts; 3 ja. Rückschaltprobe: src/ von 9d9ae39 (main) bzw. src/ von 5d491e5 (alter Head) + Saat 3 grün. Die
+        // Probe hängt an der Saat.
+        var (d, game) = StartAtSeasonEnd(nationalCoach: false, seed: 3);
         var records = game.History[^1].Managers;
         Assert.Equal(2, records.Count);
         Assert.All(records, r => Assert.True(r.Premium > 0, "Probe ohne Prämie prüft nichts"));

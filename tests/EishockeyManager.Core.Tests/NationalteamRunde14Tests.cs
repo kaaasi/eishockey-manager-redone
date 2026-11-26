@@ -378,7 +378,10 @@ public class NationalteamRunde14Tests
     /// Gegenprobe: <c>UpdateNationalTeamValues()</c> nur in <c>WorldCupLoopStepA</c> ausgelassen → rot.
     /// </summary>
     [Theory]
-    [InlineData(3)]
+    // Spur live-verschraenkt Teil 2b (Runde 26, S01, R21-D2 = A, R15-E2 = C): Saat 4 statt 3 – die WM-Gruppentermine rechnen je
+    // Minute alle Paarungen (0x37A62 Datei 0x380D0–0x3853E, MatchEngine.PlayDate); bei Saat 3 verletzt sich jetzt ein Aufgestellter im
+    // WM-Spiel (2 Spiele) und fällt aus den Teamwerten, unter 3–8 nur dort. Vorbedingung, Rückschaltprobe siehe PR #1032.
+    [InlineData(4)]
     [InlineData(11)]
     public void Mode4_LaterWorldCupDay_StepA_UsesLineupForm(int seed)
     {

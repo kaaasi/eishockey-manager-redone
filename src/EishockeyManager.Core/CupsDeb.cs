@@ -160,16 +160,19 @@ public sealed partial class DebCup : ISeasonCompetition
         var (round, number) = date;
 
         var managerClubs = game.ActiveManagers.Select(m => m.ClubIndex).ToHashSet();
-        var played = new List<KnockoutMatch>();
-        foreach (var tie in _rounds[round])
+        // S01 (Spur live-verschraenkt Teil 2b): [ORIGINAL] Pokalzeile 0 – je Minute alle Paarungen des Termins in Platzfolge
+        // (0x37A62 Datei 0x380D0–0x3853E, MatchEngine.PlayDate); jede Paarung wird eingetragen, sobald sie gerechnet ist.
+        var ties = _rounds[round].Where(t => t.PlaysGame(number)).ToList();
+        var matches = new KnockoutMatch[ties.Count];
+        MatchEngine.PlayDate(game, [.. ties.Select(t => CupTie.Pairing(t, number)).Select(p =>
+            new LiveFixture(game.Clubs[p.Home], game.Clubs[p.Away], MatchCompetition.DebCup, true, game.Random))], (i, report) =>
         {
-            if (!tie.PlaysGame(number))
-                continue;
-            var (home, away) = CupTie.Pairing(tie, number);
-            var (match, marks) = CupMatch.Play(game, day, game.Clubs[home], game.Clubs[away], MatchCompetition.DebCup, game.Random);
-            tie.Add(match, marks);
-            played.Add(match);
-        }
+            var (home, away) = CupTie.Pairing(ties[i], number);
+            var (match, marks) = CupMatch.FromReport(day, game.Clubs[home], game.Clubs[away], report, debCup: true);
+            ties[i].Add(match, marks);
+            matches[i] = match;
+        });
+        var played = matches.ToList();
         game.SettleCupMatches(played, importance: 1); // gemeinsame Spielabrechnung, genau einmal je Spiel
         // [ORIGINAL] 0x34B76 trägt jedes gespielte Spiel über 0x50283 ein (Datei 0x34C5C, Endstand ohne Marke:
         // 0x34C06–0x34C2A zieht 30 ab, solange das Heimbyte > 29) – Begegnungstabelle (Spur wettbewerbe-spiel, Teil 2).

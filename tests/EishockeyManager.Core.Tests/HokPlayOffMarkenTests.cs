@@ -235,7 +235,10 @@ public sealed class HokPlayOffMarkenTests
     [Fact]
     public void PlayDate_RecordsMarksPerGame()
     {
-        var game = NewGame.Create(TestGames.CreateDatabase(), Setup(), 7);
+        // Spur live-verschraenkt Teil 2 (Runde 26, S01, R21-D2 = A, R15-E2 = C): Saat 8 statt 7 – der Ligaspieltag rechnet je
+        // Minute alle Paarungen aus dem gemeinsamen Zufall (0x37A62, docs/analyse/live-spieltag.md), anderer Zufallsverlauf ab dem
+        // ersten Ligaspieltag; mit 7 ist die Vorbedingung verfehlt. Rückschaltprobe siehe PR #1032. Die Probe hängt an der Saat.
+        var game = NewGame.Create(TestGames.CreateDatabase(), Setup(), 8);
         TestSeason.PlayRegularSeason(game);
         for (var guard = 0; game.Playoffs is null || game.Playoffs.Rounds.Count < 2; guard++)
         {

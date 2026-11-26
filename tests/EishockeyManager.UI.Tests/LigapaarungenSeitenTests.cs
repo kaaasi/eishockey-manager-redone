@@ -24,7 +24,13 @@ public class LigapaarungenSeitenTests
         var setup = new GameSetup();
         setup.Managers.Add(new ManagerSetup { Name = "A", Head = 0, ClubIndex = 2 });
         // Runde 21, Spur zufallsstrom Teil 4 (R21-D2 = A, R15-E2 = C): Saat 2 statt 3 – Werbung, Börse, Zuschauer, Talentsuche, Jugend und Baufirmen ziehen aus dem gemeinsamen Strom statt aus FinanceRandom (Werbeangebote des Spielstarts Datei 0x2A03B–0x2A061, Börse Datei 0x43AD5), anderer Zufallsverlauf ab dem Spielstart; bei Saat 3 (und 1) läuft der Schritt nach der Hauptrunde bis hinter das erste Spiel der Aufstiegsrunde, 2 und 4–8 nicht. Die Probe hängt an der Saat.
-        return NewGame.Create(Formats.ClubDatabase.Parse(data), setup, 2);
+        // Fixlauf live-verschraenkt, Rebase auf main 9d9ae39 (Runde 26, R21-D2 = A, R15-E2 = C): Saat 3 statt 2 – verschränkte
+        // Liga- und Pokaltermine (0x37A62, #1032) und Stadionschäden je Manager (0x3CFA0, Datei 0x3D330, #1034) zusammen ergeben
+        // einen anderen Zufallsverlauf als jede Änderung allein; bei 2 läuft der Schritt nach der Hauptrunde bis hinter das erste
+        // Spiel der Aufstiegsrunde (Vorbedingung verfehlt), 3 nicht – alle Tests der Datei grün. Rückschaltprobe: src/ von 9d9ae39
+        // (main) bzw. src/ von 5d491e5 (alter Head) + Saat 3 rot (PlayoffOverview_AfterPlayoffs_ShowsAllRounds_ChampionLeft). Die
+        // Probe hängt an der Saat.
+        return NewGame.Create(Formats.ClubDatabase.Parse(data), setup, 3);
     }
 
     private static InputState Click(int x, int y) => new() { MouseX = x, MouseY = y, LeftClick = true };

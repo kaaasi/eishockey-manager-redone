@@ -39,6 +39,12 @@ public sealed record KnockoutMatch(int Day, int Home, int Away, int HomeGoals, i
         MatchCompetition competition, Random random)
     {
         var report = MatchEngine.PlayWithEvents(game, home, away, competition, knockOut: true, random);
+        return FromReport(day, home, away, report, random);
+    }
+
+    /// <summary>Endstand und Marken eines gerechneten K.-o.-Spiels (wie <see cref="PlayWithMarks"/>, Spur live-verschraenkt Teil 2b).</summary>
+    public static (KnockoutMatch Match, int Marks) FromReport(int day, Club home, Club away, MatchReport report, Random random)
+    {
         int? penalty = null;
         if (report.HomeGoals == report.AwayGoals)
         {
@@ -205,13 +211,19 @@ public sealed partial class Playoffs
         var played = new List<KnockoutMatch>();
         if (round >= _rounds.Count)
             return played;
-        foreach (var series in _rounds[round].Where(s => !s.IsDecided))
+        // S01 (Spur live-verschraenkt Teil 2b): [ORIGINAL] Pokalzeile 2 – je Minute alle offenen Serien des Termins in Platzfolge
+        // (0x37A62 Datei 0x380D0–0x3853E, MatchEngine.PlayDate); jedes Spiel wird eingetragen, sobald es gerechnet ist.
+        var open = _rounds[round].Where(s => !s.IsDecided).ToList();
+        var matches = new KnockoutMatch[open.Count];
+        MatchEngine.PlayDate(game, [.. open.Select(s => new LiveFixture(clubs[s.NextPairing.Home], clubs[s.NextPairing.Away],
+            MatchCompetition.Playoff, true, random))], (i, report) =>
         {
-            var (home, away) = series.NextPairing;
-            var (match, marks) = KnockoutMatch.PlayWithMarks(game, day, clubs[home], clubs[away], MatchCompetition.Playoff, random);
-            series.Add(match, marks);
-            played.Add(match);
-        }
+            var (home, away) = open[i].NextPairing;
+            var (match, marks) = KnockoutMatch.FromReport(day, clubs[home], clubs[away], report, random);
+            open[i].Add(match, marks);
+            matches[i] = match;
+        });
+        played.AddRange(matches);
         return played;
     }
 }
@@ -285,12 +297,13 @@ public sealed partial class RelegationGroup
         var round = RoundOn(dateIndex);
         if (round < 0 || round != PlayedRounds)
             return [];
-        var played = Rounds[round].Matches.Select(m =>
-        {
-            var report = MatchEngine.PlayWithEvents(game, clubs[m.Home], clubs[m.Away], MatchCompetition.Relegation, knockOut: false, random);
-            var (hg, ag) = (report.HomeGoals, report.AwayGoals);
-            return new MatchResult(Upper, round + 1, m.Home, m.Away, hg, ag);
-        }).ToList();
+        // S01 (Spur live-verschraenkt Teil 2b): [ORIGINAL] je Minute alle Paarungen des Gruppenspieltags (0x37A62 Pokalzeile 3,
+        // MatchEngine.PlayDate). [APPROX] Das Original rechnet sie mit den Play-off-Paarungen des Termins in einer Schleife (Maske 0xC).
+        var matches = Rounds[round].Matches;
+        var reports = MatchEngine.PlayDate(game, [.. matches.Select(m =>
+            new LiveFixture(clubs[m.Home], clubs[m.Away], MatchCompetition.Relegation, false, random))]);
+        var played = matches.Select((m, i) =>
+            new MatchResult(Upper, round + 1, m.Home, m.Away, reports[i].HomeGoals, reports[i].AwayGoals)).ToList();
         Results.AddRange(played);
         PlayedRounds++;
         return played;

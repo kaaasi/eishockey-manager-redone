@@ -198,7 +198,13 @@ public class DebCupTests
     [Fact]
     public void MultiSeasonProbe_FourSeasonChanges_PassiveAndActiveManager()
     {
-        var game = Create(7, true, 30, 6); // passiv: Oberligist 30, aktiv: Bundesligist 6
+        // Fixlauf live-verschraenkt, Rebase auf main 9d9ae39 (Runde 26, R21-D2 = A, R15-E2 = C): Saat 8 statt 7 – verschränkte
+        // Liga- und Pokaltermine (0x37A62, #1032) und Stadionschäden je Manager (0x3CFA0, Datei 0x3D330, #1034) zusammen ergeben
+        // einen anderen Zufallsverlauf als jede Änderung allein; die Probe setzt gleichbleibende Plätze voraus (Testaufbau 9 Sitz-,
+        // 0 Stehplätze); bei 7 sperrt ein Stadionschaden die Sitzplätze (Sperre mindestens 100, Datei 0x3D083), Kapazität am
+        // Saisonende 0 bei 2691 gebuchtem Eintritt; 8 ohne Sperre. Rückschaltprobe: src/ von 9d9ae39 (main) bzw. src/ von 5d491e5
+        // (alter Head) + Saat 8 grün. Die Probe hängt an der Saat.
+        var game = Create(8, true, 30, 6); // passiv: Oberligist 30, aktiv: Bundesligist 6
         var passive = game.Managers[0];
         var active = game.Managers[1];
         for (var i = 0; i < 2; i++)

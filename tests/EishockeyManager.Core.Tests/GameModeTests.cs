@@ -511,8 +511,20 @@ public class GameModeTests
     // (Datei 0x3D330) würfeln je Manager und Bautag random(0, 2·d + 8) (Datei 0x3CFC5) und bei 0 je Projekt weiter; anderer
     // Zufallsverlauf ab dem ersten Bautag, Stufen und Plätze können sinken. Kein Originalsollwert, nur interner Abdruck.
     // Rückschaltprobe: src/ von 36323e2 → alte Werte.
+    // Spur live-verschraenkt Teil 2 (Runde 26, S01, R21-D2 = A, R15-E2 = C): neu – der Ligaspieltag rechnet je Minute alle
+    // Paarungen aus dem gemeinsamen Zufall (0x37A62, Datei 0x37DB7–0x380CD; docs/analyse/live-spieltag.md) statt Paarung für
+    // Paarung; anderer Zufallsverlauf ab dem ersten Ligaspieltag. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von b322f69 + dieser Test → rot (alte Werte).
+    // Spur live-verschraenkt Teil 2b (Runde 26, S01, R21-D2 = A, R15-E2 = C): neu – Pokal-, Play-off-, Aufstiegsrunden-, Europapokal-
+    // und WM-Termine rechnen je Minute alle Paarungen des Termins mit Minutenweg (0x37A62 Datei 0x380D0–0x3853E,
+    // MatchEngine.PlayDate); anderer Zufallsverlauf ab dem ersten Pokaltermin. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von f8bb0ad + dieser Test → rot (alte Werte).
+    // Fixlauf live-verschraenkt, Rebase auf main 9d9ae39 (Runde 26, R21-D2 = A, R15-E2 = C): neu – verschränkte Liga- und
+    // Pokaltermine (0x37A62, #1032) und Stadionschäden je Manager (0x3CFA0, Datei 0x3D330, #1034) zusammen ergeben einen anderen
+    // Zufallsverlauf als jede Änderung allein. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von 9d9ae39
+    // (main) bzw. 5d491e5 (alter Head) → deren Werte, hier rot.
     internal const string Mode4Reference =
-        "WorldChampion=63,CupWinner=16,GermanChampion=1,EuropeanCupWinner=2|1100000,400000|WorldChampion=52,CupWinner=10,GermanChampion=1,EuropeanCupWinner=1|2456064,400000|WorldChampion=52,CupWinner=14,GermanChampion=3,EuropeanCupWinner=1|2570172,400000|WorldChampion=52,CupWinner=12,GermanChampion=15,EuropeanCupWinner=3|2301108,400000|WorldChampion=52,CupWinner=5,GermanChampion=6,EuropeanCupWinner=3|2195537,400000|R2062587506";
+        "WorldChampion=52,CupWinner=1,GermanChampion=1,EuropeanCupWinner=2|1100000,400000|WorldChampion=52,CupWinner=3,GermanChampion=0,EuropeanCupWinner=1|2323265,400000|WorldChampion=54,CupWinner=0,GermanChampion=5,EuropeanCupWinner=0|2346843,500000|WorldChampion=52,CupWinner=1,GermanChampion=1,EuropeanCupWinner=5|2632103,400000|WorldChampion=52,CupWinner=19,GermanChampion=20,EuropeanCupWinner=1|3297450,400000|R1873956297";
 
     /// <summary>Aktiver Manager (wie in den Mehrsaisonproben der Spur kader): verlängert jeden angebotenen Vertrag.</summary>
     internal static void ActiveSecondManager(GameState game)

@@ -307,8 +307,20 @@ public class JugendTeamsTests
     // (Datei 0x3D330) würfeln je Manager und Bautag random(0, 2·d + 8) (Datei 0x3CFC5) und bei 0 je Projekt weiter; anderer
     // Zufallsverlauf ab dem ersten Bautag, Stufen und Plätze können sinken. Kein Originalsollwert, nur interner Abdruck.
     // Rückschaltprobe: src/ von 36323e2 → alte Werte.
+    // Spur live-verschraenkt Teil 2 (Runde 26, S01, R21-D2 = A, R15-E2 = C): neu – der Ligaspieltag rechnet je Minute alle
+    // Paarungen aus dem gemeinsamen Zufall (0x37A62, Datei 0x37DB7–0x380CD; docs/analyse/live-spieltag.md) statt Paarung für
+    // Paarung; anderer Zufallsverlauf ab dem ersten Ligaspieltag. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von b322f69 + dieser Test → rot (alte Werte).
+    // Spur live-verschraenkt Teil 2b (Runde 26, S01, R21-D2 = A, R15-E2 = C): neu – Pokal-, Play-off-, Aufstiegsrunden-, Europapokal-
+    // und WM-Termine rechnen je Minute alle Paarungen des Termins mit Minutenweg (0x37A62 Datei 0x380D0–0x3853E,
+    // MatchEngine.PlayDate); anderer Zufallsverlauf ab dem ersten Pokaltermin. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von f8bb0ad + dieser Test → rot (alte Werte).
+    // Fixlauf live-verschraenkt, Rebase auf main 9d9ae39 (Runde 26, R21-D2 = A, R15-E2 = C): neu – verschränkte Liga- und
+    // Pokaltermine (0x37A62, #1032) und Stadionschäden je Manager (0x3CFA0, Datei 0x3D330, #1034) zusammen ergeben einen anderen
+    // Zufallsverlauf als jede Änderung allein. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von 9d9ae39
+    // (main) bzw. 5d491e5 (alter Head) → deren Werte, hier rot.
     private const string ExpectedActive =
-        "0:Schueler:2/11/59;0:Jugend:2/11/63;0:Junioren:2/11/68;1:Schueler:1/12/71;1:Jugend:1/12/69;1:Junioren:1/11/73;2:Schueler:1/6/77;2:Jugend:1/6/79;2:Junioren:1/6/78;3:Schueler:1/6/83;3:Jugend:1/6/83;3:Junioren:1/6/81";
+        "0:Schueler:2/11/61;0:Jugend:2/11/61;0:Junioren:2/11/63;1:Schueler:1/11/72;1:Jugend:1/11/74;1:Junioren:1/11/74;2:Schueler:1/6/81;2:Jugend:1/6/83;2:Junioren:1/6/83;3:Schueler:1/6/85;3:Jugend:1/6/85;3:Junioren:1/6/85";
     // kader-start Teil 2 (U15-a, L13): neu, siehe oben.
     // kader-start Teil 3 (R-K5, L13): neu – Satzfolge vor der Spielvorbereitung aus dem Spielstart-Seed (Datei 0x43A17), Zufallsplatz des Starttauschs als Satzplatz.
     // Review #662 (R14NT-01, Leitstelle Runde 14): neu – der passive Bundesligist wird Bundestrainer; nach der Ernennung läuft die
@@ -417,8 +429,20 @@ public class JugendTeamsTests
     // (Datei 0x3D330) würfeln je Manager und Bautag random(0, 2·d + 8) (Datei 0x3CFC5) und bei 0 je Projekt weiter; anderer
     // Zufallsverlauf ab dem ersten Bautag, Stufen und Plätze können sinken. Kein Originalsollwert, nur interner Abdruck.
     // Rückschaltprobe: src/ von 36323e2 → alte Werte.
+    // Spur live-verschraenkt Teil 2 (Runde 26, S01, R21-D2 = A, R15-E2 = C): neu – der Ligaspieltag rechnet je Minute alle
+    // Paarungen aus dem gemeinsamen Zufall (0x37A62, Datei 0x37DB7–0x380CD; docs/analyse/live-spieltag.md) statt Paarung für
+    // Paarung; anderer Zufallsverlauf ab dem ersten Ligaspieltag. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von b322f69 + dieser Test → rot (alte Werte).
+    // Spur live-verschraenkt Teil 2b (Runde 26, S01, R21-D2 = A, R15-E2 = C): neu – Pokal-, Play-off-, Aufstiegsrunden-, Europapokal-
+    // und WM-Termine rechnen je Minute alle Paarungen des Termins mit Minutenweg (0x37A62 Datei 0x380D0–0x3853E,
+    // MatchEngine.PlayDate); anderer Zufallsverlauf ab dem ersten Pokaltermin. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von f8bb0ad + dieser Test → rot (alte Werte).
+    // Fixlauf live-verschraenkt, Rebase auf main 9d9ae39 (Runde 26, R21-D2 = A, R15-E2 = C): neu – verschränkte Liga- und
+    // Pokaltermine (0x37A62, #1032) und Stadionschäden je Manager (0x3CFA0, Datei 0x3D330, #1034) zusammen ergeben einen anderen
+    // Zufallsverlauf als jede Änderung allein. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von 9d9ae39
+    // (main) bzw. 5d491e5 (alter Head) → deren Werte, hier rot.
     private const string ExpectedPassive =
-        "0:Schueler:2/2/69;0:Jugend:2/2/69;0:Junioren:1/6/71;1:Schueler:2/6/59;1:Jugend:3/2/56;1:Junioren:2/2/58;2:Schueler:2/6/49;2:Jugend:3/6/50;2:Junioren:3/2/50;3:Schueler:3/2/43;3:Jugend:3/6/42;3:Junioren:3/6/42";
+        "0:Schueler:2/2/69;0:Jugend:2/2/65;0:Junioren:2/2/65;1:Schueler:3/2/55;1:Jugend:3/2/53;1:Junioren:3/2/52;2:Schueler:3/6/43;2:Jugend:3/6/46;2:Junioren:3/6/46;3:Schueler:3/6/42;3:Jugend:3/6/40;3:Junioren:3/6/41";
 }
 
 public class JugendTeamsMigrationTests

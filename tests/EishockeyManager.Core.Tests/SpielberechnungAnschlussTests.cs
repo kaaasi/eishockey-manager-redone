@@ -331,8 +331,20 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // (Datei 0x3D330) würfeln je Manager und Bautag random(0, 2·d + 8) (Datei 0x3CFC5) und bei 0 je Projekt weiter; anderer
     // Zufallsverlauf ab dem ersten Bautag, Stufen und Plätze können sinken. Kein Originalsollwert, nur interner Abdruck.
     // Rückschaltprobe: src/ von 36323e2 → alte Werte.
-    [InlineData(false, "18E3BF599E483A9A")]
-    [InlineData(true, "D1B8EB139E37C937")]
+    // Spur live-verschraenkt Teil 2 (Runde 26, S01, R21-D2 = A, R15-E2 = C): neu – der Ligaspieltag rechnet je Minute alle
+    // Paarungen aus dem gemeinsamen Zufall (0x37A62, Datei 0x37DB7–0x380CD; docs/analyse/live-spieltag.md) statt Paarung für
+    // Paarung; anderer Zufallsverlauf ab dem ersten Ligaspieltag. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von b322f69 + dieser Test → rot (alte Werte).
+    // Spur live-verschraenkt Teil 2b (Runde 26, S01, R21-D2 = A, R15-E2 = C): neu – Pokal-, Play-off-, Aufstiegsrunden-, Europapokal-
+    // und WM-Termine rechnen je Minute alle Paarungen des Termins mit Minutenweg (0x37A62 Datei 0x380D0–0x3853E,
+    // MatchEngine.PlayDate); anderer Zufallsverlauf ab dem ersten Pokaltermin. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von f8bb0ad + dieser Test → rot (alte Werte).
+    // Fixlauf live-verschraenkt, Rebase auf main 9d9ae39 (Runde 26, R21-D2 = A, R15-E2 = C): neu – verschränkte Liga- und
+    // Pokaltermine (0x37A62, #1032) und Stadionschäden je Manager (0x3CFA0, Datei 0x3D330, #1034) zusammen ergeben einen anderen
+    // Zufallsverlauf als jede Änderung allein. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von 9d9ae39
+    // (main) bzw. 5d491e5 (alter Head) → deren Werte, hier rot.
+    [InlineData(false, "718EF8B9AA779A66")]
+    [InlineData(true, "2FB9F70AADC39753")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -439,8 +451,16 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // (Datei 0x3D330) würfeln je Manager und Bautag random(0, 2·d + 8) (Datei 0x3CFC5) und bei 0 je Projekt weiter; anderer
     // Zufallsverlauf ab dem ersten Bautag, Stufen und Plätze können sinken. Kein Originalsollwert, nur interner Abdruck.
     // Rückschaltprobe: src/ von 36323e2 → alte Werte.
+    // Spur live-verschraenkt Teil 2b (Runde 26, S01, R21-D2 = A, R15-E2 = C): neu – Pokal-, Play-off-, Aufstiegsrunden-, Europapokal-
+    // und WM-Termine rechnen je Minute alle Paarungen des Termins mit Minutenweg (0x37A62 Datei 0x380D0–0x3853E,
+    // MatchEngine.PlayDate); anderer Zufallsverlauf ab dem ersten Pokaltermin. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von f8bb0ad + dieser Test → rot (alte Werte).
+    // Fixlauf live-verschraenkt, Rebase auf main 9d9ae39 (Runde 26, R21-D2 = A, R15-E2 = C): neu – verschränkte Liga- und
+    // Pokaltermine (0x37A62, #1032) und Stadionschäden je Manager (0x3CFA0, Datei 0x3D330, #1034) zusammen ergeben einen anderen
+    // Zufallsverlauf als jede Änderung allein. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von 9d9ae39
+    // (main) bzw. 5d491e5 (alter Head) → deren Werte, hier rot.
     private const string WorldOnlyReference =
-        "WorldChampion=54|500000|WorldChampion=63|-1523793|WorldChampion=52|-4543809|WorldChampion=53|-9183673|WorldChampion=52|-16371873|R747929484";
+        "WorldChampion=54|500000|WorldChampion=52|-1520983|WorldChampion=54|-4537348|WorldChampion=52|-9215420|WorldChampion=54|-16462059|R2024624789";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem

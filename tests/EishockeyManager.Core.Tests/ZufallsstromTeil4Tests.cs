@@ -196,7 +196,10 @@ public class ZufallsstromTeil4Tests
         Assert.Equal(a.Random.Capture(), b.Random.Capture());
         // Spur saison-geld Teil 1 (Runde 25, T03, R15-E2 = C): 8 statt 7 Würfe – mit dem Markt-Takt random(0, 3) je Markt-Platz (A829,
         // Datei 0x07215) ergeben 7 zusätzliche Würfe zufällig dieselben Ergebnisse des DEB-Pokaltags; die Probe hängt an der Zahl.
-        for (var i = 0; i < 8; i++)
+        // Spur live-verschraenkt Teil 2 (Runde 26, S01, R21-D2 = A, R15-E2 = C): Würfe 9 statt 8 – der Ligaspieltag rechnet je
+        // Minute alle Paarungen aus dem gemeinsamen Zufall (0x37A62, docs/analyse/live-spieltag.md), anderer Zufallsverlauf ab dem
+        // ersten Ligaspieltag; mit 8 zusätzlichen Würfen fällt der DEB-Pokaltag zufällig gleich aus. Rückschaltprobe siehe PR #1032. Die Probe hängt an der Zahl.
+        for (var i = 0; i < 9; i++)
             _ = b.Random.Next();
         a.Continue();
         b.Continue();

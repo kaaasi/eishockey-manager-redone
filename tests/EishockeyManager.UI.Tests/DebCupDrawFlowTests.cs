@@ -361,6 +361,18 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // (Datei 0x3D330) würfeln je Manager und Bautag random(0, 2·d + 8) (Datei 0x3CFC5) und bei 0 je Projekt weiter; anderer
     // Zufallsverlauf ab dem ersten Bautag, Stufen und Plätze können sinken. Kein Originalsollwert, nur interner Abdruck.
     // Rückschaltprobe: src/ von 36323e2 → alte Werte.
+    // Spur live-verschraenkt Teil 2 (Runde 26, S01, R21-D2 = A, R15-E2 = C): neu – der Ligaspieltag rechnet je Minute alle
+    // Paarungen aus dem gemeinsamen Zufall (0x37A62, Datei 0x37DB7–0x380CD; docs/analyse/live-spieltag.md) statt Paarung für
+    // Paarung; anderer Zufallsverlauf ab dem ersten Ligaspieltag. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von b322f69 + dieser Test → rot (alte Werte).
+    // Spur live-verschraenkt Teil 2b (Runde 26, S01, R21-D2 = A, R15-E2 = C): neu – Pokal-, Play-off-, Aufstiegsrunden-, Europapokal-
+    // und WM-Termine rechnen je Minute alle Paarungen des Termins mit Minutenweg (0x37A62 Datei 0x380D0–0x3853E,
+    // MatchEngine.PlayDate); anderer Zufallsverlauf ab dem ersten Pokaltermin. Kein Originalsollwert, nur interner Abdruck.
+    // Rückschaltprobe: src/ von f8bb0ad + dieser Test → rot (alte Werte).
+    // Fixlauf live-verschraenkt, Rebase auf main 9d9ae39 (Runde 26, R21-D2 = A, R15-E2 = C): neu – verschränkte Liga- und
+    // Pokaltermine (0x37A62, #1032) und Stadionschäden je Manager (0x3CFA0, Datei 0x3D330, #1034) zusammen ergeben einen anderen
+    // Zufallsverlauf als jede Änderung allein. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von 9d9ae39
+    // (main) bzw. 5d491e5 (alter Head) → deren Werte, hier rot.
     private const string Reference =
-        "1993: DEB 5, DM 8, Tab 15629 | 1994: DEB 10, DM 5, Tab 16026 | 1995: DEB 10, DM 2, Tab 15370 | 1996: DEB 2, DM 23, Tab 15301";
+        "1993: DEB 1, DM 6, Tab 15595 | 1994: DEB 5, DM 10, Tab 15917 | 1995: DEB 1, DM 2, Tab 16104 | 1996: DEB 10, DM 10, Tab 16069";
 }

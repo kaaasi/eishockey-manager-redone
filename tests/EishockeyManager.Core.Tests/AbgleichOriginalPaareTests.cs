@@ -100,7 +100,11 @@ public class AbgleichOriginalPaareTests
         {
             // #730: HOCK Original 50, Remake 116–127, seit #784 (Gast der Spielvorbereitung nach dem Heimverein, Runde 17) nur bei
             // 5 von 6 Saaten (nicht 2) → Sägezahn wie SIKORA und BRANDL; Pflicht über die Saaten in Strain_DeviatesAtMostSeeds_DriftGuard.
-            ["FILE02→FILE03"] = [StrainSawtooth("5 KÖLNER EC"),
+            // Fixlauf live-verschraenkt, Rebase auf main 9d9ae39 (Runde 26, R21-D2 = A, R15-E2 = C): Mit beiden Strömen zusammen
+            // (verschränkter Ligaspieltag 0x37A62 und Stadionschäden 0x3CFA0 je Manager, Datei 0x3D330) senkt bei Saat 2 ein Schaden eine
+            // Stadionstufe (Managers[0] _levels[4] 2 → 1) – dasselbe Zufallsmuster wie StadiumDamage bei FILE20→21 und FILE44→46, kein neu
+            // eingetragener Originalwert.
+            ["FILE02→FILE03"] = [StrainSawtooth("5 KÖLNER EC"), .. StadiumDamage,
                 // Zufall: Pool-Mittel der Belastung über zehn Saaten 143–146, nur Saat 1 bei 136,7 (seit #748 anderer Zufallsverlauf).
                 new("Invariante.PoolMittel.Strain", Chance, Optional: true),
                 // Zufall: Wanderung der Teamwerte des Leerplatzes, seit #784 nur Saat 3 (12 → −4).
@@ -204,8 +208,12 @@ public class AbgleichOriginalPaareTests
             // (FILE50) bzw. mit Klicks auf die Reihenknöpfe und Torwartwechsel CISSEWSKI → HEISS in Minute 26 (FILE51, Klicks laut
             // Nutzer ohne Wirkung). Nach einem Spieltag keine Abweichung, auch nicht in der Belastung (alle Kölner ±7 bei allen
             // Prüfsaaten); Reihen je Minute: AbgleichDosboxLinesTests.
-            ["FILE02→FILE50"] = [],
-            ["FILE02→FILE51"] = [],
+            // Spur live-verschraenkt Teil 2 (Runde 26, S01, R21-D2 = A; vorläufig, Entscheidung Leitstelle – `spur-wartet`): Der
+            // Ligaspieltag rechnet je Minute alle Paarungen aus dem gemeinsamen Zufall (0x37A62); bei Saat 3 kippt MENDE (FILE02 120,
+            // Original nach einem Spieltag 123) schon am ersten Spieltag über 127 → 50 – Sägezahn wie FILE50→61, kein neu eingetragener
+            // Originalwert. Übrige Prüfsaaten ohne Abweichung.
+            ["FILE02→FILE50"] = [StrainSawtooth("5 KÖLNER EC")],
+            ["FILE02→FILE51"] = [StrainSawtooth("5 KÖLNER EC")],
             // DOSBox `runde-19` (#730, Spur abgleich-dosbox-19 Teil 1): Spieltag 2 (FILE50→61, Auswärtsspiel EC RATINGEN) und 3
             // (FILE61→63, Heimspiel ESV KAUFBEUREN) desselben Laufs ohne Mausklick. Nur der Sägezahn weicht ab (MENDE 123→127 im
             // Original, im Remake bei 3 von 6 Saaten über 127 → 50; SIKORA, BRANDL je einmal); Reihen je Minute:
@@ -287,7 +295,10 @@ public class AbgleichOriginalPaareTests
     // 96–99, mit dem gemeinsamen Zufallsstrom (Runde 21, zufallsstrom) bei den Prüfsaaten 1993, 4711, 1, 2, 3, 77 jetzt bei 99, 97, 102,
     // 122, 108, 115; 90–110 träfe nur 4 von 6. Bereich daher 90–125 (Maximum der Messung 122 mit Rand 3); die Untergrenze 100 macht
     // den Wächter rot. Eine Drift über 125 (Sägezahn-Maximum 127) fällt auf.
-    [InlineData("FILE16A", "FILE17", "14 SV BAYREUTH", "ZIMMERMANN", 90, 125, 5)]
+    // Spur live-verschraenkt Teil 2 (Runde 26, S01, R15-E2 = C; vorläufig, Entscheidung Leitstelle – `spur-wartet`): Mit dem
+    // verschränkten Ligaspieltag (0x37A62, alle Paarungen je Minute aus dem gemeinsamen Zufall) bei 4 von 6 Saaten (1993, 4711, 3, 77);
+    // Richtung und Bereich unverändert (wie KUHNEKATH oben).
+    [InlineData("FILE16A", "FILE17", "14 SV BAYREUTH", "ZIMMERMANN", 90, 125, 4)]
     public void Strain_DeviatesAtMostSeeds_DriftGuard(string a, string b, string club, string player, int min, int max, int minSeeds)
     {
         var known = StrainOf(club, min, max, player).Single();

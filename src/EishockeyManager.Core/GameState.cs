@@ -97,17 +97,23 @@ public sealed partial class GameState
             return false;
         // Stabil nach Liga sortiert: Die Aufzählungsreihenfolge eines Wörterbuchs hängt von früheren Entnahmen ab und
         // wäre nach Sichern und Laden eine andere, hier bestimmt sie aber den Zufallsverbrauch (Befund S71-02, #80).
+        // S01 (Spur live-verschraenkt): [ORIGINAL] alle Paarungen aller Ligen in einer Minutenschleife (0x37A62, Ligen 0 → 2).
+        var fixtures = new List<(League League, int Number, int Home, int Away)>();
         foreach (var (league, days) in Schedules.OrderBy(s => s.Key))
         {
-            if (PlayedMatchDays >= days.Count)
-                continue;
-            var day = days[PlayedMatchDays];
-            foreach (var (home, away) in day.Matches)
+            if (PlayedMatchDays < days.Count)
+                fixtures.AddRange(days[PlayedMatchDays].Matches.Select(m => (league, days[PlayedMatchDays].Number, m.Home, m.Away)));
+        }
+        var reports = MatchEngine.PlayMatchDay(this, [.. fixtures.Select(f =>
+            new LiveFixture(Clubs[f.Home], Clubs[f.Away], MatchCompetition.League, false, Random))]);
+        for (var i = 0; i < fixtures.Count; i++)
+        {
+            var (league, number, home, away) = fixtures[i];
             {
-                var report = MatchEngine.PlayWithEvents(this, Clubs[home], Clubs[away], MatchCompetition.League, knockOut: false, Random);
+                var report = reports[i];
                 CountLeaguePenalties(Clubs[home], Clubs[away], report); // Spur statistiken: Fair-Play (StatisticsClub.cs)
                 var (hg, ag) = (report.HomeGoals, report.AwayGoals);
-                Results.Add(new MatchResult(league, day.Number, home, away, hg, ag));
+                Results.Add(new MatchResult(league, number, home, away, hg, ag));
                 CountSeries(Clubs[home], Clubs[away], hg, ag); // Spur statistiken-verein: Serien (StatisticsClub.cs, 0x50283)
                 RecordMeeting(home, away, hg, ag); // Spur optionen-wirkung: Begegnungen der Infoleiste (MeetingHistory.cs, 0x50283)
                 EnterLeagueRecords(home, away, hg, ag); // Integration R12 (ui-meldungen Teil 2): Rekorde 0x50283 Code 7 (CupsNational.TeamInfo.cs)
