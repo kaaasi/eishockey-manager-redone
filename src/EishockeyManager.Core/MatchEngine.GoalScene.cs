@@ -138,13 +138,29 @@ public static partial class OriginalMinutes
     }
 
     /// <summary>
+    /// Dauer-Eisfeld (A472, Spur torszene-dauer Teil 2; <c>docs/analyse/torszene-dauer.md</c> §2, §5). [ORIGINAL] Mit Darstellung 2
+    /// ersetzt der Spieltagsablauf 0x36B5D den Live-Bildschirm durch das Eisfeld: ist <c>DGROUP 0x5A56</c> (Live-Anzeige, von der
+    /// Abrechnung 0x544C0 gesetzt) ≠ 0 und <c>[0x226]</c> = 2, setzt er vor dem ersten Drittel <c>0x5A56</c> = 0 und
+    /// <c>0x5A55</c> = 1 (Datei 0x3710B–0x37171) und in der Verlängerung ebenso (Datei 0x37220–0x37233). Was im Spielkern an
+    /// 0x5A56 hängt, läuft dann wie ohne Live-Anzeige: kein Strafgrund des Reporters (0x52520 kehrt bei Datei 0x5252A zurück,
+    /// <see cref="PenaltyReason"/>) und der Merker „Manager am Zug“ bei einer Verletzung (Datei 0x5419A,
+    /// <see cref="TurnManagerRegister.LiveDisplay"/>). Die Szenenwahl läuft weiter (Modus <c>2 · [0x5A55]</c>, Datei 0x53F75).
+    /// [APPROX] Den Rückfall bei zu wenig Speicher (Abspieler Modus 1 gibt 0 zurück, Datei 0x37150–0x37171) kennt das Remake
+    /// nicht; Darstellung 2 baut immer auf. [APPROX] Ebenso prüft der Spielkern nicht, ob die Szenen-Dateien (<c>tore\</c>)
+    /// vorhanden sind: ohne sie zeigt die UI den Live-Bildschirm, der Kern läuft trotzdem wie mit Dauer-Eisfeld (Review
+    /// torszene-dauer R3; mit vollständigen Originaldaten nicht erreichbar).
+    /// </summary>
+    public static bool PermanentRink(GameOptions? options) => options?.LiveMode == GameOptions.PermanentRinkLiveMode;
+
+    /// <summary>
     /// Strafgrund des Reporters nach einer Strafe mit Spieler (Datei 0x35C1C–0x35C73 → 0x52520): Managerpaarung, Live-Anzeige
-    /// am Spieltag, Geschwindigkeit unter 70; 2 Minuten ziehen random(0, 12).
+    /// am Spieltag, Geschwindigkeit unter 70; 2 Minuten ziehen random(0, 12). Mit Dauer-Eisfeld kein Zug
+    /// (<see cref="PermanentRink"/>).
     /// </summary>
     internal static void PenaltyReason(LiveTeam club, LiveTeam opponent, int side, int minute, int minutes, Random random)
     {
         if (Display is not { DayActive: true, Options: { } options } display || (!club.Managed && !opponent.Managed)
-            || options.MatchSpeed >= LiveClock.FastSpeed)
+            || options.MatchSpeed >= LiveClock.FastSpeed || PermanentRink(options))
             return;
         var reason = GoalSceneSelection.PenaltyReason(minutes, random);
         display.Row?.AddPenaltyReason(new ScoreboardPenaltyReason(minute, side, reason));

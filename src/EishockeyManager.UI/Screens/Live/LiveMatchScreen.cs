@@ -34,6 +34,9 @@ namespace EishockeyManager.UI.Screens.Live;
 /// <item>[ORIGINAL] Torszene je Chance vor der Reporter-Meldung (0x53C57 → 0x567C8 vor 0x541D9/0x52520, Spur torszenen C3,
 ///   <see cref="GoalSceneCall"/>): Pause 30, Abspieler <see cref="GoalSceneScreen"/> mit der Szene des Spielkerns, Pause 20,
 ///   „r“/„w“ wiederholt bis zu dreimal.</item>
+/// <item>[ORIGINAL] Darstellung 2 „Dauer-Eisfeld“ (A472, Spur torszene-dauer Teil 2, <c>docs/analyse/torszene-dauer.md</c> §10
+///   T1–T8): statt des Live-Bildschirms das Eisfeld für den ganzen Spieltag (<see cref="RinkScript"/>,
+///   <see cref="GoalSceneRinkView"/>); Penaltyschießen mit Darstellung 1 und 2 auf eigenem Eis (<see cref="Shootouts"/>).</item>
 /// </list>
 /// </summary>
 public sealed class LiveMatchScreen : Screen
@@ -90,7 +93,37 @@ public sealed class LiveMatchScreen : Screen
         _clock = new LiveClock(host.Game!.Options, wink);
         _reporter = new LiveReporter(host.Game!.Options, wink);
         _clock.BeginMatchDay(); // [ORIGINAL] Datei 0x36B65–0x36B77 (vor dem ersten Bild, auch wenn sofort übersprungen wird)
+        // A472: [ORIGINAL] Datei 0x3710B: Darstellung 2 beim Beginn des Spieltagsablaufs (Optionen sind dann nicht erreichbar).
+        PermanentRink = OriginalMinutes.PermanentRink(host.Game!.Options) && GoalSceneCall.Available(Assets);
+        // T1: [ORIGINAL] Aufbau vor dem ersten Drittel, also vor dem ersten Bild (Datei 0x3710B–0x37171).
+        if (PermanentRink && session.Day is { } day && GoalSceneRinkView.ForMatchDay(Assets, host.Game!, day) is { } rink)
+        {
+            _rink = rink;
+            RinksBuilt.Add(rink);
+        }
     }
+
+    /// <summary>
+    /// Läuft der Spieltag auf dem Dauer-Eisfeld (Darstellung 2, A472)? [APPROX] Ohne Szenen-Dateien (<c>tore\</c>) zeigt das
+    /// Remake den Live-Bildschirm wie bei Darstellung 1; das Original kennt nur den Rückfall bei zu wenig Speicher.
+    /// [APPROX] Der Spielkern (<see cref="OriginalMinutes.PermanentRink"/>) prüft dabei nur die Option: ohne <c>tore\</c> zieht er
+    /// trotz Reporter und Eingriffsmenü keinen Strafgrund und setzt den Merker „Manager am Zug“ wie ohne Live-Anzeige; das Original
+    /// setzt beim gescheiterten Aufbau 0x5A56 = 1 (<c>torszene_dauer.py</c> Ausgabe A „Aufbau scheitert“). Mit vollständigen
+    /// Originaldaten nicht erreichbar (Review torszene-dauer R3).
+    /// </summary>
+    public bool PermanentRink { get; }
+
+    private GoalSceneRinkView? _rink;
+    private bool _backgroundOnly;
+
+    /// <summary>Stehendes Eisfeld (Dauer-Eisfeld des Spieltags oder Eis des Penaltyschießens) oder null.</summary>
+    public GoalSceneRinkView? Rink => _rink;
+
+    /// <summary>Alle aufgebauten Eisfelder in ihrer Reihenfolge (für Tests).</summary>
+    public List<GoalSceneRinkView> RinksBuilt { get; } = [];
+
+    /// <summary>Wird nach einem Abbau nur der Hintergrund <c>110h:7Ah</c> gezeigt (Datei 0x56E9A)?</summary>
+    public bool ShowingBackgroundOnly => _backgroundOnly;
 
     private GameState Game => Host.Game!;
 
@@ -124,7 +157,8 @@ public sealed class LiveMatchScreen : Screen
             _skip = true;
         if (input.Pressed(Key.Space))
             _space = true; // [ORIGINAL] Tastenpuffer, gelesen einmal je Minute nach der Pause (Datei 0x37CFA)
-        if (!WaitingForClick && (input.LeftClick || input.RightClick))
+        // T4: [ORIGINAL] Eingriffsmenü 0x38D96 kehrt mit Dauer-Eisfeld sofort zurück (Datei 0x38DA2–0x38DAA).
+        if (!WaitingForClick && !PermanentRink && (input.LeftClick || input.RightClick))
         {
             Click(input.MouseX, input.MouseY, input.RightClick);
             if (_intervention is not null)
@@ -144,6 +178,7 @@ public sealed class LiveMatchScreen : Screen
         // Enter/Escape: restliche Minuten ohne Anzeige (Näherung, siehe Klasse).
         while (_session.Step())
             DisplayMinute = _session.Day?.Minute ?? DisplayMinute;
+        _rink = null; // T6: Abbau (Modus 3)
         _clock.EndMatchDay();
         _session.Release();
         Host.Show(_back);
@@ -151,6 +186,12 @@ public sealed class LiveMatchScreen : Screen
 
     private IEnumerable<bool> Script()
     {
+        if (PermanentRink)
+        {
+            foreach (var f in RinkScript())
+                yield return f;
+            yield break;
+        }
         yield return true; // [ORIGINAL] 0x5353C: Bild steht (einblenden)
         while (_session.Day is { } day && day.Running && day.Minute < LiveMatchDay.LastMinute)
         {
@@ -231,7 +272,16 @@ public sealed class LiveMatchScreen : Screen
 
     /// <summary>
     /// [ORIGINAL] Anzeigeweg von 0x3901B nur, wenn ein Verein der Paarung live zugesehen wird (Datei 0x390B8–0x390D6): Ankündigung,
-    /// (Schüsse: Spur torszene-dauer T7), Pause 50, Endergebnis (<see cref="LivePenaltyScreen"/>).
+    /// Schüsse, Pause 50, Endergebnis (<see cref="LivePenaltyScreen"/>).
+    /// <list type="bullet">
+    /// <item>[ORIGINAL] T7 (Datei 0x39036–0x3906D): läuft das Dauer-Eisfeld, zuerst dessen Abbau (Modus 3, Hintergrund).</item>
+    /// <item>[ORIGINAL] T7 (Datei 0x3937F–0x393D8): mit Darstellung 1 **und** 2 nach der Ankündigung eigenes Eis
+    ///   (<see cref="GoalSceneRinkView.ForShootout"/>), je Schuss die Torszene 0x53C57 darauf (Modus 2, Pause 30 und 20,
+    ///   Kopfzeile mit den Treffern vor dem Schuss: 0x53C57 liest das Ergebnisbyte der Zeile + 10 = <c>DGROUP 0x5C4B</c>, Datei
+    ///   0x3941D/0x394BB), dann Pause 80 (Datei 0x394FB); am Ende Abbau (Datei 0x3954A–0x39588).</item>
+    /// <item>[APPROX] Mit Darstellung 0 (Live-Bildschirm, Spielstand 0x51FEA je Treffer, Pause 80; Datei 0x3941A, 0x394D3) zeigt das
+    ///   Remake die Schüsse weiterhin nicht; zwischen Ankündigung und Endergebnis nur die Pause 50.</item>
+    /// </list>
     /// </summary>
     private IEnumerable<bool> Shootouts(LiveMatchDay day)
     {
@@ -239,17 +289,106 @@ public sealed class LiveMatchScreen : Screen
         {
             if (!m.Home.WatchedLive && !m.Away.WatchedLive)
                 continue;
+            if (_rink is not null)
+            {
+                _rink = null; // [ORIGINAL] Datei 0x39036: Abbau Modus 3 des Eises der Verlängerung
+                _backgroundOnly = true;
+            }
             ShowingShootout = true;
             Host.Show(new LivePenaltyScreen(Host, this, m.Home, m.Away, null));
             yield return true; // weiter, sobald der Bildschirm zurückkehrt
             ShowingShootout = false;
+            if (Game.Options.LiveMode != 0 && GoalSceneCall.Available(Assets))
+            {
+                foreach (var f in ShootoutShots(m))
+                    yield return f;
+            }
             for (var i = 0; i < LiveReporter.PauseFrames(LivePenaltyScreen.PauseBeforeResult); i++)
                 yield return true;
             ShowingShootout = true;
             Host.Show(new LivePenaltyScreen(Host, this, m.Home, m.Away, m.Report.ShootoutGoals));
             yield return true;
             ShowingShootout = false;
+            _backgroundOnly = false;
         }
+    }
+
+    /// <summary>[ORIGINAL] Pause nach jedem Schuss (Datei 0x394FB: <c>50h:19Eh(80)</c>).</summary>
+    public const int ShotPause = 80;
+
+    /// <summary>T7: eigenes Eis, Schüsse mit Torszene, Abbau (siehe <see cref="Shootouts"/>).</summary>
+    private IEnumerable<bool> ShootoutShots(LiveMatch match)
+    {
+        _backgroundOnly = false;
+        _rink = GoalSceneRinkView.ForShootout(Assets, Game, match.Home, match.Away);
+        RinksBuilt.Add(_rink);
+        yield return true; // [ORIGINAL] Modus 1: Eis steht (einblenden)
+        var score = (Home: 0, Away: 0);
+        foreach (var shot in OriginalMinutes.ShootoutShots(match.Report))
+        {
+            if (shot.Scene is { } choice)
+            {
+                var scene = new ScoreboardScene(LiveMatchDay.LastMinute, shot.Side, shot.Goal, choice);
+                foreach (var f in GoalScene(match, scene, score, LiveMatchDay.LastMinute))
+                    yield return f;
+            }
+            if (shot.Goal)
+                score = shot.Side == 0 ? (score.Home + 1, score.Away) : (score.Home, score.Away + 1);
+            for (var i = 0; i < LiveReporter.PauseFrames(ShotPause); i++)
+                yield return true;
+        }
+        _rink = null; // [ORIGINAL] Datei 0x3954A–0x39588: Abbau Modus 3, Hintergrund 110h:7Ah
+        _backgroundOnly = true;
+    }
+
+    /// <summary>
+    /// Spieltag auf dem Dauer-Eisfeld (A472, <c>docs/analyse/torszene-dauer.md</c> §2–§7):
+    /// <list type="bullet">
+    /// <item>[ORIGINAL] T1 Aufbau einmal vor dem ersten Drittel (Datei 0x3710B–0x37171, <see cref="GoalSceneRinkView.ForMatchDay"/>).</item>
+    /// <item>[ORIGINAL] T2 Je Minute ohne Pause, Zwinkern und Leertaste nur die Minutenzeile (Datei 0x37C6B–0x37CEA); keine
+    ///   Spieluhr, Anzeigetafel (Datei 0x52BEB), Reporter (Datei 0x5252A), Tormeldung (Datei 0xABB4).</item>
+    /// <item>[ORIGINAL] T3 Torszenen der Managerpaarungen in Rechenreihenfolge auf dem stehenden Eis (Modus 2, Halle des
+    ///   Aufbaus, ohne Pause 6, danach kein Live-Bildschirm; Datei 0x56B4D–0x56E3F).</item>
+    /// <item>[ORIGINAL] T4 Kein Eingriffsmenü (Datei 0x38DA2); nach einer Verletzung die automatische Aufstellung wie ohne
+    ///   Live-Anzeige (Datei 0x54134–0x5419D, Spielkern <c>MatchEngine.Injuries.cs</c>).</item>
+    /// <item>[ORIGINAL] T5 Verlängerung auf demselben Eis (Datei 0x37220); nach Minute 60/70 kein Klick, keine Liga- oder
+    ///   Pokalseiten (Datei 0x3855F, 0x385E7, 0x3A9E5); nach einem angezeigten Penaltyschießen ist das Eis abgebaut und die
+    ///   Seiten nach dem Penaltyschießen erscheinen normal (§6).</item>
+    /// <item>[ORIGINAL] T6 Abbau am Ende (Datei 0x372C2, Modus 3).</item>
+    /// </list>
+    /// </summary>
+    private IEnumerable<bool> RinkScript()
+    {
+        yield return true; // [ORIGINAL] Modus 1: Eis steht (einblenden; Aufbau im Konstruktor)
+        while (_session.Day is { } day && day.Running && day.Minute < LiveMatchDay.LastMinute)
+        {
+            var minute = day.Minute + 1;
+            DisplayMinute = minute;
+            _clock.Minute(display: false); // [ORIGINAL] Anzeige-Argument 0 (Datei 0x37176–0x371E8)
+            if (_rink is not null)
+                _rink.Minute = minute; // [ORIGINAL] 0xE19E = Minute, Minutenzeile 0x570E8 (Datei 0x37CD5–0x37CEA)
+            if (!_session.Step())
+                break;
+            foreach (var match in day.Matches)
+            {
+                foreach (var (scene, score) in ScenesOfMinute(match, minute))
+                {
+                    foreach (var f in GoalScene(match, scene, score, minute))
+                        yield return f;
+                }
+            }
+            yield return true; // Minutenende
+            if (minute == LiveMatchDay.LastMinute && day.Matches.Any(m => m.Stepped && m.Report.ShootoutHomeWins is not null))
+            {
+                foreach (var f in Shootouts(day))
+                    yield return f;
+                // [ORIGINAL] Datei 0x37297–0x372AC: Seitenwähler nach dem Penaltyschießen; mit noch stehendem Eis (kein angezeigtes
+                // Penaltyschießen) keine Seiten (Datei 0x3A9E5).
+                foreach (var f in Pages(day, minute, afterShootout: true))
+                    yield return f;
+            }
+        }
+        _rink = null; // [ORIGINAL] T6: Abbau Modus 3 (Datei 0x372C2–0x372F9)
     }
 
     /// <summary>Minuten, die per Leertaste ohne Rechnung vergangen sind (für Tests).</summary>
@@ -276,7 +415,8 @@ public sealed class LiveMatchScreen : Screen
     /// <summary>Zeigt die Seiten nach dem Drittel nacheinander (<see cref="LivePageScreens"/>); jede kehrt hierher zurück.</summary>
     private IEnumerable<bool> Pages(LiveMatchDay day, int minute, bool afterShootout)
     {
-        foreach (var page in LivePageScreens.For(Game, day, minute, afterShootout))
+        // A472: [ORIGINAL] Seiten nur ohne stehendes Eis (DGROUP 0x5A55, Datei 0x3A9E5); das Eis bildet _rink ab.
+        foreach (var page in LivePageScreens.For(Game, day, minute, afterShootout, permanentRink: _rink is not null))
         {
             foreach (var screen in LivePageScreens.Create(Host, this, day, page, minute, afterShootout))
             {
@@ -461,6 +601,26 @@ public sealed class LiveMatchScreen : Screen
         }
     }
 
+    /// <summary>
+    /// Torszenen einer Minute der Paarung in der Reihenfolge der Chancen mit dem Spielstand vor der Chance (wie
+    /// <see cref="Messages"/>); ohne Reihe keine.
+    /// </summary>
+    private static IEnumerable<(ScoreboardScene Scene, (int Home, int Away) Score)> ScenesOfMinute(LiveMatch match, int minute)
+    {
+        if (match.Row is not { } row)
+            yield break;
+        var scenes = new Queue<ScoreboardScene>(row.Scenes.Where(c => c.Minute == minute));
+        var earlier = match.Report.Events.Where(e => e.Kind == MatchEventKind.Goal && e.Minute < minute).ToList();
+        var score = (Home: earlier.Count(e => e.Side == 0), Away: earlier.Count(e => e.Side == 1));
+        foreach (var c in row.ChanceList.Where(c => c.Minute == minute))
+        {
+            if (scenes.Count > 0 && scenes.Peek() is var scene && scene.Side == c.Side && scene.Goal == c.Goal)
+                yield return (scenes.Dequeue(), score);
+            if (c.Goal)
+                score = c.Side == 0 ? (score.Home + 1, score.Away) : (score.Home, score.Away + 1);
+        }
+    }
+
     /// <summary>Reporter-Meldungen in der gezeigten Reihenfolge (Minute, Heimverein der Paarung, Ereignis; für Tests).</summary>
     public List<(int Minute, int HomeClub, ReporterEvent Event)> MessagesShown { get; } = [];
 
@@ -487,7 +647,16 @@ public sealed class LiveMatchScreen : Screen
         for (var plays = 1; ; plays++)
         {
             var request = GoalSceneCall.Request(Assets, Game, match, scene, score, minute);
-            var player = new GoalSceneScreen(Host, request, GoalSceneCall.GraphicsFor(Assets), () => Host.Show(this));
+            // A472 T3/T7: [ORIGINAL] auf stehendem Eis Modus 2 (2 · [0x5A55], Datei 0x53FCE) mit der Halle des Aufbaus (Modus 2
+            // lädt nichts, Datei 0x5680A).
+            if (_rink is { } rink)
+                request = request with { HallLevel = rink.HallLevel, Continuous = true };
+            GoalSceneScreen? player = null;
+            player = new GoalSceneScreen(Host, request, GoalSceneCall.GraphicsFor(Assets), () =>
+            {
+                _rink?.Keep(player!); // [ORIGINAL] Modus 2: letztes Bild und Kopfzeile bleiben stehen (Datei 0x56E37)
+                Host.Show(this);
+            });
             ScenesShown.Add(request);
             Host.Show(player);
             do
@@ -527,7 +696,17 @@ public sealed class LiveMatchScreen : Screen
 
     public override void Draw(Surface s)
     {
+        if (_rink is { } rink)
+        {
+            rink.Draw(s, Assets);
+            return;
+        }
         s.Palette = Assets.Palette;
+        if (_backgroundOnly)
+        {
+            s.Blit(Assets.Image(BackgroundGraphic), 0, 0); // [ORIGINAL] Abbau Modus 3: 110h:7Ah (Datei 0x56E9A)
+            return;
+        }
         DrawBuild(s, Assets, Game, _session.Shown, _clock.Lamp);
         for (var p = 0; p < Math.Min(_session.Shown.Count, LiveScoreboard.MaxRows); p++)
             DrawBoard(s, Assets, _session.Shown[p], p, MinuteOf(_session.Shown[p]));

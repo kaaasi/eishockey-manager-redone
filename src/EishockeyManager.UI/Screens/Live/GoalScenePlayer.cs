@@ -108,6 +108,9 @@ public sealed class GoalSceneGraphics
         Header = GoalSceneRink.DecodeHeader(File.ReadAllBytes(game.GraphicsPath(GoalSceneRink.HeaderGraphic)));
     }
 
+    /// <summary>Palette <c>kb\247</c> ohne Trikotfarben (Aufbau des Dauer-Eisfelds, Modus 1: <c>48h:47F0h</c>, Datei 0x56B2C).</summary>
+    public Palette BasePalette => _palette;
+
     /// <summary>Kopfbild <c>kb\246</c> (320 × 40).</summary>
     public VgaImage Header { get; }
 
