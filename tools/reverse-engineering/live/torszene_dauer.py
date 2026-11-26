@@ -15,6 +15,8 @@ Parts (each prints the logged calls in order):
      Datei 0x568A9-0x568B6 and the memory check Datei 0x56816-0x56871; C2 a found scene in mode 2 against mode 0.
   D  penalty shoot-out 0x3901B with a watched club: teardown of the overtime ice, own setup for display 1 and 2,
      shots 0x53C57, final teardown.
+  H  (A1027) the same shoot-out with display 0 and with a failed setup, the goal scene 0x53C57 run as well: live screen
+     0x5353C, random draws, pauses, score 0x51FEA per goal with the shoot-out tally, other called targets.
   E  goal scene 0x53C57 with 0x5A56 = 0 / 0x5A55 = 1: which parts run (counters, fit-player check 120h:66h,
      reporter 0x52520, intervention 0x5434C or automatic line-up 108h:4Dh, scoreboard 0x52BD6).
   G  page selector 0x3A88A per page with and without Dauer-Eisfeld.
@@ -320,6 +322,77 @@ def part_d():
         print(f"     Ende: [0x5A55] = {c.db(0x5A55)}, [0x5A56] = {c.db(0x5A56)}, Stand Heim/Gast {c.db(0x5C4B)}/{c.db(0x5C4C)}")
 
 
+# ---------------------------------------------------------------- part H
+def part_h():
+    """A1027 (fix/penalty-darstellung-0): shots of a watched shoot-out with display 0, including the inside of 0x53C57."""
+    print("H  Penaltyschießen 0x3901B(Zeile 0, Paarung 0, 1, 0) mit Darstellung 0, Torszene 0x53C57 mitgerechnet;"
+          " Heim 52 zugesehen, Zug random(0, 10) abwechselnd 10/0 (Heim trifft, Gast nicht)")
+    for label, mode, ice, fail in (("Darstellung 0", 0, 0, False), ("Darstellung 2, Aufbau scheitert", 2, 0, True)):
+        c = cpu([(0x3901B, 0x397BB), (0x53C57, 0x541D9)])
+        log = []
+        c.sdb(0x226, mode)
+        c.sdb(0x5A55, ice)
+        c.sdb(0x5A56, 1)
+        c.sdb(0x1DB, 0)
+        c.sdb(0x386, 1)
+        c.wb(emu16.FAR_HEAP_SEG, 52 * 0x3D + 0x34, 0x80)
+        c.sdb(0x5CFB, 52)
+        c.sdb(0x5CFC, 53)
+        c.sdb(0x5C4B, 33)
+        c.sdb(0x5C4C, 3)
+        state = {"shot": 0}
+        events = []
+
+        def rnd(cc):
+            a, b = cc.arg(0) & 0xFFFF, cc.arg(1) & 0xFFFF
+            v = 0
+            if (a, b) == (0, 10):
+                v = 10 if state["shot"] % 2 == 0 else 0
+                state["shot"] += 1
+            events.append(f"random({a}, {b}) = {v}")
+            return v
+
+        def pause(cc):
+            events.append(f"Pause {cc.arg(0) & 0xFFFF}")
+            return 0
+
+        def score(cc):
+            events.append(f"Spielstand 0x51FEA(Reihe {cc.arg(0) & 0xFF}, {cc.arg(1) & 0xFF}): Stand {c.db(0x5C4B)}:{c.db(0x5C4C)}")
+            return 0
+
+        def live(cc):
+            events.append(f"Live-Bildschirm 0x5353C({cc.arg(0) & 0xFF}, {cc.arg(1) & 0xFF}): Stand {c.db(0x5C4B)}:{c.db(0x5C4C)}")
+            return 0
+
+        def scene(cc):
+            events.append(f"Abspieler 0x567C8 Modus {cc.arg(13) & 0xFF}")
+            return 0 if fail else 1
+
+        logger(c, log)
+        c.hooks[0x0C037] = rnd
+        c.hooks[0x130EE] = pause
+        c.hooks[0x51FEA] = score
+        c.hooks[0x5353C] = live
+        c.hooks[0x567C8] = scene
+        c.hooks[0x0B908] = lambda cc: (events.append("Mausklick 38h:118h"), 0)[1]
+        c.hooks[0x45D46] = lambda cc: (events.append("Hintergrund 110h:7Ah"), 0)[1]
+        c.hooks[0x4BE17] = lambda cc: (events.append("fitte Spieler 120h:66h"), 1)[1]
+        c.call(0x3901B, 0, 0, 1, 0)
+        others = sorted({t for _, t in c.calls if t not in (0x0C037, 0x130EE, 0x51FEA, 0x5353C, 0x567C8, 0x0B908,
+                                                             0x45D46, 0x4BE17)})
+        print(f"  {label}:")
+        last, n = None, 0
+        for o in events + [None]:
+            if o == last:
+                n += 1
+                continue
+            if last is not None:
+                print(f"     {last}" + (f" ×{n}" if n > 1 else ""))
+            last, n = o, 1
+        print(f"     sonstige gerufene Ziele: {', '.join(NAMES.get(t, hex(t)) for t in others) or 'keine'}")
+        print(f"     Ende: [0x5A55] = {c.db(0x5A55)}, [0x5A56] = {c.db(0x5A56)}, Stand Heim/Gast {c.db(0x5C4B)}/{c.db(0x5C4C)}")
+
+
 # ---------------------------------------------------------------- part E
 def part_e():
     print("E  Torszene 0x53C57 (Art, Liga, Paarung, Verein 52, Gegner 53, Seite 0, Minute 33, Manager 0, 0, 0)")
@@ -394,6 +467,7 @@ def main():
     part_b2()
     part_c()
     part_d()
+    part_h()
     part_e()
     part_f()
     part_g()
