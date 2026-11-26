@@ -115,7 +115,8 @@ R26-D4 = B (ChatGPT GPT-6.2 Astra) mit Claude-Auswertung.
   25.11.2026); Umsetzung `docs/analyse/torszene-dauer.md` §11. Erstreview (#1044): R1 (P2) Sperre der Darstellung 2 im
   Live-Spieltag (`GameOptionsScreen.cs` eine Stelle, Leitstelle), R2/R3 (P3) im Fixlauf 26.11.2026 behoben; Delta-Prüfung offen.
   Fixlauf A1027 (R26-E3 = A, 26.11.2026, PR #1049): Penaltyschießen mit Darstellung 0 zeigt jeden Schuss im Live-Bildschirm;
-  Erstreview offen.
+  Erstreview (#1050): R1 (P2) Bildprüfung unabhängig von `DrawBoard`, R2 (P3) Weg ohne `tore\` `[APPROX]` im Fixlauf
+  26.11.2026 behoben; Delta-Prüfung offen.
 
 ### Spur `live-seiten-rest` – Aufstiegsrunde und Europapokal im Spielablauf (R26-E2 = C, Welle 1b)
 

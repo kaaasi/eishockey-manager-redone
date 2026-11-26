@@ -280,11 +280,14 @@ public sealed class LiveMatchScreen : Screen
     ///   (<see cref="GoalSceneRinkView.ForShootout"/>), je Schuss die Torszene 0x53C57 darauf (Modus 2, Pause 30 und 20,
     ///   Kopfzeile mit den Treffern vor dem Schuss: 0x53C57 liest das Ergebnisbyte der Zeile + 10 = <c>DGROUP 0x5C4B</c>, Datei
     ///   0x3941D/0x394BB), dann Pause 80 (Datei 0x394FB); am Ende Abbau (Datei 0x3954A–0x39588).</item>
-    /// <item>[ORIGINAL] A1027 (R26-E3 = A; <c>torszene_dauer.py</c> Teil H): mit Darstellung 0 (Datei 0x3941A) bzw. wenn das
-    ///   eigene Eis nicht aufgebaut wird (Datei 0x393DD–0x39417; im Remake ohne <c>tore\</c>) der Live-Bildschirm 0x5353C neu,
-    ///   Stand der Paarung 0 : 0 (Datei 0x39284 setzt DGROUP 0x5C4B/0x5C4C auf 0); je Schuss die Torszene 0x53C57 ohne Szene,
-    ///   die die Tafel der Reihe neu zeichnet (Datei 0x541CB), bei Treffer Spielstand 0x51FEA (Datei 0x394D3), Pause 80 (Datei
-    ///   0x394FB); siehe <see cref="LiveShootoutShots"/>.</item>
+    /// <item>[ORIGINAL] A1027 (R26-E3 = A; <c>torszene_dauer.py</c> Teil H): mit Darstellung 0 (Datei 0x3941A) der Live-Bildschirm
+    ///   0x5353C neu, Stand der Paarung 0 : 0 (Datei 0x39284 setzt DGROUP 0x5C4B/0x5C4C auf 0); je Schuss die Torszene 0x53C57
+    ///   ohne Szene, die die Tafel der Reihe neu zeichnet (Datei 0x541CB), bei Treffer Spielstand 0x51FEA (Datei 0x394D3), Pause
+    ///   80 (Datei 0x394FB); siehe <see cref="LiveShootoutShots"/>.</item>
+    /// <item>[APPROX] Darstellung 1/2, wenn das eigene Eis nicht aufgebaut wird (Datei 0x393DD–0x39417; im Remake ohne
+    ///   <c>tore\</c>): das Original baut 0x5353C(1, 0) statt (1, 1) und spielt je Schuss Pause 30, Abspieler 0x567C8 Modus 0,
+    ///   Pause 20, ggf. 0x51FEA, Pause 80 (Teil H „Darstellung 2, Aufbau scheitert“). Das Remake nimmt dort den Weg von
+    ///   Darstellung 0 (nur Pause 80 je Schuss): ohne <c>tore\</c> gibt es keine Szenenpausen (wie <c>GoalScene</c>).</item>
     /// </list>
     /// </summary>
     private IEnumerable<bool> Shootouts(LiveMatchDay day)
@@ -309,6 +312,7 @@ public sealed class LiveMatchScreen : Screen
             }
             else
             {
+                // [ORIGINAL] Darstellung 0; [APPROX] Darstellung 1/2 ohne tore\ (Original: Pausen 30/20 je Schuss, siehe oben).
                 foreach (var f in LiveShootoutShots(m))
                     yield return f;
             }

@@ -106,13 +106,31 @@ public sealed class PenaltyDarstellung0UiTests
             Assert.Equal(expected, between);
 
             // Bild: Spielstandziffern der Reihe zeigen die Treffer des Penaltyschießens (0x51FEA liest DGROUP 0x5C4B).
+            // Erwartung unabhängig von DrawBoard: Aufbau plus die vier Ziffern des Penaltystands (0x52190 bei x = 139/148/160/169,
+            // y = 6 für Reihe 0); verglichen werden nur die Ziffernzellen.
             Assert.NotNull(frame);
+            var (fh, fa) = frameScore;
             var expect = new Surface();
             LiveMatchScreen.DrawBuild(expect, d.Host.Assets, game, live.Session.Shown, lamp: false);
-            LiveMatchScreen.DrawBoard(expect, d.Host.Assets, match, 0, LiveMatchDay.LastMinute, frameScore);
-            for (var y = 6; y < 6 + 12; y++)
-                for (var x = 139; x < 178; x++)
-                    Assert.True(expect.Pixels[y * Surface.Width + x] == frame[y * Surface.Width + x], $"Ziffer bei ({x} | {y})");
+            LiveWidgets.Digit(expect, d.Host.Assets, 0, fh / 10 % 10, 139, 6);
+            LiveWidgets.Digit(expect, d.Host.Assets, 0, fh % 10, 148, 6);
+            LiveWidgets.Digit(expect, d.Host.Assets, 0, fa / 10 % 10, 160, 6);
+            LiveWidgets.Digit(expect, d.Host.Assets, 0, fa % 10, 169, 6);
+            // Gegenprobe: dieselben Zellen mit dem Stand des Spiels (score: null) müssen abweichen, sonst prüft der Vergleich nichts.
+            var matchBoard = new Surface();
+            LiveMatchScreen.DrawBuild(matchBoard, d.Host.Assets, game, live.Session.Shown, lamp: false);
+            LiveMatchScreen.DrawBoard(matchBoard, d.Host.Assets, match, 0, LiveMatchDay.LastMinute, score: null);
+            Assert.NotEqual((match.Report.HomeGoals, match.Report.AwayGoals), (fh, fa));
+            var differs = false;
+            foreach (var x0 in new[] { 139, 148, 160, 169 })
+                for (var y = 6; y < 6 + LiveWidgets.DigitHeight; y++)
+                    for (var x = x0; x < x0 + LiveWidgets.DigitWidth; x++)
+                    {
+                        var i = y * Surface.Width + x;
+                        Assert.True(expect.Pixels[i] == frame[i], $"Ziffer bei ({x} | {y})");
+                        differs |= matchBoard.Pixels[i] != frame[i];
+                    }
+            Assert.True(differs, "Tafel zeigt den Stand des Spiels statt des Penaltystands");
             return;
         }
         Assert.Fail("kein Penaltyschießen der Managerpaarung entstanden");
