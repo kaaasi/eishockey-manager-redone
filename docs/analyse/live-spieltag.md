@@ -226,8 +226,49 @@ Eis mit den Schüssen (T7) in `torszene-dauer` Teil 2.
   zugesehen, Datei 0x390B8–0x390D6), nach den Seiten der Minute 70 (Datei 0x3728B), je Paarung in Paarungsreihenfolge, danach die
   Seiten nach dem Penaltyschießen. Umsetzung `LivePenaltyScreen`, `LiveMatchScreen.Shootouts`; Tests `LivePenaltyUiTests`.
   `[APPROX]` die Schüsse dazwischen (Datei 0x3941A–0x39588) zeigt das Remake noch nicht (T7, `torszene-dauer` Teil 2).
-- **Offen – Seite 2 Aufstiegsrunde und Seite 3 Europapokal** (0x31CD5, Datei 0x3AB43–0x3ABCE): Argumente (Wettbewerb 2 bzw. 3,
-  Gruppe, **Merker „im Spiel“ = Minute ≠ 0** [bp+0xA], Terminzahl min(DGROUP 0x7AF, 6 bzw. − 6) + (Minute 0 oder 60) − 1,
-  0, 0x20, Gruppe/Zeile); keine Minute in der Kopfzeile. Der Merker sperrt Termine ungespielter Begegnungen (Datei 0x32294) und
-  schaltet die Zeile des laufenden Termins (Datei 0x32515); die laufenden Stände kommen aus 0x3183C. Das ist zugleich der offene
-  Teil von PW-04 (`docs/wettbewerbe.md`). Nicht umgesetzt: Rest in der Übergabe.
+- **Seite 2 Aufstiegsrunde und Seite 3 Europapokal:** umgesetzt in Spur `live-seiten-rest`, siehe §11.
+
+## 11. Spur `live-seiten-rest` (S04 Rest): Aufstiegsrunde und Europapokal im Spielablauf
+
+Gelesen mit `disasm.py em.exe 0x31CD5 0x32A80` und `0x3A88A 0x3ACE3`, **nachgebildet** mit
+`tools/reverse-engineering/live/aufstieg_europapokal.py` (Seitenwähler aus den Bytes mit 0x31CD5 als Stub; 0x31CD5 aus den Bytes mit
+vorbereiteten Paarungen DGROUP 0xCED8 und Ergebnissen 0xCDB8 + 0x48 · Wettbewerb + 0x24 · Gruppe + 6 · Spiel; Seitenwähler wie aus
+dem Hauptmenü zusammen mit 0x31CD5).
+
+- **Argumente** von 0x31CD5 (Datei 0x3AB05–0x3ABCE, sieben Wörter): Wettbewerb (1 Aufstiegsrunde, 2 Europapokal-Gruppen, 3
+  Endrunde), Gruppe (Seite 2: [bp+8] − 1; Seiten 3/4: Seite − 3; Seite 5: 0), Merker „im Spiel“ [bp+0xA] = (Minute ≠ 0),
+  Terminzahl [bp+0xC], 0 ([bp+0xE], nur die Gegnersuche 0x44A48 setzt ihn), Kalendermaske [bp+0x10] (0x40 bzw. 0x20), Merker
+  „Drittelpause“ [bp+0x12] (Minute 20/40, Seitenwähler [bp−4]). Terminzahl = Basis + (Minute ∈ {0, 60}) − 1 mit Basis
+  Aufstiegsrunde min(2 · DGROUP 0x7B0 + (0xCCA3 &gt; 0) + (0xCCA3 &gt; 2), 7), Europapokal-Gruppen min(0x7AF, 6), Endrunde 0x7AF − 6
+  (bei 0x7AF &gt; 5, sonst 0x7AF). Ergebnis der Nachbildung (Gruppe 1, 0x7AF = 2): Minute 0 → (Zahl 2, Pause 0), 20/40 → (1, 1),
+  60 → (2, 0), 65/70 → (1, 0). Die Basis ist während des Termins die Zahl der Termine davor (0x7AF zählt erst nach dem Termin
+  hoch, Datei 0x314FC).
+- **Regel in 0x31CD5** mit c = Terminzahl + Pause: Ergebnis für Spiel g = Runde + 3 · Rückspiel, wenn g &lt; c oder (g = c und „im
+  Spiel“) (Datei 0x324C7–0x32515); Termin nur in der ersten Zeile einer Runde, ohne „im Spiel“ und für g ≥ c (Datei
+  0x3228D–0x322C6). Im Spielablauf also nie ein Termin, nach 20/40/60 der laufende Termin mit seinem Stand (Live-Tore 0x3183C
+  nach 20/40/65/70, Datei 0x3AAD9–0x3AAF8 bzw. aus 0x37A62), nach 65/70 ohne den laufenden Termin. Tabelle: erst bei Minute 60
+  mit dem Termin (0x30852, Datei 0x38691).
+- **Folge im Spielablauf:** Play-off-Tag mit Code 1 und Spiel 0xCCA3 ∈ {0, 2}: nach „Play-Off Spiele“ Seite 2 zweimal
+  (Datei 0x38699–0x386C5: 0x3A88A(2, 1, m) und 0x3A88A(2, 2, m)), gefiltert mit Index 3 · Gruppe + (Minute = 60) – Gruppe 0
+  „Drittelpause/Ergebnisse 2.Liga“ (3/4), Gruppe 1 „… Oberliga“ (6/7). Europapokal: Code 3 → Seite 3 (Gruppe 1) in den
+  Gruppenterminen, Code 5 → Seite 5 (Endrunde) ab dem siebten Termin (Datei 0x31490–0x314A1). Die Knöpfe geben die nächste
+  Seite an den Seitenwähler zurück, der sie ohne Filter mit derselben Minute ruft (Datei 0x3ACBB–0x3ACC1).
+- **PW-04 aufgelöst:** Die Videobilder ohne Termine nach den ersten Spielen sind Seiten im Spielablauf – `eisbaeren_f20_02950`/
+  `02951` (davor das Live-Spiel 02930), `eisbaeren_f51_03311`/`03314` (Minute 60 des zweiten Termins nach dem Live-Spiel 03300),
+  `eisbaeren_f51_03345`/`03346` (Minute 60 des dritten Termins: drei Spiele in der Tabelle, keine Termine), `eisbaeren_f58_01323`
+  (Endrunde, vier Spiele in der Tabelle, danach das Eis 01332). Im Hauptmenü zeichnet em.exe dagegen die Termine offener Spiele
+  (Nachbildung Teil 3: 0x7AF = 3 → Termine der drei Rückspiele), wie die Aufstiegsrunde in `folge06_01257`.
+
+**Umsetzung:** `EuropeanCupScreen` (`ShownGames`, `ShowsResult`, `ShowsDate`, `Cell`, `Standings`, Ansicht mit `GroupLive`),
+`PromotionRoundPage.Of(game, group, live)`, `LivePageScreens` (Fall Aufstiegsrunde und Europapokal, zweite Aufstiegsgruppe in
+`For`, Ansicht der Europapokalseite). Tests `LiveSeitenRestTests` (Regeln aus der Nachbildung, Aufstiegstag mit beiden Gruppen,
+Gruppe mit laufendem Termin, Endrunde ab Termin 7, Europapokal-Termin im Live-Spiel) und `PixelWettbewerbeTests` (PW-04).
+Bildschirmfotos: Ablauf `live-aufstieg-europapokal` (`Tools/Scenarios/LiveSeitenRest.cs`), Vergleich mit `eisbaeren_f51_03346` und
+`eisbaeren_f58_01323` (Fenster nach Verschiebung um (−0,25 | +0,5) und Unschärfe: mittlere Abweichung 7,3 bzw. 8,0 Graustufen,
+5 bzw. 0 Pixel über 60).
+
+**[APPROX]/offen:** (1) Das Remake rechnet die zwei Gruppen eines Termins (Aufstiegsrunde, Europapokal) je Gruppe nacheinander
+(Teil 2b); die Gruppe ohne Live-Spiel zeigt daher den Endstand des Tages bzw. noch nichts statt des laufenden Stands. (2) Die Knöpfe
+„Liga“ der Aufstiegsseite öffnen die Ligapaarungen ohne Minute (Original: Seite 7 mit Minute). (3) Der Bildschirmfoto-Ablauf
+`pixel-europapokal` (`WettbewerbeVideo.cs`, außerhalb der Dateigrenzen) zeichnet `eisbaeren_f51_03346` und `eisbaeren_f58_01323`
+weiter als Hauptmenü und zeigt nun Termine; der Vergleich steht im neuen Ablauf.

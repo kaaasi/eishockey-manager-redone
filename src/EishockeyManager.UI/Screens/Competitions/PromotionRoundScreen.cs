@@ -12,8 +12,30 @@ public sealed record PromotionPairing(int Home, int Away, PromotionLeg? First, P
 public sealed record PromotionRoundPage(IReadOnlyList<PromotionPairing> Pairings, IReadOnlyList<TableRow> Table)
 {
     /// <summary>Seite aus der Gruppe des Spielstands (Regeln im Kommentar von <see cref="PromotionRoundScreen"/>).</summary>
-    public static PromotionRoundPage Of(GameState game, RelegationGroup group)
+    public static PromotionRoundPage Of(GameState game, RelegationGroup group) => Of(game, group, null);
+
+    /// <summary>
+    /// Seite aus der Gruppe des Spielstands; mit <paramref name="live"/> die Seite im Spielablauf (S04, 0x31CD5 mit Merker „im Spiel“:
+    /// keine Termine, laufender Termin mit dem laufenden Stand, Tabelle ab Minute 60 mit dem Termin; siehe
+    /// <see cref="EuropeanCupScreen.ShownGames"/>).
+    /// </summary>
+    public static PromotionRoundPage Of(GameState game, RelegationGroup group, GroupLive? live)
     {
+        // [ORIGINAL] Terminzahl: im Hauptmenü die gespielten Spieltage (Argument 3 = 2 · DGROUP 0x7B0 + (0xCCA3 > 0) + (0xCCA3 > 2),
+        // Datei 0x3AAA4–0x3AAD5), im Spielablauf die Spieltage vor dem laufenden (dieselbe Formel am Termin, 0xCCA3 = 0 bzw. 2).
+        var played = live is null ? group.PlayedRounds
+            : Enumerable.Range(0, RelegationGroup.DateIndices.Length).Count(g => PromotionRoundScreen.DayOf(g) < live.Today);
+        var shown = EuropeanCupScreen.ShownGames(played, live?.Minute ?? 0);
+        (int Left, int Right)? Result(int index, int home, int away, int leg)
+        {
+            var (h, a) = leg == 0 ? (home, away) : (away, home);
+            if (live is not null && PromotionRoundScreen.DayOf(index) == live.Today && live.Score(home, away) is { } running)
+                return (running.Left, running.Right);
+            if (group.Results.FirstOrDefault(m => m.MatchDay == index + 1 && m.Home == h && m.Away == a) is not { } match)
+                return null;
+            return leg == 0 ? (match.HomeGoals, match.AwayGoals) : (match.AwayGoals, match.HomeGoals);
+        }
+
         var pairings = new List<PromotionPairing>();
         for (var round = 0; round < 3; round++)
         {
@@ -24,22 +46,30 @@ public sealed record PromotionRoundPage(IReadOnlyList<PromotionPairing> Pairings
                 PromotionLeg? Leg(int leg)
                 {
                     var index = round + 3 * leg;
-                    if (index >= group.PlayedRounds)
-                    {
-                        if (p != 0)
-                            return null;
-                        var date = SeasonCalendar.LayoutDate(PromotionRoundScreen.DayOf(index));
-                        return new PromotionLeg(date.Day, date.Month, true);
-                    }
-                    var (h, a) = leg == 0 ? (home, away) : (away, home);
-                    if (group.Results.FirstOrDefault(m => m.MatchDay == index + 1 && m.Home == h && m.Away == a) is not { } match)
+                    if (EuropeanCupScreen.ShowsResult(index, shown, live is not null))
+                        return Result(index, home, away, leg) is { } r ? new PromotionLeg(r.Left, r.Right, false) : null;
+                    if (!EuropeanCupScreen.ShowsDate(index, shown, live is not null, p == 0))
                         return null;
-                    return leg == 0 ? new PromotionLeg(match.HomeGoals, match.AwayGoals, false) : new PromotionLeg(match.AwayGoals, match.HomeGoals, false);
+                    var date = SeasonCalendar.LayoutDate(PromotionRoundScreen.DayOf(index));
+                    return new PromotionLeg(date.Day, date.Month, true);
                 }
                 pairings.Add(new PromotionPairing(home, away, Leg(0), Leg(1)));
             }
         }
-        return new PromotionRoundPage(pairings, group.Table(game.Clubs));
+        if (live is null)
+            return new PromotionRoundPage(pairings, group.Table(game.Clubs));
+        // [ORIGINAL] Tabelle 0x30852(1, …) erst bei Minute 60 mit dem laufenden Spieltag (Datei 0x38652–0x38691).
+        var rounds = group.Results.Where(r => r.MatchDay <= played).GroupBy(r => r.MatchDay)
+            .Select(day => day.Select(r => (r.Home, r.Away, r.HomeGoals, r.AwayGoals)).ToList()).ToList();
+        if (live.Minute >= 60 && played < group.Rounds.Count && PromotionRoundScreen.DayOf(played) == live.Today)
+        {
+            var today = new List<(int, int, int, int)>();
+            foreach (var (home, away) in group.Rounds[played].Matches)
+                if (Result(played, home, away, 0) is { } r)
+                    today.Add((home, away, r.Left, r.Right));
+            rounds.Add(today);
+        }
+        return new PromotionRoundPage(pairings, CupGroup.Standings(game.Clubs, group.Clubs, rounds));
     }
 }
 
@@ -60,7 +90,13 @@ public sealed record PromotionRoundPage(IReadOnlyList<PromotionPairing> Pairings
 ///   0x4DF4/0x4DF6 = 7).</item>
 /// <item>[ORIGINAL] Termin statt Ergebnis für Spiel g = Runde + 3 · Rückspiel, solange g ≥ gespielte Termine (Argument 3 des
 ///   Aufrufs: 2 · DGROUP 0x7B0 + (0xCCA3 &gt; 0) + (0xCCA3 &gt; 2), Datei 0x3AAA4–0x3AAD5; Vergleich Datei 0x3229F–0x322C6), nur
-///   in der ersten Zeile der Runde; sonst das Ergebnis (Datei 0x324C7–0x32515).</item>
+///   in der ersten Zeile der Runde; sonst das Ergebnis (Datei 0x324C7–0x32515). Regeln gemeinsam mit dem Europapokal
+///   (<see cref="EuropeanCupScreen.ShownGames"/>, Nachbildung <c>tools/reverse-engineering/live/aufstieg_europapokal.py</c>).</item>
+/// <item>[ORIGINAL] Im Spielablauf (S04, Seite 2 des Seitenwählers: Gruppe 0 mit Schalter „Drittelpause/Ergebnisse 2.Liga“, Gruppe
+///   1 mit „… Oberliga“, Datei 0x38699–0x386C5; <see cref="GroupLive"/>): Merker „im Spiel“ [bp+0xA] = 1 – keine Termine, der
+///   laufende Spieltag mit dem laufenden Stand (Live-Tore 0x3183C, Datei 0x3AAD9–0x3AAF8), die Tabelle ab Minute 60 mit dem
+///   Spieltag; keine Minute in der Kopfzeile. [APPROX] Die Knöpfe „Liga“ öffnen die Ligapaarungen ohne Minute (das Original
+///   ruft Seite 7 mit der Minute, Datei 0x3ACBB–0x3ACC1).</item>
 /// <item>[ORIGINAL] Ohne Aufstiegsrunde (DGROUP 0xCFFA = 0xFF) „Die Paarungen stehen noch nicht fest...“ (Flow, Grundlinie 100,
 ///   Farbe 30, Datei 0x3206C–0x320CE), dann nur Rahmen, Titel und Knöpfe.</item>
 /// <item>[ORIGINAL] Bedienung (Datei 0x32944–0x32A62): Knopf → Ligapaarungen; Klick auf einen Verein der Paarungen
@@ -81,6 +117,12 @@ public sealed class PromotionRoundScreen : Screen
     private readonly bool _useFixed;
     private readonly IReadOnlyCollection<int>? _highlighted;
 
+    /// <summary>Seite im Spielablauf (S04) oder null (Hauptmenü).</summary>
+    public GroupLive? Live { get; }
+
+    /// <summary>Minute der Seite im Spielablauf oder null.</summary>
+    public int? LiveMinute => Live?.Minute;
+
     /// <summary>Liga der Kachel (2. Liga oder Oberliga).</summary>
     public League League { get; }
 
@@ -88,7 +130,9 @@ public sealed class PromotionRoundScreen : Screen
     public int Group => (int)League - 1;
 
     /// <param name="league">2. Liga oder Oberliga; die Bundesliga hat keine Aufstiegsrunde (die Seite bliebe leer).</param>
-    public PromotionRoundScreen(ScreenHost host, Screen back, League league) : base(host) => (_back, League) = (back, league);
+    /// <param name="live">Seite im Spielablauf (S04): Minute, Termin und laufende Stände.</param>
+    public PromotionRoundScreen(ScreenHost host, Screen back, League league, GroupLive? live = null) : base(host) =>
+        (_back, League, Live) = (back, league, live);
 
     /// <summary>Feste Seite statt des Spielstands (Bildschirmfotos); ohne Paarungen „noch nicht fest“.</summary>
     public PromotionRoundScreen(ScreenHost host, Screen back, League league, IReadOnlyList<PromotionPairing> pairings, IReadOnlyList<TableRow> table,
@@ -103,7 +147,7 @@ public sealed class PromotionRoundScreen : Screen
 
     /// <summary>Inhalt der Seite oder null („Die Paarungen stehen noch nicht fest...“).</summary>
     public PromotionRoundPage? Page => _useFixed ? _fixed
-        : RelegationGroup is { } group && Host.Game is { } game ? PromotionRoundPage.Of(game, group) : null;
+        : RelegationGroup is { } group && Host.Game is { } game ? PromotionRoundPage.Of(game, group, Live) : null;
 
     /// <summary>Vereinsfenster nach Klick auf einen Verein.</summary>
     public InfoBarWindows InfoWindows { get; } = new();

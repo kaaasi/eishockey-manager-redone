@@ -103,21 +103,47 @@ public class PixelWettbewerbeTests
     }
 
     /// <summary>
-    /// Befund PW-04: Sobald in der Gruppe gespielt wurde, zeigt das Original keine Termine mehr, auch nicht für noch offene Rückspiele
-    /// (eisbaeren_f51_03346 nach den drei Hinspielen, eisbaeren_f58_01323 nach vier Terminen); vorher stand das Datum des Rückspiels.
+    /// Befund PW-04 (Spur live-seiten-rest, R15-E2 = C): Die Videobilder ohne Termine nach den ersten Spielen (eisbaeren_f51_03314/
+    /// 03345/03346, eisbaeren_f20_02950, eisbaeren_f58_01323) sind Seiten im Spielablauf (0x31CD5 mit Merker „im Spiel“ [bp+0xA],
+    /// Datei 0x32294; davor bzw. danach das Eis des Live-Spiels). Im Hauptmenü (Minute 0) zeichnet em.exe den Termin offener Spiele in
+    /// der ersten Zeile wie bei der Aufstiegsrunde (folge06_01257; Nachbildung aufstieg_europapokal.py: Seitenwähler 0x3A88A(3, 0, 0)
+    /// mit DGROUP 0x7AF = 3 → Termine der Rückspiele). Vorher (Regel „keine Termine, sobald gespielt“) auch im Hauptmenü ohne Termine.
     /// </summary>
     [GameDataFact]
-    public void EuropeanCup_NoDatesOnceGroupHasResults()
+    public void EuropeanCup_MainMenuDatesForOpenGames_NoneInLivePage()
     {
-        var (d, _) = EuropeanGroup((0, 0, 4, 3), (1, 0, 1, 1), (2, 0, 3, 3));
-        for (var round = 0; round < 3; round++)
+        var (d, group) = EuropeanGroup((0, 0, 4, 3), (1, 0, 1, 1), (2, 0, 3, 3));
+        var dates = SeasonCalendar.DaysOf(DayEvents.EuropeanCup);
+        var screen = (EuropeanCupScreen)d.Host.Current!;
+        bool ReturnDatePixels(int round)
         {
             var y = EuropeanCupScreen.PairingBaseline + 26 * round;
             for (var x = 268; x < 310; x++)
                 for (var py = y - 6; py <= y; py++)
-                    Assert.NotEqual((byte)1, d.Surface.Pixels[py * Surface.Width + x]);
+                    if (d.Surface.Pixels[py * Surface.Width + x] == 1)
+                        return true;
+            return false;
+        }
+        for (var round = 0; round < 3; round++)
+        {
+            var date = SeasonCalendar.LayoutDate(dates[round + 3]);
+            Assert.Equal((CompetitionWidgets.Number(date.Day, 2) + "." + CompetitionWidgets.Number(date.Month, 1) + ".", 276, true),
+                screen.Cell(round, 0, 1));
+            Assert.Null(screen.Cell(round, 1, 1));
+            Assert.True(ReturnDatePixels(round));
+        }
+
+        // dieselbe Gruppe als Seite nach Minute 60 des dritten Termins: keine Termine
+        var live = new EuropeanCupScreen(d.Host, new Screens.MainMenuScreen(d.Host), 0, group, new GroupLive(60, dates[2], (_, _) => null));
+        d.Host.Show(live);
+        d.Frame();
+        for (var round = 0; round < 3; round++)
+        {
+            Assert.Null(live.Cell(round, 0, 1));
+            Assert.False(ReturnDatePixels(round));
         }
     }
+
     /// <summary>
     /// Befund PW-05: Die K.-o.-Ansicht der WM ist im Original der Bildschirm „WM-Endrundenspiele“ – dieselbe Funktion wie
     /// „DEB-Pokalspiele“ (Datei 0x32E23, Wettbewerb 3) mit eigenem Rahmen, Abschnitten, Ergebnissen bei x = 233 und Knopf „Gruppe“
