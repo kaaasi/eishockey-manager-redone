@@ -195,8 +195,14 @@ public sealed class LiveMatchScreen : Screen
                 foreach (var f in Pages(day, minute, afterShootout: false))
                     yield return f;
                 if (minute == LiveMatchDay.LastMinute && day.Matches.Any(m => m.Stepped && m.Report.ShootoutHomeWins is not null))
+                {
+                    // F076: [ORIGINAL] 0x32AA3(Schalter 1) nach den Seiten der Minute 70 (Datei 0x3728B): je Paarung mit
+                    // Penaltyschießen in Paarungsreihenfolge der Penalty-Bildschirm (LivePenaltyScreen), dann die Seiten.
+                    foreach (var f in Shootouts(day))
+                        yield return f;
                     foreach (var f in Pages(day, minute, afterShootout: true))
                         yield return f;
+                }
             }
         }
     }
@@ -218,6 +224,32 @@ public sealed class LiveMatchScreen : Screen
         // Spur zusehen-rest, A832: Meldungen früher gerechneter Paarungen (Pokaltermine, je Paarung gerechnet).
         foreach (var f in Notices(minute, n => !day.Matches.Any(m => m.Home.Index == n.HomeClub && m.Away.Index == n.AwayClub)))
             yield return f;
+    }
+
+    /// <summary>Wird gerade der Penalty-Bildschirm gezeigt (F076)?</summary>
+    public bool ShowingShootout { get; private set; }
+
+    /// <summary>
+    /// [ORIGINAL] Anzeigeweg von 0x3901B nur, wenn ein Verein der Paarung live zugesehen wird (Datei 0x390B8–0x390D6): Ankündigung,
+    /// (Schüsse: Spur torszene-dauer T7), Pause 50, Endergebnis (<see cref="LivePenaltyScreen"/>).
+    /// </summary>
+    private IEnumerable<bool> Shootouts(LiveMatchDay day)
+    {
+        foreach (var m in day.Matches.Where(m => m.Stepped && m.Report.ShootoutGoals is not null))
+        {
+            if (!m.Home.WatchedLive && !m.Away.WatchedLive)
+                continue;
+            ShowingShootout = true;
+            Host.Show(new LivePenaltyScreen(Host, this, m.Home, m.Away, null));
+            yield return true; // weiter, sobald der Bildschirm zurückkehrt
+            ShowingShootout = false;
+            for (var i = 0; i < LiveReporter.PauseFrames(LivePenaltyScreen.PauseBeforeResult); i++)
+                yield return true;
+            ShowingShootout = true;
+            Host.Show(new LivePenaltyScreen(Host, this, m.Home, m.Away, m.Report.ShootoutGoals));
+            yield return true;
+            ShowingShootout = false;
+        }
     }
 
     /// <summary>Minuten, die per Leertaste ohne Rechnung vergangen sind (für Tests).</summary>

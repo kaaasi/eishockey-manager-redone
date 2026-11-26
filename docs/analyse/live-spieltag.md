@@ -204,3 +204,30 @@ Dateigrenzen; die Seiten entfallen. (2) Ohne Live-Anzeige („Spiele laufen“) 
   (Datei 0x535DB, 0x537E7, 0x53992), der als Erstes `mov byte [0x374], 1` schreibt (Datei 0x0C1A1); dazwischen rufen nur 0x139C9,
   0x0BEFA, 0x0B6A5, 0x021CA (keine Schreiber, `disasm.py --xref 0x374 0x374`). Wert 1 wie bisher, jetzt `[ORIGINAL]`.
 - **A453:** bestätigt (Plattformersatz 70 Hz → 60 Bilder/s, E).
+
+## 10. Teil 3b (S04 Rest): Ligapaarungen, Penalty-Bildschirm; offen Aufstiegsrunde und Europapokal
+
+Entscheidung Leitstelle 26.11.2026 (PR #1032): (a) wie im Original, Dateigrenzen um `LeaguePairingsScreen.cs`,
+`PromotionRoundScreen.cs`, `EuropeanCupScreen.cs` erweitert; (b) Penalty-Bildschirm mit den drei Farbstreifen (F076) hier, das eigene
+Eis mit den Schüssen (T7) in `torszene-dauer` Teil 2.
+
+- **Seite 7 Ligapaarungen** (0x4E8A3(Liga, 2, Minute, 1), Datei 0x3ABEA–0x3AC05): Modus 2 zeichnet Fenster, Linien und Zeilen wie
+  aus dem Hauptmenü, aber keine Knöpfe und Pfeile (Datei 0x4E90A: nur Modus 0) und wertet sie nicht aus (Datei 0x4EFE0, 0x4F01D).
+  Kopfzeile (Datei 0x4EA9F–0x4EC1F): Liga, „   “, Spieltag, „.Spieltag  “ ohne Datum, „  “, Minute, „.MINUTE“ – z. B.
+  „Bundesliga   5.Spieltag    60.MINUTE“. Ergebnisse (Datei 0x4EE89: gespielte Tage + 1 &gt; Tag) für jede Paarung des Tages aus
+  der Ergebnistabelle DGROUP 0xA0BF, in die 0x369C7(2, 0) vorher die laufenden Stände schreibt (Datei 0x38598). Breite des
+  Spieltags: 2 nach einer vorigen Ligaseite der Folge (Datei 0x4EEA4), sonst `[APPROX]` 1. Bedienung: Rechtsklick oder Taste
+  weiter, Linksklick auf einen Verein öffnet sein Fenster. Umsetzung `LeaguePairingsScreen` (Ansicht mit Minute),
+  `LivePageScreens`; Test `LiveSeitenUiTests.LeagueDay_Reports_PairingsPageWithMinute` (rot vorher: keine Seite).
+- **Penalty-Bildschirm** (F076, Datei 0x35CBE, 0x3917F–0x39373, 0x3958D–0x39769): Grund Farbe 11, Streifen y 1–79 Farbe 0,
+  80–159 Farbe 0x12, 160–238 Farbe 0x18 (x 1–318), Schrift 1; Ankündigung „!    Penaltyschiessen    !“ (Grundlinie 32, Farbe
+  0x1E), Heim (99, 0x18), „gegen“ (123, 0x1E), Gast (152, 0x18), Klick; nach den Schüssen Pause 50 und „Endergebnis:“ mit
+  „h : g   n.P.“ (212, 0x10) aus den Treffern des Penaltyschießens, Klick. Nur im Anzeigeweg (ein Verein der Paarung live
+  zugesehen, Datei 0x390B8–0x390D6), nach den Seiten der Minute 70 (Datei 0x3728B), je Paarung in Paarungsreihenfolge, danach die
+  Seiten nach dem Penaltyschießen. Umsetzung `LivePenaltyScreen`, `LiveMatchScreen.Shootouts`; Tests `LivePenaltyUiTests`.
+  `[APPROX]` die Schüsse dazwischen (Datei 0x3941A–0x39588) zeigt das Remake noch nicht (T7, `torszene-dauer` Teil 2).
+- **Offen – Seite 2 Aufstiegsrunde und Seite 3 Europapokal** (0x31CD5, Datei 0x3AB43–0x3ABCE): Argumente (Wettbewerb 2 bzw. 3,
+  Gruppe, **Merker „im Spiel“ = Minute ≠ 0** [bp+0xA], Terminzahl min(DGROUP 0x7AF, 6 bzw. − 6) + (Minute 0 oder 60) − 1,
+  0, 0x20, Gruppe/Zeile); keine Minute in der Kopfzeile. Der Merker sperrt Termine ungespielter Begegnungen (Datei 0x32294) und
+  schaltet die Zeile des laufenden Termins (Datei 0x32515); die laufenden Stände kommen aus 0x3183C. Das ist zugleich der offene
+  Teil von PW-04 (`docs/wettbewerbe.md`). Nicht umgesetzt: Rest in der Übergabe.

@@ -16,8 +16,10 @@ namespace EishockeyManager.UI.Screens.Live;
 /// <item>[ORIGINAL] Marken (C07, <c>c07_marken.py</c>): die erste setzt 0x32AA3 erst nach den Seiten der Minute 60 (Datei 0x37211),
 ///   also ein Punkt ab Minute 65 bei Verlängerung; nach dem Penaltyschießen zwei Punkte und der Stand mit den Treffern
 ///   (wie <see cref="CupMatch"/>).</item>
-/// <item>[APPROX] Ligapaarungen (Seite 7, 0x4E8A3), Aufstiegsrunde (Seite 2) und Europapokal (Seite 3, je 0x31CD5) haben im Remake
-///   keine Ansicht im Spielablauf (Bildschirme außerhalb der Dateigrenzen der Spur); diese Seiten entfallen.</item>
+/// <item>[ORIGINAL] Ligapaarungen (Seite 7, 0x4E8A3 Modus 2, Teil 3b): <see cref="LeaguePairingsScreen"/> mit Minute, laufender
+///   Stand je Paarung des Termins (0x369C7(2, 0), Datei 0x38598).</item>
+/// <item>[APPROX] Aufstiegsrunde (Seite 2) und Europapokal (Seite 3, je 0x31CD5 mit Merker „im Spiel“ [bp+0xA] und Terminzahl,
+///   Datei 0x3AB43–0x3ABCE) haben im Remake noch keine Ansicht im Spielablauf; diese Seiten entfallen.</item>
 /// </list>
 /// </summary>
 public static class LivePageScreens
@@ -75,6 +77,20 @@ public static class LivePageScreens
         DebCupResult? ScoreOf(int left, int right) => Score(day, left, right, minute, afterShootout);
         switch (page.Kind)
         {
+            case LivePageKind.LeaguePairings:
+            {
+                var normal = new LeaguePairingsScreen(host, back, page.League);
+                if (normal.Page is not { } pairings)
+                    return [];
+                var rows = pairings.Rows.Select(r => ScoreOf(r.Home, r.Away) is { } live
+                    ? r with { Result = (live.Left, live.Right) }
+                    : r).ToList();
+                // [ORIGINAL] Datei 0x4EEA4: die vorige Ligaseite der Folge hat Ergebnisse gezeichnet → Breite 2 (siehe LiveHeader).
+                var previous = For(game, day, minute, afterShootout).TakeWhile(p => p != page)
+                    .Any(p => p.Kind == LivePageKind.LeaguePairings);
+                var header = LeaguePairingsScreen.LiveHeader(page.League, normal.Day, previous, minute);
+                return [new LeaguePairingsScreen(host, back, page.League, new PairingsPage(header, rows), liveMinute: minute)];
+            }
             case LivePageKind.DebCupGames when DebCupOverview.Of(game) is { } overview:
             {
                 var groups = overview.Groups.Select(g => g with

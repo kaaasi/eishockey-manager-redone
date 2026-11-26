@@ -57,6 +57,8 @@ public sealed class LiveSeitenUiTests
                 pages.Add((live.DisplayMinute, d.Host.Current!, watched is null ? (0, 0) : (watched.Report.HomeGoals, watched.Report.AwayGoals)));
                 d.RightClick(5, 5); // [ORIGINAL] Rechtsklick führt weiter (Datei 0x33B33)
             }
+            else if (live.ShowingShootout)
+                d.Click(160, 120); // F076: Penalty-Bildschirm (Klick 0x0B908)
             else
                 break;
         }
@@ -104,6 +106,48 @@ public sealed class LiveSeitenUiTests
         var (d, live) = LiveDay(MatchCompetition.DebCup, o => o.Reports[0] = true);
         var minutes = Play(d, live).Where(p => p.Page is DebCupGamesScreen).Select(p => p.Minute).ToList();
         Assert.Equal([20, 40, 60], minutes.Take(3));
+    }
+
+    /// <summary>
+    /// Teil 3b: Ligaspieltag mit „Drittelpause 1.Liga“ und „Ergebnisse 1.Liga“ (Matrix 0 und 1): die Seite 7 0x4E8A3(Liga, 2,
+    /// Minute, 1) nach 20, 40 und 60 – Kopfzeile mit „n.MINUTE“, laufender Stand der Managerpaarung, ohne Knöpfe. Vor dem Teil rot:
+    /// die Seite entfiel.
+    /// </summary>
+    [GameDataFact]
+    public void LeagueDay_Reports_PairingsPageWithMinute()
+    {
+        var (d, live) = LiveDay(MatchCompetition.League, o => (o.Reports[0], o.Reports[1]) = (true, true));
+        var match = Assert.Single(live.Session.Shown);
+        var seen = new List<int>();
+        for (var i = 0; i < 200000 && !live.Done; i++)
+        {
+            if (d.Host.Current == live)
+            {
+                if (live.WaitingForClick)
+                    d.Click(160, 120);
+                else
+                    d.Frame();
+            }
+            else if (d.Host.Current is LeaguePairingsScreen page)
+            {
+                var minute = Assert.IsType<int>(page.LiveMinute);
+                seen.Add(minute);
+                Assert.Equal(live.DisplayMinute, minute);
+                Assert.EndsWith($"  {minute}.MINUTE", page.Page!.Header);
+                var row = Assert.Single(page.Page.Rows, r => r.Home == match.Home.Index);
+                Assert.Equal((match.Report.HomeGoals, match.Report.AwayGoals), row.Result);
+                Assert.All(page.Page.Rows, r => Assert.NotNull(r.Result));
+                page.Draw(d.Surface);
+                var b = LeaguePairingsScreen.Buttons[0];
+                Assert.Equal(d.Host.Assets.Image(MainMenuScreen.Background)[b.X + 10, b.Y + 10], d.Surface.Pixels[(b.Y + 10) * 320 + b.X + 10]);
+                d.RightClick(5, 5);
+            }
+            else if (live.ShowingPage)
+                d.RightClick(5, 5);
+            else
+                break;
+        }
+        Assert.Equal([20, 40, 60], seen);
     }
 
     /// <summary>Schalter DEB-Pokal aus: keine Seite (drittelseiten.py Fall 2, „alles aus“).</summary>

@@ -12,7 +12,7 @@ namespace EishockeyManager.UI.Screens.Competitions;
 /// <c>pixel-paarungen</c>; Kennzahlen in <c>docs/wettbewerbe.md</c>): [ORIGINAL] Fenster, Kopfzeile, Knöpfe und Zeilen wie unten
 /// gegen <c>folge06_01256</c> (Oberliga), <c>folge17_02406</c> (Zweite Liga), <c>folge21_02149</c> (Bundesliga); die Zeilen auch gegen
 /// das gleiche Fenster ohne Knöpfe im Spielablauf („60.MINUTE“, <c>duell_s2a_01138</c>, <c>eisbaeren_f14_01518</c>,
-/// <c>eisbaeren_f40_01833</c>) – diese Anzeige selbst gibt es im Remake noch nicht.
+/// <c>eisbaeren_f40_01833</c>; Ansicht mit Minute, Spur live-verschraenkt Teil 3b, siehe <see cref="LiveHeader"/>).
 /// <list type="bullet">
 /// <item>[ORIGINAL] Fenster (4 | 15) 312 × 152 orange; drei Knöpfe (Rahmen 48 × 38) bei x = 30 / 140 / 250, y = 180.</item>
 /// <item>[ORIGINAL] Pfeile aus kb\4 (29 × 9, Quelle (19 | 104) links, (19 | 125) rechts; gedrückt y + 10) bei (40 | 195) und
@@ -57,6 +57,7 @@ public sealed class LeaguePairingsScreen : Screen
     private readonly Screen _back;
     private readonly PairingsPage? _fixed;
     private readonly IReadOnlyCollection<int>? _highlighted;
+    private readonly int? _liveMinute;
 
     public League League { get; }
 
@@ -75,6 +76,31 @@ public sealed class LeaguePairingsScreen : Screen
     /// gelb gezeigten Vereine (sonst die Vereine der Manager).</summary>
     public LeaguePairingsScreen(ScreenHost host, Screen back, League league, PairingsPage page, IReadOnlyCollection<int>? highlighted = null)
         : this(host, back, league) => (_fixed, _highlighted) = (page, highlighted);
+
+    /// <summary>
+    /// Seite im Spielablauf nach dem Drittel (S04, <c>Live/LivePageScreens.cs</c>): [ORIGINAL] 0x4E8A3(Liga, 2, Minute, 1) aus dem
+    /// Seitenwähler 0x3A88A (Seite 7, Datei 0x3AC05). Modus 2 zeichnet keine Knöpfe und Pfeile (Datei 0x4E90A: nur Modus 0),
+    /// die Kopfzeile mit Minute (<see cref="LiveHeader"/>), in jeder Zeile den laufenden Stand des Termins (Datei 0x4EE89: gespielte
+    /// Tage + 1 &gt; Tag, Stände aus 0x369C7(2, 0) in DGROUP 0xA0BF) und wertet die Knöpfe nicht aus (Datei 0x4EFE0/0x4F01D).
+    /// Rechtsklick oder Taste weiter, Linksklick auf einen Verein öffnet sein Fenster (Datei 0x4F079–0x4F164).
+    /// </summary>
+    public LeaguePairingsScreen(ScreenHost host, Screen back, League league, PairingsPage page, int liveMinute)
+        : this(host, back, league) => (_fixed, _liveMinute) = (page, liveMinute);
+
+    /// <summary>Minute der Seite im Spielablauf oder null (Seite aus dem Hauptmenü).</summary>
+    public int? LiveMinute => _liveMinute;
+
+    /// <summary>
+    /// [ORIGINAL] Kopfzeile im Spielablauf (Datei 0x4EA9F–0x4EC1F, Modus 2): Liga + „   “ (DGROUP 0x538F) + Spieltag (Breite
+    /// DGROUP 0x374 vom vorigen Zeichnen) + „.“ + „Spieltag  “ (DGROUP 0xFF1), ohne Datum, dann <c>[0x374]</c> = 1, „  “ (DGROUP
+    /// 0x5393), Minute, „.“ (0x37A4A) und „MINUTE“ (DGROUP 0xFF9). <paramref name="previousWasPlayed"/>: die vorige Seite dieser
+    /// Folge hat Ergebnisse gezeichnet (Datei 0x4EEA4 <c>[0x374]</c> = 2). [APPROX] Für die erste Seite gilt Breite 1 (letzter
+    /// gelesener Schreiber die Tafel 0x52BD6 am Minutenende, Datei 0x52F81); die Tabellen vor den Seiten der Minute 60 (0x50B45,
+    /// 0x51049, 0x052CF) sind nicht bis in alle Unteraufrufe verfolgt.
+    /// </summary>
+    public static string LiveHeader(League league, int day, bool previousWasPlayed, int minute) =>
+        LeagueName(league) + "   " + CompetitionWidgets.Number(day, previousWasPlayed ? 2 : 1) + ".Spieltag  " + "  "
+        + CompetitionWidgets.Number(minute, 1) + ".MINUTE";
 
     private int Count => Host.Game is { } g && g.Schedules.TryGetValue(League, out var days) ? days.Count : 0;
 
@@ -108,6 +134,14 @@ public sealed class LeaguePairingsScreen : Screen
     {
         if (InfoWindows.Nation.Update(input, Host.Game) | InfoWindows.Club.Update(input, Host.Game))
             return;
+        if (_liveMinute is not null)
+        {
+            if (input.RightClick || input.Keys.Count > 0)
+                Host.Show(_back);
+            else if (input.LeftClick && ClubAt(input.MouseX, input.MouseY) is { } liveClub)
+                InfoWindows.Show(liveClub);
+            return;
+        }
         if (input.Pressed(Key.Escape) || input.RightClick)
         {
             Host.Show(_back);
@@ -154,12 +188,15 @@ public sealed class LeaguePairingsScreen : Screen
         s.Palette = Assets.Palette;
         s.Blit(Assets.Image(MainMenuScreen.Background), 0, 0);
         Widgets.Frame(s, Assets, Window, FrameStyle.Orange);
-        foreach (var button in Buttons)
-            Widgets.Frame(s, Assets, button, FrameStyle.Orange);
-        var arrows = Assets.Image(4);
-        s.Blit(arrows, LeftArrow, 40, 195);
-        s.Blit(arrows, RightArrow, 260, 195);
-        CompetitionWidgets.Centered(s, Assets.Mini, 147, 182, 200, MiddleLabel, 1, null);
+        if (_liveMinute is null)
+        {
+            foreach (var button in Buttons)
+                Widgets.Frame(s, Assets, button, FrameStyle.Orange);
+            var arrows = Assets.Image(4);
+            s.Blit(arrows, LeftArrow, 40, 195);
+            s.Blit(arrows, RightArrow, 260, 195);
+            CompetitionWidgets.Centered(s, Assets.Mini, 147, 182, 200, MiddleLabel, 1, null);
+        }
 
         s.HLine(13, 34, 303 - 13 + 1, 7);
         s.HLine(14, 35, 304 - 14 + 1, 1);
