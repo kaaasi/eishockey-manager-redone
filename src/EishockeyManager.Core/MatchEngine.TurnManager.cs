@@ -37,8 +37,11 @@ public sealed class TurnManagerRegister
     /// <summary>DGROUP 0xA70E.</summary>
     public int Manager { get; internal set; }
 
-    /// <summary>Live-Anzeige am Spieltag (DGROUP 0x5A56): die Verletzung setzt den Merker dann nicht.</summary>
-    public bool LiveDisplay { get; }
+    /// <summary>
+    /// Live-Anzeige am Spieltag (DGROUP 0x5A56): die Verletzung setzt den Merker dann nicht. Im Minutenschritt setzt
+    /// <see cref="LiveMatchDay.Begin"/> nach der Vorbereitung aller Paarungen den Wert des ganzen Ablaufs (R26-G1).
+    /// </summary>
+    public bool LiveDisplay { get; internal set; }
 
     /// <summary>Managerwert DGROUP 0x974B + 0x1AF · Manager (vor den Spielen des Tages gerechnet, im Spiel unverändert).</summary>
     public int ManagerValue(int manager)
