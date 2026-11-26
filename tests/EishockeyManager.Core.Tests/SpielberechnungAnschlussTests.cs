@@ -339,8 +339,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // und WM-Termine rechnen je Minute alle Paarungen des Termins mit Minutenweg (0x37A62 Datei 0x380D0–0x3853E,
     // MatchEngine.PlayDate); anderer Zufallsverlauf ab dem ersten Pokaltermin. Kein Originalsollwert, nur interner Abdruck.
     // Rückschaltprobe: src/ von f8bb0ad + dieser Test → rot (alte Werte).
-    [InlineData(false, "40F87213BFD82F36")]
-    [InlineData(true, "64FCFFD158101E69")]
+    // Fixlauf live-verschraenkt, Rebase auf main 9d9ae39 (Runde 26, R21-D2 = A, R15-E2 = C): neu – verschränkte Liga- und
+    // Pokaltermine (0x37A62, #1032) und Stadionschäden je Manager (0x3CFA0, Datei 0x3D330, #1034) zusammen ergeben einen anderen
+    // Zufallsverlauf als jede Änderung allein. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von 9d9ae39
+    // (main) bzw. 5d491e5 (alter Head) → deren Werte, hier rot.
+    [InlineData(false, "718EF8B9AA779A66")]
+    [InlineData(true, "2FB9F70AADC39753")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();
@@ -451,8 +455,12 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // und WM-Termine rechnen je Minute alle Paarungen des Termins mit Minutenweg (0x37A62 Datei 0x380D0–0x3853E,
     // MatchEngine.PlayDate); anderer Zufallsverlauf ab dem ersten Pokaltermin. Kein Originalsollwert, nur interner Abdruck.
     // Rückschaltprobe: src/ von f8bb0ad + dieser Test → rot (alte Werte).
+    // Fixlauf live-verschraenkt, Rebase auf main 9d9ae39 (Runde 26, R21-D2 = A, R15-E2 = C): neu – verschränkte Liga- und
+    // Pokaltermine (0x37A62, #1032) und Stadionschäden je Manager (0x3CFA0, Datei 0x3D330, #1034) zusammen ergeben einen anderen
+    // Zufallsverlauf als jede Änderung allein. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von 9d9ae39
+    // (main) bzw. 5d491e5 (alter Head) → deren Werte, hier rot.
     private const string WorldOnlyReference =
-        "WorldChampion=52|500000|WorldChampion=63|-1522107|WorldChampion=52|-4538510|WorldChampion=52|-9212802|WorldChampion=52|-16459165|R886725916";
+        "WorldChampion=54|500000|WorldChampion=52|-1520983|WorldChampion=54|-4537348|WorldChampion=52|-9215420|WorldChampion=54|-16462059|R2024624789";
 
     /// <summary>
     /// Größenordnung gegen das Video „MEISTER werden in 75 Minuten“ (Reihe karriere, Bild 01019: Oberliga nach dem

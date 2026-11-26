@@ -85,7 +85,12 @@ public class NationalCoachMode4Tests
         // rechnen je Minute alle Paarungen des Termins (0x37A62 Datei 0x380D0–0x3853E, MatchEngine.PlayDate), anderer Zufallsverlauf ab
         // dem ersten Pokaltermin; unter 95–159 stehen nur bei 116, 117, 125, 128, 133, 156 beide Managervereine unter den ersten fünf.
         // Rückschaltprobe siehe PR #1032. Die Probe hängt an der Saat.
-        var game = GameModeTests.Create(116, true, true, 2, 1); // kader-start U15-a/R-K5 (L13): Saat 3 → 17; #675 (Tageszähler 0x3B7, anderer Zufallsverlauf): 17 → 56; #678 (Tagestakt 0x07169): 56 → 71; #784 (Gast nach dem Heimverein, Runde 17; Saaten 71–83 ohne Vorbedingung): 71 → 84, Vorbedingung beide unter den ersten fünf; Spur start-lader (Lader beim Spielstart, Datei 0x439BB, anderer Zufallsverlauf): 84 → 24
+        // Fixlauf live-verschraenkt, Rebase auf main 9d9ae39 (Runde 26, R21-D2 = A, R15-E2 = C): Saat 122 statt 116 – verschränkte
+        // Liga- und Pokaltermine (0x37A62, #1032) und Stadionschäden je Manager (0x3CFA0, Datei 0x3D330, #1034) zusammen ergeben
+        // einen anderen Zufallsverlauf als jede Änderung allein; bei 116 stehen nicht beide Managervereine (2, 1) unter den ersten
+        // fünf (0, 3, 6, 5, 4; Vorbedingung), 117–121 ebenfalls nicht, 122 ja. Rückschaltprobe: src/ von 9d9ae39 (main) bzw. src/
+        // von 5d491e5 (alter Head) + Saat 122 rot (Vorbedingung). Die Probe hängt an der Saat.
+        var game = GameModeTests.Create(122, true, true, 2, 1); // kader-start U15-a/R-K5 (L13): Saat 3 → 17; #675 (Tageszähler 0x3B7, anderer Zufallsverlauf): 17 → 56; #678 (Tagestakt 0x07169): 56 → 71; #784 (Gast nach dem Heimverein, Runde 17; Saaten 71–83 ohne Vorbedingung): 71 → 84, Vorbedingung beide unter den ersten fünf; Spur start-lader (Lader beim Spielstart, Datei 0x439BB, anderer Zufallsverlauf): 84 → 24
         ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
         PlayToClubSeasonEnd(game);
         var top = game.FinalTables()[League.Bundesliga].Take(5).ToList();

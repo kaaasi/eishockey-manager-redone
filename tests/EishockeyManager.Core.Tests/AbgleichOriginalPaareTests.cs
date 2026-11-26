@@ -100,7 +100,11 @@ public class AbgleichOriginalPaareTests
         {
             // #730: HOCK Original 50, Remake 116–127, seit #784 (Gast der Spielvorbereitung nach dem Heimverein, Runde 17) nur bei
             // 5 von 6 Saaten (nicht 2) → Sägezahn wie SIKORA und BRANDL; Pflicht über die Saaten in Strain_DeviatesAtMostSeeds_DriftGuard.
-            ["FILE02→FILE03"] = [StrainSawtooth("5 KÖLNER EC"),
+            // Fixlauf live-verschraenkt, Rebase auf main 9d9ae39 (Runde 26, R21-D2 = A, R15-E2 = C): Mit beiden Strömen zusammen
+            // (verschränkter Ligaspieltag 0x37A62 und Stadionschäden 0x3CFA0 je Manager, Datei 0x3D330) senkt bei Saat 2 ein Schaden eine
+            // Stadionstufe (Managers[0] _levels[4] 2 → 1) – dasselbe Zufallsmuster wie StadiumDamage bei FILE20→21 und FILE44→46, kein neu
+            // eingetragener Originalwert.
+            ["FILE02→FILE03"] = [StrainSawtooth("5 KÖLNER EC"), .. StadiumDamage,
                 // Zufall: Pool-Mittel der Belastung über zehn Saaten 143–146, nur Saat 1 bei 136,7 (seit #748 anderer Zufallsverlauf).
                 new("Invariante.PoolMittel.Strain", Chance, Optional: true),
                 // Zufall: Wanderung der Teamwerte des Leerplatzes, seit #784 nur Saat 3 (12 → −4).

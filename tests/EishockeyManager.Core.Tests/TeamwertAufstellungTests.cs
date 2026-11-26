@@ -266,7 +266,12 @@ public class TeamwertAufstellungTests(ITestOutputHelper output)
         // und Tag (Datei 0x3ED19–0x3ED48), Sommerpause je Manager verschränkt; bei Saat 33 hält der passive Lauf nur 148 Schritte
         // (Schwelle 200), 34–36 passiv und aktiv darüber. Die Probe hängt an der Saat.
         // Spur tagesabschluss Teil 2 (Runde 26, R26-E1 = B, R21-D2 = A, R15-E2 = C): Saat 41 statt 34 – die wöchentlichen Stadionschäden 0x3CFA0 (Datei 0x3D330) würfeln je Manager und Bautag mindestens random(0, 2·d + 8) (Datei 0x3CFC5), anderer Zufallsverlauf ab dem ersten Bautag; bei Saat 34 zählt der passive Lauf nur 143 Schritte (Schwelle 200), 35–40 ebenfalls zu kurz, 41 und 42 passiv und aktiv darüber. Die Probe hängt an der Saat.
-        var game = TestGames.Create(41);
+        // Fixlauf live-verschraenkt, Rebase auf main 9d9ae39 (Runde 26, R21-D2 = A, R15-E2 = C): Saat 46 statt 41 – verschränkte
+        // Liga- und Pokaltermine (0x37A62, #1032) und Stadionschäden je Manager (0x3CFA0, Datei 0x3D330, #1034) zusammen ergeben
+        // einen anderen Zufallsverlauf als jede Änderung allein; bei 41 zählt der passive Lauf nur 130 Schritte (Schwelle 200),
+        // 42–45 ebenfalls zu kurz (131–139), 46 passiv und aktiv darüber. Rückschaltprobe: src/ von 9d9ae39 (main) bzw. src/ von
+        // 5d491e5 (alter Head) + Saat 46 passiv rot (zu wenige Schritte). Die Probe hängt an der Saat.
+        var game = TestGames.Create(46);
         var changes = 0;
         var steps = 0;
         var values = new HashSet<int>();

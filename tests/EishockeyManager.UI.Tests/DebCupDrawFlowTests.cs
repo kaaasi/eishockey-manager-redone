@@ -369,6 +369,10 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     // und WM-Termine rechnen je Minute alle Paarungen des Termins mit Minutenweg (0x37A62 Datei 0x380D0–0x3853E,
     // MatchEngine.PlayDate); anderer Zufallsverlauf ab dem ersten Pokaltermin. Kein Originalsollwert, nur interner Abdruck.
     // Rückschaltprobe: src/ von f8bb0ad + dieser Test → rot (alte Werte).
+    // Fixlauf live-verschraenkt, Rebase auf main 9d9ae39 (Runde 26, R21-D2 = A, R15-E2 = C): neu – verschränkte Liga- und
+    // Pokaltermine (0x37A62, #1032) und Stadionschäden je Manager (0x3CFA0, Datei 0x3D330, #1034) zusammen ergeben einen anderen
+    // Zufallsverlauf als jede Änderung allein. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von 9d9ae39
+    // (main) bzw. 5d491e5 (alter Head) → deren Werte, hier rot.
     private const string Reference =
-        "1993: DEB 8, DM 2, Tab 15535 | 1994: DEB 8, DM 2, Tab 16046 | 1995: DEB 1, DM 1, Tab 16207 | 1996: DEB 1, DM 11, Tab 16134";
+        "1993: DEB 1, DM 6, Tab 15595 | 1994: DEB 5, DM 10, Tab 15917 | 1995: DEB 1, DM 2, Tab 16104 | 1996: DEB 10, DM 10, Tab 16069";
 }

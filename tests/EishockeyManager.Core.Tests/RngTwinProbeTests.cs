@@ -341,10 +341,14 @@ public class RngTwinProbeTests
     // und WM-Termine rechnen je Minute alle Paarungen des Termins mit Minutenweg (0x37A62 Datei 0x380D0–0x3853E,
     // MatchEngine.PlayDate); anderer Zufallsverlauf ab dem ersten Pokaltermin. Kein Originalsollwert, nur interner Abdruck.
     // Rückschaltprobe: src/ von f8bb0ad + dieser Test → rot (alte Werte).
-    [InlineData(false, 3, "49A11322D8FD4521")]
-    [InlineData(true, 3, "A65E4D8F8473F807")]
-    [InlineData(false, 11, "C169D77C3B9585D8")]
-    [InlineData(true, 11, "84672BC5B88AE78A")]
+    // Fixlauf live-verschraenkt, Rebase auf main 9d9ae39 (Runde 26, R21-D2 = A, R15-E2 = C): neu – verschränkte Liga- und
+    // Pokaltermine (0x37A62, #1032) und Stadionschäden je Manager (0x3CFA0, Datei 0x3D330, #1034) zusammen ergeben einen anderen
+    // Zufallsverlauf als jede Änderung allein. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von 9d9ae39
+    // (main) bzw. 5d491e5 (alter Head) → deren Werte, hier rot.
+    [InlineData(false, 3, "65A0E50065956F77")]
+    [InlineData(true, 3, "DDE0FFE877A6380D")]
+    [InlineData(false, 11, "710A8EE6A71931AF")]
+    [InlineData(true, 11, "F14C86ECDF1BFE90")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -477,8 +481,12 @@ public class RngTwinProbeTests
     // und WM-Termine rechnen je Minute alle Paarungen des Termins mit Minutenweg (0x37A62 Datei 0x380D0–0x3853E,
     // MatchEngine.PlayDate); anderer Zufallsverlauf ab dem ersten Pokaltermin. Kein Originalsollwert, nur interner Abdruck.
     // Rückschaltprobe: src/ von f8bb0ad + dieser Test → rot (alte Werte).
-    [InlineData(false, "3736573B050D53D2")]
-    [InlineData(true, "8652581E522150FA")]
+    // Fixlauf live-verschraenkt, Rebase auf main 9d9ae39 (Runde 26, R21-D2 = A, R15-E2 = C): neu – verschränkte Liga- und
+    // Pokaltermine (0x37A62, #1032) und Stadionschäden je Manager (0x3CFA0, Datei 0x3D330, #1034) zusammen ergeben einen anderen
+    // Zufallsverlauf als jede Änderung allein. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von 9d9ae39
+    // (main) bzw. 5d491e5 (alter Head) → deren Werte, hier rot.
+    [InlineData(false, "1504F706A00F8EDE")]
+    [InlineData(true, "7505E5A6507D17D3")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

@@ -193,7 +193,12 @@ public class SaisonGeldTeil2Tests
         {
             // Startwert 8 statt 7 seit Spur tagesabschluss (#1018): Der Tagesabschluss je Manager verschiebt den Strom; mit 7 kam
             // aktiv zufällig kein Vertrag über mehrere Felder mehr zustande (Zusicherung unten).
-            var game = TwoManagers(8);
+            // Fixlauf live-verschraenkt, Rebase auf main 9d9ae39 (Runde 26, R21-D2 = A, R15-E2 = C): Saat 9 statt 8 – verschränkte
+            // Liga- und Pokaltermine (0x37A62, #1032) und Stadionschäden je Manager (0x3CFA0, Datei 0x3D330, #1034) zusammen
+            // ergeben einen anderen Zufallsverlauf als jede Änderung allein; bei 8 schließt der aktive Manager keinen Bandenvertrag
+            // über mehrere Felder (Vorbedingung), 9 passiv und aktiv. Rückschaltprobe: src/ von 9d9ae39 (main) bzw. src/ von
+            // 5d491e5 (alter Head) + Saat 9 grün. Die Probe hängt an der Saat.
+            var game = TwoManagers(9);
             var me = game.Managers[0];
             long sponsors = 0;
             var multiField = 0;

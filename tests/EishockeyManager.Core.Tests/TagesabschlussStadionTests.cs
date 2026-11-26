@@ -234,7 +234,12 @@ public class TagesabschlussStadionTests
     {
         (string Print, long[] Money, int Damages, int Messages) Run()
         {
-            var game = TwoManagers(23, level: 5);
+            // Fixlauf live-verschraenkt, Rebase auf main 9d9ae39 (Runde 26, R21-D2 = A, R15-E2 = C): Saat 24 statt 23 –
+            // verschränkte Liga- und Pokaltermine (0x37A62, #1032) und Stadionschäden je Manager (0x3CFA0, Datei 0x3D330, #1034)
+            // zusammen ergeben einen anderen Zufallsverlauf als jede Änderung allein; bei 23 treten im aktiven Lauf nur 3 Schäden
+            // auf (mindestens 4), 24 passiv und aktiv. Rückschaltprobe: src/ von 9d9ae39 (main) + Saat 24 passiv rot (Test erst
+            // seit #1034). Die Probe hängt an der Saat.
+            var game = TwoManagers(24, level: 5);
             var last = game.Managers.Select(m => Snapshot(game, m)).ToArray();
             var seen = new HashSet<Message>(ReferenceEqualityComparer.Instance);
             var damages = 0;

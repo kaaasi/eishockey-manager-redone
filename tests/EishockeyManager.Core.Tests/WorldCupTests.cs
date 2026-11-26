@@ -169,7 +169,13 @@ public class WorldCupTests
     [Fact]
     public void MultiSeasonProbe_FourSeasonChanges_PassiveAndActiveManager()
     {
-        var game = Create(9, true, 33, 4);
+        // Fixlauf live-verschraenkt, Rebase auf main 9d9ae39 (Runde 26, R21-D2 = A, R15-E2 = C): Saat 10 statt 9 – verschränkte
+        // Liga- und Pokaltermine (0x37A62, #1032) und Stadionschäden je Manager (0x3CFA0, Datei 0x3D330, #1034) zusammen ergeben
+        // einen anderen Zufallsverlauf als jede Änderung allein; die Probe setzt gleichbleibende Plätze voraus (Testaufbau 9 Sitz-,
+        // 0 Stehplätze); bei 9 sperrt ein Stadionschaden die Sitzplätze (Sperre mindestens 100, Datei 0x3D083), Kapazität am
+        // Saisonende 0 bei 1872 gebuchtem Eintritt; 10 ohne Sperre. Rückschaltprobe: src/ von 9d9ae39 (main) bzw. src/ von 5d491e5
+        // (alter Head) + Saat 10 grün. Die Probe hängt an der Saat.
+        var game = Create(10, true, 33, 4);
         var passive = game.Managers[0];
         var active = game.Managers[1];
         foreach (var manager in game.Managers)
