@@ -169,4 +169,7 @@ verzeichnet – Vergleich nur gegen die Einzelszene (gleiches Bild) und gegen di
 
 Bildschirmfoto-Ablauf `torszene-dauer` (`src/EishockeyManager.Tools/Scenarios/TorszeneDauer.cs`). Neue `[APPROX]`: ohne
 `tore\` Live-Bildschirm statt Eis; Paarung der Kopfzeile nur unter den höchstens vier Reihen; Torschütze 0x541D9 im
-Penaltyschießen zieht weiterhin nicht; Schüsse bei Darstellung 0 weiterhin nicht gezeigt.
+Penaltyschießen zieht weiterhin nicht. Schüsse bei Darstellung 0 seit A1027 (R26-E3 = A, `fix/penalty-darstellung-0`) wie im
+Original auf dem Live-Bildschirm: Neuaufbau 0x5353C mit Stand 0 : 0, je Schuss Torszene 0x53C57 ohne Szene und ohne Zufallszug,
+bei Treffer Spielstand 0x51FEA mit den Treffern des Penaltyschießens, Pause 80, dann Pause 50 (Nachbildung Teil H von
+`torszene_dauer.py`; `LiveMatchScreen.LiveShootoutShots`, Test `PenaltyDarstellung0UiTests`).

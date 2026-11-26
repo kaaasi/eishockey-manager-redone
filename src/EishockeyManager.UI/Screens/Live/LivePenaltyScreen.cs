@@ -20,7 +20,8 @@ namespace EishockeyManager.UI.Screens.Live;
 ///   Live-Bildschirm 0x5353C auf, dessen Grafiklader 0xC17D 0x374 = 1 setzt (Datei 0x0C1A1); [APPROX] mit Darstellung 1/2
 ///   (eigenes Eis, T7) nicht verfolgt.</item>
 /// <item>Die Schüsse dazwischen (Datei 0x3941A–0x39588) zeigt <see cref="LiveMatchScreen"/>: mit Darstellung 1/2 auf eigenem Eis
-///   (T7, Spur torszene-dauer Teil 2); [APPROX] mit Darstellung 0 noch nicht, dort nur die Pause 50.</item>
+///   (T7, Spur torszene-dauer Teil 2), [ORIGINAL] mit Darstellung 0 auf dem Live-Bildschirm mit den Treffern in der Tafel der
+///   Paarung, Pause 80 je Schuss (A1027, Datei 0x3941A, 0x394D3, 0x394FB).</item>
 /// </list>
 /// </summary>
 public sealed class LivePenaltyScreen : Screen

@@ -36,7 +36,8 @@ namespace EishockeyManager.UI.Screens.Live;
 ///   „r“/„w“ wiederholt bis zu dreimal.</item>
 /// <item>[ORIGINAL] Darstellung 2 „Dauer-Eisfeld“ (A472, Spur torszene-dauer Teil 2, <c>docs/analyse/torszene-dauer.md</c> §10
 ///   T1–T8): statt des Live-Bildschirms das Eisfeld für den ganzen Spieltag (<see cref="RinkScript"/>,
-///   <see cref="GoalSceneRinkView"/>); Penaltyschießen mit Darstellung 1 und 2 auf eigenem Eis (<see cref="Shootouts"/>).</item>
+///   <see cref="GoalSceneRinkView"/>); Penaltyschießen mit Darstellung 1 und 2 auf eigenem Eis, mit Darstellung 0 auf dem Live-Bildschirm (A1027,
+///   <see cref="Shootouts"/>).</item>
 /// </list>
 /// </summary>
 public sealed class LiveMatchScreen : Screen
@@ -279,8 +280,11 @@ public sealed class LiveMatchScreen : Screen
     ///   (<see cref="GoalSceneRinkView.ForShootout"/>), je Schuss die Torszene 0x53C57 darauf (Modus 2, Pause 30 und 20,
     ///   Kopfzeile mit den Treffern vor dem Schuss: 0x53C57 liest das Ergebnisbyte der Zeile + 10 = <c>DGROUP 0x5C4B</c>, Datei
     ///   0x3941D/0x394BB), dann Pause 80 (Datei 0x394FB); am Ende Abbau (Datei 0x3954A–0x39588).</item>
-    /// <item>[APPROX] Mit Darstellung 0 (Live-Bildschirm, Spielstand 0x51FEA je Treffer, Pause 80; Datei 0x3941A, 0x394D3) zeigt das
-    ///   Remake die Schüsse weiterhin nicht; zwischen Ankündigung und Endergebnis nur die Pause 50.</item>
+    /// <item>[ORIGINAL] A1027 (R26-E3 = A; <c>torszene_dauer.py</c> Teil H): mit Darstellung 0 (Datei 0x3941A) bzw. wenn das
+    ///   eigene Eis nicht aufgebaut wird (Datei 0x393DD–0x39417; im Remake ohne <c>tore\</c>) der Live-Bildschirm 0x5353C neu,
+    ///   Stand der Paarung 0 : 0 (Datei 0x39284 setzt DGROUP 0x5C4B/0x5C4C auf 0); je Schuss die Torszene 0x53C57 ohne Szene,
+    ///   die die Tafel der Reihe neu zeichnet (Datei 0x541CB), bei Treffer Spielstand 0x51FEA (Datei 0x394D3), Pause 80 (Datei
+    ///   0x394FB); siehe <see cref="LiveShootoutShots"/>.</item>
     /// </list>
     /// </summary>
     private IEnumerable<bool> Shootouts(LiveMatchDay day)
@@ -303,6 +307,11 @@ public sealed class LiveMatchScreen : Screen
                 foreach (var f in ShootoutShots(m))
                     yield return f;
             }
+            else
+            {
+                foreach (var f in LiveShootoutShots(m))
+                    yield return f;
+            }
             for (var i = 0; i < LiveReporter.PauseFrames(LivePenaltyScreen.PauseBeforeResult); i++)
                 yield return true;
             ShowingShootout = true;
@@ -310,11 +319,43 @@ public sealed class LiveMatchScreen : Screen
             yield return true;
             ShowingShootout = false;
             _backgroundOnly = false;
+            ShootoutScore = null;
+            _shootoutMatch = null;
         }
     }
 
     /// <summary>[ORIGINAL] Pause nach jedem Schuss (Datei 0x394FB: <c>50h:19Eh(80)</c>).</summary>
     public const int ShotPause = 80;
+
+    /// <summary>
+    /// Treffer des Penaltyschießens, die die Tafel der Paarung während der Schüsse auf dem Live-Bildschirm zeigt (A1027), sonst
+    /// null. [ORIGINAL] 0x51FEA liest mit Pokal-Kennzeichen das Ergebnisbyte DGROUP 0x5C4B/0x5C4C (Datei 0x5205E–0x52087), das
+    /// 0x3901B vor den Schüssen auf 0 setzt und je Treffer erhöht (Datei 0x39475).
+    /// </summary>
+    public (int Home, int Away)? ShootoutScore { get; private set; }
+
+    private LiveMatch? _shootoutMatch;
+
+    /// <summary>
+    /// [ORIGINAL] A1027: Schüsse auf dem Live-Bildschirm (Datei 0x3941A–0x39505, siehe <see cref="Shootouts"/>). Die Torszene
+    /// 0x53C57 zieht mit Darstellung 0 keinen Zufall (keine Szenenwahl, Datei 0x53DD2–0x53DE3; Nachbildung Teil H), der Spielkern
+    /// bleibt unverändert.
+    /// </summary>
+    private IEnumerable<bool> LiveShootoutShots(LiveMatch match)
+    {
+        _backgroundOnly = false;
+        _reporter.ClearLines(); // [ORIGINAL] 0x5353C zeichnet den Reporterkasten neu (leer)
+        _shootoutMatch = match;
+        ShootoutScore = (0, 0);
+        yield return true; // [ORIGINAL] 0x5353C: Bild steht (einblenden)
+        foreach (var shot in OriginalMinutes.ShootoutShots(match.Report))
+        {
+            if (shot.Goal && ShootoutScore is { } score)
+                ShootoutScore = shot.Side == 0 ? (score.Home + 1, score.Away) : (score.Home, score.Away + 1);
+            for (var i = 0; i < LiveReporter.PauseFrames(ShotPause); i++)
+                yield return true;
+        }
+    }
 
     /// <summary>T7: eigenes Eis, Schüsse mit Torszene, Abbau (siehe <see cref="Shootouts"/>).</summary>
     private IEnumerable<bool> ShootoutShots(LiveMatch match)
@@ -709,7 +750,8 @@ public sealed class LiveMatchScreen : Screen
         }
         DrawBuild(s, Assets, Game, _session.Shown, _clock.Lamp);
         for (var p = 0; p < Math.Min(_session.Shown.Count, LiveScoreboard.MaxRows); p++)
-            DrawBoard(s, Assets, _session.Shown[p], p, MinuteOf(_session.Shown[p]));
+            DrawBoard(s, Assets, _session.Shown[p], p, MinuteOf(_session.Shown[p]),
+                ReferenceEquals(_session.Shown[p], _shootoutMatch) ? ShootoutScore : null);
         LiveWidgets.Clock(s, Assets, 0, DisplayMinute);
         DrawReporter(s, Assets, _reporter);
         _notice.Draw(s, Assets, Game);
@@ -774,15 +816,17 @@ public sealed class LiveMatchScreen : Screen
     /// [ORIGINAL] Anzeigetafel 0x52BD6 einer Reihe (§4): Spielstand 0x51FEA, je Seite Lampen und Energiebalken je Teil, Einsatz
     /// und Angriff, Feldspieler und Strafbank, Chancen je Drittel, Strafminuten; nur Heimseite die Tore je Drittel.
     /// </summary>
-    public static void DrawBoard(Surface s, Assets a, LiveMatch match, int p, int minute)
+    /// <param name="score">Spielstand statt der Tore des Spiels (A1027: Treffer des Penaltyschießens, <see cref="ShootoutScore"/>).</param>
+    public static void DrawBoard(Surface s, Assets a, LiveMatch match, int p, int minute, (int Home, int Away)? score = null)
     {
         var report = match.Report;
+        var (homeGoals, awayGoals) = score ?? (report.HomeGoals, report.AwayGoals);
         // [ORIGINAL] 0x52190(0, Heim, Gast, 139, 45p + 6): Zehner/Einer bei x, x + 9, x + 21, x + 30.
         var sy = 45 * p + 6;
-        LiveWidgets.Digit(s, a, 0, report.HomeGoals / 10 % 10, 139, sy);
-        LiveWidgets.Digit(s, a, 0, report.HomeGoals % 10, 148, sy);
-        LiveWidgets.Digit(s, a, 0, report.AwayGoals / 10 % 10, 160, sy);
-        LiveWidgets.Digit(s, a, 0, report.AwayGoals % 10, 169, sy);
+        LiveWidgets.Digit(s, a, 0, homeGoals / 10 % 10, 139, sy);
+        LiveWidgets.Digit(s, a, 0, homeGoals % 10, 148, sy);
+        LiveWidgets.Digit(s, a, 0, awayGoals / 10 % 10, 160, sy);
+        LiveWidgets.Digit(s, a, 0, awayGoals % 10, 169, sy);
         var y0 = BoardY(p);
         var row = match.Row;
         for (var side = 0; side < 2; side++)
