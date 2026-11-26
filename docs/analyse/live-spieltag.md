@@ -180,3 +180,27 @@ WM-Gruppenpaarungen nutzen ihre vorhandene. Tests: `LivePagesTests` (Filter, Wer
 Spielablauf – die Bildschirme (`LeaguePairingsScreen`, `PromotionRoundScreen`, `EuropeanCupScreen`) liegen außerhalb der
 Dateigrenzen; die Seiten entfallen. (2) Ohne Live-Anzeige („Spiele laufen“) rechnet das Remake den Tag vorab in
 `GameState.Continue`; die Seiten erscheinen nur im Live-Bildschirm. (3) Penalty-Anzeige 0x35CBE (F076) noch offen.
+
+## 9. Teil 4 (S05): Reporter und Tasten
+
+- **A456 (E5):** Reporter in der Reihenfolge der Rechnung je Paarung: Verletzungen 0x38B8F (Datei 0x37F06 bzw. 0x38304, vor den
+  Chancen), Chancen/Tore 0x9F5C/0xA484, Strafen 0x35818 der beiden Seiten in der Reihenfolge des Kerns (nach dem Seitentausch
+  random(0, 1), Datei 0x37F9B–0x38073). Umsetzung `LiveMatchScreen.Messages`; Test `LiveTastenUiTests.ReporterOrder_…` (rot
+  vorher: Verletzungen kamen zuletzt).
+- **Leertaste (E6, Teil von A449):** Datei 0x37CFA liest die Taste in jeder Minute nach Zwinkern und Pause, ausgewertet nur mit
+  Anzeige (Datei 0x37D02 prüft nur `[bp+0x10]`, also auch im Schnelldurchlauf). 0x20 → Sicherung DGROUP 0xE19B/0xE19C nach
+  0x262/0x226 (Datei 0x37D29–0x37D34), 0x45D46, Optionen 0x2CD1C, neu sichern (Datei 0x37D41–0x37D4A), Neuaufbau 0x5353C, Lampe
+  aus (0xE19A = 0, 0x53453), dann `jmp 0x38551` – die Minute rechnet für keine Paarung, die Schleife zählt weiter. Drittelpause
+  0x37A86 steht vor der Schleife, das Ende 0x32AA3 nach ihr; beide bleiben. Umsetzung `LiveMatchDay.Skip`, `LiveSession.Skip`,
+  `LiveMatchScreen` (`GameOptionsScreen`); Tests `LiveTastenTests` (kein Zufallszug, Minute 60 übersprungen: Gleichstand geht in
+  die Verlängerung), `LiveTastenUiTests.Space_…` (rot vorher: keine Optionen). `[APPROX]`: die Tafel bleibt in der Minute sichtbar
+  (das Original zeichnet nach dem Neuaufbau bis zum nächsten Minutenende keine).
+- **A448:** Pause 0x130EE: n / 3 mit Vorzeichen als vorzeichenloses Wort Ticks (n = −1, −2 → 0; −3 … −5 → 0xFFFF Ticks) – jetzt
+  wie im Original (`LiveReporter.PauseFrames`); erreichbar weder dort noch im Remake (Regler nur Zehner, `SetMatchSpeed`).
+- **A457:** Reporterbild Datei 0x53658–0x5367E über 50h:BD3h (0x13B23) ohne Maskenargument; 0x13B23 springt bei Quelle im Speicher
+  nach 0x13C0B → 0x11283, deren Pixelschleifen Farbe 0 auslassen (Speicher → Speicher Datei 0x1134C, Speicher → Bildschirm Datei
+  0x11469: `or al, al` / `jz`). Also durchsichtig wie bisher, jetzt `[ORIGINAL]`; Test `ReporterImage_Color0LeavesBackground`.
+- **A475:** Mindestbreite DGROUP 0x374 an der Zuschauerzeile (Datei 0x53AA7) = 1: 0x5353C ruft vorher den Grafiklader 0xC17D
+  (Datei 0x535DB, 0x537E7, 0x53992), der als Erstes `mov byte [0x374], 1` schreibt (Datei 0x0C1A1); dazwischen rufen nur 0x139C9,
+  0x0BEFA, 0x0B6A5, 0x021CA (keine Schreiber, `disasm.py --xref 0x374 0x374`). Wert 1 wie bisher, jetzt `[ORIGINAL]`.
+- **A453:** bestätigt (Plattformersatz 70 Hz → 60 Bilder/s, E).

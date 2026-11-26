@@ -16,7 +16,7 @@ namespace EishockeyManager.UI.Screens.Live;
 /// </summary>
 public sealed class LiveSession : ILiveMatchDriver
 {
-    private enum Command { None, Step, Release }
+    private enum Command { None, Step, Skip, Release }
 
     private readonly SemaphoreSlim _toWorker = new(0, 1);
     private readonly SemaphoreSlim _toUi = new(0, 1);
@@ -88,6 +88,17 @@ public sealed class LiveSession : ILiveMatchDriver
         return _stepResult;
     }
 
+    /// <summary>Lässt die nächste Minute ohne Rechnung vergehen (<see cref="LiveMatchDay.Skip"/>, Leertaste); false, wenn das Spiel aus ist.</summary>
+    public bool Skip()
+    {
+        if (Day is null)
+            return false;
+        _command = Command.Skip;
+        _toWorker.Release();
+        WaitForWorker();
+        return _stepResult;
+    }
+
     /// <summary>Gibt die Paarung an den Spielkern zurück (Abschluss, restliche Minuten) und wartet auf den nächsten Halt.</summary>
     public void Release()
     {
@@ -127,7 +138,7 @@ public sealed class LiveSession : ILiveMatchDriver
                 Day = null;
                 return; // der Spielkern rechnet weiter; der nächste Halt oder das Ende gibt _toUi frei
             }
-            _stepResult = day.Step();
+            _stepResult = _command == Command.Skip ? day.Skip() : day.Step();
             _toUi.Release();
         }
     }

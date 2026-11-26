@@ -63,7 +63,13 @@ public sealed class LiveMatch
     /// Rechnet eine Minute dieser Paarung. Liefert true, wenn die Minutenschleife der Paarung mit dieser Minute endet; den
     /// Abschluss (<see cref="Complete"/>) macht <see cref="LiveMatchDay.Step"/> erst nach der Minute aller Paarungen.
     /// </summary>
-    internal bool Play(int minute, GameOptions options)
+    internal bool Play(int minute, GameOptions options) => Play(minute, options, skip: false);
+
+    /// <summary>
+    /// Wie <see cref="Play(int, GameOptions)"/>; mit <paramref name="skip"/> entfällt die Rechnung der Minute (Leertaste, S05),
+    /// Drittelpause und Ende der Schleife bleiben ([ORIGINAL] 0x37A86 vor der Minutenschleife, 0x32AA3 nach ihr).
+    /// </summary>
+    internal bool Play(int minute, GameOptions options, bool skip)
     {
         var home = Setup.HomeTeam;
         var away = Setup.AwayTeam;
@@ -73,6 +79,8 @@ public sealed class LiveMatch
             OriginalMinutes.RecoverEnergy(home);
             OriginalMinutes.RecoverEnergy(away);
         }
+        if (skip)
+            return EndOfMinute(minute);
         var periodEnd = minute switch
         {
             <= 20 => 20,
@@ -91,6 +99,11 @@ public sealed class LiveMatch
         {
             OriginalMinutes.Display = previous;
         }
+        return EndOfMinute(minute);
+    }
+
+    private bool EndOfMinute(int minute)
+    {
         LastMinute = minute;
         if (minute == 60)
         {
@@ -216,6 +229,28 @@ public sealed class LiveMatchDay
         }
         // [ORIGINAL] 0x36B5D: Ende der Schleife erst nach der Minute aller Paarungen (0x32AA3 nach Minute 60 Datei 0x37211, mit
         // Penaltyschießen 0x3901B nach Minute 70 Datei 0x3728B) – in Paarungsreihenfolge.
+        foreach (var match in completed)
+            match.Complete();
+        return true;
+    }
+
+    /// <summary>
+    /// Leertaste in der Live-Anzeige (S05, Teil von A449): die nächste Minute vergeht für **keine** Paarung gerechnet. [ORIGINAL]
+    /// Datei 0x37D0B–0x37D89: nach Taste 0x20 Spielmodus-Optionen 0x2CD1C, Neuaufbau 0x5353C, dann <c>jmp 0x38551</c> an das
+    /// Minutenende – ohne Rechnung und ohne Tafel; die Schleife zählt weiter, Drittelpause (0x37A86) und Ende der Schleife
+    /// (0x32AA3, Verlängerung bei Gleichstand nach 60) bleiben. Liefert false wie <see cref="Step"/>, wenn nichts mehr läuft.
+    /// </summary>
+    public bool Skip()
+    {
+        if (ended || !Running || Minute >= LastMinute)
+            return false;
+        Minute++;
+        var completed = new List<LiveMatch>();
+        foreach (var match in matches)
+        {
+            if (match.Running && match.Play(Minute, game.Options, skip: true))
+                completed.Add(match);
+        }
         foreach (var match in completed)
             match.Complete();
         return true;

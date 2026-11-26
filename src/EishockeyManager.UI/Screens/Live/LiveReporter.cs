@@ -135,8 +135,14 @@ public sealed class LiveReporter
         return [.. seq];
     }
 
-    /// <summary>Bilder einer Pause n ([ORIGINAL] 0x130EE: n / 3 Ticks); n ≤ 0 → keine Pause (siehe <see cref="LiveMatchScreen"/>, #823).</summary>
-    public static int PauseFrames(int units) => units <= 0 ? 0 : ShortMessage.FramesFor(units);
+    /// <summary>
+    /// Bilder einer Pause n. [ORIGINAL] 0x130EE: n / 3 mit Vorzeichen (0x0:0x47C), das Wort vorzeichenlos als Ticks
+    /// (0xBBF:0x2C08); n = −1, −2 → 0, n = −3 … −5 → 0xFFFF Ticks (≈ 1 Stunde; A448, im Original wie im Remake nur mit
+    /// Geschwindigkeit 62 … 69 erreichbar, die der Regler nicht setzt – siehe <see cref="LiveMatchScreen"/>, #823).
+    /// </summary>
+    public static int PauseFrames(int units) => ShortMessage.FramesFor(UnitsPerTick * (ushort)(units / UnitsPerTick));
+
+    private const int UnitsPerTick = 3;
 
     private int Speed => _options.MatchSpeed;
 

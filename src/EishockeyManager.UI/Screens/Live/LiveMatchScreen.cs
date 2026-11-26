@@ -13,14 +13,19 @@ namespace EishockeyManager.UI.Screens.Live;
 /// <item>[ORIGINAL] Ablauf je Minute (Datei 0x37C6B–0x37CBD, <see cref="LiveClock.Minute"/>): Uhr auf die Minute, Zwinkern
 ///   und Pause, dann die Rechnung der Minute (Reporter-Meldungen der Chancen und Strafen), am Minutenende die Anzeigetafel.
 ///   Nach Minute 60 bzw. 70 unter Geschwindigkeit 70 auf einen Mausklick warten (Datei 0x3855F–0x38587).</item>
-/// <item>[APPROX] Pause n ≤ 0 (Geschwindigkeit 62 … 69 mit Zwinkern: 30 − 31 … 30 − 34, #823) = keine Pause. [ORIGINAL]
-///   <c>50h:19Eh</c> (Datei 0x130EE) teilt n mit Vorzeichen durch 3 (0x0:0x47C) und übergibt das Wort an 0xBBF:0x2C08: Ziel =
+/// <item>[ORIGINAL] Pause n ≤ 0 (Geschwindigkeit 62 … 69 mit Zwinkern: 30 − 31 … 30 − 34, #823; A448, S05) wie im Original
+///   (<see cref="LiveReporter.PauseFrames"/>): <c>50h:19Eh</c> (Datei 0x130EE) teilt n mit Vorzeichen durch 3 (0x0:0x47C) und übergibt das Wort an 0xBBF:0x2C08: Ziel =
 ///   BIOS-Tickzähler 0040:006C + Wort (vorzeichenlos, <c>adc dx, 0</c>); 0xBBF:0x2C4E meldet fertig, sobald der Zähler das Ziel
 ///   erreicht. n = −1, −2 ergeben 0 (keine Pause), n = −3, −4 ergeben 0xFFFF Ticks (≈ 1 Stunde). Solche Werte kommen im
 ///   Original nicht vor: Der Regler setzt nur Zehner (Datei 0x2CD1C, <see cref="GameOptions.SetMatchSpeed"/>), die Lampe 70.</item>
 /// <item>[APPROX] Enter oder Escape rechnen die restlichen Minuten ohne Anzeige (wie die Vorspultaste in
-///   <see cref="MatchDayScreen"/>, Entscheidung Nutzer 31.10.2026, #205); die Leertaste (Spielmodus-Optionen 0x2CD1C) ist
-///   nicht angeschlossen.</item>
+///   <see cref="MatchDayScreen"/>, Entscheidung Nutzer 31.10.2026, #205).</item>
+/// <item>[ORIGINAL] Leertaste (S05, Datei 0x37CFA–0x37D89): nach Zwinkern und Pause der Minute n die Spielmodus-Optionen
+///   0x2CD1C (<see cref="GameOptionsScreen"/>; davor Sicherung zurück, danach neu sichern und Lampe aus,
+///   <see cref="LiveClock.BeforeOptions"/>/<see cref="LiveClock.AfterOptions"/>), dann ist Minute n für keine Paarung gerechnet
+///   (<see cref="LiveMatchDay.Skip"/>); weiter mit Minute n + 1. Abgefragt nur mit Live-Anzeige, also auch im Schnelldurchlauf
+///   (Datei 0x37D02 prüft nur das Anzeigeargument). [APPROX] Die Tafel zeigt in Minute n den Stand von n − 1 weiter (das
+///   Original zeichnet nach dem Neuaufbau 0x5353C bis zum Ende von Minute n + 1 keine Tafel; das Remake zeichnet sie je Bild).</item>
 /// <item>[ORIGINAL] Reihen: die Paarungen mit Anzeigereihe des Termins (<see cref="LiveSession.Shown"/>), am Ligaspieltag alle von
 ///   Minute 1 an (S01, <c>MatchEngine.PlayMatchDay</c>), an Pokal-, Play-off- und WM-Terminen ebenso (<c>MatchEngine.PlayDate</c>,
 ///   Pokalzeilen Datei 0x380D0–0x3853E).</item>
@@ -74,6 +79,7 @@ public sealed class LiveMatchScreen : Screen
     private IEnumerator<bool>? _script;
     private InputState _input = new();
     private bool _skip;
+    private bool _space;
 
     public LiveMatchScreen(ScreenHost host, LiveSession session, Screen back) : base(host)
     {
@@ -116,6 +122,8 @@ public sealed class LiveMatchScreen : Screen
             return;
         if (input.Pressed(Key.Enter) || input.Pressed(Key.Escape))
             _skip = true;
+        if (input.Pressed(Key.Space))
+            _space = true; // [ORIGINAL] Tastenpuffer, gelesen einmal je Minute nach der Pause (Datei 0x37CFA)
         if (!WaitingForClick && (input.LeftClick || input.RightClick))
         {
             Click(input.MouseX, input.MouseY, input.RightClick);
@@ -154,22 +162,23 @@ public sealed class LiveMatchScreen : Screen
                     yield return f;
             for (var i = 0; i < LiveReporter.PauseFrames(info.PauseUnits); i++)
                 yield return true;
-            if (!_session.Step())
-                break;
-            // S01/A456/A909: [ORIGINAL] je Minute die Paarungen in ihrer Reihenfolge (0x37A62): Meldungen der Paarung mit Reihe,
-            // Tormeldung der Paarung ohne Reihe an ihrer Stelle (Abschluss 0xA484, Datei 0xABB4–0xAD71).
-            foreach (var match in day.Matches)
+            if (_space)
             {
-                var parts = match.Row is not null
-                    ? Messages(match, minute)
-                    : [Notices(minute, n => n.HomeClub == match.Home.Index && n.AwayClub == match.Away.Index)];
-                foreach (var part in parts)
-                    foreach (var f in part)
-                        yield return f;
+                // S05: [ORIGINAL] Leertaste → Spielmodus-Optionen, Minute ohne Rechnung (Datei 0x37D0B–0x37D89, siehe Klasse).
+                _space = false;
+                foreach (var f in Options())
+                    yield return f;
+                if (!_session.Skip())
+                    break;
+                SkippedMinutes.Add(minute);
             }
-            // Spur zusehen-rest, A832: Meldungen früher gerechneter Paarungen (Pokaltermine, je Paarung gerechnet).
-            foreach (var f in Notices(minute, n => !day.Matches.Any(m => m.Home.Index == n.HomeClub && m.Away.Index == n.AwayClub)))
-                yield return f;
+            else if (!_session.Step())
+                break;
+            else
+            {
+                foreach (var f in MinuteMessages(day, minute))
+                    yield return f;
+            }
             yield return true; // [ORIGINAL] 0x3854A: Anzeigetafel am Minutenende
             if (minute is 60 or 70 && _clock.WaitsForClick(minute, display: true))
             {
@@ -190,6 +199,43 @@ public sealed class LiveMatchScreen : Screen
                         yield return f;
             }
         }
+    }
+
+    /// <summary>Meldungen einer gerechneten Minute aller Paarungen.</summary>
+    private IEnumerable<bool> MinuteMessages(LiveMatchDay day, int minute)
+    {
+        // S01/A456/A909: [ORIGINAL] je Minute die Paarungen in ihrer Reihenfolge (0x37A62): Meldungen der Paarung mit Reihe,
+        // Tormeldung der Paarung ohne Reihe an ihrer Stelle (Abschluss 0xA484, Datei 0xABB4–0xAD71).
+        foreach (var match in day.Matches)
+        {
+            var parts = match.Row is not null
+                ? Messages(match, minute)
+                : [Notices(minute, n => n.HomeClub == match.Home.Index && n.AwayClub == match.Away.Index)];
+            foreach (var part in parts)
+                foreach (var f in part)
+                    yield return f;
+        }
+        // Spur zusehen-rest, A832: Meldungen früher gerechneter Paarungen (Pokaltermine, je Paarung gerechnet).
+        foreach (var f in Notices(minute, n => !day.Matches.Any(m => m.Home.Index == n.HomeClub && m.Away.Index == n.AwayClub)))
+            yield return f;
+    }
+
+    /// <summary>Minuten, die per Leertaste ohne Rechnung vergangen sind (für Tests).</summary>
+    public List<int> SkippedMinutes { get; } = [];
+
+    /// <summary>Sind gerade die Spielmodus-Optionen der Leertaste offen?</summary>
+    public bool ShowingOptions { get; private set; }
+
+    /// <summary>[ORIGINAL] Datei 0x37D29–0x37D89: Sicherung zurück, Optionen 0x2CD1C, neu sichern, Lampe aus, Neuaufbau.</summary>
+    private IEnumerable<bool> Options()
+    {
+        _clock.BeforeOptions();
+        ShowingOptions = true;
+        Host.Show(new GameOptionsScreen(Host, this));
+        yield return true; // weiter, sobald die Optionen zu diesem Bildschirm zurückkehren
+        ShowingOptions = false;
+        _clock.AfterOptions();
+        _input = new InputState();
     }
 
     /// <summary>Wird gerade eine Seite nach dem Drittel gezeigt (S04)?</summary>
@@ -342,14 +388,19 @@ public sealed class LiveMatchScreen : Screen
 
     /// <summary>
     /// Meldungen einer Minute (§5): Chancen der Reihe (Torszene 0x53C57 → 0x52520 Ereignis 0/1), Strafen (0x35818 → Ereignis
-    /// 2/3 mit Strafgrund aus dem Kern), Verletzungen (Ereignis 4). [APPROX] Reihenfolge innerhalb der Minute: Chancen, Strafen,
-    /// Verletzungen. Vergebene Chancen nennen Schütze und Vorlage (A456, <see cref="ScoreboardChance.Shooter"/>).
+    /// 2/3 mit Strafgrund aus dem Kern), Verletzungen (Ereignis 4). [ORIGINAL] Reihenfolge innerhalb der Minute wie die Rechnung
+    /// der Paarung (A456, S05; Datei 0x37F06 bzw. 0x38304 vor 0x9F5C/0xA484, Strafen 0x35818 am Ende): Verletzungen, Chancen,
+    /// Strafen der beiden Seiten in der Reihenfolge des Kerns (nach dem Seitentausch random(0, 1), Datei 0x37F9B–0x38073).
+    /// Vergebene Chancen nennen Schütze und Vorlage (A456, <see cref="ScoreboardChance.Shooter"/>).
     /// </summary>
     private IEnumerable<IEnumerable<bool>> Messages(LiveMatch match, int minute)
     {
         if (match.Row is not { } row)
             yield break;
         var events = match.Report.Events.Where(e => e.Minute == minute).ToList();
+        // [ORIGINAL] 0x38B8F vor den Torchancen (Datei 0x37F06): Ereignis 4 über 0x53C57 → 0x5411E, Reporter sofort.
+        foreach (var e in events.Where(e => e.Kind == MatchEventKind.Injury))
+            yield return Report(match, minute, ReporterEvent.Injury, ClubName(match, e.Side), e.Player?.Name, null, null);
         var goals = new Queue<MatchEvent>(events.Where(e => e.Kind == MatchEventKind.Goal));
         // Torszene 0x53C57 (Spur torszenen, C3): Szenen der Minute in der Reihenfolge der Chancen (der Kern legt sie zusammen
         // ab), Spielstand vor der Chance aus den Toren der früheren Minuten und Chancen.
@@ -366,18 +417,26 @@ public sealed class LiveMatchScreen : Screen
             if (c.Goal && goals.Count > 0)
                 goal = goals.Dequeue();
             // A456: [ORIGINAL] auch die vergebene Chance meldet Schütze und Vorlage aus 0x541D9 (ScoreboardChance.Shooter).
-            yield return _reporter.Message(ClubName(match, c.Side), c.Goal ? ReporterEvent.Goal : ReporterEvent.ChanceMissed,
+            yield return Report(match, minute, c.Goal ? ReporterEvent.Goal : ReporterEvent.ChanceMissed, ClubName(match, c.Side),
                 goal?.Player?.Name ?? c.Shooter, goal?.Assist?.Name ?? c.Assist, null);
         }
         var reasons = new Queue<ScoreboardPenaltyReason>(row.PenaltyReasons.Where(r => r.Minute == minute));
         foreach (var e in events.Where(e => e.Kind == MatchEventKind.Penalty))
         {
             var reason = reasons.Count > 0 ? reasons.Dequeue().Reason : GoalSceneSelection.MajorPenaltyReason;
-            yield return _reporter.Message(ClubName(match, e.Side), e.PenaltyMinutes == 5 ? ReporterEvent.Major : ReporterEvent.Minor,
+            yield return Report(match, minute, e.PenaltyMinutes == 5 ? ReporterEvent.Major : ReporterEvent.Minor, ClubName(match, e.Side),
                 e.Player?.Name, null, GoalSceneSelection.Reasons[reason]);
         }
-        foreach (var e in events.Where(e => e.Kind == MatchEventKind.Injury))
-            yield return _reporter.Message(ClubName(match, e.Side), ReporterEvent.Injury, e.Player?.Name, null, null);
+    }
+
+    /// <summary>Reporter-Meldungen in der gezeigten Reihenfolge (Minute, Heimverein der Paarung, Ereignis; für Tests).</summary>
+    public List<(int Minute, int HomeClub, ReporterEvent Event)> MessagesShown { get; } = [];
+
+    private IEnumerable<bool> Report(LiveMatch match, int minute, ReporterEvent e, string club, string? player, string? second,
+        string? text)
+    {
+        MessagesShown.Add((minute, match.Home.Index, e));
+        return _reporter.Message(club, e, player, second, text);
     }
 
     /// <summary>Aufträge an den Abspieler in der Reihenfolge der Abläufe (Wiederholungen eingeschlossen); für Proben.</summary>
@@ -454,7 +513,9 @@ public sealed class LiveMatchScreen : Screen
         var frame = a.Image(FrameGraphic);
         s.Blit(frame, ClockBoxSource, ClockBox.X, ClockBox.Y);
         s.Blit(frame, ReporterBoxSource, ReporterBox.X, ReporterBox.Y);
-        s.Blit(frame, ReporterSource, Reporter.X, Reporter.Y, transparent: 0); // [APPROX] Durchsichtigkeit aus dem Videobild (Farbe 0)
+        // A457: [ORIGINAL] Datei 0x53658–0x5367E: Kopie 50h:BD3h (0x13B23 → 0x11283) ohne Maske; deren Pixelschleifen lassen
+        // Farbe 0 aus (Speicher → Speicher Datei 0x1134C, Speicher → Bildschirm Datei 0x11469: or al, al / jz).
+        s.Blit(frame, ReporterSource, Reporter.X, Reporter.Y, transparent: 0);
         for (var p = 0; p < Math.Min(rows.Count, LiveScoreboard.MaxRows); p++)
         {
             var y = RowY(p);
@@ -486,8 +547,10 @@ public sealed class LiveMatchScreen : Screen
     /// (<see cref="GameState.HomeGate"/>, #837), Farbe <see cref="SoldOutColor"/> bei ausverkauft, sonst 0; ohne Heimspiel
     /// eines Managers oder in der WM (DGROUP 0x12B) „(ausw.)“ (DGROUP 0xD08) in Farbe 0. Zahl über 0x0BAB2 mit DGROUP
     /// 0x38D = 0, also mit Tausenderpunkt (wie <see cref="Statistics.ClubStatisticsScreen.Number"/>; Videobild folge01_00615
-    /// „4.335“, gegen die Vermutung „ohne“ in <c>re-livespiel.md</c> §4 Punkt 5); [APPROX] Mindestbreite
-    /// DGROUP 0x374 zur Zeit des Aufbaus nicht verfolgt, hier 1. Zentriert 48–82, Grundlinie y + 38, ohne Schatten.
+    /// „4.335“, gegen die Vermutung „ohne“ in <c>re-livespiel.md</c> §4 Punkt 5). [ORIGINAL] Mindestbreite DGROUP 0x374 = 1
+    /// (A475): 0x5353C lädt vor den Reihen die Grafiken über 0xC17D (Datei 0x535DB, 0x537E7, 0x53992), das als Erstes
+    /// <c>mov byte [0x374], 1</c> schreibt (Datei 0x0C1A1); bis zur Zuschauerzeile schreibt kein anderer Aufruf 0x374.
+    /// Zentriert 48–82, Grundlinie y + 38, ohne Schatten.
     /// </summary>
     public static (string Text, byte Color) SpectatorLine(GameState game, Club home, Club away, MatchCompetition competition)
     {
