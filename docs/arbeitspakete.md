@@ -23,6 +23,11 @@ R26-D3 = B (DOSBox nach Lust, keine eigene Aufnahme `runde-26`: Zusätze in `run
 `vorlagen/dosbox-aufnahme.md`; Auswertung spätestens in der Abschlussprüfung), R26-D4 = B (enges Gesamtreview Live-Spieltag und
 Tagesabschluss, ChatGPT GPT-6.2 Astra). **Go Nutzer 25.11.2026** (alle Spuren samt Folgeläufen, Modelle wie unten; Start nach Merge
 des Plans).
+**Entscheidungen während der Runde:** Nutzer: R26-E1 = B (Stadionschäden 0x3CFA0 als Teil 2 von `tagesabschluss`), R26-E2 = C
+(Rest S04 als eigene Spur `live-seiten-rest`). Leitstelle: T7 (Eis des Penaltyschießens, Darstellung 1 und 2) an
+`torszene-dauer` Teil 2, Penalty-Bildschirm F076 an `live-verschraenkt`; Pokaltermine verschränkt, Dateigrenzen von
+`live-verschraenkt` um `Playoffs.cs`, `Cups*.cs`, `LeaguePairingsScreen.cs`, `PromotionRoundScreen.cs`, `EuropeanCupScreen.cs`
+(je minimal) erweitert.
 
 **Regeln wie Runde 25** (Archiv): Base = aktueller `main` beim Start der Spur, tatsächlicher Base-SHA in den Draft-PR; ein Branch
 `paket/<spur>`, ein PR, Teile als Commits, höchstens drei Fortsetzungen; Befund reproduzieren, roter Regressionstest mit Fundstelle
@@ -104,6 +109,20 @@ R26-D4 = B (ChatGPT GPT-6.2 Astra) mit Claude-Auswertung.
   `~/referenz/original/gamedata/EM.EXE`; Teil 2 `--schnell`, Bildschirmfoto-Ablauf Darstellung 2 über einen Spieltag mit Tor und
   Penaltyschießen, Vergleich mit Videobild.
 - **Status:** offen (Go 25.11.2026, Start nach Merge des Plans).
+
+### Spur `live-seiten-rest` – Aufstiegsrunde und Europapokal im Spielablauf (R26-E2 = C, Welle 1b)
+
+- **Teile:** 1. Rest von S04 aus `live-verschraenkt` (#1032, Übergabe 26.11.2026): Nachbildung von Datei 0x31CD5 mit den Argumenten
+  aus dem Seitenwähler Datei 0x3AB43–0x3ABCE (Wettbewerb 2/3, Gruppe, Merker „im Spiel“ [bp+0xA] = Minute ≠ 0, Terminzahl
+  min(DGROUP 0x7AF, 6 bzw. − 6) + (Minute ∈ {0, 60}) − 1; Wirkung bei Datei 0x32294 und 0x32515, Stände aus 0x3183C), Skript wie
+  `pokalseiten.py`; dann je eine Ansicht mit Minute in Aufstiegsrunde (Seite 2) und Europapokal (Seite 3) und der Fall in
+  `LivePageScreens.Create`; löst PW-04 (`[APPROX]` zu [bp+0xA] in `EuropeanCupScreen`).
+- **Dateien:** `UI/Screens/Competitions/PromotionRoundScreen.cs`, `EuropeanCupScreen.cs`, `UI/Screens/Live/LivePageScreens.cs`
+  (minimal), `tools/reverse-engineering/live/aufstieg_europapokal.py` (neu), Abschnitt in `docs/analyse/live-spieltag.md`; Tests.
+  Start nach Merge von #1032, parallel zu `torszene-dauer` Teil 2 (keine gemeinsamen Dateien außer `live-spieltag.md` – eigener
+  Abschnitt). **Prüfung:** `--schnell`; Bildschirmfoto Aufstiegsrunde und Europapokal im Spielablauf. **Modell:** Opus 5.5,
+  Erstreview Opus 5.5.
+- **Status:** offen (Start nach Merge von #1032).
 
 ### Spur `pruefung-karte` – Abschluss der Runde (Welle 2)
 
