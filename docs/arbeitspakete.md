@@ -116,7 +116,7 @@ Erstreviews: Opus 5.5 für `aufraeumen-migration`, `-tot`, `-doppelt`; Sonnet 5.
   0x54918–0x54927).
 - **Dateien:** `src/EishockeyManager.Core/**` außer `SaveGame*`; `GameState.cs`, `GameState.Integration.cs` minimal (K3); betroffene
   Tests. **Prüfung:** alle drei Läufe, Zustandsabdruck, Markerprobe (entfallene IDs: Liste).
-- **Status:** nicht gestartet.
+- **Status:** PR #1064 (Draft). Teile 0, 1, 3 fertig; Teil 2 ohne K6 fertig (K4, K5, K7, K18, #1063); offen K6 und die drei Prüfläufe (Fortsetzung 1).
 
 ### Spur `aufraeumen-doppelt` – neutrale Zusammenlegung (Welle 3)
 
