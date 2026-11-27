@@ -132,8 +132,7 @@ public class TransferTests
         var player = club.Players.First(p => p.Role == PlayerRole.Forward);
         market.Offer(game, manager, player);
 
-        for (var day = 0; day < 40 && market.Bids.Count == 0; day++)
-            market.AdvanceDay(game, game.Random);
+        TestSeason.RunUntil(game, () => market.Bids.Count > 0);
         var bid = Assert.Single(market.Bids);
         market.RollBid(game, bid); // A731: Höhe fällt erst beim Anklicken
         var money = manager.Money;
@@ -145,14 +144,20 @@ public class TransferTests
         Assert.Empty(market.Bids);
     }
 
+    /// <summary>
+    /// <see cref="TransferMarket.UpdatedDay"/> folgt in der Zeitleiste den gespielten Ligaspieltagen: gesetzt von Listenwechsel
+    /// (<see cref="TransferMarket.ListChangeTurn"/>) und Markt-Teil des Tageslaufs (<see cref="TransferMarket.CatchUpManagerDay"/>).
+    /// </summary>
     [Fact]
-    public void CatchUp_AdvancesOncePerPlayedMatchDay()
+    public void Timeline_MarketDayFollowsPlayedMatchDays()
     {
         var game = TestGames.Create();
         TestSeason.PlayMatchDay(game);
         TestSeason.PlayMatchDay(game);
-        game.TransferMarket.CatchUp(game);
+        Assert.Equal(2, game.PlayedMatchDays);
         Assert.Equal(2, game.TransferMarket.UpdatedDay);
+        TestSeason.RunThroughDay(game, game.Day);
+        Assert.Equal(game.PlayedMatchDays, game.TransferMarket.UpdatedDay);
         Assert.InRange(game.TransferMarket.Listings.Count, 2, TransferMarket.MaxListings);
     }
 }

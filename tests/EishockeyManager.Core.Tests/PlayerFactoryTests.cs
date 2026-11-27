@@ -66,8 +66,7 @@ public class PlayerFactoryTests
         var player = club.Players.Last(p => p.Role == PlayerRole.Forward);
         Assert.Equal(TransferResult.Accepted, game.TransferMarket.Offer(game, manager, player));
         var listing = game.TransferMarket.ListingOf(player)!;
-        for (var i = 0; game.TransferMarket.Bids.Count == 0 && i < 100; i++)
-            game.TransferMarket.AdvanceDay(game, game.Random);
+        TestSeason.RunUntil(game, () => game.TransferMarket.Bids.Count > 0);
         var bid = Assert.Single(game.TransferMarket.Bids);
         var buyer = bid.Buyer;
         player.Number = buyer.Players[0].Number;

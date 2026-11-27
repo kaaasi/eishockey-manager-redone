@@ -89,6 +89,22 @@ public static class TestSeason
         }
     }
 
+    /// <summary>
+    /// Zeitleiste, bis <paramref name="done"/> gilt – höchstens <paramref name="maxSteps"/> Aufrufe von
+    /// <see cref="GameState.Continue"/> und nur in der laufenden Saison (Abbruchzähler, AGENTS.md §5). Für Aufbauten wie „bis ein
+    /// Gebot auf dem eigenen Markt-Platz liegt“: Angebotswurf und Gebotsverfall laufen im Tagesablauf 0x07169 am Takttag
+    /// (<see cref="GameState.DailyRunMarket"/>), der Listenwechsel je Managerzug (<see cref="TransferMarket.ListChangeTurn"/>).
+    /// </summary>
+    public static bool RunUntil(GameState game, Func<bool> done, int maxSteps = 400)
+    {
+        for (var i = 0; i < maxSteps && !done() && game.Phase == SeasonPhase.Running; i++)
+        {
+            game.Continue();
+            MessageLog.For(game).Collect(game);
+        }
+        return done();
+    }
+
     /// <summary>Die ganze Hauptrunde.</summary>
     public static void PlayRegularSeason(GameState game)
     {

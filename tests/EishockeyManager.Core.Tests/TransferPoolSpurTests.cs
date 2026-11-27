@@ -286,8 +286,7 @@ public class TransferPoolSpurTests
         var club = game.Clubs[manager.ClubIndex];
         var player = club.Players.OrderByDescending(p => p.Condition + p.Technique).First(p => TransferMarket.CanLeave(club, p));
         Assert.Equal(TransferResult.Accepted, game.TransferMarket.Offer(game, manager, player));
-        for (var day = 0; day < 300 && game.TransferMarket.Bids.Count == 0; day++)
-            game.TransferMarket.AdvanceDay(game, game.Random);
+        TestSeason.RunUntil(game, () => game.TransferMarket.Bids.Count > 0);
         return (game, Assert.Single(game.TransferMarket.Bids));
     }
 

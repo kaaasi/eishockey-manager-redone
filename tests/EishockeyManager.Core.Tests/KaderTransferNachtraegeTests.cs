@@ -84,14 +84,14 @@ public class KaderTransferNachtraegeTests
         var player = OwnClub(game).Players.First(q => q.Role == PlayerRole.Forward);
         Assert.Equal(TransferResult.Accepted, game.TransferMarket.Offer(game, manager, player));
         var listing = game.TransferMarket.ListingOf(player)!;
-        var random = new GameRandom(5);
 
+        // Zeitleiste: Angebotswurf und Gebotsverfall je Markt-Platz am Takttag (GameState.DailyRunMarket, Datei 0x07215–0x0726A).
         TransferBid? first = null;
-        for (var day = 0; day < 4000 && (first is null || game.TransferMarket.Bids.Contains(first)); day++)
+        TestSeason.RunUntil(game, () =>
         {
-            game.TransferMarket.AdvanceDay(game, random);
             first ??= game.TransferMarket.Bids.FirstOrDefault(b => b.Listing == listing);
-        }
+            return first is not null && !game.TransferMarket.Bids.Contains(first);
+        });
 
         Assert.NotNull(first);
         Assert.Contains(listing, game.TransferMarket.Listings);

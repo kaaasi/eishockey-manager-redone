@@ -203,8 +203,7 @@ public class TransferOriginalTests
             var player = club.Players.OrderByDescending(p => p.Condition + p.Technique).First(p => TransferMarket.CanLeave(club, p));
             Assert.Equal(TransferResult.Accepted, game.TransferMarket.Offer(game, manager, player));
             var market = game.TransferMarket;
-            for (var day = 0; day < 300 && market.Bids.Count == 0; day++)
-                market.AdvanceDay(game, game.Random);
+            TestSeason.RunUntil(game, () => market.Bids.Count > 0);
 
             var bid = Assert.Single(market.Bids);
             Assert.Same(player, bid.Listing.Player);

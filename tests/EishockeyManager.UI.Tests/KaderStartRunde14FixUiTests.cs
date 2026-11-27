@@ -110,8 +110,8 @@ public class KaderStartRunde14FixUiTests
         var player = club.Players.OrderByDescending(p => p.Condition + p.Technique)
             .First(p => p.Role == PlayerRole.Forward && TransferMarket.CanLeave(club, p));
         Assert.Equal(TransferResult.Accepted, game.TransferMarket.Offer(game, manager, player));
-        for (var day = 0; day < 300 && game.TransferMarket.Bids.Count == 0; day++)
-            game.TransferMarket.AdvanceDay(game, game.Random);
+        for (var day = 0; day < 300 && game.TransferMarket.Bids.Count == 0 && game.Phase == SeasonPhase.Running; day++)
+            game.Continue(); // Zeitleiste: Angebotswurf am Takttag (GameState.DailyRunMarket)
         var bid = Assert.Single(game.TransferMarket.Bids);
         d.OpenTile("Transfer");
         var screen = Assert.IsType<TransferScreen>(d.Host.Current);

@@ -320,8 +320,7 @@ public class TransferOriginalVertragTests
     {
         var (game, manager, club, player) = Setup();
         game.TransferMarket.Offer(game, manager, player);
-        for (var day = 0; day < 60 && game.TransferMarket.Bids.Count == 0; day++)
-            game.TransferMarket.AdvanceDay(game, game.Random);
+        TestSeason.RunUntil(game, () => game.TransferMarket.Bids.Count > 0);
         Assert.Single(game.TransferMarket.Bids);
         foreach (var pl in club.Players)
             (pl.Goals, pl.Games) = (30, 500);
@@ -331,7 +330,9 @@ public class TransferOriginalVertragTests
         var tier = (int)finance.CostLeague;
         var p = game.CurrentParticipation(club.Index);
         long Value(Player pl) => game.PlayerValueOf(pl, club, PlayerValueKind.Price, twin, manager.Level);
-        var s = SponsorRating.CompetitionScore(tier, p.Championship, p.Cup, p.CupRound, p.Europe, p.EuropeRound) + 12L * (11 - 6);
+        // Die Zeitleiste bis zum Gebot spielt Ligaspieltage: mittlerer Rang aus der Tabelle statt des Startwerts 6.
+        var s = SponsorRating.CompetitionScore(tier, p.Championship, p.Cup, p.CupRound, p.Europe, p.EuropeRound)
+                + 12L * (11 - game.SponsorAverageRank(club));
         var first = club.Players.Select(Value).ToList();
         var average = first.Sum(v => v / 5500) / first.Count;
         s += average;

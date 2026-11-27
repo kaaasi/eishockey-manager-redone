@@ -174,10 +174,8 @@ public class KaderStartRunde14FixTests
         Assert.Equal(before, game.TransferMarket.Listings.Select(l => l.Player.Id));
         Assert.True(bidSeen, "kein Gebot auf den eigenen Markt-Platz");
 
-        // Gegenprobe: der volle Tageslauf des Markts wechselt die Liste in dieser Zeit.
-        for (var day = 0; day < 300; day++)
-            game.TransferMarket.AdvanceDay(game, game.Random);
-        Assert.NotEqual(before, game.TransferMarket.Listings.Select(l => l.Player.Id));
+        // Gegenprobe: die Zeitleiste wechselt die Liste (Listenwechsel je Managerzug, Datei 0x54E65–0x54E7C).
+        Assert.True(TestSeason.RunUntil(game, () => !before.SequenceEqual(game.TransferMarket.Listings.Select(l => l.Player.Id))));
     }
 
     private static (GameState, Manager, Club) Reload(GameState game, int managerIndex)

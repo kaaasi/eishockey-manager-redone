@@ -170,8 +170,7 @@ public class SpielerwertTests
         var club = game.Clubs[manager.ClubIndex];
         var player = club.Players.First(p => p.Role == PlayerRole.Forward);
         game.TransferMarket.Offer(game, manager, player);
-        for (var day = 0; day < 40 && game.TransferMarket.Bids.Count == 0; day++)
-            game.TransferMarket.AdvanceDay(game, game.Random);
+        TestSeason.RunUntil(game, () => game.TransferMarket.Bids.Count > 0);
         var bid = Assert.Single(game.TransferMarket.Bids);
         Assert.True(bid.Buyer.Index <= 63); // Ligaverein → Zufall
 

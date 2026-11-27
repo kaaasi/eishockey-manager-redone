@@ -50,8 +50,7 @@ public class TransferVertraegeKomplettTeil5Tests
         var player = club.Players.First(p => p.Role == PlayerRole.Forward);
         player.ContractYears = 2;
         game.TransferMarket.Offer(game, manager, player);
-        for (var day = 0; day < 200 && game.TransferMarket.Bids.Count == 0; day++)
-            game.TransferMarket.AdvanceDay(game, game.Random);
+        TestSeason.RunUntil(game, () => game.TransferMarket.Bids.Count > 0);
         var bid = Assert.Single(game.TransferMarket.Bids);
         game.TransferMarket.RollBid(game, bid); // A731: Höhe fällt erst beim Anklicken
         var expected = (TransferRules.Thirds(bid.Amount) - TransferRules.Thirds(bid.Amount) / 7 * 2) / 3;

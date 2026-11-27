@@ -65,8 +65,7 @@ public class KaderTransferTeil3Tests
         var club = game.Clubs[manager.ClubIndex];
         var player = club.Players.First(p => p.Role == PlayerRole.Forward);
         market.Offer(game, manager, player);
-        for (var day = 0; day < 40 && market.Bids.Count == 0; day++)
-            market.AdvanceDay(game, game.Random);
+        TestSeason.RunUntil(game, () => market.Bids.Count > 0);
         var bid = Assert.Single(market.Bids);
         var before = bid.Buyer.TeamValues!.Value;
 
