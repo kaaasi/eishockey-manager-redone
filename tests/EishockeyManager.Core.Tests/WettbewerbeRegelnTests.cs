@@ -376,23 +376,4 @@ public class WettbewerbeRegelnTests
         Assert.NotEqual(YouthOf(game), YouthOf(expected));
         Assert.Equal(YouthOf(expected), YouthOf(played));
     }
-
-    /// <summary>
-    /// A384/A670, Migration 61 → 62: Ein älterer Stand nach dem Tageswechsel eines Ligaspieltags hat dessen Jugend schon gerechnet
-    /// – sie läuft nicht noch einmal (<c>_youthOfDayDone</c>).
-    /// </summary>
-    [Fact]
-    public void Youth_OldSaveAfterDayOpen_NotTwice()
-    {
-        var game = HaltOnLeagueDay(5);
-        var json = System.Text.Json.Nodes.JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        json["schema"] = 61;
-        json["spiel"]!.AsObject().Remove("_youthOfDayDone");
-        var old = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(json.ToJsonString())).Game!;
-        old.Continue();
-        Assert.Equal(YouthOf(game), YouthOf(old)); // bis zum nächsten Halt keine weitere Jugendrechnung
-        var fresh = SaveGame.Load(SaveGame.Save(game)).Game!;
-        fresh.Continue();
-        Assert.NotEqual(YouthOf(game), YouthOf(fresh));
-    }
 }

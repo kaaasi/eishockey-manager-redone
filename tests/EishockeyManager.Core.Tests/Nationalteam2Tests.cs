@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using EishockeyManager.Core;
 
 namespace EishockeyManager.Core.Tests;
@@ -204,26 +203,5 @@ public class Nationalteam2Tests
         Assert.True(loaded.Success, loaded.Error);
         Assert.Equal(game.WorldCupRankings, loaded.Game!.WorldCupRankings);
         Assert.Equal(SaveGame.Save(game), SaveGame.Save(loaded.Game));
-    }
-
-    /// <summary>Schema 14 (vor dieser Spur): Die Liste der WM-Reihenfolgen beginnt leer ([APPROX], siehe Migration).</summary>
-    [Fact]
-    public void Schema14_IsMigrated_WithEmptyWorldCupHistory()
-    {
-        var game = GameModeTests.Create(7, false, true, 2);
-        for (var guard = 0; game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver; guard++)
-            game.Continue();
-        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        root["schema"] = 14;
-        Assert.True(root["spiel"]!.AsObject().Remove("_worldCupRankings"));
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        Assert.Empty(result.Game!.WorldCupRankings);
-        Assert.Equal((game.Season, game.CurrentDay, game.Phase), (result.Game.Season, result.Game.CurrentDay, result.Game.Phase));
-        Assert.Equal(game.WorldCup!.Ranking, result.Game.WorldCup!.Ranking);
-        // Danach Gleichlauf mit dem frisch gesicherten Stand.
-        var again = SaveGame.Load(SaveGame.Save(result.Game));
-        Assert.True(again.Success, again.Error);
-        Assert.Equal(SaveGame.Save(result.Game), SaveGame.Save(again.Game!));
     }
 }

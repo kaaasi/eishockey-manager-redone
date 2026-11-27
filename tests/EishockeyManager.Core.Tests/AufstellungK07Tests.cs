@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using EishockeyManager.Core;
 using EishockeyManager.Formats;
 
@@ -188,33 +187,6 @@ public class AufstellungK07Tests
         Assert.Equal(2, c.SlotLine(c.Players.Single(p => p.Id == defender.Id)));
         c.SetAutoLineup(true);
         Assert.True(g.Managers[0].AutoLineupEnabled);
-    }
-
-    /// <summary>
-    /// Migration 63 → 64 (<c>SaveGame.Migration.Aufstellung.cs</c>): Der Manager übernimmt die Einstellung seines Vereins, +0x15 außerhalb
-    /// der Aufstellung 0; Speichern → Laden → Speichern byte-gleich.
-    /// </summary>
-    [Fact]
-    public void Migration_63To64_ManagerTakesClubSetting()
-    {
-        var (game, club) = Game();
-        club.AutoLineupEnabled = false;
-        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        foreach (var m in root["manager"]!.AsArray().OfType<JsonObject>())
-            Assert.True(m.Remove("AutoLineupEnabled"));
-        foreach (var p in root["spieler"]!.AsArray().OfType<JsonObject>())
-            Assert.True(p.Remove("LastLine"));
-        root["schema"] = 63;
-
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-
-        Assert.True(result.Success, result.Error);
-        Assert.False(result.Game!.Managers[0].AutoLineupEnabled);
-        Assert.All(result.Game.AllPlayers, p => Assert.Equal(0, p.LastLine));
-        var again = SaveGame.Save(result.Game);
-        var twice = SaveGame.Load(again);
-        Assert.True(twice.Success, twice.Error);
-        Assert.Equal(again, SaveGame.Save(twice.Game!));
     }
 
     /// <summary>

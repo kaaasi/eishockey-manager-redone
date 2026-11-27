@@ -160,21 +160,13 @@ public class SaisonGeldTeil3Tests
             Assert.Equal(OriginalImport.PoolEntry(original, i)[0x18], OriginalImport.PoolEntry(exported, i)[0x18]);
     }
 
-    /// <summary>K11: Der Rollenwert übersteht Speichern und Laden; ein Stand mit Schema 64 lädt mit der Mitte der Spanne.</summary>
+    /// <summary>K11: Der Rollenwert übersteht Speichern und Laden.</summary>
     [Fact]
-    public void SaveLoad_RoleValueKept_Schema64Migrated()
+    public void SaveLoad_RoleValueKept()
     {
         var game = Game(7);
         var loaded = SaveGame.Load(SaveGame.Save(game)).Game!;
         Assert.Equal(game.TransferMarket.Pool.Select(s => s.Player.RoleValue), loaded.TransferMarket.Pool.Select(s => s.Player.RoleValue));
-
-        var root = System.Text.Json.Nodes.JsonNode.Parse(System.Text.Encoding.UTF8.GetString(SaveGame.Save(game)))!.AsObject();
-        root["schema"] = 64;
-        foreach (var p in root["spieler"]!.AsArray().OfType<System.Text.Json.Nodes.JsonObject>())
-            p.Remove("_roleValue");
-        var migrated = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString())).Game!;
-        Assert.All(migrated.TransferMarket.Pool, s => Assert.Equal(Player.DefaultRoleValue(s.Player.Role), s.Player.RoleValue));
-        Assert.All(migrated.TransferMarket.Pool, s => Assert.False(s.Player.HasRoleValue));
     }
 
     /// <summary>Würfe nach Vorgabe (wie <c>k13_platzwahl.py</c>); prüft die Grenzen random(a, b).</summary>

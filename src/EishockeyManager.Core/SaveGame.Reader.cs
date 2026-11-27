@@ -40,23 +40,15 @@ public static partial class SaveGame
             return FailVersion("Der Spielstand hat keine gültige Version.");
         if (schema > SchemaVersion)
             return FailVersion($"Der Spielstand stammt aus einer neueren Version (Schema {schema}, unterstützt bis {SchemaVersion}).");
+        // Runde 27 (A1 = B, R27-D2 = B): keine Migrationen mehr, nur das aktuelle Schema ist ladbar.
+        if (schema < SchemaVersion)
+            return FailVersion($"Spielstände mit Schema {schema} können nicht mehr geladen werden.");
 
-        var loadedSchema = schema;
         try
         {
-            // R25-G1 (#1026): Migrationen lesen Felder einer fremden, womöglich beschädigten Datei (z. B. GetValue<int>() auf eine
-            // Zeichenkette, doppelte Schlüssel). Ihre Ausnahmen landen deshalb im selben Fehlerhandler wie der Reader.
-            for (; schema < SchemaVersion; schema++)
-            {
-                if (!Migrations.TryGetValue(schema, out var migrate))
-                    return FailVersion($"Spielstände mit Schema {schema} können nicht mehr geladen werden.");
-                root = migrate(root);
-            }
-
             using var document = JsonDocument.Parse(root.ToJsonString(), new JsonDocumentOptions { MaxDepth = 1024 });
             var game = new Reader(document.RootElement).Read();
-            AfterLoadPool(game, loadedSchema); // Spur pool (#743): Managerkader in den Pool (SaveGame.Migration.Pool.cs)
-            game.BindLineupOwners(); // Spur aufstellung, A936 (SaveGame.Migration.Aufstellung.cs)
+            game.BindLineupOwners(); // Spur aufstellung, A936 (Squad.AutoLineup.Manager.cs)
             var problems = game.ValidatePlayerIdentity();
             if (problems.Count > 0)
                 return Fail("Der Spielstand ist beschädigt: " + problems[0]);

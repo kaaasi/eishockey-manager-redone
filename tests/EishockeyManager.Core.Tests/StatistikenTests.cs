@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using EishockeyManager.Core;
 using EishockeyManager.Formats;
 
@@ -161,24 +160,6 @@ public class StatistikenTests
         Assert.True(loaded.Success, loaded.Error);
         Assert.Equal(77, loaded.Game!.Clubs[2].LeaguePenaltyMinutes);
         Assert.Equal(bytes, SaveGame.Save(loaded.Game));
-    }
-
-    /// <summary>Migration der Spur (12 → 13, Integration Runde 8): ältere Spielstände ohne Strafminuten laden mit 0.</summary>
-    [Fact]
-    public void OldSave_WithoutPenaltyMinutes_LoadsWithZero()
-    {
-        var game = NewGame1();
-        TestSeason.PlayMatchDay(game);
-        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        root["schema"] = 12;
-        var removed = 0;
-        foreach (var club in root["vereine"]!.AsArray())
-            if (club!.AsObject().Remove("LeaguePenaltyMinutes"))
-                removed++;
-        Assert.Equal(game.Clubs.Count, removed);
-        var loaded = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(loaded.Success, loaded.Error);
-        Assert.All(loaded.Game!.Clubs, c => Assert.Equal(0, c.LeaguePenaltyMinutes));
     }
 
     [Fact]

@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using EishockeyManager.Core;
 using EishockeyManager.Formats;
 using EishockeyManager.Tests.Support;
@@ -179,51 +178,6 @@ public class PoolManagerSquadTests
         var club = loaded.Clubs[loaded.Managers[0].ClubIndex];
         Assert.Equal(IndicesOf(game, game.Clubs[club.Index]), IndicesOf(loaded, club));
         Assert.Equal(SaveGame.Save(game), SaveGame.Save(loaded));
-    }
-
-    /// <summary>
-    /// Migration 48 → 49 (<c>SaveGame.Migration.Pool.cs</c>): Ein Spielstand, dessen Startkader außerhalb des Pools steht (wie vor
-    /// dieser Spur: eigene Poolspieler auf allen 199 Plätzen), bekommt beim Laden die freien Ligaplätze seiner Art.
-    /// </summary>
-    [Fact]
-    public void OldSave_SquadOutsidePool_IsSeatedOnLoad()
-    {
-        var game = Create((5, League.Bundesliga));
-        var root = OldSave(game);
-        var loaded = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.Null(loaded.Error);
-        var club = loaded.Game!.Clubs[loaded.Game.Managers[0].ClubIndex];
-        Assert.Equal([.. Range(2, 2), .. Range(22, 10), .. Range(98, 13)], IndicesOf(loaded.Game, club));
-        Assert.Empty(loaded.Game.ValidatePlayerIdentity());
-
-        // Ohne Migration (Schema 49) bleibt der Stand, wie er ist.
-        root["schema"] = SaveGame.SchemaVersion;
-        var current = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString())).Game!;
-        Assert.All(IndicesOf(current, current.Clubs[club.Index]), i => Assert.Equal(-1, i));
-    }
-
-    /// <summary>Stand wie vor der Spur: Die Plätze der Managerkader tragen eigene, freie Poolspieler; Schema 48.</summary>
-    private static JsonObject OldSave(GameState game)
-    {
-        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        var players = root["spieler"]!.AsArray();
-        var byId = players.Select(p => p!.AsObject()).ToDictionary(p => (int)p["Id"]!);
-        var next = (int)root["spiel"]!["NextPlayerId"]!;
-        foreach (var slot in root["spiel"]!["TransferMarket"]!["_pool"]!["items"]!.AsArray().Select(s => s!.AsObject()))
-        {
-            if ((string)slot["Owner"]! != "Taken")
-                continue;
-            var copy = byId[(int)slot["Player"]!["$spieler"]!].DeepClone().AsObject();
-            copy["Id"] = next;
-            copy["Name"] = $"ALT {next}";
-            players.Add(copy);
-            slot["Player"] = new JsonObject { ["$spieler"] = next++ };
-            slot["Owner"] = "Free";
-            slot["Club"] = 0;
-        }
-        root["spiel"]!["NextPlayerId"] = next;
-        root["schema"] = 48;
-        return root;
     }
 
     private static void PlayToSeasonOver(GameState game)

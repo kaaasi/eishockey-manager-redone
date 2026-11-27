@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using EishockeyManager.Formats;
 using EishockeyManager.Tests.Support;
 
@@ -94,24 +93,6 @@ public class KaderTransferTeil2Tests
         Assert.Equal((123_456L, 13), (q.PurchasePrice, q.InjuryKind));
         Assert.Equal("Mittelfußknochenbruch", q.InjuryName);
         Assert.Equal(saved, SaveGame.Save(loaded.Game!));
-    }
-
-    /// <summary>Migration 27 → 28 (Spur vorläufig 22 → 23): Kaufpreis 0, Art unbekannt.</summary>
-    [Fact]
-    public void Migration_FromSchema27()
-    {
-        var game = TestGames.Create(4);
-        var json = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        json["schema"] = 27; // vor Teil 2 (Integration Runde 11: 27 → 28)
-        foreach (var player in json["spieler"]!.AsArray().OfType<JsonObject>())
-        {
-            Assert.True(player.Remove("PurchasePrice"));
-            Assert.True(player.Remove("InjuryKind"));
-        }
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(json.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        var all = result.Game!.Clubs.SelectMany(c => c.Players).ToList();
-        Assert.All(all, p => Assert.Equal((0L, InjuryKinds.Unknown), (p.PurchasePrice, p.InjuryKind)));
     }
 
     /// <summary>

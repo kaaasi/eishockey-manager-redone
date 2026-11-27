@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using EishockeyManager.Formats;
 
 namespace EishockeyManager.Core.Tests;
@@ -349,48 +348,6 @@ public class TransferOriginalVertragTests
         var random = new Random(11);
         Assert.Equal(SponsorRating.Finish(s, tier), SponsorRating.Compute(game, manager, random));
         Assert.Equal(twin.Next(), random.Next()); // gleiche Zahl an Zügen
-    }
-
-    /// <summary>
-    /// Migration 14 → 15: „RejectedOfferDay“ entfällt, Sperre 0; Markt-Einträge ohne Gebotssperre. Laden ergibt denselben
-    /// Spielstand wie das Original.
-    /// </summary>
-    [Fact]
-    public void Migration_FromSchema14()
-    {
-        var (game, _, _, p) = Setup();
-        var json = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        json["schema"] = 14;
-        foreach (var player in json["spieler"]!.AsArray().OfType<JsonObject>())
-        {
-            player.Remove("NegotiationLock");
-            player["RejectedOfferDay"] = 3;
-        }
-        var listings = 0;
-        Strip(json);
-        Assert.True(listings > 0);
-
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(json.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        var loaded = result.Game!;
-        Assert.All(loaded.Clubs.SelectMany(c => c.Players), pl => Assert.Equal(0, pl.NegotiationLock));
-        Assert.All(loaded.TransferMarket.Listings, l => Assert.Equal(0, l.RejectedBy));
-        Assert.Equal(SaveGame.Save(game), SaveGame.Save(loaded));
-        Assert.NotNull(p);
-
-        void Strip(JsonNode? node)
-        {
-            if (node is JsonObject obj)
-            {
-                if (obj.Remove("RejectedBy"))
-                    listings++;
-                foreach (var (_, child) in obj.ToArray())
-                    Strip(child);
-            }
-            else if (node is JsonArray array)
-                foreach (var child in array)
-                    Strip(child);
-        }
     }
 
     /// <summary>

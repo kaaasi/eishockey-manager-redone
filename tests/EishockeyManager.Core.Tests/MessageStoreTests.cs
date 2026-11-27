@@ -157,34 +157,6 @@ public class MessageStoreTests
         Assert.Equal(saved, SaveGame.Save(loaded.Game!));
     }
 
-    /// <summary>Schema 35 → 36: <c>Read</c> entfällt, <c>DaysLeft</c> = 3 und <c>Player</c> = null kommen hinzu.</summary>
-    [Fact]
-    public void Migration_DropsRead_AddsDaysLeftAndPlayer()
-    {
-        var game = TwoManagers();
-        game.Notify(game.Managers[0], "alt", "Meldung");
-        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        root["schema"] = 35;
-        var count = 0;
-        Visit(root, obj =>
-        {
-            if (obj.ContainsKey("DaysLeft") && obj.ContainsKey("Lines"))
-            {
-                obj.Remove("DaysLeft");
-                obj.Remove("Player");
-                obj["Read"] = true;
-                count++;
-            }
-        });
-        Assert.Equal(1, count);
-
-        var loaded = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(loaded.Success, loaded.Error);
-        var message = Assert.Single(loaded.Game!.Inbox(loaded.Game.Managers[0]));
-        Assert.Equal(GameState.MessageLifetimeDays, message.DaysLeft);
-        Assert.Null(message.Player);
-    }
-
     private static void Visit(JsonNode? node, Action<JsonObject> action)
     {
         switch (node)

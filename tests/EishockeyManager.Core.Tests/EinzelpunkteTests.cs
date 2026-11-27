@@ -196,66 +196,6 @@ public class EinzelpunkteTests
         Assert.All(newcomers, c => Assert.Equal(15, game.Eternal(c).Points));
     }
 
-    /// <summary>
-    /// Review #943 P3-2: Migration 58 → 59 → 60 → 61 (<c>SaveGame.Migration.Einzelpunkte.cs</c>). Ein gespeicherter Stand nach einer Saison
-    /// (Saisonrückblick mit <c>InnerMoves</c>, Werbevertrag, Aufstellungen) verliert die vier Felder und trägt Schema 58; Laden gelingt,
-    /// Felder stehen mit den Vorgaben da (<c>OneSeasonFlag</c> false, kein Feldspieler im Tor, nicht kündbar, keine Platzverschiebung),
-    /// und Speichern → Laden → Speichern ist byte-gleich (Objektnummern der neuen Liste bleiben stabil). Rückmutation: Migration 60 → 61
-    /// ohne <c>Renumber</c> oder ohne <c>InnerMoves</c> → Laden scheitert bzw. der Stand ändert sich beim erneuten Speichern.
-    /// </summary>
-    [Fact]
-    public void Migration_58To61_AddsFieldsWithDefaults_RoundtripStable()
-    {
-        var game = TestGames.Create(3);
-        var ads = game.Ads(game.Managers[0]);
-        ads.Contracts.Clear();
-        ads.Contracts.Add(Contract(AdSlotKind.Trikot, 1, [], monthsLeft: 60));
-        TestSeason.PlayRegularSeason(game);
-        for (var guard = 0; game.History.Count == 0; guard++)
-        {
-            Assert.True(guard < 1000, "Saisonende nicht erreicht");
-            game.Continue();
-        }
-        var root = System.Text.Json.Nodes.JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        Assert.Equal(SaveGame.SchemaVersion, (int)root["schema"]!);
-        var removed = new Dictionary<string, int>();
-        Strip(root, removed);
-        Assert.All(new[] { "OneSeasonFlag", "_sixthSkater", "Cancellable", "InnerMoves" }, k => Assert.True(removed.GetValueOrDefault(k) > 0, k));
-        root["schema"] = 58;
-
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-
-        Assert.True(result.Success, result.Error);
-        var loaded = result.Game!;
-        Assert.All(loaded.Managers, m => Assert.False(m.OneSeasonFlag));
-        Assert.All(loaded.Ads(loaded.Managers[0]).Contracts, c => Assert.False(c.Cancellable));
-        Assert.NotEmpty(loaded.History);
-        Assert.All(loaded.History, r => Assert.Empty(r.InnerMoves));
-        Assert.Empty(loaded.ValidatePlayerIdentity());
-        var again = SaveGame.Save(loaded);
-        var twice = SaveGame.Load(again);
-        Assert.True(twice.Success, twice.Error);
-        Assert.Equal(again, SaveGame.Save(twice.Game!));
-    }
-
-    private static void Strip(System.Text.Json.Nodes.JsonNode? node, Dictionary<string, int> removed)
-    {
-        switch (node)
-        {
-            case System.Text.Json.Nodes.JsonObject obj:
-                foreach (var key in new[] { "OneSeasonFlag", "_sixthSkater", "Cancellable", "InnerMoves" })
-                    if (obj.Remove(key))
-                        removed[key] = removed.GetValueOrDefault(key) + 1;
-                foreach (var child in obj.Select(kv => kv.Value).ToList())
-                    Strip(child, removed);
-                break;
-            case System.Text.Json.Nodes.JsonArray array:
-                foreach (var child in array)
-                    Strip(child, removed);
-                break;
-        }
-    }
-
     private static SponsorContract Contract(AdSlotKind kind, int sponsor, int[] boards, bool cancellable = false, int monthsLeft = 6) => new()
     {
         Kind = kind, Sponsor = sponsor, Boards = boards, MonthlyAmount = 1_000, MonthsLeft = monthsLeft, Cancellable = cancellable,

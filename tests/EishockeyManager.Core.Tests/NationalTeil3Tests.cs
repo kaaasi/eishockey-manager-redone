@@ -1,5 +1,3 @@
-using System.Text;
-using System.Text.Json.Nodes;
 using EishockeyManager.Formats;
 using EishockeyManager.Tests.Support;
 
@@ -241,31 +239,5 @@ public class NationalTeil3Tests
             }
         }
         Assert.True(nominated >= (!flag ? 5 : active ? 1 : 0), $"nur {nominated} Saisons mit WM-Kader");
-    }
-
-    /// <summary>
-    /// Migration 54 → 55 (Teil 3): ein Stand, dessen Kader auf die Spieler selbst verweist (ohne <c>NationalSquadMember.Source</c>),
-    /// lädt mit Source = Spieler; das aktuelle Schema ohne das Feld lehnt der strenge Leser ab.
-    /// </summary>
-    [Fact]
-    public void Schema54_SquadWithoutSource_LoadsWithPlayerAsSource()
-    {
-        var (game, coach) = WorldOnlyCoach();
-        game.AutoNominate();
-        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        var squad = root["spiel"]!["NationalCoach"]!["_squad"]!["items"]!.AsArray();
-        foreach (var member in squad.OfType<JsonObject>())
-        {
-            member["Player"] = member["Source"]!.DeepClone();
-            Assert.True(member.Remove("Source"));
-        }
-        Assert.False(SaveGame.Load(Encoding.UTF8.GetBytes(root.ToJsonString())).Success);
-
-        root["schema"] = 54;
-        var result = SaveGame.Load(Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        var loaded = result.Game!.NationalCoach!;
-        Assert.Equal(coach.Squad.Select(m => m.Source.Id), loaded.Squad.Select(m => m.Player.Id));
-        Assert.All(loaded.Squad, m => Assert.Same(m.Source, m.Player));
     }
 }

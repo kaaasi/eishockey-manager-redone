@@ -1,5 +1,3 @@
-using System.Text;
-using System.Text.Json.Nodes;
 using EishockeyManager.Core;
 
 namespace EishockeyManager.Core.Tests;
@@ -132,29 +130,5 @@ public sealed class ZusehenWmSchalterTests
             }
         }
         Assert.Equal(5, game.History.Count);
-    }
-
-    /// <summary>
-    /// Spielstand: Die Sicherung gehört zum Stand (HOK-Block 0x0A5D7 enthält 0x22C). Ein Stand des Schemas 51 lädt ohne
-    /// Sicherung; der strenge Leser lehnt Schema 52 ohne das Feld ab.
-    /// </summary>
-    [Fact]
-    public void SaveGame_KeepsTheBackup_Schema51WithoutIt()
-    {
-        var game = Game(1, 2);
-        game.AppointNationalCoach(game.Managers[0]);
-        var loaded = SaveGame.Load(SaveGame.Save(game));
-        Assert.True(loaded.Success, loaded.Error);
-        loaded.Game!.StartNationalSeason();
-        Assert.False(loaded.Game.Options.ShowWorldCup);
-
-        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        Assert.True(root["spiel"]!.AsObject().Remove("_worldCupOptionBackup"));
-        Assert.False(SaveGame.Load(Encoding.UTF8.GetBytes(root.ToJsonString())).Success);
-        root["schema"] = 51;
-        var old = SaveGame.Load(Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(old.Success, old.Error);
-        old.Game!.StartNationalSeason();
-        Assert.True(old.Game.Options.ShowWorldCup); // ohne Sicherung bleibt der Schalter, wie er war
     }
 }

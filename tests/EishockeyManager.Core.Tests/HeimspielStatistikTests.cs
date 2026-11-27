@@ -356,51 +356,6 @@ public class HeimspielStatistikTests
         Assert.Equal(bytes, SaveGame.Save(loaded.Game));
     }
 
-    [Fact]
-    public void SchemaSevenSave_IsMigrated_WithEmptyStatistics()
-    {
-        // Ein Spielstand von Schema 7 (finanzen-werbung, Integration Runde 6) kennt das Feld nicht; nachgebildet mit einem Stand ohne Heimspiel (Feld null),
-        // damit die Objektnummern fortlaufend bleiben.
-        var (game, me, _) = Game();
-        game.Finance(me);
-        var root = System.Text.Json.Nodes.JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        root["schema"] = 7;
-        foreach (var manager in root["manager"]!.AsArray())
-            Assert.True(manager!["FinanceData"]!.AsObject().Remove("_homeStatistics"));
-
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        Assert.Equal(SaveGame.Save(game), SaveGame.Save(result.Game!));
-        var stats = result.Game!.Finance(result.Game.ActiveManager).HomeStatistics;
-        Assert.Equal(0, stats.Games);
-        Assert.Equal(StadiumStatistics.InitialMinimum, stats.Minimum);
-    }
-
-    [Fact]
-    public void SchemaEightSave_IsMigrated_ForfeitFlagFalse()
-    {
-        // Schema 8 kennt den Merker ForfeitsMatch (#165) nicht; er wird false und vor dem nächsten Spiel neu gesetzt.
-        var (game, _, club) = Game();
-        TestSeason.PlayMatchDay(game);
-        var root = System.Text.Json.Nodes.JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        root["schema"] = 8;
-        foreach (var node in root["vereine"]!.AsArray())
-            Assert.True(node!.AsObject().Remove("ForfeitsMatch"));
-
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        Assert.Equal(SaveGame.Save(game), SaveGame.Save(result.Game!));
-
-        // Nach dem Laden: weniger als neun Aufgestellte → das nächste Spiel wird gewertet.
-        var loaded = result.Game!;
-        KeepInLineup(loaded.Clubs[club.Index], 8);
-        var before = loaded.Results.Count(r => r.Involves(club.Index));
-        while (loaded.Results.Count(r => r.Involves(club.Index)) == before)
-            TestSeason.PlayMatchDay(loaded);
-        var next = loaded.Results.Last(r => r.Involves(club.Index));
-        Assert.Equal(next.Home == club.Index ? (0, 2) : (2, 0), (next.HomeGoals, next.AwayGoals));
-    }
-
     /// <summary>
     /// Karriere-Video ESC Wolfsburg (Oberliga, Level 3, 11 DM, Saison 1: Schnitt 3.049, Minuskulisse 1.046, Rekord
     /// 4.500 = ausverkauft). Ein passiver Lauf erreicht die Form der Statistik (22 Ligaheimspiele, Rekord bis zur

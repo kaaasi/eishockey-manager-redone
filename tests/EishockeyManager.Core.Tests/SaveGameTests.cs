@@ -20,7 +20,7 @@ public class SaveGameTests
 
     /// <summary>
     /// Schemawächter: Ändert sich ein Zustandsfeld (neu, umbenannt, anderer Typ), ändert sich dieser Abdruck. Dann
-    /// <see cref="SaveGame.SchemaVersion"/> erhöhen, eine Migration eintragen und den Abdruck hier nachführen.
+    /// <see cref="SaveGame.SchemaVersion"/> erhöhen und den Abdruck hier nachführen (Migrationen gibt es seit Runde 27 nicht mehr).
     /// </summary>
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()

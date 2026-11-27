@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using EishockeyManager.Core;
 
 namespace EishockeyManager.Core.Tests;
@@ -99,37 +98,5 @@ public class KaderRegelnTeil1Tests
 
         Assert.Equal(5, added.Level);
         Assert.Equal((5, StartStrength.OberesDrittel), (game.Setup.Managers[1].Level, game.Setup.Managers[1].StartStrength));
-    }
-
-    /// <summary>
-    /// Migration 56 → 57 (<c>SaveGame.Migration.KaderRegeln.cs</c>): ältere Stände mit verschiedenen Werten je Manager übernehmen die
-    /// von Manager 0, auch die laufenden Manager; die Felder ohne Manager entstehen aus Manager 0.
-    /// </summary>
-    [Fact]
-    public void Migration_56To57_UnifiesOnFirstManager()
-    {
-        var setup = new GameSetup();
-        setup.Managers.Add(new ManagerSetup { Name = "A", Head = 0, ClubIndex = 2, Level = 1, StartStrength = StartStrength.OberesDrittel });
-        setup.Managers.Add(new ManagerSetup { Name = "B", Head = 1, ClubIndex = 17, Level = 5, StartStrength = StartStrength.Abstiegskampf });
-        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 1);
-        Assert.Equal(5, game.Managers[1].Level);
-        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        Assert.Equal(SaveGame.SchemaVersion, (int)root["schema"]!);
-        Assert.Equal(5, (int)root["manager"]![1]!["Level"]!);
-        root["schema"] = 56;
-        var gameSetup = root["spiel"]!["Setup"]!.AsObject();
-        Assert.True(gameSetup.Remove("_level"));
-        Assert.True(gameSetup.Remove("_startStrength"));
-
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-
-        Assert.True(result.Success, result.Error);
-        var loaded = result.Game!;
-        Assert.All(loaded.Setup.Managers, m => Assert.Equal((1, StartStrength.OberesDrittel), (m.Level, m.StartStrength)));
-        Assert.All(loaded.Managers, m => Assert.Equal(1, m.Level));
-        loaded.Setup.Managers.Clear();
-        Assert.Equal((1, StartStrength.OberesDrittel), (loaded.Setup.Level, loaded.Setup.StartStrength));
-        var again = SaveGame.Save(result.Game!);
-        Assert.Equal(again, SaveGame.Save(SaveGame.Load(again).Game!));
     }
 }

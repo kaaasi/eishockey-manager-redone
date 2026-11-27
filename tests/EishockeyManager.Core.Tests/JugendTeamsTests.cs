@@ -444,32 +444,3 @@ public class JugendTeamsTests
     private const string ExpectedPassive =
         "0:Schueler:2/2/69;0:Jugend:2/2/65;0:Junioren:2/2/65;1:Schueler:3/2/55;1:Jugend:3/2/53;1:Junioren:3/2/52;2:Schueler:3/6/43;2:Jugend:3/6/46;2:Junioren:3/6/46;3:Schueler:3/6/42;3:Jugend:3/6/40;3:Junioren:3/6/41";
 }
-
-public class JugendTeamsMigrationTests
-{
-    /// <summary>[APPROX] Schema 24 kennt keine Jugendstärke: Startstärke der Liga, in der das Team spielt.</summary>
-    [Fact]
-    public void Schema24_GetsStartStrengthOfTheCurrentLeague()
-    {
-        var game = TestGames.Create();
-        var youth = game.Finance(game.ActiveManager).Youth;
-        youth[1].MoveTo(2 * YouthTeam.TeamsPerLeague + 4); // 3. Liga
-        youth[1].Strength = YouthTeam.StartStrength(League.Oberliga);
-        var json = System.Text.Json.Nodes.JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        json["schema"] = 24;
-        var removed = 0;
-        foreach (var manager in json["manager"]!.AsArray())
-        {
-            var teams = manager!["FinanceData"]!["Youth"]!;
-            var items = teams is System.Text.Json.Nodes.JsonArray plain ? plain : teams["items"]!.AsArray();
-            foreach (var team in items)
-                if (team!.AsObject().Remove("Strength"))
-                    removed++;
-        }
-        Assert.Equal(3, removed);
-
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(json.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        Assert.Equal(SaveGame.Save(game), SaveGame.Save(result.Game!));
-    }
-}

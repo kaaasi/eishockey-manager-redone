@@ -1,5 +1,3 @@
-using System.Text;
-using System.Text.Json.Nodes;
 using EishockeyManager.Core;
 using EishockeyManager.Formats;
 
@@ -117,63 +115,5 @@ public class ZufallsstromTeil3Tests
         _ = game.OnMainMenu(game.Managers[0], isReturn: true);
         Assert.Equal(expected, game.ContractTurnFactor);
         Assert.Equal(sim.Capture(), game.Random.Capture());
-    }
-
-    /// <summary>
-    /// Rest von A725, A533: Spielstand Schema 52 mit den entfallenen Quellen <c>_trendRandom</c> und <c>_turnRandom</c> lädt nach
-    /// der Migration 52 → 53; der gemeinsame Strom und der Faktor des laufenden Zugs bleiben.
-    /// </summary>
-    [Fact]
-    public void SaveGame_Schema51_DropsOwnSources()
-    {
-        var game = Create(3);
-        var root = JsonNode.Parse(Encoding.UTF8.GetString(SaveGame.Save(game)))!.AsObject();
-        var state = root["spiel"]!.AsObject();
-        Assert.False(state.ContainsKey("_trendRandom"));
-        Assert.False(state.ContainsKey("_turnRandom"));
-        // Stand „Schema 52“ nachbauen: beide Quellen als eigene Objekte an ihrem Platz in der Feldfolge, Objektnummern fortlaufend
-        // in Dateireihenfolge (wie der Schreiber von Schema 52), Verweise umgeschrieben.
-        root["schema"] = 52;
-        var trendSource = state["Random"]!.DeepClone().AsObject();
-        var turnSource = state["Random"]!.DeepClone().AsObject();
-        trendSource["$id"] = -1;
-        turnSource["$id"] = -2;
-        state["_trendRandom"] = trendSource;
-        state["_turnRandom"] = turnSource;
-        var fields = state.ToList();
-        state.Clear();
-        foreach (var (key, value) in fields.OrderBy(f => f.Key switch { "$id" => 0, "$type" => 1, _ => 2 })
-                     .ThenBy(f => f.Key, StringComparer.Ordinal))
-            state[key] = value;
-        var map = new Dictionary<int, int>();
-        var next = 0;
-        void Number(JsonNode? node)
-        {
-            if (node is JsonObject obj)
-            {
-                if (obj["$id"] is JsonValue id)
-                {
-                    map[id.GetValue<int>()] = next;
-                    obj["$id"] = next++;
-                }
-                else if (obj.Count == 1 && obj["$ref"] is JsonValue target)
-                    obj["$ref"] = map[target.GetValue<int>()];
-                foreach (var (key, child) in obj.ToArray())
-                    if (key is not "$id" and not "$ref")
-                        Number(child);
-            }
-            else if (node is JsonArray array)
-                foreach (var child in array.ToArray())
-                    Number(child);
-        }
-        Number(root);
-        Assert.True(turnSource["$id"]!.GetValue<int>() > 0 && turnSource["$id"]!.GetValue<int>() < next - 1,
-            "Die Quelle soll mitten in der Nummernfolge stehen, sonst prüft die Probe die Umnummerierung nicht.");
-
-        var loaded = SaveGame.Load(Encoding.UTF8.GetBytes(root.ToJsonString()));
-
-        Assert.True(loaded.Success, loaded.Error);
-        Assert.Equal(game.Random.Capture(), loaded.Game!.Random.Capture());
-        Assert.Equal(game.ContractTurnFactor, loaded.Game.ContractTurnFactor);
     }
 }

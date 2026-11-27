@@ -1,5 +1,4 @@
 using EishockeyManager.Core;
-using System.Text.Json.Nodes;
 using EishockeyManager.Formats;
 
 namespace EishockeyManager.Core.Tests;
@@ -88,29 +87,5 @@ public class KaderStartRunde14Tests
             return;
         }
         Assert.Fail("kein Torhüter oder Verteidiger unter 60 Talenten");
-    }
-
-    /// <summary>Migration 41 → 42 (<c>SaveGame.Migration.KaderStart.cs</c>): ältere Stände übernehmen die Start-Liga von Manager 0.</summary>
-    [Fact]
-    public void Migration_41To42_TakesStartLeagueOfFirstManager()
-    {
-        var setup = new GameSetup();
-        setup.StartLeague = League.ZweiteLiga;
-        setup.AddManager(new ManagerSetup { Name = "A", Head = 0 });
-        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 1);
-        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        Assert.Equal(SaveGame.SchemaVersion, (int)root["schema"]!);
-        root["schema"] = 41;
-        Assert.True(root["spiel"]!["Setup"]!.AsObject().Remove("_startLeague"));
-        root["spiel"]!["Setup"]!["Managers"]!["items"]![0]!["StartLeague"] = "Oberliga";
-
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-
-        Assert.True(result.Success, result.Error);
-        Assert.Equal(League.Oberliga, result.Game!.Setup.StartLeague);
-        result.Game.Setup.Managers.Clear();
-        Assert.Equal(League.Oberliga, result.Game.Setup.StartLeague);
-        var again = SaveGame.Save(result.Game);
-        Assert.Equal(again, SaveGame.Save(SaveGame.Load(again).Game!));
     }
 }

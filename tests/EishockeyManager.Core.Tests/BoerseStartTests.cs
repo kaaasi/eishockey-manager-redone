@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using EishockeyManager.Core;
 
 namespace EishockeyManager.Core.Tests;
@@ -277,50 +276,6 @@ public class BoerseStartTests
         // Der Basiswert wächst um 3/10.000 je Börsentag (ohne Ereignisse etwa 11 % im Jahr).
         Assert.True(game.Stocks.Stocks.Count(s => s.Base > 0) == 4);
         return (game.Stocks.Stocks.Zip(bases).Count(p => p.First.Base > p.Second), game.Stocks.Stocks.Count);
-    }
-
-    /// <summary>
-    /// Migration 9 → 10: ein Stand mit dem alten Kursmodell (Mittelwert, Tendenz in DM, 110 Tage Verlauf) lädt; der
-    /// Basiswert ist Mittelwert · 100, die Tendenz neutral, der Verlauf auf 36 Tage gekürzt; danach läuft die Börse weiter.
-    /// </summary>
-    [Fact]
-    public void Migration_FromSchema9_OldStockModel()
-    {
-        var game = TestGames.Create(3);
-        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        Assert.Equal(SaveGame.SchemaVersion, (int)root["schema"]!);
-        root["schema"] = 9;
-        var stocks = root["spiel"]!["_stocks"]!["Stocks"]!["items"]!.AsArray();
-        int[] means = [101, 120, 79, 174];
-        for (var i = 0; i < 4; i++)
-        {
-            var stock = stocks[i]!.AsObject();
-            stock.Remove("Base");
-            stock.Remove("Direction");
-            stock.Remove("Countdown");
-            stock["BasePrice"] = means[i];
-            stock["Trend"] = 0.5;
-            stock["Exact"] = null;
-            stock["Price"] = means[i] + 3;
-            var items = stock["History"]!["items"]!.AsArray();
-            items.Clear();
-            for (var k = 0; k < 110; k++)
-                items.Add(k);
-        }
-
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        var loaded = result.Game!;
-        for (var i = 0; i < 4; i++)
-        {
-            var s = loaded.Stocks.Stocks[i];
-            Assert.Equal(means[i] * 100L, s.Base);
-            Assert.Equal((1, 0), (s.Direction, s.Countdown));
-            Assert.Equal(means[i] + 3, s.Price);
-            Assert.Equal(Enumerable.Range(110 - Stock.HistoryLength, Stock.HistoryLength), s.History);
-        }
-        loaded.AdvanceStocks();
-        Assert.All(loaded.Stocks.Stocks, s => Assert.Equal(Stock.HistoryLength, s.History.Count));
     }
 
     /// <summary>

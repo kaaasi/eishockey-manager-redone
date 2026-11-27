@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using EishockeyManager.Core;
 
 namespace EishockeyManager.Core.Tests;
@@ -278,57 +277,6 @@ public class FinanceWerbungTests
     }
 
     // ---- Spielstand ------------------------------------------------------------------------------
-
-    /// <summary>
-    /// Schema 6 → 7: gespeicherte Bewertung −1 (beim nächsten Gebrauch berechnet), Bewertung in Angeboten und Verträgen 0;
-    /// danach lädt der Spielstand und rechnet weiter. Ein Schema-7-Spielstand übersteht Sichern und Laden unverändert.
-    /// </summary>
-    [Fact]
-    public void SchemaSix_IsMigrated()
-    {
-        var game = TestGames.Create(3);
-        var me = game.ActiveManager;
-        game.Finance(me).Stadium.SetLevel(StadiumFeature.Kuehlanlage, 2);
-        game.Ads(me).Offers[AdSlotKind.Eisflaeche2] = new() { [4] = new SponsorOffer(AdSlotKind.Eisflaeche2, 4, 12, 1, 3_000, 12, 30) };
-        var contract = game.AcceptOffer(me, new AdSlot(AdSlotKind.Eisflaeche2), 4)!;
-        Assert.Equal(30, contract.SignedRating);
-        var saved = SaveGame.Save(game);
-        var reloaded = SaveGame.Load(saved);
-        Assert.True(reloaded.Success, reloaded.Error);
-        Assert.Equal(saved, SaveGame.Save(reloaded.Game!));
-
-        var root = JsonNode.Parse(saved)!.AsObject();
-        root["schema"] = 6;
-        var removed = 0;
-        void Strip(JsonNode? node)
-        {
-            switch (node)
-            {
-                case JsonObject obj:
-                    foreach (var key in new[] { "SponsorRating", "Rating", "SignedRating" })
-                        if (obj.Remove(key))
-                            removed++;
-                    foreach (var (_, child) in obj.ToArray())
-                        Strip(child);
-                    break;
-                case JsonArray array:
-                    foreach (var child in array.ToArray())
-                        Strip(child);
-                    break;
-            }
-        }
-        Strip(root);
-        Assert.True(removed > 3);
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        var loaded = result.Game!;
-        var lme = loaded.ActiveManager;
-        Assert.Equal(-1, loaded.Finance(lme).SponsorRating);
-        Assert.Equal(0, Assert.Single(loaded.Ads(lme).Contracts).SignedRating);
-        Assert.All(loaded.Ads(lme).Offers.Values.SelectMany(o => o.Values), o => Assert.Equal(0, o.Rating));
-        loaded.AdvanceFinanceTo(loaded.FinanceDay + 20);
-        Assert.InRange(loaded.Finance(lme).SponsorRating, 0, 100);
-    }
 
     // ---- Mehrsaisonprobe -------------------------------------------------------------------------
 

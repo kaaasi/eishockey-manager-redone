@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using EishockeyManager.Core;
 
 namespace EishockeyManager.Core.Tests;
@@ -238,39 +237,6 @@ public class SaisonSatzfolgeSaisonendeTests
     }
 
     [Fact]
-    public void Schema37Save_InSeasonOver_WithoutNextSlots_Migrates_StartNextSeasonFormsSlots()
-    {
-        // Weg 37 → 38 (SaveGame.Migration.Saison.cs): Spielstand vom Bildschirm „Saisonende“ ohne vorab gebildete Folge.
-        var game = Create(seed: 7, 5);
-        PlayToSeasonEnd(game);
-        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        root["schema"] = 37;
-        Assert.True(root["spiel"]!.AsObject().Remove("_nextLeagueSlots"));
-        var loaded = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(loaded.Success, loaded.Error);
-        var old = loaded.Game!;
-        foreach (var league in Enum.GetValues<League>())
-            Assert.Empty(old.NextLeagueSlots(league));
-
-        var before = Enum.GetValues<League>().ToDictionary(l => l, l => old.LeagueSlots(l).ToList());
-        old.StartNextSeason();
-        // #620 (R13GN-03): Der Rückfallweg (AdvanceLeagueSlots ohne gebildete Folge) mischt nach dem Bilden neu (MixLeagueSlots).
-        // Ohne Mischen behielte jeder in seiner Liga gebliebene Verein seinen Satzplatz (Nachfolger übernehmen nur die Plätze ihrer
-        // Tauschpartner). Gegenprobe: MixLeagueSlots() im Rückfallweg ausgelassen → rot.
-        Assert.Contains(Enum.GetValues<League>(), l =>
-        {
-            var now = old.LeagueSlots(l).ToList();
-            return before[l].Where(now.Contains).Any(c => before[l].IndexOf(c) != now.IndexOf(c));
-        });
-        foreach (var league in Enum.GetValues<League>())
-        {
-            Assert.Equal(GameState.ClubsPerLeague, old.LeagueSlots(league).Count);
-            Assert.Equal(old.LeagueClubs(league).Select(c => c.Index).Order(), old.LeagueSlots(league).Order());
-        }
-        Assert.Contains(Enum.GetValues<League>(), l => !old.LeagueSlots(l).SequenceEqual(old.LeagueClubs(l).Select(c => c.Index).Order()));
-    }
-
-    [Fact]
     public void NextLeagueSlots_AndFairPlayWinner_AreReadOnly()
     {
         var game = Create(seed: 3, 5);
@@ -279,29 +245,5 @@ public class SaisonSatzfolgeSaisonendeTests
         _ = game.NextLeagueSlots(League.Oberliga);
         _ = game.FairPlayPremiumWinner(game.CurrentRecord!, 5);
         Assert.Equal(before, SaveGame.Save(game));
-    }
-
-    [Fact]
-    public void FairPlayWinner_WithoutFormedSlots_FallsBackToIndexOrder()
-    {
-        // R13IS-02 (#592), rot vor dem Fix: ohne gespeicherte Folge (Schema-37-Stand) lieferte FairPlayPremiumWinner null.
-        const int club = 5;
-        var game = Create(seed: 7, club);
-        PlayToSeasonEnd(game);
-        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        root["schema"] = 37;
-        Assert.True(root["spiel"]!.AsObject().Remove("_nextLeagueSlots"));
-        var loaded = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(loaded.Success, loaded.Error);
-        var old = loaded.Game!;
-        var record = old.CurrentRecord!;
-        foreach (var c in old.Clubs)
-            c.LeaguePenaltyMinutes = 50;
-        old.Clubs[club].LeaguePenaltyMinutes = 10;
-
-        Assert.Equal(club, old.FairPlayPremiumWinner(record, club));
-        var other = old.Clubs.First(c => c.Index != club && record.NextLeague(c.Index, c.League) == record.NextLeague(club, old.Clubs[club].League));
-        other.LeaguePenaltyMinutes = 10; // Gleichstand → erster der Indexfolge
-        Assert.Equal(Math.Min(club, other.Index), old.FairPlayPremiumWinner(record, club));
     }
 }

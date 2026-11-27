@@ -1,5 +1,3 @@
-using System.Text;
-using System.Text.Json.Nodes;
 using EishockeyManager.Core;
 using EishockeyManager.Tests.Support;
 
@@ -268,27 +266,5 @@ public class NationalTeil1Tests
             game.StartNextSeason();
         }
         Assert.True(counted > 0);
-    }
-
-    /// <summary>
-    /// Migration 54 → 55: ein Stand ohne <c>NationalCoach.PowerPlayCounts</c> lädt mit Nullen; das aktuelle Schema ohne das Feld
-    /// lehnt der strenge Leser ab. Rot ohne den Eintrag <c>[54] = MigrateNational</c>.
-    /// </summary>
-    [Fact]
-    public void Schema54_WithoutCoachPowerPlay_LoadsWithZeros()
-    {
-        var game = CreateWorldOnly(seed: 19);
-        Appoint(game);
-        game.NationalCoach!.PowerPlayCounts[2] = 4;
-        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        var coach = root["spiel"]!["NationalCoach"]!.AsObject();
-        Assert.True(coach.Remove("PowerPlayCounts"));
-
-        Assert.False(SaveGame.Load(Encoding.UTF8.GetBytes(root.ToJsonString())).Success);
-
-        root["schema"] = 54;
-        var result = SaveGame.Load(Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        Assert.Equal(new int[PowerPlay.Count], result.Game!.NationalCoach!.PowerPlayCounts);
     }
 }

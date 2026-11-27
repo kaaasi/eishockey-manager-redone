@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using EishockeyManager.Core;
 using EishockeyManager.Formats;
 using EishockeyManager.Tests.Support;
@@ -131,29 +130,5 @@ public class LoadQuirkTests
         TestSeason.PlayMatchDay(game);
         Assert.Equal(DayCounter.Of(game.CurrentDay), game.Counter(game.CurrentDay));
         Assert.Equal(SeasonCalendar.Format(game.CurrentDay, game.Season), game.DateText);
-    }
-
-    /// <summary>
-    /// Migration 46 → 47 (<c>SaveGame.Migration.Ladeeigenheit.cs</c>): Ein Stand ohne <c>LoadCounterOffset</c> lädt mit Versatz 0;
-    /// das aktuelle Schema ohne das Feld lehnt der strenge Leser ab. Rot ohne den Eintrag <c>[46] = MigrateLadeeigenheit</c>.
-    /// </summary>
-    [Fact]
-    public void Schema46_WithoutOffset_LoadsWithZero()
-    {
-        var game = TestGames.Create(3);
-        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        Assert.Equal(SaveGame.SchemaVersion, (int)root["schema"]!);
-        var state = root["spiel"]!.AsObject();
-        Assert.Equal(0, (int)state["LoadCounterOffset"]!);
-        Assert.True(state.Remove("LoadCounterOffset"));
-
-        var current = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.False(current.Success);
-        Assert.Contains("LoadCounterOffset", current.Error);
-
-        root["schema"] = 46;
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        Assert.Equal(0, result.Game!.LoadCounterOffset);
     }
 }

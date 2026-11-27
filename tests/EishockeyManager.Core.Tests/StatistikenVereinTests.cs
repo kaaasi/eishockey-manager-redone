@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using EishockeyManager.Core;
 
 namespace EishockeyManager.Core.Tests;
@@ -229,28 +228,6 @@ public class StatistikenVereinTests
         _ = game.TotalDebts(manager);
         _ = game.GoalsPerGameTenths(game.Clubs[manager.ClubIndex], SeriesColumn.Home, against: true);
         Assert.Equal(before, SaveGame.Save(game));
-    }
-
-    /// <summary>Migration der Spur (vorläufig 14 → 15): ältere Spielstände laden mit leeren Serien und Zählern.</summary>
-    [Fact]
-    public void OldSave_WithoutSeries_LoadsWithZeros()
-    {
-        var game = NewGame1();
-        TestSeason.PlayMatchDay(game);
-        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        root["schema"] = 14;
-        foreach (var club in root["vereine"]!.AsArray())
-            Assert.True(club!.AsObject().Remove("SeriesCurrent"));
-        foreach (var m in root["manager"]!.AsArray())
-        {
-            Assert.True(m!.AsObject().Remove("SeriesRecords"));
-            Assert.True(m.AsObject().Remove("PowerPlayCounts"));
-        }
-        var loaded = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(loaded.Success, loaded.Error);
-        Assert.All(loaded.Game!.Clubs, c => Assert.All(c.SeriesCurrent, v => Assert.Equal(0, v)));
-        Assert.All(loaded.Game.Managers, m => Assert.Equal(new int[PowerPlay.Count], m.PowerPlayCounts));
-        Assert.All(loaded.Game.Managers, m => Assert.Equal(Series.Count, m.SeriesRecords.Length));
     }
 
     /// <summary>

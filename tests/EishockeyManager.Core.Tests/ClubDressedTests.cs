@@ -120,51 +120,6 @@ public class ClubDressedTests
         Assert.Equal(bytes, SaveGame.Save(SaveGame.Load(bytes).Game!));
     }
 
-    /// <summary>Abnahme (3): Schema 4 → 5 – alte Taktikwerte (−3…+3) werden zu Startwerten, Eingesetzt automatisch.</summary>
-    [Fact]
-    public void SchemaFourSave_IsMigrated()
-    {
-        var game = Create();
-        game.AppointNationalCoach(game.Managers[0]);
-        game.AutoNominate();
-        var root = System.Text.Json.Nodes.JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        root["schema"] = 4;
-        foreach (var c in root["vereine"]!.AsArray().Select(n => n!.AsObject()))
-        {
-            Assert.True(c.Remove("_dressed"));
-            Assert.True(c.Remove("_dressedByHand"));
-        }
-        // Integration Runde 5: Schema 4 kennt auch den Zug des Bundestrainers (Migration 5 → 6) noch nicht – Kette 4 → 5 → 6.
-        Assert.True(root["spiel"]!.AsObject().Remove("_nationalTurn"));
-        var old = root["vereine"]![2]!["Tactics"]!.AsObject();
-        old["EffortMode"] = nameof(TacticMode.Manual);
-        old["_effort"]!["items"]![0] = -3;
-        root["spiel"]!["NationalCoach"]!["Tactics"]!["_attack"]!["items"]![5] = 3;
-
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        var loaded = result.Game!;
-        Assert.False(loaded.NationalTurn);
-        var fresh = new Tactics();
-        var tactics = loaded.Clubs[2].Tactics;
-        Assert.Equal(TacticMode.Manual, tactics.EffortMode);
-        foreach (var r in Enum.GetValues<ScoreSituation>())
-        {
-            Assert.Equal(fresh.Effort(0, r), tactics.Effort(0, r));
-            // Kette bis Schema 12 (Spur nationalteam, #192): Der unveränderte alte Startwert wird zum Startwert des Nationalteams (0).
-            Assert.Equal(Tactics.National().Attack(0, r), loaded.NationalCoach!.Tactics.Attack(0, r));
-        }
-        // Integration Runde 11 (wettbewerbe-spiel Teil 8 + kader-transfer): Managervereine setzen seit Teil 8 beim Spielstart
-        // von Hand ein (0x426BC, „Eingesetzt“ gespeichert) – einen solchen Stand kann ein Schema-4-Spielstand nicht tragen.
-        // Die Vorgaberegel der Migration 4 prüft daher ein Computerverein; mit dem neuen Start wählen Regel 0x426BC und
-        // Vorgabe beim Managerverein verschiedene Reservisten.
-        var computer = game.Clubs.First(c => c.League is not null && game.Managers.All(m => m.ClubIndex != c.Index)).Index;
-        Assert.Equal(game.Clubs[computer].Dressed.Select(p => p.Id), loaded.Clubs[computer].Dressed.Select(p => p.Id));
-        Assert.Equal(game.Clubs[computer].MatchStrength, loaded.Clubs[computer].MatchStrength);
-        var again = SaveGame.Save(loaded);
-        Assert.Equal(again, SaveGame.Save(SaveGame.Load(again).Game!));
-    }
-
     /// <summary>
     /// Abnahme (4): Mehrsaisonprobe, 4 Saisonwechsel, passiver und aktiver Manager. Der aktive setzt jede Saison von
     /// Hand ein und aus und spielt mit eigener Taktik („SEMI“, Einsatz 100 %). Geprüft: Eingesetzte gehören zum Kader,

@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using EishockeyManager.Core;
 
 namespace EishockeyManager.Core.Tests;
@@ -111,9 +110,9 @@ public class MainMenuEventTests
         Assert.Throws<ArgumentException>(() => game.OnMainMenu(other, isReturn: false));
     }
 
-    /// <summary>Kennzeichen und Faktor überstehen Sichern und Laden; Stände vor Schema 35 (Teil 4 der Spur ui-meldungen) bekommen die Startwerte.</summary>
+    /// <summary>Kennzeichen und Faktor überstehen Sichern und Laden.</summary>
     [Fact]
-    public void NewMessageAndTurnFactor_RoundTripAndMigrate()
+    public void NewMessageAndTurnFactor_RoundTrip()
     {
         var game = TwoManagers();
         game.Notify(game.Managers[1], "Test");
@@ -125,26 +124,6 @@ public class MainMenuEventTests
         Assert.False(loaded.Game.Managers[0].HasNewMessage);
         Assert.Equal(factor, loaded.Game.ContractTurnFactor);
         Assert.Equal(saved, SaveGame.Save(loaded.Game));
-
-        // Stand „vor Teil 4“: Seit R12U-04 zieht schon das neue Spiel einen Faktor; ein echter alter Stand hat ihn nicht – also
-        // zurücksetzen, bevor gesichert wird. Spur zufallsstrom (A533, Schema 52; R15-E2 = C): Die eigene Zufallsquelle
-        // _turnRandom gibt es nicht mehr (der Faktor zieht aus GameState.Random, Datei 0x44E3F), ihr Zurücksetzen entfällt.
-        var type = typeof(GameState);
-        type.GetField("_contractTurnFactor", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.SetValue(game, 0);
-        var legacy = SaveGame.Save(game);
-        var root = JsonNode.Parse(legacy)!.AsObject();
-        root["schema"] = 34; // vor Teil 4 (Schema 34 → 35, Integration Runde 12)
-        var spiel = root["spiel"]!.AsObject();
-        spiel.Remove("_turnRandom");
-        spiel.Remove("_contractTurnFactor");
-        foreach (var m in root["manager"]!.AsArray().OfType<JsonObject>())
-            m.Remove("_newMessage");
-        var old = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(old.Success, old.Error);
-        Assert.All(old.Game!.Managers, m => Assert.False(m.HasNewMessage));
-        Assert.InRange(old.Game.ContractTurnFactor, 85, 115); // früherer abgeleiteter Wert bis zum nächsten Zug
-        old.Game.Continue();
-        Assert.InRange(old.Game.ContractTurnFactor, 85, 115);
     }
 }
 

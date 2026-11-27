@@ -313,31 +313,3 @@ public class TalentSearchTests
         Assert.Equal(Run(), Run());
     }
 }
-
-public class TalentSearchMigrationTests
-{
-    /// <summary>
-    /// [APPROX] Schema 25 kennt weder den Preis je Manager noch den Takt zweimal je Woche: Preis 90.000 DM, Restzähler =
-    /// 2 · Restwochen.
-    /// </summary>
-    [Fact]
-    public void Schema25_GetsStartPrice_AndTwiceTheWeeks()
-    {
-        var game = TestGames.Create();
-        var me = game.ActiveManager;
-        me.Money = 1_000_000;
-        Assert.Equal(TalentSearchStart.Started, game.StartTalentSearch(me));
-        game.Finance(me).TalentSearch!.TicksLeft = 6;
-        var json = System.Text.Json.Nodes.JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        json["schema"] = 25;
-        var finance = json["manager"]![0]!["FinanceData"]!.AsObject();
-        Assert.True(finance.Remove("TalentPrice"));
-        var search = finance["TalentSearch"]!.AsObject();
-        Assert.True(search.Remove("TicksLeft"));
-        search["WeeksLeft"] = 3;
-
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(json.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        Assert.Equal(SaveGame.Save(game), SaveGame.Save(result.Game!));
-    }
-}

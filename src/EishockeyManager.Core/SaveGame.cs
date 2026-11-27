@@ -13,7 +13,7 @@ public sealed record SaveLoadResult(GameState? Game, string? Error)
     public bool Success => Game is not null;
 
     /// <summary>
-    /// Kennung stimmt, die Version aber nicht (Schema fehlt, ist neuer oder ohne Migration). [ORIGINAL] Gegenstück zu em.exe
+    /// Kennung stimmt, die Version aber nicht (Schema fehlt, ist neuer oder älter als <see cref="SaveGame.SchemaVersion"/>). [ORIGINAL] Gegenstück zu em.exe
     /// Datei 0x5C3E3: „KRON_0.99“ stimmt, die folgenden 4 Byte sind nicht „EH0“ → Kurzmeldung 0x5C559 statt Meldungsfenster
     /// (Integration Runde 12, Anschluss ui-meldungen Teil 3, UM-4).
     /// </summary>
@@ -44,184 +44,14 @@ public static partial class SaveGame
     /// <summary>Kennung am Dateianfang.</summary>
     public const string Identifier = "EISHOCKEY-MANAGER-REDONE-SPIELSTAND";
 
-    /// <summary>Aktuelle Schemaversion. Bei jeder Änderung der Zustandsfelder erhöhen und eine Migration eintragen.</summary>
+    /// <summary>
+    /// Aktuelle und einzige ladbare Schemaversion. Ältere Spielstände werden nicht mehr migriert (Runde 27, Aufräumkonzept A1 = B,
+    /// R27-D2 = B); der Lader meldet sie (<see cref="Load(byte[])"/>). Ändern sich die Zustandsfelder, steigt die Version.
+    /// </summary>
     public const int SchemaVersion = 65;
 
     /// <summary>Dateiendung der eigenen Spielstände.</summary>
     public const string FileExtension = ".ems";
-
-    /// <summary>
-    /// Migrationen je Schemaversion: Eintrag <c>n</c> hebt eine Datei von Version <c>n</c> auf <c>n + 1</c>.
-    /// 1 → 2: neue Finanzfelder der Spur finanzen-2 (<c>SaveGame.Migration1.cs</c>).
-    /// 2 → 3: Spielmodus (Fahne) und Buchungen des Nationalkontos, Spur wettbewerbe-weltkugel (<c>SaveGame.Migration2.cs</c>).
-    /// 3 → 4: Aufstellung, Taktik und Eingesetzte des Bundestrainers, Spur nationalteam-2 (<c>SaveGame.Migration3.cs</c>).
-    /// 4 → 5: Taktikwerte nach em.exe und „Eingesetzt“ der Vereine, Spur taktik-verein (<c>SaveGame.Migration4.cs</c>).
-    /// 5 → 6: Zug des Bundestrainers im Modus 4, Spur bundestrainer-modus4 (<c>SaveGame.Migration5.cs</c>).
-    /// 6 → 7: Werbebewertung und zweite Eistafel, Spur finanzen-werbung (<c>SaveGame.Migration6.cs</c>).
-    /// 7 → 8: Zuschauerstatistik je Manager, Spur heimspiel-statistik (<c>SaveGame.Migration7.cs</c>; Integration Runde 6, ursprünglich 6 → 7).
-    /// 8 → 9: Merker „nicht spielfähig“ je Verein, Spur heimspiel-statistik #165 (<c>SaveGame.Migration8.cs</c>).
-    /// 9 → 10: Kursmodell der Börse nach em.exe, Spur boerse-start #169 (<c>SaveGame.Migration9.cs</c>).
-    /// 10 → 11: Torhüterzähler je Spieler, Spur spielberechnung (<c>SaveGame.Migration10.cs</c>; Integration Runde 7, ursprünglich 9 → 10).
-    /// 11 → 12: Taktik des Nationalteams, Spur nationalteam #192 (<c>SaveGame.Migration.Nationalteam.cs</c>; Integration Runde 8).
-    /// 12 → 13: Strafminuten der Ligaspiele je Verein, Spur statistiken (<c>SaveGame.Migration.Statistiken.cs</c>; Integration
-    /// Runde 8, auf dem Branch 11 → 12).
-    /// 13 → 14: Teamwerte des Laders je Verein, Spur spielstaerke-manager (<c>SaveGame.Migration.SpielstaerkeManager.cs</c>;
-    /// Integration Runde 8, auf dem Branch 11 → 12).
-    /// 14 → 15: Serien je Verein, Rekordserien und Über-/Unterzahl je Manager, Spur statistiken-verein
-    /// (<c>SaveGame.Migration.StatistikenVerein.cs</c>; Integration Runde 8, Welle 3).
-    /// 15 → 16: Platzierungen der Weltmeisterschaften für die WM-Statistik, Spur nationalteam-2
-    /// (<c>SaveGame.Migration.Nationalteam2.cs</c>; Integration Runde 8, Welle 3, auf dem Branch 14 → 15).
-    /// 16 → 17: Verhandlungs- und Gebotssperre, Spur transfer-original-vertrag
-    /// (<c>SaveGame.Migration.TransferOriginalVertrag.cs</c>; Integration Runde 8, Welle 3, auf dem Branch 14 → 15).
-    /// 17 → 18: Rekorde, Kopf-an-Kopf-Liste und Bilanz der Länder für das
-    /// Gegner-Fenster, Spur wettbewerbe-komplett (<c>SaveGame.Migration.WettbewerbeKomplett.cs</c>; Integration Runde 9).
-    /// 18 → 19: Spielstand-Optionen, Spur optionen-wirkung (<c>SaveGame.Migration.OptionenWirkung.cs</c>; Integration Runde 9).
-    /// 19 → 20: Versicherungsprämie und Abschluss je Spieler, Spur transfer-vertraege-komplett Teil 2
-    /// (<c>SaveGame.Migration.TransferVertraegeKomplett.cs</c>; Integration Runde 9).
-    /// 20 → 21: unaufgefordertes Angebot je Spieler, Spur transfer-vertraege-komplett Teil 3
-    /// (<c>SaveGame.Migration.TransferVertraegeKomplett3.cs</c>; Integration Runde 9).
-    /// 21 → 22: Spielerpool des Transfermarkts, Spur transfer-vertraege-komplett Teil 5
-    /// (<c>SaveGame.Migration.TransferVertraegeKomplett5.cs</c>; Integration Runde 9).
-    /// 22 → 23 (vorläufig, Runde 11): Stadionausbau mit parallelen Baustellen, Spur geld Teil 1 (<c>SaveGame.Migration.Geld1.cs</c>).
-    /// 23 → 24 (vorläufig, Runde 11): Platzverlauf je Verein für die Werbebewertung, Spur geld Teil 2 (<c>SaveGame.Migration.Geld2.cs</c>).
-    /// 24 → 25 (vorläufig, Runde 11): Stärke je Jugendteam, Spur geld Teil 3 (<c>SaveGame.Migration.Geld3.cs</c>).
-    /// 25 → 26 (vorläufig, Runde 11): Zähler und Preis der Talentsuche, Spur geld Teil 6 (<c>SaveGame.Migration.Geld6.cs</c>).
-    /// 26 → 27 (Runde 11, Integration): Ereignis Zwangsabstieg, Spur saisonwechsel Teil 2 (<c>SaveGame.Migration.Saisonwechsel.cs</c>).
-    /// 27 → 28: Kaufpreis und Verletzungsart je Spieler, Spur kader-transfer Teil 2 (<c>SaveGame.Migration.KaderTransfer.cs</c>;
-    /// Integration Runde 11).
-    /// 28 → 29: Tendenzwert und Steuerbyte je Spieler, Spur kader-transfer Teil 4 (<c>SaveGame.Migration.KaderTransfer4.cs</c>;
-    /// Integration Runde 11).
-    /// 29 → 30: Spiele beim jetzigen Verein je Spieler, Spur kader-transfer Teil 5 (<c>SaveGame.Migration.KaderTransfer5.cs</c>;
-    /// Integration Runde 11).
-    /// 30 → 31 (Integration Runde 11): Ergebnismarken der Pokalspiele, Spur wettbewerbe-spiel Teil 1
-    /// (<c>SaveGame.Migration.WettbewerbeSpiel.cs</c>).
-    /// 31 → 32 (Integration Runde 11): Einstellung „automatisch aufstellen“ je Verein, Spur wettbewerbe-spiel Teil 8
-    /// (<c>SaveGame.Migration.WettbewerbeSpiel8.cs</c>).
-    /// 32 → 33 (Runde 12): Belastung je Spieler statt Energie, Spur wettbewerbe-spiel Teil 2, A184
-    /// (<c>SaveGame.Migration.WettbewerbeSpiel12.cs</c>).
-    /// 33 → 34 (Runde 12): Satzfolge der Vereine je Liga, Spur saisonwechsel Teil 3
-    /// (<c>SaveGame.Migration.Saisonwechsel3.cs</c>).
-    /// 34 → 35 (Runde 12): Kennzeichen „neue Nachricht“ je Manager und Gehaltsfaktor je Managerzug, Spur ui-meldungen
-    /// Teil 4 (<c>SaveGame.Migration.UiMeldungen4.cs</c>).
-    /// 36 → 37 (Runde 13): vorbehalten für Spur kader-start (L5); bis zur Integration ohne Änderung.
-    /// 37 → 38 (Runde 13): Satzfolge der nächsten Saison, Spur saison Teil 3 (<c>SaveGame.Migration.Saison.cs</c>).
-    /// 38 → 39 (Runde 13, Fix R13G-01/#613, #606): Nr. = Kaderplatz + 1 für alle Vereine (<c>SaveGame.Migration.Nummern.cs</c>).
-    /// 39 → 40 (Runde 14): Einstellung <c>GameOptions.ManagerDayMinuteLoop</c> (#349), Spur saison Teil 4
-    /// (<c>SaveGame.Migration.Saison4.cs</c>).
-    /// 40 → 41 (Runde 14, Integration): „automatisch aufstellen“ des Bundestrainers, Spur nationalteam Teil 3, A009
-    /// (<c>SaveGame.Migration.Nationalteam3.cs</c>; auf dem Spurbranch vorläufig 40, wegen Kollision mit saison neu nummeriert).
-    /// 41 → 42 (Runde 14): Start-Liga in GameSetup selbst, Spur kader-start Teil 1, R13KI-03/#605
-    /// (<c>SaveGame.Migration.KaderStart.cs</c>; 41 → 42; auf dem Spurbranch vorläufig 39 → 40, bei der Integration neu nummeriert).
-    /// 42 → 43 (Runde 14): Tabellenfeld je Verein (A046) und Tore/Spiele je Wettbewerb (A135), Spur kader-start Teil 2b
-    /// (<c>SaveGame.Migration.KaderStart2.cs</c>; 42 → 43; vorläufig 40 → 41).
-    /// 43 → 44 (Runde 14, Fixlauf #676, R683-01/-04): Viertelfinale in Platzfolge (Halbfinale nach Tabelle DGROUP 0x144),
-    /// <c>PlayoffSeries.HomeClub</c>/<c>AwayClub</c> statt <c>HigherSeed</c>/<c>LowerSeed</c> (<c>SaveGame.Migration.PlayoffHalbfinale.cs</c>).
-    /// 44 → 45 (Runde 14, #688, R688-04): Tageswechsel vor dem Halt, <c>GameState.DayOpened</c> (<c>SaveGame.Migration.Tagestakt.cs</c>).
-    /// 45 → 46 (Runde 14, #688, R688S-03): keine Entlassung wegen Schulden, <c>Manager.DebtDays</c> entfällt
-    /// (<c>SaveGame.Migration.Schulden.cs</c>).
-    /// 46 → 47 (Runde 14, pruefung-karte Teil 5): Ladeversatz des Markierungstags, <c>GameState.LoadCounterOffset</c>
-    /// (<c>SaveGame.Migration.Ladeeigenheit.cs</c>).
-    /// 47 → 48 (Runde 16, #772): Einsatz und Angriff des letzten Spiels je Taktik, Spur abgleich-rest
-    /// (<c>SaveGame.Migration.AbgleichRest.cs</c>).
-    /// 48 → 49 (Runde 16, Spur pool #743): <c>PoolSlot.Manager</c>, Managerkader im Spielerpool nach dem Laden (<c>SaveGame.Migration.Pool.cs</c>).
-    /// 49 → 50 (Runde 17, Spur kader-rest Teil 1, vorläufig): <c>Player.PoolForm</c>, A066 (<c>SaveGame.Migration.KaderRest.cs</c>).
-    /// 50 → 51 (Runde 20, Spur pruefung-karte Teil 2, #872): Reihen auf dem Eis nach dem letzten Spiel je Taktik
-    /// (<c>SaveGame.Migration.PruefungKarte.cs</c>).
-    /// 51 → 52 (Runde 21, Spur zusehen Teil 1): Markierung zum Zusehen je Verein (<c>SaveGame.Migration.Zusehen.cs</c>).
-    /// 52 → 53 (Runde 21, Spur zufallsstrom, N3 = B): eigene Zufallsquellen <c>GameState._trendRandom</c> und
-    /// <c>_turnRandom</c> entfallen (<c>SaveGame.Migration.Zufallsstrom.cs</c>).
-    /// 53 → 54 (Runde 21, Spur zufallsstrom Teil 4): übrige eigene Zufallsquellen entfallen (dieselbe Datei).
-    /// 54 → 55 (Runde 22, Spur kaderplatz-werte Teil 1, vorläufig): <c>Player.PoolCondition</c>/<c>PoolTechnique</c>, A714
-    /// (<c>SaveGame.Migration.KaderplatzWerte.cs</c>).
-    /// 55 → 56 (Runde 22, Spur hok-play-off-marken, Schema 56 nach `kaderplatz-werte`): Marken der Play-off-Spiele
-    /// <c>PlayoffSeries.Marks</c>, A612 (<c>SaveGame.Migration.HokPlayOffMarken.cs</c>).
-    /// 56 → 57 (Runde 22, Spur national Teil 1, Schema 57 nach `hok-play-off-marken`): Über-/Unterzahl-Zähler des Bundestrainers, Teil 2 WM-Tag der letzten Strafe (A498)
-    /// (<c>SaveGame.Migration.National.cs</c>).
-    /// 57 → 58 (Runde 22, Spur kader-regeln Teil 1, Schema 58 nach `national`): Level und Start-Stärke ein Wert je Spiel, A054/A518
-    /// (<c>SaveGame.Migration.KaderRegeln.cs</c>).
-    /// 58 → 59 (Runde 22, Spur einzelpunkte Teil 1, Schema 59 nach `kader-regeln`): <c>Manager.OneSeasonFlag</c> (A847), <c>Lineup.GoalieStandIn</c> (A672)
-    /// (<c>SaveGame.Migration.Einzelpunkte.cs</c>).
-    /// 59 → 60 (Runde 22, Spur einzelpunkte Teil 1 Fortsetzung, nach `kader-regeln`): <c>SponsorContract.Cancellable</c> (A582, „Kündbar.“)
-    /// (<c>SaveGame.Migration.Einzelpunkte.cs</c>).
-    /// 60 → 61 (Runde 22, Spur einzelpunkte Teil 2 Fortsetzung, nach `kader-regeln`): <c>SeasonRecord.InnerMoves</c> (A665, Platztausch innerhalb
-    /// der unteren Liga) (<c>SaveGame.Migration.Einzelpunkte.cs</c>).
-    /// 61 → 62 (Runde 22, Spur wettbewerbe-regeln, Schema 62 nach `einzelpunkte`): <c>Tactics._goaliePulledAtEnd</c>, A838 (Teil 1), und
-    /// <c>GameState._youthOfDayDone</c>, A670/A384 (Teil 2) (<c>SaveGame.Migration.WettbewerbeRegeln.cs</c>).
-    /// 62 → 63 (Runde 23, Spur feldspieler-sechs Teil 1, #939): <c>Lineup._goalieStandIn</c> → <c>Lineup._sixthSkater</c>, sechster
-    /// Feldspielerplatz (<c>SaveGame.Migration.FeldspielerSechs.cs</c>).
-    /// 63 → 64 (Runde 25, Spur aufstellung K07): <c>Manager.AutoLineupEnabled</c> (A936) und <c>Player.LastLine</c> (A939)
-    /// (<c>SaveGame.Migration.Aufstellung.cs</c>).
-    /// 64 → 65 (Runde 25, Spur saison-geld K11, nach `aufstellung`): <c>Player._roleValue</c>, Rollenwert Pool +0x18
-    /// (<c>SaveGame.Migration.SaisonGeld.cs</c>).
-    /// </summary>
-    private static readonly IReadOnlyDictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>> Migrations =
-        new Dictionary<int, Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>>
-        {
-            [1] = MigrateFrom1,
-            [2] = MigrateFrom2,
-            [3] = MigrateFrom3,
-            [4] = MigrateFrom4,
-            [5] = MigrateFrom5,
-            [6] = MigrateFrom6,
-            [7] = MigrateFrom7,
-            [8] = MigrateFrom8,
-            [9] = MigrateFrom9,
-            [10] = MigrateFrom10,
-            [11] = MigrateFromNationalteam,
-            [12] = MigrateStatistiken,
-            [13] = MigrateFromTeamValues,
-            [14] = MigrateStatistikenVerein,
-            [15] = MigrateFromNationalteam2,
-            [16] = MigrateTransferOriginalVertrag,
-            [17] = MigrateWettbewerbeKomplett,
-            [18] = MigrateOptionenWirkung,
-            [19] = MigrateTransferVertraegeKomplett,
-            [20] = MigrateTransferVertraegeKomplett3,
-            [21] = MigrateTransferVertraegeKomplett5,
-            [22] = MigrateGeld1,
-            [23] = MigrateGeld2,
-            [24] = MigrateGeld3,
-            [25] = MigrateGeld6,
-            [26] = MigrateSaisonwechsel,
-            [27] = MigrateKaderTransfer,
-            [28] = MigrateKaderTransfer4,
-            [29] = MigrateKaderTransfer5,
-            [30] = MigrateWettbewerbeSpiel,
-            [31] = MigrateWettbewerbeSpiel8,
-            [32] = MigrateWettbewerbeSpiel12,
-            [33] = MigrateSaisonwechsel3,
-            [34] = MigrateUiMeldungen4,
-            [35] = MigratePixelMarker3,
-            [36] = MigrateSaisonPlatzhalter37, // leerer Schritt: kader-start brauchte die Lücke in Runde 13 nicht (L5, #621)
-            [37] = MigrateSaison,
-            [38] = MigrateNummern,
-            [39] = MigrateSaison4,
-            [40] = MigrateNationalteam3,
-            [41] = MigrateKaderStart,
-            [42] = MigrateKaderStart2,
-            [43] = MigratePlayoffHalbfinale,
-            [44] = MigrateTagestakt,
-            [45] = MigrateSchulden,
-            [46] = MigrateLadeeigenheit,
-            [47] = MigrateAbgleichRest,
-            [48] = MigratePool,
-            [49] = MigrateKaderRest,
-            [50] = MigratePruefungKarte,
-            [51] = MigrateZusehen,
-            [52] = MigrateZufallsstrom,
-            [53] = MigrateZufallsstromQuellen,
-            [54] = MigrateKaderplatzWerte,
-            [55] = MigrateHokPlayOffMarken,
-            [56] = MigrateNational,
-            [57] = MigrateKaderRegeln,
-            [58] = MigrateEinzelpunkte,
-            [59] = MigrateKuendbar,
-            [60] = MigrateInnerMoves,
-            [61] = MigrateWettbewerbeRegeln,
-            [62] = MigrateFeldspielerSechs,
-            [63] = MigrateAufstellung,
-            [64] = MigrateSaisonGeld,
-        };
 
     private static readonly Assembly CoreAssembly = typeof(GameState).Assembly;
     private static readonly Assembly FormatsAssembly = typeof(Formats.PlayerRole).Assembly;
@@ -517,7 +347,7 @@ public static partial class SaveGame
 
     /// <summary>
     /// Abdruck des Schemas: alle erreichbaren Zustandstypen mit Feldname und Feldtyp. Ändert er sich, muss
-    /// <see cref="SchemaVersion"/> steigen (mit Migration), sonst lassen sich alte Spielstände nicht mehr laden.
+    /// <see cref="SchemaVersion"/> steigen, damit Spielstände des alten Schemas mit Meldung statt als beschädigt abgelehnt werden.
     /// </summary>
     public static string SchemaFingerprint() =>
         Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
