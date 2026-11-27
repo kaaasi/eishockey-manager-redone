@@ -104,7 +104,7 @@ Erstreviews: Opus 5.5 für `aufraeumen-migration`, `-tot`, `-doppelt`; Sonnet 5.
   `scan_docs`). **Prüfung:** `funktionskarte.py <em.exe> --csv` vor/nach mit gleicher Statusverteilung; Linkprüfung aller relativen Verweise in
   `docs/**` (Skript im PR, nicht eingecheckt); `tools/reverse-engineering/markerliste.py` (ohne `--write`) läuft unverändert
   (liest `inventur.md`). CI entfällt.
-- **Status:** Teile 1–4 fertig (PR #1060, 27.11.2026): 262 Reviews (Runden 3–26) nach `docs/archiv/reviews/runde-<n>/`, `analyse/re-*`, `abgleich-*`, `belastung*` samt Skripten nach `docs/archiv/analyse/`, D3/D4 archiviert (Amiga-Abschnitt in `formate/dateiformate.md`), `scan_docs` liest `docs/archiv/analyse/`; Verweisliste für `aufraeumen-doku`: [analyse/aufraeumen-verweise.md](analyse/aufraeumen-verweise.md). Wartet auf Review.
+- **Status:** Teile 1–4 fertig (PR #1060, 27.11.2026): 284 Reviews (Runden 3–26) nach `docs/archiv/reviews/runde-<n>/`, `analyse/re-*`, `abgleich-*`, `belastung*` samt Skripten nach `docs/archiv/analyse/`, D3/D4 archiviert (Amiga-Abschnitt in `formate/dateiformate.md`), `scan_docs` liest `docs/archiv/analyse/`; Verweisliste für `aufraeumen-doku`: [analyse/aufraeumen-verweise.md](analyse/aufraeumen-verweise.md). Wartet auf Review.
 
 ### Spur `aufraeumen-tot` – tote und Nur-Test-Pfade im Core (Welle 2, nach Merge von `aufraeumen-migration`)
 
