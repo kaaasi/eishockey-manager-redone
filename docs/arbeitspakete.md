@@ -85,7 +85,7 @@ Erstreviews: Opus 5.5 für `aufraeumen-migration`, `-tot`, `-doppelt`; Sonnet 5.
   minimal, Liste im PR), Migrationstests, `tests/EishockeyManager.Core.Tests/Fixtures/`.
 - **Prüfung:** alle drei Läufe; Rundreise Schema 65 (Zustandsabdruck vor Speichern = nach Laden); Zustandsabdruck Base/Head;
   Markerprobe.
-- **Status:** nicht gestartet.
+- **Status:** PR #1059 (Draft), Teile 0 und 1 fertig (27.11.2026), Teil 2 offen (Fortsetzung 1 angefordert).
 
 ### Spur `aufraeumen-archiv` – Reviews und Arbeitsanalysen ins Archiv (Welle 1, `docs/**` und `funktionskarte.py`)
 
