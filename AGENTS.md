@@ -8,7 +8,8 @@ Werkzeugspezifisches steht getrennt (Claude Code: [CLAUDE.md](CLAUDE.md)) und da
 ## 1. Projekt
 
 Portierung des **Eishockey Managers** (Software 2000, DOS 1993) nach C#/.NET 10: zuerst originalgetreu (Pixel, Regeln, Abläufe),
-danach Erweiterungen. **Sprache:** Deutsch in Doku, Kommentaren und Commit-Nachrichten; Code-Bezeichner englisch.
+danach Erweiterungen. **Sprache:** Deutsch in Doku, Kommentaren und Commit-Nachrichten; Code-Bezeichner englisch; Ausnahme: Testklassen und
+-dateien dürfen deutsche Fachnamen tragen (Aufräumkonzept A3 = B, Nutzer 24.11.2026).
 
 ## 2. Harte Regeln
 

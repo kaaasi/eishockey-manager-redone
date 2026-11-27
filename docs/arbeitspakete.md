@@ -8,15 +8,140 @@ Abgeschlossene Runden stehen in [archiv/](archiv/) und müssen beim Einstieg nic
 **Koordination:** Die Leitstelle verteilt Pakete, prüft und mergt Pull Requests und pflegt Fahrplan und Doku
 (Rollen: [prozess/zusammenarbeit.md](prozess/zusammenarbeit.md)).
 
-## Aktuelle Runde: Runde 27 – Planung offen (neue Leitstellen-Sitzung, `docs/vorlagen/leitstelle-start.md`)
+## Aktuelle Runde: Runde 27 – Aufräumen vor v1.0 (#936; Plan 27.11.2026, Go offen)
 
 Runde 26 abgeschlossen am 26.11.2026: [archiv/runde-26.md](archiv/runde-26.md). Stand: Restliste
-[analyse/restliste-v1.md](analyse/restliste-v1.md) **V = 0**, D 25, E 321, K 197. Abweichungsliste
-[analyse/abweichungen-v1.md](analyse/abweichungen-v1.md) Abschnitt 0: alle Themen umgesetzt bzw. geklärt.
-**Auftrag Runde 27:** Aufräumen #936 nach [analyse/aufraeumen-v1.md](analyse/aufraeumen-v1.md) (A1–A6, mit #978, #980, #1019,
-#1024 Rest P3-2) – letzter Schritt vor v1.0 (Nutzer 17.11.2026). **Danach:** Abschlussprüfung. **Modellwahl (Nutzer
-17.11.2026):** je Lauf möglichst wenig Tokens für ein brauchbares Ergebnis – Haiku, Sonnet, Opus; Fable nur in Ausnahmefällen.
-**Läufe melden ihr Ende** per Push-Benachrichtigung (Nutzer 22.11.2026, `prozess/anhang.md` F).
+[analyse/restliste-v1.md](analyse/restliste-v1.md) **V = 0**, D 25, E 321, K 197; `main` `6506d62`, Schema 65.
+**Ziel der Runde:** Repo nach [analyse/aufraeumen-v1.md](analyse/aufraeumen-v1.md) aufgeräumt (Entscheidungen A1 = B, A2 = A,
+A3 = B, A4 = A, A5 = A mit Skripten ins Archiv, A6 = A; Nutzer 24.11.2026), **Verhalten unverändert** (Konzept §2.1 Nr. 6). Dazu
+P3 #978, #980, #1019, #1024 (Rest P3-2) und die Themen K04, K11, K13, L11, L12, C02, C08 aus
+[analyse/abweichungen-v1.md](analyse/abweichungen-v1.md) Abschnitt 0 („ins Aufräumen #936“). **Nicht in dieser Runde:** D-Themen
+(DOSBox nach Lust), Abschlussprüfung (Runde 28). **Entscheidungen** R27-D1 bis R27-D4: Optionen im Plan-PR, offen.
+
+**Regeln der Runde:**
+
+- **Stand neu erheben (Teil 0 jeder Code-Spur):** Das Konzept ist auf `e0b0ea5` gezählt; Runde 25/26 haben Code geändert (u. a.
+  Schema 65). Jede Spur prüft ihre Befunde zuerst auf dem aktuellen `main` (Fundstelle noch da, Zeilennummer, Aufrufer per grep)
+  und vermerkt Abweichungen im PR. **Erledigt und ausgenommen:** K2, K9, K11, K13 des Konzepts (Runde 25, #1003, #1004, #1006).
+  Neu gefundene Verhaltensunterschiede werden **nicht** mit umgebaut, sondern als P3 „Verdacht“ (Issue) gemeldet.
+- **Abnahmeproben** nach Konzept §2.4 in jedem Code-PR: Testliste `dotnet test --list-tests` vor/nach (Abbildung alt → neu,
+  entfernte Fälle nur bei totem Weg mit Begründung, neue Fälle nur #978 und #1019); Zustandsabdruck (`StateFingerprint`) einer
+  festen Partie über 4 Saisonwechsel (passiv/aktiv) auf Base und Head gleich; Bildschirmfotos bytegleich, wo UI berührt ist;
+  `markerliste.py` **ohne** `--write` vor/nach (verlorene IDs nur bei gelöschten toten Pfaden, Liste im PR; `[APPROX]`-Wortlaut
+  beim Verschieben nicht ändern).
+- **Prüfläufe:** Code-Spuren alle drei Läufe von `tools/pruefen.sh` (Konzept §2.2); reine Doku-Spuren entfällt.
+- **Migration (A1 = B):** Spielstände ab Schema 63 bleiben ladbar (Schritte `[63]`, `[64]` bleiben); `SchemaVersion` bleibt 65,
+  keine neue Migration in dieser Runde.
+- **Testnamen (A3 = B):** deutsch erlaubt, nur Spur/Runde/Teil/Fix/Review/Welle aus den Namen; Ausnahme steht in `AGENTS.md` §1.
+- **Gemeinsame Dateien:** `GameState.cs`, `GameState.Integration.cs`, `Widgets.cs` je minimal, nur in der Spur, die sie laut
+  Konzept braucht, nie zwei Spuren derselben Welle.
+- Sonst wie Runde 26: Base = aktueller `main` beim Start, ein Branch `paket/<spur>`, ein PR, Teile als Commits, höchstens drei
+  Fortsetzungen; keine geplanten Aufgaben aus Läufen (R15-E4); fremde Tests nach R15-E2 = C. Kein `markerliste.py --write` außer
+  in `aufraeumen-doku` (A6 = A).
+
+**Folge (Vorschlag R27-D1 = C):** Welle 1 `aufraeumen-migration` und `aufraeumen-archiv` parallel (Dateien disjunkt: Code gegen
+`docs/**`); Welle 2 `aufraeumen-tot` nach Merge von `aufraeumen-migration`; Welle 3 `aufraeumen-doppelt`; Welle 4
+`aufraeumen-tests-core` und `aufraeumen-tests-ui` parallel (Prüfbefehl „keine Überschneidung“, Konzept §2.2); Welle 5
+`aufraeumen-doku`. Danach Leitstelle: Workflow `aufraeumen.yml` mit `nur_anzeigen=true`, Liste dem Nutzer vorlegen; Löschen
+der Branches (`nur_anzeigen=false`) nur nach seinem Ja. Abschlussprüfung in Runde 28 (R27-D3).
+
+| Spur | Welle | Inhalt | Modell (Vorschlag R27-D4 = B) | Grund |
+|---|---|---|---|---|
+| `aufraeumen-migration` | 1 | A1 = B, L11, Teile von L12/C02 | Opus 5.5 | `AfterLoadPool`, neues Fixture, Lader |
+| `aufraeumen-archiv` | 1 | A2 = A, D2–D4, W2 | Sonnet 5.5 | mechanisch, nur `docs/**` |
+| `aufraeumen-tot` | 2 | K3–K7, K15–K18, K04, C08, #980 P3-3 | Opus 5.5 | Tests auf den echten Weg umstellen |
+| `aufraeumen-doppelt` | 3 | K1, K8, K10, K12, K19 (nur neutral), U1–U8, U10, U11, #1019 | Opus 5.5 | Zusammenlegen ohne Verhaltensänderung |
+| `aufraeumen-tests-core` | 4 | Konzept §1.2 Core-Tests, #978 | Sonnet 5.5 | Umbenennen, Testliste belegt |
+| `aufraeumen-tests-ui` | 4 | Konzept §1.2 UI-Tests, U9, U14 (A5 = A) | Sonnet 5.5 | Umbenennen, Rauchtest |
+| `aufraeumen-doku` | 5 | D1 Rest, D5, D6, W1, K13, #980 P3-1/2, #1024, A6 | Sonnet 5.5 | Verweise, Generatorlauf |
+
+Erstreviews: Opus 5.5 für `aufraeumen-migration`, `-tot`, `-doppelt`; Sonnet 5.5 für `-archiv`, `-tests-core`, `-tests-ui`,
+`-doku` (R27-D4). Fixläufe im Modell der Spur. Plan-Review Sonnet 5.5.
+
+### Spur `aufraeumen-migration` – Migrationen vor Schema 63 entfernen (Welle 1)
+
+- **Teile:** 0. Stand neu erheben (Wörterbuch `Migrations`, `SaveGame.cs`; Dateien `SaveGame.Migration*.cs`; Testdateien mit
+  `Migrat|SchemaVersion|schema[0-9]+-synth`). 1. Fixture `Fixtures/schema63-synthetisch.ems.gz` aus dem letzten `main`-Commit
+  mit `SchemaVersion = 63` erzeugen (Commit und Befehl im PR; R27-D2 = A) und in `MigrationEchteStaendeTests` statt
+  `schema{19,22,51,52,53}` verwenden; 2. Schritte `[1]`…`[62]` und ihre Dateien entfernen, Schritte `[63]`, `[64]` bleiben
+  (Dateinamen nach Thema, z. B. `SaveGame.Migration.Lineup.cs`, `SaveGame.Migration.SeasonMoney.cs`); Kommentarliste
+  `SaveGame.cs:54` ff. auf die verbliebenen Schritte kürzen; `AfterLoadPool` für `loadedSchema ≥ 63` prüfen und vereinfachen;
+  Rückfälle aus L12/C02, die **nur** Stände vor Schema 63 betreffen, entfernen (je Marker-ID im PR), Rückfälle für Aufbauten ohne
+  `NewGame.Create` bleiben; Migrationstests für Schritte < 63 entfernen, Lader-Test „Schema 62 kann nicht mehr geladen werden“.
+- **Dateien:** `src/EishockeyManager.Core/SaveGame*.cs`, Fundstellen der L12/C02-Rückfälle in `src/EishockeyManager.Core/**` (je
+  minimal, Liste im PR), Migrationstests, `tests/EishockeyManager.Core.Tests/Fixtures/`.
+- **Prüfung:** alle drei Läufe; Probe: Fixture schema 63 lädt, Ergebnis = Laden auf Base; Zustandsabdruck; Markerprobe.
+- **Status:** nicht gestartet.
+
+### Spur `aufraeumen-archiv` – Reviews und Arbeitsanalysen ins Archiv (Welle 1, nur `docs/**`)
+
+- **Teile:** 1. `docs/reviews/*` abgeschlossener Runden (bis Runde 26) unverändert nach `docs/archiv/reviews/runde-<n>/`
+  (Zuordnung über die Rundenarchive bzw. das Datum; Tabelle im PR), Reviews der Runde 27 bleiben; 2. Arbeitsstände nach Konzept
+  D2 (`analyse/re-*`, `abgleich-*`, `belastung*` samt Skripten W2) nach `docs/archiv/analyse/`; **bleiben:** `inventur.md`,
+  `restliste-v1*`, `abweichungen-v1.md`, `aufraeumen-v1.md` und jede Analyse, die eine Spur dieser Runde noch braucht (Kopf der
+  Spur prüfen); 3. D3, D4 (Gültiges in `formate/dateiformate.md` bzw. `reverse-engineering.md` übernehmen, Rest ins Archiv);
+  4. relative Verweise **innerhalb von `docs/**`** nachziehen. Verweise aus `src/`, `tests/`, `tools/` (Kommentare) zeigen bis
+  `aufraeumen-doku` auf alte Pfade; Liste der betroffenen Stellen (grep) als Datei `docs/analyse/aufraeumen-verweise.md` für
+  `aufraeumen-doku`.
+- **Dateien:** `docs/**` ohne Planabschnitte von `docs/arbeitspakete.md`. **Prüfung:** Linkprüfung aller relativen Verweise in
+  `docs/**` (Skript im PR, nicht eingecheckt); `tools/reverse-engineering/markerliste.py` (ohne `--write`) läuft unverändert
+  (liest `inventur.md`). CI entfällt.
+- **Status:** nicht gestartet.
+
+### Spur `aufraeumen-tot` – tote und Nur-Test-Pfade im Core (Welle 2, nach Merge von `aufraeumen-migration`)
+
+- **Teile:** 0. Stand neu erheben (Konzept §1.5 K3–K7, K15–K18 und abweichungen-v1 K04, C08, K11 „nur Tests“); 1. K3 (Poisson-Weg,
+  `MatchStrength`; Feld `ReferenceRating` bleibt im Schema, wird nur nicht mehr gelesen), K16, K17, C08, K04 (tote Wege) entfernen;
+  2. K4–K7 und K18 („API ohne Anschluss“, gewollte Testhaken bleiben): Tests auf den echten Weg (`Continue()`,
+  `TestSeason.PlayMatchDay`) umstellen, dann Nur-Test-Pfad entfernen – erwartete Werte je Testdatei begründen (R21-D2 = A);
+  K15 bleibt (A4 = A, Kommentar genügt); 3. #980 P3-3 (Kommentar `MatchEngine.Managed.cs`, Bedingung +0x0A ≠ 0, Datei
+  0x54918–0x54927).
+- **Dateien:** `src/EishockeyManager.Core/**` außer `SaveGame*`; `GameState.cs`, `GameState.Integration.cs` minimal (K3); betroffene
+  Tests. **Prüfung:** alle drei Läufe, Zustandsabdruck, Markerprobe (entfallene IDs: Liste).
+- **Status:** nicht gestartet.
+
+### Spur `aufraeumen-doppelt` – neutrale Zusammenlegung (Welle 3)
+
+- **Teile:** 0. Stand neu erheben (K1, K8, K10, K12, K14-Reste, K19, U1–U8, U10, U11); 1. Core: K8, K10, K12; K19 nur Stellen mit
+  gleicher Bedeutung (Helfer je Bedeutung, z. B. `IsManagedClub`/`IsActiveManagedClub`); K1 nur, wenn die Gleichheit per Test
+  belegt ist, sonst liegen lassen und im PR begründen; 2. UI/Tools/Formats: U1–U6, U10 (Konstanten in `OriginalSaveGame`), U11;
+  U12/U13 liegen lassen („fraglich“); 3. Test-Hilfen U7/U8 einmal in `tests/EishockeyManager.Core.Tests/Support/`, UI-Tests als
+  Link-Datei (Muster `GameDataFact.cs`); 4. #1019: Testnaht für den Stromstand nach `FinishSeason` (minimal) und Test zu T03.
+- **Dateien:** Core (ohne `SaveGame*`), UI (`Widgets.cs` minimal), Tools, Formats; aus `tests/` nur U7/U8-Dateien, Testprojekte,
+  betroffene Tests. **Prüfung:** alle drei Läufe, Zustandsabdruck, Bildschirmfotos bytegleich, Markerprobe.
+- **Status:** nicht gestartet.
+
+### Spur `aufraeumen-tests-core` – Core-Tests nach Thema (Welle 4, parallel zu `aufraeumen-tests-ui`)
+
+- **Teile:** 0. Stand neu erheben (Familien Konzept §1.2 auf aktuellem `main`); 1. Familien `Abgleich*`, `KaderStart*`,
+  `KaderTransfer*`, `TransferVertraege*`, `Kaderplatz*`, `Integration*`; 2. übrige Familien und Einzeldateien; gleiche Dateinamen in
+  Core/UI auflösen (Core-Seite); Herkunft als `Trait("Befund", …)` bzw. Kommentar; 3. #978 (eigener Fall Europapokalfeld
+  `[bp+0xA] = 8`, Datei 0x5494C–0x5499E).
+- **Dateien:** `tests/EishockeyManager.Core.Tests/**`. **Prüfung:** alle drei Läufe; Testliste alt → neu (gleiche Fallzahl + #978);
+  Zeile „Dateiüberschneidung: keine …“ im PR.
+- **Status:** nicht gestartet.
+
+### Spur `aufraeumen-tests-ui` – UI-Tests und Abläufe (Welle 4, parallel zu `aufraeumen-tests-core`)
+
+- **Teile:** 0. Stand neu erheben; 1. UI-Familien nach Konzept §1.2, gleiche Dateinamen (UI-Seite), U9 (`Click(ScreenDriver, Rect)`
+  in eine Hilfe); 2. Abläufe aus Konzept §1.2 (`FinanzenRest.cs` …) nach Bildschirm umbenennen; 3. U14/A5 = A: Rauchtest jedes
+  Ablaufs als `[GameDataTheory]`, gescheiterte Abläufe (2 auf `69e9c40`: `pixel-verein-bundestrainer`,
+  `transfer-vertrag-kauf-saisonende`) reparieren, wenn der Ablauf nur den Testaufbau braucht, sonst löschen (Begründung je Ablauf).
+- **Dateien:** `tests/EishockeyManager.UI.Tests/**`, `src/EishockeyManager.Tools/Scenarios/**`. **Prüfung:** alle drei Läufe;
+  Testliste alt → neu; Bildschirmfotos der umbenannten Abläufe bytegleich; Zeile „Dateiüberschneidung: keine …“.
+- **Status:** nicht gestartet.
+
+### Spur `aufraeumen-doku` – Verweise, Themendokus, Markerlisten (Welle 5, zuletzt)
+
+- **Teile:** 1. Verweise aus `src/`, `tests/`, `tools/` auf verschobene Doku nach `docs/analyse/aufraeumen-verweise.md` nachziehen
+  (nur Pfadangaben in Kommentaren), Datei danach entfernen; 2. D5 Themendokus (`saison.md`, `tagesablauf.md`, `spielberechnung.md`,
+  `transfer.md`, `wettbewerbe.md`, `finanzen-rekonstruktion.md`, `highscore.md`) gegen den Code prüfen, Veraltetes korrigieren
+  (Widerspruch zum Code = P3-Issue, nicht still angleichen); D6/#980 P3-1/P3-2; #1024; Klassenlistentext K13 (abweichungen-v1);
+  W1 (`markerbericht.py` bleibt, nur Doku); 3. A6 = A: `markerliste.py --write` einmal, Restliste und Abweichungsliste auf neue
+  Dateinamen, Diff im PR (keine ID verloren außer den Listen der Spuren).
+- **Dateien:** `docs/**`, `tools/**`, Kommentare mit Doku-Pfaden in `src/`/`tests/` (nur die Pfadangabe). **Prüfung:** alle drei
+  Läufe (Kommentare in Code), Linkprüfung des ganzen Repos ohne tote Ziele, Markerdiff.
+- **Status:** nicht gestartet.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
