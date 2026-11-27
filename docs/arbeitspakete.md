@@ -28,7 +28,7 @@ entfallen), R27-D3 = B (enges Gesamtreview am Rundenende, ChatGPT GPT-6.2 Astra)
   und vermerkt Abweichungen im PR. **Erledigt und ausgenommen:** K2, K9, K11, K13 des Konzepts (Runde 25, #1003, #1004, #1006).
   Neu gefundene Verhaltensunterschiede werden **nicht** mit umgebaut, sondern als P3 „Verdacht“ (Issue) gemeldet.
 - **Abnahmeproben** nach Konzept §2.4 in jedem Code-PR: Testliste `dotnet test --list-tests` vor/nach (Abbildung alt → neu,
-  entfernte Fälle nur bei totem Weg mit Begründung, neue Fälle nur #978, #1019 und der
+  entfernte Fälle nur bei totem Weg oder entfallener Migration mit Begründung, neue Fälle nur #978, #1019 und der
   Lader-Test von `aufraeumen-migration`); Zustandsabdruck (`StateFingerprint`) einer
   festen Partie über 4 Saisonwechsel (passiv/aktiv) auf Base und Head gleich; Bildschirmfotos bytegleich, wo UI berührt ist;
   `markerliste.py` **ohne** `--write` vor/nach (verlorene IDs nur bei gelöschten toten Pfaden, Liste im PR; `[APPROX]`-Wortlaut
