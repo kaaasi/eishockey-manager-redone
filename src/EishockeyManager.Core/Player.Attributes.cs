@@ -160,13 +160,5 @@ public sealed partial class Player
     /// <summary>Ein Buchstabe wie in der Transferliste: „T“, „A“, „S“.</summary>
     public char RoleLetter => RoleShort[0] == 'A' ? 'A' : RoleShort[0] == 'T' ? 'T' : 'S';
 
-    /// <summary>Bezeichnung für die Statuszeile: „Torwart“, „Abwehrspieler“, „Stürmer“.</summary>
-    public string RoleName => Role switch
-    {
-        Formats.PlayerRole.Goalkeeper => "Torwart",
-        Formats.PlayerRole.Defender => "Abwehrspieler",
-        _ => "Stürmer",
-    };
-
     public static int Clamp(int value) => Math.Clamp(value, 1, MaxValue);
 }

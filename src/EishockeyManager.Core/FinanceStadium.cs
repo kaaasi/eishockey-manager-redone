@@ -118,8 +118,6 @@ public sealed class Stadium
 
     public string LevelText(StadiumFeature feature) => Features[(int)feature].Levels[Level(feature)];
 
-    public bool IsMaxed(StadiumFeature feature) => Level(feature) >= Features[(int)feature].Levels.Length - 1;
-
     /// <summary>
     /// Startstadion je Liga. [ORIGINAL] Spielstart em.exe 0x29F77 ff.: 3.000 − 500 × Liga Sitzplätze, 4.500 − 1.000 × Liga
     /// Stehplätze (Liga 0 = Bundesliga); Überdachung 2 − Liga, Anzeigetafel/Kühlanlage/Verkehrsanbindung nur in der

@@ -6,13 +6,11 @@ public sealed partial class Club
     public Lineup Lineup { get; } = new();
 
     /// <summary>
-    /// Teamwert der Auto-Aufstellung bei Spielbeginn (<see cref="TeamStrength.Rating"/>). Bezugspunkt nur für
-    /// <see cref="MatchStrength"/> (alter Ergebnisweg); die Spielberechnung liest ihn nicht.
+    /// Teamwert der Auto-Aufstellung bei Spielbeginn (<see cref="TeamStrength.Rating"/>). Wird geschrieben und gespeichert
+    /// (Teil des Spielstands, Schema 65), aber nicht mehr gelesen: der frühere Ergebnisweg, der ihn als Bezugspunkt nahm, ist
+    /// entfallen (Konzept K3, Aufräumkonzept A1 = B).
     /// </summary>
     public double ReferenceRating { get; set; }
-
-    /// <summary>Stärke für den alten Ergebnisweg <see cref="MatchEngine.Play"/> (<see cref="TeamStrength.MatchStrength"/>).</summary>
-    public int MatchStrength => TeamStrength.MatchStrength(this);
 
     /// <summary>Status-Spalte eines Kaderspielers.</summary>
     public PlayerStatus StatusOf(Player player) =>
@@ -99,24 +97,4 @@ public static class TeamStrength
 
     private static double Mean(PartValues defense, PartValues attack) =>
         (defense.Condition + defense.Technique + attack.Condition + attack.Technique) / 4.0;
-
-    /// <summary>
-    /// Stärke für den alten Ergebnisweg <see cref="MatchEngine.Play"/> (ohne Aufrufer im Spielablauf): Datenbankstärke, verschoben
-    /// um die Veränderung des Teamwerts der Aufstellung (<see cref="Rating"/>) gegenüber dem Spielbeginn
-    /// (<see cref="Club.ReferenceRating"/>). [APPROX] Diesen Weg und diese Verschiebung gibt es im Original nicht; die
-    /// Spielberechnung (<see cref="MatchEngine.PlayWithEvents"/>) benutzt sie nicht.
-    /// </summary>
-    public static int MatchStrength(Club club)
-    {
-        if (club.Players.Count == 0)
-            return club.Strength;
-        return Math.Clamp((int)Math.Round(club.Strength + Rating(club.Lineup) - club.ReferenceRating), 1, 150);
-    }
-
-    /// <summary>Durchschnittsstärke eines Kaders (Statuszeile „Durchschnittsstärke“).</summary>
-    public static int AverageStrength(IEnumerable<Player> players)
-    {
-        var list = players.ToList();
-        return list.Count == 0 ? 0 : (int)list.Average(p => p.Strength);
-    }
 }

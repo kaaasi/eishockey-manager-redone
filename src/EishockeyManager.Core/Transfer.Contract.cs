@@ -17,12 +17,6 @@ public static class ContractRules
     public const int SeasonMatchDays = 44;
 
     /// <summary>
-    /// Tageszähler DGROUP 0x3B7 nach dem Saisonende: 0x26F20 setzt ihn auf 233 (Datei 0x26F55). Alle Vergleiche der
-    /// Verhandlung lauten „Zähler &gt; 232“ (0x4A963, 0x49CB3) bzw. „Zähler &lt; 233“ (0x4A70A).
-    /// </summary>
-    public const int AfterSeasonDay = 233;
-
-    /// <summary>
     /// Restanteil der Saison in Prozent: 100 − 100 · nächster Spieltag / 44. [ORIGINAL] Datei 0x4A851–0x4A8A6 und
     /// 0x49B97–0x49BD8: nächster Spieltag DGROUP 0x7A9 + Liga des Managers (Manager +0xD7), Spieltage 0x7B6 + Liga.
     /// </summary>

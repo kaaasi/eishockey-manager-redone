@@ -64,43 +64,6 @@ public class SeasonCalendarTests
     }
 }
 
-public class MatchEngineTests
-{
-    [Fact]
-    public void AverageGoals_AroundSixAndAHalf()
-    {
-        var random = new Random(42);
-        var a = new Club { Index = 0, Name = "A", Strength = 60 };
-        var b = new Club { Index = 1, Name = "B", Strength = 60 };
-        var total = 0;
-        var draws = 0;
-        const int n = 20000;
-        for (var i = 0; i < n; i++)
-        {
-            var (h, g) = MatchEngine.Play(a, b, random);
-            total += h + g;
-            if (h == g) draws++;
-        }
-        Assert.InRange(total / (double)n, 6.0, 7.0);
-        Assert.InRange(draws / (double)n, 0.05, 0.2);
-    }
-
-    [Fact]
-    public void StrongerTeam_WinsMoreOften()
-    {
-        var random = new Random(1);
-        var strong = new Club { Index = 0, Name = "S", Strength = 90 };
-        var weak = new Club { Index = 1, Name = "W", Strength = 40 };
-        var wins = 0;
-        for (var i = 0; i < 2000; i++)
-        {
-            var (h, g) = MatchEngine.Play(strong, weak, random);
-            if (h > g) wins++;
-        }
-        Assert.True(wins > 1400);
-    }
-}
-
 public class LeagueTableTests
 {
     [Fact]

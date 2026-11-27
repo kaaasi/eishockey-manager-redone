@@ -178,16 +178,10 @@ public sealed class LiveTeam
 
     /// <summary>
     /// Taktik, nach der der Minutenablauf Einsatz und Angriff dem Spielstand anpasst, oder null (fest wie bei der
-    /// Spielvorbereitung). Nur in Managerpaarungen (siehe <see cref="TacticsParity"/>).
+    /// Spielvorbereitung). Nur in Managerpaarungen: [ORIGINAL] 0x939A läuft in geraden Minuten der Managerpaarung für beide
+    /// Vereine (Datei 0x3803F ff.); 0x80CB in ungeraden setzt nur Linienwechsel-Modus und Torhüter.
     /// </summary>
     public Tactics? Tactics { get; init; }
-
-    /// <summary>
-    /// Früher: Minuten, in denen die Taktik nachgeführt wurde. [ORIGINAL] 0x939A läuft in geraden Minuten der
-    /// Managerpaarung für beide Vereine (Datei 0x3803F ff.); 0x80CB in ungeraden setzt nur Linienwechsel-Modus und
-    /// Torhüter. Wird nicht mehr ausgewertet.
-    /// </summary>
-    public int TacticsParity { get; init; }
 
     /// <summary>
     /// Eigene und gegnerische Stärke für die Automatik der Taktik (Datei 0x8365, doppelte Differenz; 0x939A liest die von

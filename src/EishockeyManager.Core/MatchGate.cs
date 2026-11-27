@@ -160,7 +160,7 @@ public sealed partial class GameState
     ///   Wettbewerb 0 (Datei 0x5492E–0x54948); wie <see cref="Player.CountGame"/> mit <see cref="CompetitionSlots.Of"/>.</item>
     /// <item>[ORIGINAL] Belastung jedes Kaderplatzes auf 50 … 150 (Datei 0x549A2–0x549BB, <see cref="TrainingRules.ClampStrain"/>).</item>
     /// <item>[ORIGINAL] Kennzeichen „im Spiel“ DGROUP 0x2D6 + Manager = 5 (Datei 0x54821): ohne Zustand im Remake, der Wert ist
-    ///   immer 5 (Startwert, einziger Schreiber; <see cref="MatchIntervention.InMatchFlag"/>).</item>
+    ///   immer 5 (Startwert, einziger Schreiber).</item>
     /// <item>[ORIGINAL] Strafenzähler +0x0D − 1 bei Status +0x09 Bit 0 für die Markt-Plätze des Managers (Satz 4, DGROUP 0x7623,
     ///   Pool +0x1A = Manager, Datei 0x5483B–0x54897) und seine Kaderplätze (Datei 0x548EB–0x5490C), beide nur bei Wettbewerb
     ///   0 (<c>[bp+0xA] = 0</c>): wie im gespielten Spiel ohne Zustand im Remake – Bit 0 und +0x0D gelten nur, solange der Spieler

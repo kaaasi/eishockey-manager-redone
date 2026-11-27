@@ -464,9 +464,6 @@ public static class Contracts
             p.InsurancePremium = 0;
     }
 
-    /// <summary>Monatliche Gehalts- und Versicherungskosten eines Kaders (für das Paket „manager“).</summary>
-    public static long MonthlyCosts(Club club) => club.Players.Sum(p => (long)p.MonthlySalary + InsurancePremium(p));
-
     /// <summary>
     /// Darf über Laufzeit oder Gehalt verhandelt werden? [ORIGINAL] Datei 0x4A692–0x4A770 (beim Anklicken der Felder
     /// „Vertragsdauer“ und „Gehalt / Monat“): ausgeliehen → <see cref="NegotiationResult.Loaned"/>; Ruhestand angekündigt →

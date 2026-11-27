@@ -40,9 +40,6 @@ public static class MatchIntervention
     /// <summary>[ORIGINAL] Vier Reihen je Teil (Lampen k = 0 … 3, Datei 0x38FB1).</summary>
     public const int LineCount = 4;
 
-    /// <summary>[ORIGINAL] Wert von DGROUP 0x2D6 + Manager während des Spiels (Datei 0x54821).</summary>
-    public const int InMatchFlag = 5;
-
     /// <summary>Einsatz setzen (0 … 100). Liefert false ohne Manager oder bei einem Wert außerhalb.</summary>
     public static bool SetEffort(LiveTeam team, int effort)
     {

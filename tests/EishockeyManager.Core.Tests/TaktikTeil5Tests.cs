@@ -99,11 +99,12 @@ public class TaktikTeil5Tests
     {
         var game = TestGames.Create();
         var club = game.Clubs[2];
-        var before = club.MatchStrength;
+        // Früher über Club.MatchStrength (entfallener Ergebnisweg, Konzept K3): der Teamwert der Aufstellung.
+        var before = TeamStrength.Rating(club.Lineup);
         club.Tactics.EffortMode = TacticMode.Semi;
         for (var b = 0; b < Tactics.Blocks; b++)
             club.Tactics.SetEffort(b, ScoreSituation.Base, 0);
-        Assert.Equal(before, club.MatchStrength);
+        Assert.Equal(before, TeamStrength.Rating(club.Lineup));
     }
 
     /// <summary>

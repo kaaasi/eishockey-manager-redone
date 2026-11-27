@@ -139,12 +139,6 @@ public sealed partial class TransferMarket
     public const int MaxListings = 11;
 
     /// <summary>
-    /// Anzahl Spieler auf dem Markt zu Spielbeginn im Video (6). Seit Teil 5 ergibt sie sich aus dem Listenwechsel
-    /// (<see cref="ChangeList"/>, im Mittel 6,5); die Konstante bleibt als Bezugswert.
-    /// </summary>
-    public const int StartListings = 6;
-
-    /// <summary>
     /// Größe des Pools vertragsloser Spieler nach dem Saisonwechsel. [APPROX] Das Original führt keinen solchen
     /// Pool sichtbar; die Grenze hält ihn klein, Überzählige (die ältesten) beenden ihre Laufbahn.
     /// </summary>

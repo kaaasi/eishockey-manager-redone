@@ -25,9 +25,6 @@ public static class PlayerInjuries
     /// <summary>[ORIGINAL] DGROUP 0x483B: Arten, die mit kleiner Wahrscheinlichkeit nicht mehr heilen.</summary>
     private static readonly int[] Serious = [0, 1, 4, 7, 9, 10, 11, 14, 19];
 
-    /// <summary>[ORIGINAL] 0x5B9C: im Spiel nur die Arten 0 … 21 (random(0, 27 − 6 · Schalter)).</summary>
-    public const int MatchKinds = 22;
-
     /// <summary>
     /// Verletzt einen Spieler. [ORIGINAL] Datei 0x05B1A(Kaderplatz, Text, Schalter Spiel):
     /// <list type="number">

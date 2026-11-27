@@ -343,8 +343,11 @@ public class SpielberechnungAnschlussTests(ITestOutputHelper output)
     // Pokaltermine (0x37A62, #1032) und Stadionschäden je Manager (0x3CFA0, Datei 0x3D330, #1034) zusammen ergeben einen anderen
     // Zufallsverlauf als jede Änderung allein. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von 9d9ae39
     // (main) bzw. 5d491e5 (alter Head) → deren Werte, hier rot.
-    [InlineData(false, "718EF8B9AA779A66")]
-    [InlineData(true, "2FB9F70AADC39753")]
+    // Aufräumen #936 (Konzept K3/K17, R15-E2 = C): nur der Abdruck – die berechneten Eigenschaften Club.MatchStrength und
+    // Player.RoleName (toter Ergebnisweg bzw. ohne Verweis) sind entfallen und stehen nicht mehr im Abdruck. Spielverlauf gleich:
+    // main f9c4846 mit beiden Namen in Excluded liefert genau diese Werte.
+    [InlineData(false, "AF5B262183F93AC0")]
+    [InlineData(true, "14BD0C5885FD8102")]
     public void FourSeasonChanges_OriginalDatabase_CountersPerSeason(bool active, string expected)
     {
         var setup = new GameSetup();

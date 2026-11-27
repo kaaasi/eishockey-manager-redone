@@ -8,25 +8,8 @@ public sealed record KnockoutMatch(int Day, int Home, int Away, int HomeGoals, i
     public bool Involves(int club) => Home == club || Away == club;
 
     /// <summary>
-    /// Spiel mit Sieger. [APPROX] Unentschieden nach regulärer Spielzeit → Penaltyschießen („n.P.“ im Original),
-    /// Sieger zufällig mit leichtem Vorteil für den stärkeren Verein.
-    /// </summary>
-    public static KnockoutMatch Play(int day, Club home, Club away, Random random)
-    {
-        var (hg, ag) = MatchEngine.Play(home, away, random);
-        int? penalty = null;
-        if (hg == ag)
-        {
-            var pHome = Math.Clamp(0.5 + (home.Strength - away.Strength) / 200.0, 0.3, 0.7);
-            penalty = random.NextDouble() < pHome ? home.Index : away.Index;
-        }
-        return new KnockoutMatch(day, home.Index, away.Index, hg, ag, penalty);
-    }
-
-    /// <summary>
-    /// Spiel mit Sieger nach der Berechnung des Originals (<see cref="MatchEngine.PlayWithEvents"/>, mit Verlängerung).
-    /// Bleibt es danach unentschieden, entscheidet das Penaltyschießen wie in <see cref="Play(int, Club, Club, Random)"/>
-    /// ([APPROX]); der schnelle Weg der Pokale bringt seinen Sieger mit ([ORIGINAL] 0x376F0).
+    /// Spiel mit Sieger nach der Berechnung des Originals (<see cref="MatchEngine.PlayWithEvents"/>, mit Verlängerung und
+    /// Penaltyschießen: Minutenweg [ORIGINAL] 0x3901B, schneller Weg der Pokale [ORIGINAL] 0x376F0).
     /// </summary>
     public static KnockoutMatch Play(GameState game, int day, Club home, Club away, MatchCompetition competition, Random random) =>
         PlayWithMarks(game, day, home, away, competition, random).Match;
@@ -39,24 +22,23 @@ public sealed record KnockoutMatch(int Day, int Home, int Away, int HomeGoals, i
         MatchCompetition competition, Random random)
     {
         var report = MatchEngine.PlayWithEvents(game, home, away, competition, knockOut: true, random);
-        return FromReport(day, home, away, report, random);
+        return FromReport(day, home, away, report);
     }
 
-    /// <summary>Endstand und Marken eines gerechneten K.-o.-Spiels (wie <see cref="PlayWithMarks"/>, Spur live-verschraenkt Teil 2b).</summary>
-    public static (KnockoutMatch Match, int Marks) FromReport(int day, Club home, Club away, MatchReport report, Random random)
+    /// <summary>
+    /// Endstand und Marken eines gerechneten K.-o.-Spiels (wie <see cref="PlayWithMarks"/>, Spur live-verschraenkt Teil 2b). Bei
+    /// Gleichstand bringt der Bericht den Sieger des Penaltyschießens mit (<see cref="MatchReport.ShootoutHomeWins"/>, beide Wege
+    /// setzen ihn im K.-o.-Spiel: <c>MatchEngine.FinishMinuteLoop</c>, schneller Weg in <c>MatchEngine.Live.cs</c>); der frühere
+    /// Rückfall nach Stärke-Zufall ist als unerreichbar entfallen (Spur aufraeumen-tot, Thema C08).
+    /// </summary>
+    public static (KnockoutMatch Match, int Marks) FromReport(int day, Club home, Club away, MatchReport report)
     {
         int? penalty = null;
         if (report.HomeGoals == report.AwayGoals)
         {
-            if (report.ShootoutHomeWins is { } homeWins)
-            {
-                penalty = homeWins ? home.Index : away.Index;
-            }
-            else
-            {
-                var pHome = Math.Clamp(0.5 + (home.Strength - away.Strength) / 200.0, 0.3, 0.7);
-                penalty = random.NextDouble() < pHome ? home.Index : away.Index;
-            }
+            var homeWins = report.ShootoutHomeWins
+                ?? throw new InvalidOperationException("K.-o.-Spiel unentschieden ohne Penaltyschießen.");
+            penalty = homeWins ? home.Index : away.Index;
         }
         return (new KnockoutMatch(day, home.Index, away.Index, report.HomeGoals, report.AwayGoals, penalty),
             PlayoffSeries.MarksFromReport(report));
@@ -219,7 +201,7 @@ public sealed partial class Playoffs
             MatchCompetition.Playoff, true, random))], (i, report) =>
         {
             var (home, away) = open[i].NextPairing;
-            var (match, marks) = KnockoutMatch.FromReport(day, clubs[home], clubs[away], report, random);
+            var (match, marks) = KnockoutMatch.FromReport(day, clubs[home], clubs[away], report);
             open[i].Add(match, marks);
             matches[i] = match;
         });
