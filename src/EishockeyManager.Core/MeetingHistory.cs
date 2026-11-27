@@ -46,6 +46,10 @@ public static class MeetingHistory
     /// <summary>
     /// Ein Ergebnis in die zehn Bytes eines Gegners ab <paramref name="offset"/> schreiben (Seite 0 = gerade, 1 = ungerade
     /// Plätze). [ORIGINAL] 0x4F5A8 (Manager, Verein, Seite, lo = eigene Tore, hi = Gegentore); Länder: erst Seite 0, dann 1.
+    /// Byte = hi · 16 + lo. Länder füllen eine Liste: erst die geraden Plätze 0, 2 … 8, dann die ungeraden 1 … 9; ist alles voll,
+    /// rückt die Folge 0, 2, 4, 6, 8, 1, 3, 5, 7, 9 um eins nach vorn und der neue Wert steht auf Platz 9. Vereine haben je Seite
+    /// fünf Plätze (gerade = Seite 0, ungerade = Seite 1), voll → nach vorn. Einziger Schreiber für Liga und Länder (Integration
+    /// Runde 9).
     /// </summary>
     public static void RecordAt(IList<int> table, int offset, bool nation, int side, int goalsFor, int goalsAgainst)
     {

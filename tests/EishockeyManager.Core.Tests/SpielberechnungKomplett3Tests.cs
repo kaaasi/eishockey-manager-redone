@@ -96,13 +96,15 @@ public class SpielberechnungKomplett3Tests
         var b = club.Players[1];
         a.InjuredGames = 2;
         b.InjuredGames = PlayerInjuries.Permanent;
-        // #675 (Review #674, R14NT4-03): Heiltag nach dem Zähler 0x3B7 = Tag + 1 (DayCounter), also Remake-Tage 13, 20, 27.
-        game.HealInjuries(12);
-        Assert.Equal(2, a.InjuredGames);
-        game.HealInjuries(13);
-        game.HealInjuries(20);
+        // #675 (Review #674, R14NT4-03): Heiltag nach dem Zähler 0x3B7 = Tag + 1 (DayCounter), also Remake-Tage 6, 13, 20, 27.
+        // Früher über den Heilweg GameState.HealInjuries ohne Aufrufer ab Tag 12 (K4); jetzt der Tageslauf über die Zeitleiste
+        // ab Spielbeginn: nach dem ersten Heiltag (6) eine Woche weniger, nach dem zweiten (13) geheilt.
+        TestSeason.RunThroughDay(game, 6);
+        Assert.True(game.Day < 13, $"Tag {game.Day}");
+        Assert.Equal(1, a.InjuredGames);
+        TestSeason.RunThroughDay(game, 13);
         Assert.Equal(0, a.InjuredGames);
-        game.HealInjuries(27);
+        TestSeason.RunThroughDay(game, 27);
         Assert.Equal(0, a.InjuredGames);
         Assert.Equal(PlayerInjuries.Permanent, b.InjuredGames);
     }

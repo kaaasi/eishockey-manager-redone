@@ -76,6 +76,19 @@ public static class TestSeason
             Contracts.Negotiate(game, manager, p, 2, Contracts.Demand(p) + 100, false, demandFilled: true);
     }
 
+    /// <summary>
+    /// Über die Zeitleiste, bis der Tag <paramref name="day"/> gespielt ist (<see cref="GameState.Continue"/> spielt den aktuellen
+    /// Tag und die folgenden bis zum nächsten Managerspiel; danach ist <see cref="GameState.Day"/> der nächste offene Tag).
+    /// </summary>
+    public static void RunThroughDay(GameState game, int day)
+    {
+        while (game.Day <= day && game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver)
+        {
+            game.Continue();
+            MessageLog.For(game).Collect(game);
+        }
+    }
+
     /// <summary>Die ganze Hauptrunde.</summary>
     public static void PlayRegularSeason(GameState game)
     {

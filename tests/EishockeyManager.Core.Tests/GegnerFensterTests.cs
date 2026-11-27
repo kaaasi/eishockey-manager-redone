@@ -62,13 +62,14 @@ public class GegnerFensterTests
     [Fact]
     public void HeadToHead_NationListIsAFifoOfTen()
     {
+        // Früher über den Nur-Test-Mantel TeamRecords.EnterHeadToHead (K18); jetzt der Schreiber selbst.
         var list = Enumerable.Repeat(GameState.HeadToHeadEmpty, 10).ToArray();
         for (var n = 1; n <= 12; n++)
-            TeamRecords.EnterHeadToHead(list, 0, nation: true, side: 1, lo: n % 16, hi: 0);
+            MeetingHistory.RecordAt(list, 0, nation: true, side: 1, goalsFor: n % 16, goalsAgainst: 0);
         // Spiele 3 … 12 in der Reihenfolge 0, 2, 4, 6, 8, 1, 3, 5, 7, 9
         Assert.Equal([3, 8, 4, 9, 5, 10, 6, 11, 7, 12], list);
         var fresh = Enumerable.Repeat(GameState.HeadToHeadEmpty, 10).ToArray();
-        TeamRecords.EnterHeadToHead(fresh, 0, nation: true, side: 1, lo: 3, hi: 5);
+        MeetingHistory.RecordAt(fresh, 0, nation: true, side: 1, goalsFor: 3, goalsAgainst: 5);
         Assert.Equal(0x53, fresh[0]);
     }
 

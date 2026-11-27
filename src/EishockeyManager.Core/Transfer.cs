@@ -255,7 +255,7 @@ public sealed partial class TransferMarket
         if (_pool.Count == 0)
             BuildPool(game, random, TransferPoolLayout.Original, new HashSet<string>());
         if (!game.WorldOnly)
-            SeatStartSquads(game); // Spur pool (#743): Startkader in ihre Poolplätze (Datei 0x5B0BB–0x5B2BE); Import: keine vorgemerkt
+            SeatManagerSquads(game); // Spur pool (#743): Startkader in ihre Poolplätze (Datei 0x5B0BB–0x5B2BE); Import: keine vorgemerkt
         DistributePoolAtStart(game, random); // [ORIGINAL] 0x057E3 vor dem ersten Listenwechsel (Spur kader-transfer, Teil 5)
         ChangeList(game, random);
     }

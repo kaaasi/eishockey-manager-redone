@@ -96,12 +96,13 @@ public class KaderStartRunde14FixTests
         p.InjuredGames = 2;
 
         // Merge #669 in #672 (#675, Review #674 R14NT4-03): Heiltag nach dem Zähler 0x3B7 = Tag + 1 (DayCounter), also die
-        // Tageslauf-Tage 6, 13 … statt 7, 14 ….
-        game.HealInjuries(6);
+        // Tageslauf-Tage 6, 13 … statt 7, 14 …. Früher über den Heilweg GameState.HealInjuries ohne Aufrufer (K4); jetzt der
+        // Tageslauf über die Zeitleiste (DailyRunMarket heilt den Markt-Platz des Managers; der Spieler steht außerhalb des Kaders).
+        Assert.DoesNotContain(p, club.Players);
+        TestSeason.RunThroughDay(game, 6);
+        Assert.True(game.Day < 13, $"Tag {game.Day}");
         Assert.Equal(1, p.InjuredGames);
-        game.HealInjuries(7); // kein Heiltag
-        Assert.Equal(1, p.InjuredGames);
-        game.HealInjuries(13);
+        TestSeason.RunThroughDay(game, 13);
         Assert.Equal(0, p.InjuredGames);
     }
 

@@ -241,31 +241,3 @@ public static partial class OriginalMinutes
         return n;
     }
 }
-
-public sealed partial class GameState
-{
-    /// <summary>
-    /// Heilung der Verletzungen (siehe <see cref="PlayerInjuries.Heal"/>), einmal je Tag des Tageslaufs. [ORIGINAL] Im Hauptweg
-    /// (0x07169 aus Datei 0x552A6) und in Schritt (d) der WM-Schleife (Datei 0x556F7) nach dem Weiterzählen: Zähler
-    /// <see cref="DayCounter.Of"/>(day) (#675).
-    /// </summary>
-    public void HealInjuries(int day)
-    {
-        if (!PlayerInjuries.IsHealingDay(Counter(day)))
-            return;
-        foreach (var club in Clubs)
-        {
-            var healed = false;
-            foreach (var p in club.Players)
-                healed |= PlayerInjuries.Heal(p);
-            if (healed && Managers.Any(m => m.ClubIndex == club.Index))
-                PlayerInjuries.RefillLineup(club);
-        }
-        foreach (var p in TransferMarket.FreeAgents)
-            PlayerInjuries.Heal(p);
-        // [ORIGINAL] Tageslauf 0x07169 ruft 0x7C12 auch für die Markt-Plätze (Satz 4, DGROUP 0x7623 + i · 0x34) mit Pool +0x1A =
-        // Manager (Datei 0x72A0–0x72CB): eigene Spieler auf der Liste außerhalb des Kaders (A380) heilen weiter (Review R14KS-02).
-        foreach (var p in TransferMarket.ListedOutsideSquads(this))
-            PlayerInjuries.Heal(p);
-    }
-}

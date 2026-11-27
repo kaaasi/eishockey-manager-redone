@@ -128,18 +128,6 @@ public class StatistikenVereinTests
     }
 
     [Fact]
-    public void CountPowerPlayGoal_OnlyManagerClubs()
-    {
-        var game = NewGame1();
-        var manager = game.ActiveManager;
-        var own = game.Clubs[manager.ClubIndex];
-        var other = game.Clubs.First(c => c.Index != own.Index && c.League == own.League);
-        game.CountPowerPlayGoal(own, other, 5, 4, homeScored: true);
-        game.CountPowerPlayGoal(other, own, 5, 4, homeScored: true);
-        Assert.Equal([1, 0, 0, 1, 0, 0], manager.PowerPlayCounts);
-    }
-
-    [Fact]
     public void GoalsPerGame_TotalHomeAway_InTenths()
     {
         var game = NewGame1();
@@ -256,7 +244,7 @@ public class StatistikenVereinTests
                 if (manager.Money < 2_000_000)
                     manager.Money = 2_000_000;
                 if (active && game.Phase == SeasonPhase.Running)
-                    game.CountPowerPlayGoal(game.Clubs[manager.ClubIndex], game.Clubs[0], 5, 4, homeScored: true);
+                    manager.PowerPlayCounts[(int)PowerPlayCounter.GoalsInPowerPlay]++; // früher CountPowerPlayGoal (5 gegen 4, Heimtor; K7)
                 game.Continue();
                 foreach (var r in game.Results.Skip(counted))
                 {

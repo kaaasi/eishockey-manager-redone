@@ -438,45 +438,4 @@ public sealed partial class GameState
         plan.Prepare(manager.Level);
         return plan;
     }
-
-    /// <summary>
-    /// Ein Trainingstag: Kosten vom Konto, Wirkung auf alle Spieler der Manager. [ORIGINAL] 46E:0C89.
-    /// </summary>
-    public void TrainOneDay()
-    {
-        foreach (var manager in Managers)
-            TrainManager(manager);
-    }
-
-    /// <summary>
-    /// Trainingstag eines Managers: Kosten vom Konto, Wirkung auf seine Kaderplätze. [ORIGINAL] 46E:0C89, je Kaderplatz 0x0659C im
-    /// Tagesablauf 0x07169 (Datei 0x07B5E).
-    /// </summary>
-    internal void TrainManager(Manager manager)
-    {
-        var plan = PrepareTraining(manager);
-        Book(manager, FinanceCategory.Training, -plan.CostPerTrainingDay);
-        foreach (var player in Clubs[manager.ClubIndex].Players)
-            TrainingRules.Apply(player, plan, manager.Level, Random);
-    }
-
-    /// <summary>
-    /// Schreibt das Training bis zum aktuellen Tag fort (jeder Trainingstag einmal, alle Manager). Nur Tests und Werkzeuge
-    /// (R688-09): Die Zeitleiste trainiert seit #678 im Tagesablauf 0x07169 je Manager (<c>GameState.DailyRun.cs</c>) und setzt
-    /// <see cref="TrainedUntil"/> selbst. Der Tag des Spielbeginns zählt nicht. [APPROX] Beim Saisonwechsel werden nicht nachgeholte Tage der alten
-    /// Saison übersprungen.
-    /// </summary>
-    public void CatchUpTraining()
-    {
-        var (season, day) = TrainedUntil;
-        if (season != Season)
-            day = 0;
-        while (day < Day)
-        {
-            day++;
-            if (IsTrainingDay(day))
-                TrainOneDay();
-        }
-        TrainedUntil = (Season, day);
-    }
 }

@@ -178,17 +178,14 @@ public class TrainingTests
         // Trainingskosten stehen im Finanzbuch (Kontostand ändert sich auch durch andere Buchungen)
         long Training() => game.Finance(manager).Book.Current(FinanceCategory.Training);
 
-        game.CatchUpTraining();
+        // Früher über das Nachhol-Training CatchUpTraining (nur Tests, Konzept K5); jetzt der echte Weg: der Tagesablauf trainiert
+        // je Managerzug (GameState.ManagerSquadRun) und hält TrainedUntil selbst nach.
         Assert.Equal(0, Training()); // Spielbeginn: noch kein Trainingstag
 
         TestSeason.PlayMatchDay(game);
         TestSeason.PlayMatchDay(game);
-        game.CatchUpTraining();
-        var days = Enumerable.Range(1, game.Day).Count(GameState.IsTrainingDay);
+        var days = Enumerable.Range(1, game.TrainedUntil.Day).Count(GameState.IsTrainingDay);
         Assert.True(days > 0);
-        Assert.Equal(-days * plan.CostPerTrainingDay, Training());
-
-        game.CatchUpTraining();
         Assert.Equal(-days * plan.CostPerTrainingDay, Training());
     }
 }

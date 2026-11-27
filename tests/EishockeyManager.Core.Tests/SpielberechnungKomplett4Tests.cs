@@ -106,7 +106,7 @@ public class SpielberechnungKomplett4Tests
 
     /// <summary>
     /// [ORIGINAL] 0xAA09–0xAAEF: Tor nach der Feldspielerlage zu Beginn des Abschlusses für Heim- und Gastmanager; das
-    /// Gegentor beendet die Strafe (0xA8AC). Vorher: <see cref="GameState.CountPowerPlayGoal"/> war nicht angeschlossen.
+    /// Gegentor beendet die Strafe (0xA8AC). Vorher: <c>GameState.CountPowerPlayGoal</c> war nicht angeschlossen (inzwischen entfallen, K7).
     /// </summary>
     [Fact]
     public void GoalScored_PowerPlayGoal_CountsForBothManagers()

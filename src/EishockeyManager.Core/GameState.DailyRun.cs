@@ -128,11 +128,11 @@ public sealed partial class GameState
 
     /// <summary>
     /// Kaderteil von 0x07169 (Datei 0x07AF2–0x07C07) für einen Manager im Verein: Heilung je Kaderplatz (0x07C12 an Tagen mit Zähler
-    /// ≡ 0 mod 7, danach die Neuaufstellung, Datei 0x07C77), Training mit Kosten (<see cref="TrainManager"/>), Tendenz
+    /// ≡ 0 mod 7, danach die Neuaufstellung, Datei 0x07C77), Training mit Kosten ([ORIGINAL] 46E:0C89, je Kaderplatz 0x0659C), Tendenz
     /// (<see cref="AdvanceTrend"/>), am Ende die Aufstellungsautomatik (Datei 0x07C07). [ORIGINAL] Spur zufallsstrom (A524, N3 = B):
     /// je Kaderplatz verschränkt Heilung (Datei 0x07B4E), Training (Datei 0x07B5E → 0x0659C) und Tendenz (Datei 0x07B64–0x07BFC,
-    /// Wurf 0x07B77), Training und Tendenz aus dem gemeinsamen Strom <see cref="Random"/>; Kosten des Trainings einmal je Lauf wie
-    /// <see cref="TrainManager"/>. Die Neuaufstellung nach einer Heilung folgt wie bisher nach der Schleife.
+    /// Wurf 0x07B77), Training und Tendenz aus dem gemeinsamen Strom <see cref="Random"/>; Kosten des Trainings einmal je Lauf
+    /// (<see cref="FinanceCategory.Training"/>). Die Neuaufstellung nach einer Heilung folgt wie bisher nach der Schleife.
     /// </summary>
     internal void ManagerSquadRun(int day, Manager manager)
     {

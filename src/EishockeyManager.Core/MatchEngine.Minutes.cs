@@ -589,6 +589,14 @@ public static partial class OriginalMinutes
             Assist: players?.Assist.Player));
     }
 
+    /// <summary>Testhaken: Zahl der Aufrufe des schnellen Wegs 0x3731F je Thread (kein Spielzustand, nicht gespeichert).</summary>
+    [ThreadStatic]
+    public static int FastCupCalls;
+
+    /// <summary>Testhaken: Zahl der Aufrufe der Minutenschleife <see cref="Play"/> je Thread (kein Spielzustand).</summary>
+    [ThreadStatic]
+    public static int MinuteLoopCalls;
+
     /// <summary>
     /// Schneller Weg der Pokale ohne Manager und ohne Anzeige. [ORIGINAL] Datei 0x3731F–0x377A3:
     /// <list type="number">
@@ -602,24 +610,7 @@ public static partial class OriginalMinutes
     /// <item>K.-o.-Gleichstand: random(0, 2) je Seite dazu, bis ungleich; Heim + 30 als Penaltymarke (hier
     ///   <c>Shootout</c>).</item>
     /// </list>
-    /// </summary>
-    public static (int Home, int Away, bool Shootout) FastCupResult(MatchSide home, MatchSide away, bool homeIsClub,
-        bool awayIsClub, bool worldCup, bool playoff, bool knockOut, Random random)
-    {
-        var (h, g, shootout, _, _) = FastCupResultWithTie(home, away, homeIsClub, awayIsClub, worldCup, playoff, knockOut, random);
-        return (h, g, shootout);
-    }
-
-    /// <summary>Testhaken: Zahl der Aufrufe des schnellen Wegs 0x3731F je Thread (kein Spielzustand, nicht gespeichert).</summary>
-    [ThreadStatic]
-    public static int FastCupCalls;
-
-    /// <summary>Testhaken: Zahl der Aufrufe der Minutenschleife <see cref="Play"/> je Thread (kein Spielzustand).</summary>
-    [ThreadStatic]
-    public static int MinuteLoopCalls;
-
-    /// <summary>
-    /// Wie <see cref="FastCupResult"/>, zusätzlich der Gleichstand vor dem Penaltyschießen.
+    /// Zusätzlich der Gleichstand vor dem Penaltyschießen.
     /// #925 (A873), Play-offs (<paramref name="playoff"/> und <paramref name="knockOut"/>): [ORIGINAL] Nach dem Eintragen ruft
     /// 0x376E1 die Markierung 0x32AA3 über alle offenen Paarungen der Zeile 2 (Gleichstand → Heimbyte + 30, Datei 0x32C8E–0x32D84;
     /// Paarungen mit Ergebnisbyte &gt; 0x63 und die Aufstiegsrunde ausgenommen). Meldet sie eine, würfelt 0x376F0 für die eben
