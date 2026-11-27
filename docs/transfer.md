@@ -353,7 +353,7 @@ Saisonumverteilung (Tageslauf 0x54C9F fehlt dort, 0x54CEE); Schleifen ohne Grenz
 
 ## Belegt und umgesetzt (Spur `kader-transfer`, Teil 7: Ankündigungen der Kaderspieler)
 
-Regeln und Fundstellen: `docs/analyse/re-nachtrag.md`, Abschnitt 1 (Tagesablauf 0x07169), Umsetzung U1–U3, U6; im Code
+Regeln und Fundstellen: `docs/archiv/analyse/re-nachtrag.md`, Abschnitt 1 (Tagesablauf 0x07169), Umsetzung U1–U3, U6; im Code
 `SquadRules.RetirementRoll`, `SquadRules.OfferLimit`, `SquadRules.OfferedYears`, `GameState.AnnounceContractEnds`.
 
 - **Ruhestand (A231, A232, A238):** täglich je Platz random(350, 450) &lt; Alter · c / 10 (c = 100, Torhüter 85, − (Technik −
@@ -398,7 +398,7 @@ den Markt-Platz. Anzeige (blauer Art-Buchstabe, Statuszeile „von <Manager>“)
 
 ## Belegt und umgesetzt (Spur `kader-start`, Runde 14, Teil 4: Saisonende-Abgang)
 
-Grundlage `docs/analyse/re-runde-14.md` Sitzung 4 (FILE44 → FILE46) und Review `docs/reviews/2026-11-08-re-dosbox-r14-2.md`
+Grundlage `docs/archiv/analyse/re-runde-14.md` Sitzung 4 (FILE44 → FILE46) und Review `docs/archiv/reviews/runde-14/2026-11-08-re-dosbox-r14-2.md`
 (R14RD2-03, -05).
 
 | Was | Fundstelle | Regel |
@@ -509,7 +509,7 @@ Werbebewertung mit einem Spieler mit Angebot (SW-01). Jeder Test wurde gegen die
 ## Belegt und umgesetzt (Spur `kader-transfer`, Runde 12, Teil 2: U9, U15)
 
 - **Liga-Spielplan (U9):** `Schedule.Rounds` nutzt bei 12 Vereinen die feste Tabelle aus em.exe (Datei 0x4E7C7, DGROUP 0x2DC,
-  `docs/analyse/re-nachtrag.md` Abschnitt 4): Spieltag 1 = `ab cd ef gh ij kl`, Spieltag 12 = `ba dc fe hg ji lk` (Heimrecht
+  `docs/archiv/analyse/re-nachtrag.md` Abschnitt 4): Spieltag 1 = `ab cd ef gh ij kl`, Spieltag 12 = `ba dc fe hg ji lk` (Heimrecht
   getauscht, Runde 2 und 4), Runde 3 wie Runde 1. Buchstabe = Rang des Vereinsindex innerhalb der Liga `[APPROX]` (das Original nimmt
   den Listenplatz, der beim Auf-/Abstieg mit dem Vereinstausch wandert). Ligen mit anderer Vereinszahl und die Play-off-Runden
   behalten das Kreisverfahren. Die Mischung der Vereine in `NewGame.Create` bleibt nur, damit der Zufallsverbrauch gleich bleibt.
@@ -526,11 +526,11 @@ Werbebewertung mit einem Spieler mit Angebot (SW-01). Jeder Test wurde gegen die
   spielt und sein Platz ≤ 35 ist; sonst tauscht er mit einem Zufallsplatz der Start-Liga (nie der Verein eines früheren
   Managers, nie Platz 0: Der Europapokal-Filter 0x45CD0(r, 1) sieht beim Spielstart eine leere Tabelle, Runde 14). Die Teamwerte (`Club.Strength`) bleiben am Platz, der Verdrängte übernimmt Liga
   bzw. „ohne Liga“ des Managervereins; ein Verein ohne Liga landet direkt in der Start-Liga (A112 „rückt in die Oberliga“
-  entfällt). Belege FILE27/FILE28/FILE15 (`docs/analyse/re-runde-13.md`), Tests `KaderStartStartLigaTests`. Die Sperre „eine
+  entfällt). Belege FILE27/FILE28/FILE15 (`docs/archiv/analyse/re-runde-13.md`), Tests `KaderStartStartLigaTests`. Die Sperre „eine
   Saison“ nur mit Bundesliga prüft `GameSetup.Step` (Datei 0x2890E–0x2891C). `[APPROX]`: Zufallsquelle `GameState.Random`;
   gezogen wird in Indexfolge, solange die Satzfolge erst nach der Vergabe entsteht (R-K5, Teil 3). U15-c umgesetzt (Runde 14, `kader-start` Teil 2, L2 aufgehoben): Ein Manager und eine Saison → der Managerverein
   tauscht auf Platz 0 der Bundesliga (Datei 0x29CFA–0x29D9C, FILE29; `NewGame.OneSeasonSingleManager`); das Managerfeld
-  DGROUP 0x9744 = 1 ist nicht abgebildet (`docs/analyse/re-runde-14.md`).
+  DGROUP 0x9744 = 1 ist nicht abgebildet (`docs/archiv/analyse/re-runde-14.md`).
 
 ## Probe-Rückfallweg (WS-05, Runde 12)
 

@@ -2,7 +2,7 @@
 
 Aus `docs/arbeitspakete.md` ausgelagert am 15.11.2026. Inhalt unverändert bis auf Überschrift, „Ergebnis“, „Abschluss“ und
 „Entscheidungen während der Runde“, ohne „Zurückgestellt“ und „Vormerkungen“ (bleiben in `arbeitspakete.md`). Die Statuszeilen
-der Spuren geben den Stand vor dem jeweiligen Merge wieder. Reviews: `docs/reviews/` (Dateien vom 14.–15.11.2026). Nur bei Bedarf
+der Spuren geben den Stand vor dem jeweiligen Merge wieder. Reviews: `docs/archiv/reviews/runde-19/` (Dateien vom 14.–15.11.2026). Nur bei Bedarf
 lesen. Relative Links beziehen sich auf `docs/`.
 
 **Ergebnis:** Spuren `neuer-manager` (#854), `torszenen` (#856), `re-belastung` (#855), `pruefung-karte` (#863) und
@@ -29,7 +29,7 @@ Review, Prüfung im Gesamtreview.
 ## Aktuelle Runde: Runde 19 – Torszenen, neuer Manager, Belastung (Plan 14.11.2026, Go offen)
 
 Runde 18 abgeschlossen am 14.11.2026: [archiv/runde-18.md](archiv/runde-18.md). Grundlage: Spur C `torszenen` nach
-[analyse/re-livespiel.md](analyse/re-livespiel.md) §12 (L7-Anzeige; Kern-Zug 0x575C3 und Leser `tore\` aus `livespiel-kern` A4
+[archiv/analyse/re-livespiel.md](analyse/re-livespiel.md) §12 (L7-Anzeige; Kern-Zug 0x575C3 und Leser `tore\` aus `livespiel-kern` A4
 vorhanden, §11 Format, §6 Anzeigeteil), offene Issues #847 (P2), #826 (P3), #730 (P2, Rest). Ziel: Live-Spiel vollständig (L1–L8),
 #847, #826 und #730 belegt geschlossen. **Entscheidungen Nutzer 14.11.2026** (Optionen im Plan-PR #851): R19-D1 = A (eine Spur
 `torszenen`, C1 → C2 → C3), R19-D2 = C (#847 eigene Spur, #826 an `pruefung-karte`), R19-D3 = B mit Claude Fable 5.2, bei
@@ -65,7 +65,7 @@ macht nur der Bildschirm.
   `tests/**/AbgleichOriginalPaareTests.cs`, `docs/analyse/belastung*.md`: allein `re-belastung`.
 - `Core/Highscore.cs` (#826), `docs/analyse/inventur.md`, `docs/re-abdeckung.md`, `tools/reverse-engineering/*`,
   `tests/**/Support/`: allein `pruefung-karte`; die anderen Spuren nennen ihre Inventurzeilen im PR.
-- `docs/analyse/re-livespiel.md`: neuer Abschnitt §16 nur `torszenen`; `docs/reverse-engineering.md`: je Spur ein eigener
+- `docs/archiv/analyse/re-livespiel.md`: neuer Abschnitt §16 nur `torszenen`; `docs/reverse-engineering.md`: je Spur ein eigener
   Abschnitt, die Leitstelle löst beim Merge auf.
 
 ### Spur `torszenen` – Abspieler und Anzeigeteil der Torszene (Spur C, L7)
@@ -110,17 +110,17 @@ macht nur der Bildschirm.
 ### Spur `re-belastung` – Ursache #730 Spieltag 2/3 in em.exe (R19-D3 = B)
 
 - **Ziel:** Ursache der Belastung an Spieltag 2/3 in em.exe finden und beheben; Ansatz ist die Tabelle in
-  `analyse/abgleich-dosbox.md` §1.3 (Abweichungen je Reihe in beide Richtungen: Sturm 1 +32 gegen +16,8, Sturm 2 +5 gegen +13,7,
+  `archiv/analyse/abgleich-dosbox.md` §1.3 (Abweichungen je Reihe in beide Richtungen: Sturm 1 +32 gegen +16,8, Sturm 2 +5 gegen +13,7,
   Abwehr 2 +15 gegen +8,8, Sturm 3 −3 gegen +10,8), nicht die Textfolgerung (R852 P3-3). Kandidaten: Eiszeit/Reihenwahl je Minute bei Auswärts- und
   Heimspiel, Training und Erholung zwischen den Spieltagen (Datei 0x6B08–0x6B1A, `EnergyNorm`), Torwart/Reihen nach
-  Taktik-Minutenvorgabe; Vorarbeit `analyse/belastung-staerke.md`, `belastung.md` (Runde 16) nicht wiederholen.
+  Taktik-Minutenvorgabe; Vorarbeit `archiv/analyse/belastung-staerke.md`, `belastung.md` (Runde 16) nicht wiederholen.
 - **Teile:** 1. Analyse mit ausführbarem Beleg (Quasi-Paar FILE50→FILE03, Reihensummen wie Bericht §1.3; roter Test oder Probe
   mit Fundstelle), Abschnitt in `belastung-staerke.md`; 2. Fix mit Regressionstest (Abnahme #730: FILE02 → 3 Spieltage, HOCK ≤ 70,
   Eintrag aus der erwarteten Liste entfernen), Abgleich-Paare und Mehrsaisonprobe (4 Wechsel) grün.
 - **Fehlschlag (R19-D3 → A):** findet Teil 1 keine belegte Ursache, Bericht mit geprüften Stellen, Label `spur-wartet`, kein
   Teil 2; Bericht-PR wird nach Erstreview gemergt, #730 bleibt offen, die Leitstelle gibt die DOSBox-Liste `runde-19`
   (`vorlagen/dosbox-aufnahme.md`) frei (R852 P3-4).
-- **Modell:** Claude Fable 5.2 (Nutzer 14.11.2026). **Erstreview:** Claude Opus 5.5. **Status:** Teil 1 fertig ohne belegte Ursache (PR #855, `analyse/belastung-staerke.md` §9: Auswertefehler der Tabelle, Einzelreihen im Bereich des Remakes, Paarsumme FILE02→50 und Verteilung Sturm 1/3 in FILE02→03 außerhalb aller Saaten), kein Teil 2; Fixlauf nach Erstreview #860 (P2-1, P3-1 bis P3-3) erledigt. **R19-E2 = A** (Nutzer 15.11.2026): #730 bleibt offen, DOSBox-Liste `runde-19` freigegeben.
+- **Modell:** Claude Fable 5.2 (Nutzer 14.11.2026). **Erstreview:** Claude Opus 5.5. **Status:** Teil 1 fertig ohne belegte Ursache (PR #855, `archiv/analyse/belastung-staerke.md` §9: Auswertefehler der Tabelle, Einzelreihen im Bereich des Remakes, Paarsumme FILE02→50 und Verteilung Sturm 1/3 in FILE02→03 außerhalb aller Saaten), kein Teil 2; Fixlauf nach Erstreview #860 (P2-1, P3-1 bis P3-3) erledigt. **R19-E2 = A** (Nutzer 15.11.2026): #730 bleibt offen, DOSBox-Liste `runde-19` freigegeben.
 
 ### Spur `pruefung-karte` (Welle 2)
 
@@ -143,8 +143,8 @@ macht nur der Bildschirm.
      und Fix, sonst Abgleich-Paar ergänzen.
 - **Dateigrenzen:** `Core/Squad.Training*.cs`, `Core/MatchEngine.Managed.cs`, Reihenwechsel in `MatchEngine.Minutes.cs`/
   `OriginalMinutes`, `Core/LiveClock.cs` und Desktop-Bildtakt (nur #838), `Core/GameState.AddManager*.cs` (nur #847),
-  `tests/**/AbgleichOriginalPaareTests.cs`, `docs/analyse/abgleich-dosbox.md` (neuer Abschnitt Runde 19),
-  `docs/analyse/belastung-staerke.md`; `docs/analyse/inventur.md` nicht (Zeilen im PR, Leitstelle trägt nach). Mehrsaisonprobe,
+  `tests/**/AbgleichOriginalPaareTests.cs`, `docs/archiv/analyse/abgleich-dosbox.md` (neuer Abschnitt Runde 19),
+  `docs/archiv/analyse/belastung-staerke.md`; `docs/analyse/inventur.md` nicht (Zeilen im PR, Leitstelle trägt nach). Mehrsaisonprobe,
   wenn Kader oder Saisonwechsel berührt sind.
 - **Voraussetzung:** keine (parallel zum Erstreview von `pruefung-karte`); Merge nach `pruefung-karte`.
 - **R19-E4 = A (Nutzer 15.11.2026):** Teil 1 (#730) wartet auf die DOSBox-Gegenprobe `runde-19` Sitzung 4 (FILE66–70); danach
@@ -153,7 +153,7 @@ macht nur der Bildschirm.
   **Stand 15.11.2026 (PR #866, Draft):** Teil 2 (#838: ⅓ s je Minute mit Messwert 15,9–20 s belegt, `[APPROX]`) und Teil 3
   (#847: Gegenprobe FILE64→65, Teamwerte des Neuen aus der Aufstellung 0x952C, Datei 0x2A073, behoben) fertig. Teil 1 (#730)
   nach R19-E4 = A (Fortsetzung 1): Reihenwahl für Spieltag 1–3 belegt; fünf Läufe von Spieltag 2 (FILE66–70) im
-  Mittel 58,4 gegen 60,9 ± 6,7 im Remake → #730 im Bereich geschlossen (`analyse/abgleich-dosbox.md` §4.5); A093 nicht belegbar.
+  Mittel 58,4 gegen 60,9 ± 6,7 im Remake → #730 im Bereich geschlossen (`archiv/analyse/abgleich-dosbox.md` §4.5); A093 nicht belegbar.
   Alle Teile fertig, wartet auf Erstreview.
 
 ### Gesamtreview am Rundenende

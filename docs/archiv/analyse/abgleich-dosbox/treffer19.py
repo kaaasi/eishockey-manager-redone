@@ -2,7 +2,7 @@
 """Belastungstreffer je Spiel gegen die Eiszeit aus den Bildern (Spur abgleich-dosbox-19, Teil 1, #730).
 
 Aufruf: python3 -I treffer19.py   (erwartet $OUT/FILE02.blk, FILE50.blk, FILE61.blk, FILE63.blk aus
-docs/analyse/belastung-staerke/dump.sh; $OUT Vorgabe /tmp/belastung-staerke)
+docs/archiv/analyse/belastung-staerke/dump.sh; $OUT Vorgabe /tmp/belastung-staerke)
 Je Spiel des Laufs FILE02→50→61→63 (DOSBox runde-17/-19, ohne Mausklick):
 - Original: Treffer = Zuwachs + Erholung (Stürmer 1 je Training, Abwehr/Torhüter 0; wie hits.py), gekippte Spieler mit der
   Mindestzahl bis 128 (untere Schranke);

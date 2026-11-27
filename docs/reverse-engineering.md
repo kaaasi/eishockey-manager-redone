@@ -904,7 +904,7 @@ Teil 2 (Nationalteam):
   0x4D75E, 0x4DA58, 0x4E0EB); Rahmenbild Datei 0x4D40F (`0x38:0x98D` Bild 0x21). Aufrufer: Infoleiste, Stärken (DOSBox 44),
   WM-Tabelle 0x2FAB8 (DOSBox 14–16), Paarungsansicht 0x302AA, WM-Statistik 0x3B4AE (alle mit Seite 2 = Gesamt).
   Umgesetzt als `TeamInfoWindow` (Länderzweig) und `ClubInfoWindow` (Vereinszweig und Teams ab 0x40, Runde 12 UM-2,
-  `analyse/re-runde-12.md`); Aufbau und Koordinaten in den Klassenkommentaren. Aus dem Hauptmenü per Klick auf Gegner- bzw.
+  `archiv/analyse/re-runde-12.md`); Aufbau und Koordinaten in den Klassenkommentaren. Aus dem Hauptmenü per Klick auf Gegner- bzw.
   eigenen Vereinsnamen der Infoleiste (Datei 0x45375, 0x453B4; `InfoBarWindows`).
   * **Hilfsfunktionen im Overlay:** cs:0x00 = „ist Land“ (DGROUP 0x6AD ≤ Verein &lt; 0x6AD + 12), cs:0x26 = Stärke
     (Vereinsfelder 0x18/0x19, 0x1A/0x1B, 0x1C/0x1D summiert / 6), cs:0x47BF = Bilanzzeichen als Gesichter aus kb\33
@@ -926,7 +926,7 @@ Teil 2 (Nationalteam):
     im Remake nicht umgesetzt.
 
 Teil 4 (#166, Oberliga-Austausch samt Managervereinen), Disassembly `ndisasm -b 16`, Dateiadressen – **Beleglage, nicht umgesetzt**.
-**Berichtigt in Runde 10** ([analyse/re-saisonwechsel.md](analyse/re-saisonwechsel.md)): Der Saisonwechsel tauscht einen
+**Berichtigt in Runde 10** ([archiv/analyse/re-saisonwechsel.md](archiv/analyse/re-saisonwechsel.md)): Der Saisonwechsel tauscht einen
 ausscheidenden Managerverein zweimal (Datei 0x562F2 und Datei 0x5636D); der Verein bleibt in der Oberliga, der Manager
 bekommt beide Pfeile und das Konto 400.000 DM. Einen Manager ohne Liga gibt es im Original nicht.
 
@@ -948,7 +948,7 @@ bekommt beide Pfeile und das Konto 400.000 DM. Einen Manager ohne Liga gibt es i
   Abstiegspaare eingesetzt (0x55F93–0x560C5). Damit erklärt sich die Ausnahme „Bit 0x04 nicht gesetzt“ in 0x56287 und 0x562FA.
 * **Liga-Stufe des Managers** danach 0x563C0–0x56409: (Verein ≥ [0x7C1]) + (Verein ≥ [0x7C2]) – höchstens 2, ein Verein 36–41 gilt
   als Oberliga-Stufe (Kostenstufe, `finanzen-rekonstruktion.md`).
-* **Entfallen:** die frühere Frage „Saison ohne Liga“ (Runde 10, siehe oben); der DOSBox-Beleg mit `FILE13.HOK` liegt vor (#389, `docs/analyse/re-saisonwechsel.md`, „Auswertung DOSBox-Beleg“).
+* **Entfallen:** die frühere Frage „Saison ohne Liga“ (Runde 10, siehe oben); der DOSBox-Beleg mit `FILE13.HOK` liegt vor (#389, `docs/archiv/analyse/re-saisonwechsel.md`, „Auswertung DOSBox-Beleg“).
 
 ## Spielberechnung abschließen (Spur `spielberechnung-komplett`, Runde 9)
 
@@ -979,19 +979,19 @@ für Runde 11); die Funktionskarte zählt sie mit ([re-abdeckung.md](re-abdeckun
 
 | Spur | Datei | Inhalt |
 |---|---|---|
-| `re-geld` | [analyse/re-geld.md](analyse/re-geld.md) | Stadionbau, Börse und Konto, Transfermarkt-Konto, Grundwert, Jugendförderung; Entscheidungen Nutzer E1/E2 |
-| `re-meldungen` | [analyse/re-meldungen.md](analyse/re-meldungen.md) | Meldungen und Fragen, Infofile, Tabellenkurve, Tagesablauf, Bildlader, Fensterverwaltung |
-| `re-saisonwechsel` | [analyse/re-saisonwechsel.md](analyse/re-saisonwechsel.md) | Saisonende, Oberliga-Austausch mit Managervereinen (#166, berichtigt Teil 4 oben), DOSBox-Beleg |
-| `re-livespiel` | [analyse/re-livespiel.md](analyse/re-livespiel.md) | Livespiel: Spieluhr, Anzeigetafel, Reporter, Torszenen, Spielende (Grundlage für `livespiel`) |
-| `re-rest` | [analyse/re-rest.md](analyse/re-rest.md) | übrige Funktionen des Spielcodes (u. a. Talentsuche, Hilfen der Spieltage, Nachrichten) |
+| `re-geld` | [archiv/analyse/re-geld.md](archiv/analyse/re-geld.md) | Stadionbau, Börse und Konto, Transfermarkt-Konto, Grundwert, Jugendförderung; Entscheidungen Nutzer E1/E2 |
+| `re-meldungen` | [archiv/analyse/re-meldungen.md](archiv/analyse/re-meldungen.md) | Meldungen und Fragen, Infofile, Tabellenkurve, Tagesablauf, Bildlader, Fensterverwaltung |
+| `re-saisonwechsel` | [archiv/analyse/re-saisonwechsel.md](archiv/analyse/re-saisonwechsel.md) | Saisonende, Oberliga-Austausch mit Managervereinen (#166, berichtigt Teil 4 oben), DOSBox-Beleg |
+| `re-livespiel` | [archiv/analyse/re-livespiel.md](archiv/analyse/re-livespiel.md) | Livespiel: Spieluhr, Anzeigetafel, Reporter, Torszenen, Spielende (Grundlage für `livespiel`) |
+| `re-rest` | [archiv/analyse/re-rest.md](archiv/analyse/re-rest.md) | übrige Funktionen des Spielcodes (u. a. Talentsuche, Hilfen der Spieltage, Nachrichten) |
 
 ## Live-Spiel: Eingriff und Torszenen-Lader (Spur `re-livespiel-2`, Runde 17)
 
-Nachtrag zu [analyse/re-livespiel.md](analyse/re-livespiel.md) §10–§12: Eingriffsmenü der Managerzeile (Einsatz,
+Nachtrag zu [archiv/analyse/re-livespiel.md](archiv/analyse/re-livespiel.md) §10–§12: Eingriffsmenü der Managerzeile (Einsatz,
 Angriff, Reihe auf dem Eis, Lampe „Schnelldurchlauf“, Klick auf Kopf/Logo → Aufstellung bzw. Taktik), Szenenwahl und
 Lader `tore\` (Ov 0x138 `0x138:0x25`), Dateiformat der Torszenen und der Umsetzungsplan L1–L8 für Runde 18. Berichtigt
 nebenbei: Datei 0x38F40 schreibt die Angriffsbits (Vereinsfeld 0x2C Bits 4–6), nicht den Modus
-(`analyse/belastung-staerke.md` §7); der Lader wählt nach `(Art, Penalty, Seite, sechs Feldspieler)`.
+(`archiv/analyse/belastung-staerke.md` §7); der Lader wählt nach `(Art, Penalty, Seite, sechs Feldspieler)`.
 
 ## Spur `wettbewerbe-rest` (Runde 17)
 
@@ -1029,7 +1029,7 @@ Teil 2 – Europapokal und Liga-Code:
 
 Teil 3 – Spielplan und Start:
 
-* **Liga-Spielplan (A113):** 0x4E7C7 (Tabelle DGROUP 0x2DC, `docs/analyse/re-nachtrag.md` §4) schreibt Satzplätze
+* **Liga-Spielplan (A113):** 0x4E7C7 (Tabelle DGROUP 0x2DC, `docs/archiv/analyse/re-nachtrag.md` §4) schreibt Satzplätze
   (Buchstabe − 'a' + Basis); die Paarungen folgen also der Satzfolge der Liga (Startmischung 0x43A17, Saisonwechsel 0x5644E,
   Tausch 0x36169), nicht dem Rang des Vereinsindex. Andere Ligagrößen gibt es nicht (DGROUP 0x7B1 + Liga = 12). Remake:
   `Schedule.ForSlots` beim Spielstart (`NewGame.Create`) und im Saisonwechsel (`GameState.BuildLeagueSchedules`).
@@ -1091,7 +1091,7 @@ Teil 3 (Geld und Saisonende):
   ∓v: je Paar **ein** gespiegelter Saldo (Bank: FILE08 Manager 0 Eintrag 4 = −2.103.000, Satz 4 Eintrag 0 = +2.103.000). Das
   entspricht dem Saldo des Remakes (`ManagerLoanNet`, `BankAccount.Balance`); `[APPROX]` aufgehoben. Der Export schreibt seither
   den Saldo je Paar statt je Kredit (Kredite in beide Richtungen überschrieben einander).
-* **Ereignissymbol 9:** Am 29. April (Saisonwechsel ab Datei 0x55743, `analyse/re-saisonwechsel.md` Abschnitt 1) läuft je
+* **Ereignissymbol 9:** Am 29. April (Saisonwechsel ab Datei 0x55743, `archiv/analyse/re-saisonwechsel.md` Abschnitt 1) läuft je
   Manager zuerst der Jugendwechsel 0x3A13B (Datei 0x55889, Schritt 3), danach das Fenster 0x26F20 (Datei 0x5645D). Dessen
   Managerschleife zieht nach den Einzelprämien die Jugend (Datei 0x2728C–0x27320: n = random(0, 2), random(0, 1) ≠ 0 → 0, Jahr
   DGROUP 0x5A18 > 0x7CA) und setzt je erfolgreichem 0x06D7F das Symbol 9 an die nächste Stelle `di` (0x06CA6, Datei

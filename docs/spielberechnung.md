@@ -92,7 +92,7 @@ sonst bei stärkerem Heim mit 1/2). Dann lrandom(0, k) ≠ 0 und h ≤ g bei st�
 alles neu ab 0x9F5C (0x37665–0x37696). K.-o.-Gleichstand (`0xE8:0x70`): random(0, 2) je Seite dazu, bis ungleich,
 Heim + 30 als Penaltymarke (0x376F0–0x377A3). Im Remake (Runde 11, Spur wettbewerbe-spiel Teil 1) bildet die WM-Endrunde daraus
 den Endstand mit Marke 1 (`CupMatch.FromReport`, `WorldCup.MarksOf`); der Bericht trägt die Zusatztore als `ShootoutGoals`, sein
-Spielstand bleibt der Gleichstand. DEB-Pokal (Runde 23, Spur re-reste Teil 2, #925 (b), `docs/analyse/re-reste-23.md` §1) und
+Spielstand bleibt der Gleichstand. DEB-Pokal (Runde 23, Spur re-reste Teil 2, #925 (b), `docs/archiv/analyse/re-reste-23.md` §1) und
 Play-offs: 0x32AA3 markiert die eigene Paarung vor dem Wurf (Zeile 0: 0x32AF4/0x32B9D; Zeile 2: 0x32C8E), der Vergleich 0x37748
 ist nie gleich – genau ein Wurf, zwei Marken (0x3775D), ein stehender Gleichstand (x = y) zählt im DEB-Pokal für den Heimverein
 (0x34C76 `jnc`, `CupTie.Marks` = 2), in den Play-offs für den Gast (0x3166E, `Playoffs.cs`). Weil 0x32AA3 über alle Plätze läuft,
@@ -821,7 +821,7 @@ Geprüft an `em.exe` (`tools/reverse-engineering/disasm.py`), Tests `TaktikTeil5
 
 ## 23. Automatische Aufstellung 0x426BC/0x42838 (Runde 11, Spur wettbewerbe-spiel Teil 8; A068, A165, A169)
 
-Regel nach `docs/analyse/re-nachtrag.md` §3 (Review #446), Remake `Core/Squad.AutoLineup.cs`, Tests `AutoLineupTeil8Tests`.
+Regel nach `docs/archiv/analyse/re-nachtrag.md` §3 (Review #446), Remake `Core/Squad.AutoLineup.cs`, Tests `AutoLineupTeil8Tests`.
 
 - **Einstellung „automatisch aufstellen“** (DGROUP 0x375 + 2 · Manager, Startwert 1): `Club.AutoLineupEnabled`
   (`[APPROX]` je Verein statt je Manager; Schema 23 → 24). Ein Eingriff in der Aufstellung (Platz setzen/leeren,

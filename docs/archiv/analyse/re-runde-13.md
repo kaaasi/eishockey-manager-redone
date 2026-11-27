@@ -729,7 +729,7 @@ Spielstände FILE13/14, FILE16A/17, FILE22/23 (Strafminuten = Tabellensatz DGROU
 - **Umsetzung:** keine Verhaltensänderung; `[APPROX]` bleibt mit berichtigter Begründung („lrandom Datei 0xBFD5, gemeinsame
   Folge mit Spielberechnung und Teamwert-Wanderung, Zustand DGROUP 0xE017 nicht im Spielstand → nicht nachbildbar“), dazu
   `random(b, b + 11)` → `lrandom(b, b + 11)` im Kommentar `src/EishockeyManager.Core/SeasonFlow.LeagueSlots.cs`; Doku
-  `docs/analyse/re-runde-12.md` (S-K6, Punkte 1 und 2) und `docs/spielberechnung.md` §14 (Aufruf 0x439BB streichen) –
+  `docs/archiv/analyse/re-runde-12.md` (S-K6, Punkte 1 und 2) und `docs/spielberechnung.md` §14 (Aufruf 0x439BB streichen) –
   **nicht `saison`, sondern `pruefung-karte` (L12); erledigt in PR #608 (Teil 2).**
   Testidee: keine (reine Begründung); bestehende Verteilungs-/Mehrsaisonprobe genügt. Spur: `saison` (Code-Kommentar), Doku `pruefung-karte` (L12).
 
@@ -807,7 +807,7 @@ Abschnitten oben gelten diese Entscheidungen:
   Integration (Folge `kader-start` → `saison`, L3). Mehrsaisonprobe Pflicht.
 - **`ui-rest`:** nur der Anschluss `FairPlayTable` für S-K6-c (`StatisticsClub.cs`), mit `saison` abstimmen.
 - **`pruefung-karte`** (Welle 2, L12): `docs/spielberechnung.md` §14 – Aufruf von 0x35EDD „nach dem Lader 0x439BB“ ist falsch
-  (Aufrufer 0x437D5 Datei 0x43A17 und 0x54C9F Datei 0x5644E); `docs/analyse/re-runde-12.md` S-K6: `lrandom` statt `random`;
+  (Aufrufer 0x437D5 Datei 0x43A17 und 0x54C9F Datei 0x5644E); `docs/archiv/analyse/re-runde-12.md` S-K6: `lrandom` statt `random`;
   neue Feldbelege aus Sitzung 2/3 für `docs/formate/spielstand-original.md` (Abschnitt Sitzung 2 und 3 oben). `saison` und
   `kader-start` ändern diese drei Dateien nicht, auch wenn die Abschnitte oben sie nennen (U15-a, S-K6-b), sondern nennen den
   Bedarf im PR.

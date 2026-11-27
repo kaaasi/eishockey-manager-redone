@@ -5,7 +5,7 @@ Aus `docs/arbeitspakete.md` ausgelagert am 25.11.2026. Inhalt unverändert bis a
 der Spuren geben den Stand vor dem jeweiligen Merge wieder. Nur bei Bedarf lesen. Relative Links beziehen sich auf `docs/`.
 
 **Ergebnis:** Plan #996 (Plan-Review #997). Welle 0 `re-abweichungen` (#998, Review #1001 Nein RA-01 P2, Fixlauf, Delta-Prüfung)
-→ [analyse/re-abweichungen.md](analyse/re-abweichungen.md). Welle 1 gemergt: `wettbewerbe-anzeige` (#1003, #1008),
+→ [archiv/analyse/re-abweichungen.md](analyse/re-abweichungen.md). Welle 1 gemergt: `wettbewerbe-anzeige` (#1003, #1008),
 `statistik-anzeige` (#1005, #1009, ohne Migration), `bedienung` (#1002, #1013), `aufstellung` (#1004, #1015, Schema 64),
 `saison-geld` (#1006, #1017, Schema 65). Welle 2 `pruefung-karte` (#1022, #1023): P3 der Runde, #1007 (Highscore, Regel wie
 Original), Generatorlauf. Gesamtreview ChatGPT GPT-6.2 Astra (#1025): Nein wegen R25-G1 (P2, #1026) → Fix #1027 (Delta-Prüfung
@@ -77,7 +77,7 @@ Gesamtreview ChatGPT (GPT-6.2 Astra) mit Claude-Auswertung.
 - **Ergebnis je Thema:** Beleg als Nachbildung des Originalablaufs (Skript über die Bytes von em.exe mit Ausgabe, `zusammenarbeit.md`
   §5 Punkt 7), Urteil „Abweichung bestätigt“ bzw. „keine Abweichung“, Vorgabe für die umsetzende Spur (Regel, Fundstellen,
   erwartete Werte für den roten Test). Kein Produktcode.
-- **Dateien:** `docs/analyse/re-abweichungen.md` (neu), `tools/reverse-engineering/abweichungen/*.py` (neu). **Prüfung:** Skripte
+- **Dateien:** `docs/archiv/analyse/re-abweichungen.md` (neu), `tools/reverse-engineering/abweichungen/*.py` (neu). **Prüfung:** Skripte
   laufen mit `~/referenz/original/gamedata/EM.EXE`, Ausgaben im Bericht; `--schnell` entfällt (kein Code unter `src/`).
   **Erstreview:** Opus 5.5 (Skripte ausführen, Stichprobe der Lesarten).
 - **Status:** Teil 1 und Teil 2 belegt (B12–B29, C07, K07 mit A971/A972, K2, K11, K13, T03, F06, F08) – PR #998; Erstreview #1001 (Nein wegen RA-01 P2, RA-02 P3), Fixlauf 24.11.2026 behebt beide, Delta-Prüfung der Leitstelle ausstehend.

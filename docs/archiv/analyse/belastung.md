@@ -1,6 +1,6 @@
 # Belastung der Managerspieler (#730 Rest) – Ursachensuche
 
-Spur `abgleich-rest` Teil 1 (Runde 16), Stand 11.11.2026. Ausgangsbefund: `reviews/2026-11-11-abgleich-fix.md` B1 – im
+Spur `abgleich-rest` Teil 1 (Runde 16), Stand 11.11.2026. Ausgangsbefund: `archiv/reviews/runde-15/2026-11-11-abgleich-fix.md` B1 – im
 Original kippen Vielspieler der Reihen 1/2 vor dem Training über 127 (→ 50, `cbw` in Datei 0x4BD56), im Remake fast nie
 (FILE02→03 HOCK/SIKORA, FILE16A→17). **Ergebnis: Ursache nicht belegt** – alle Stellen, die die Belastung schreiben, und die
 Reihenwahl stimmen mit em.exe überein; die Abweichung liegt in der Verteilung der Eiszeit auf die Sturmreihen, deren Ursache

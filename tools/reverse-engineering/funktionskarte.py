@@ -17,7 +17,7 @@ Steps:
  2. Function starts: stub entries, prologs (push bp / mov bp,sp; enter), near and far call targets.
     A function ends where the next one starts (same segment/overlay).
  3. Coverage: addresses in src/**/*.cs comment blocks ([ORIGINAL]/[APPROX]) and docs/**/*.md (except
-    docs/archiv/, docs/reviews/ and the generated docs/re-abdeckung.md) are mapped onto the functions.
+    docs/archiv/ (except docs/archiv/analyse/), docs/reviews/ and the generated docs/re-abdeckung.md) are mapped onto the functions.
     Values up to the DGROUP size are ambiguous (file offset or DGROUP offset). They count as file offsets only
     with a file keyword in the same sentence, in a doc that declares all addresses as file offsets, or as an
     exact function start - never in brackets ("[0x5CF3]"), after "DGROUP" or on a line that names DGROUP values.
@@ -592,7 +592,7 @@ class RefCollector:
         for path in sorted((root / "docs").rglob("*.md")):
             rel = path.relative_to(root)
             parts = rel.parts
-            if len(parts) > 1 and parts[1] in ("archiv", "reviews"):
+            if len(parts) > 1 and parts[1] in ("archiv", "reviews") and parts[1:3] != ("archiv", "analyse"):
                 continue
             if rel.as_posix() in NOT_EVIDENCE_DOCS:
                 continue

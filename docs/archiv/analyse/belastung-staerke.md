@@ -16,7 +16,7 @@ Teil 2 blockiert** (Fallback R16-E2: C).
 ```bash
 source ~/claude-tools/env.sh && dotnet build src/EishockeyManager.Tools -c Release
 export OUT=/tmp/belastung-staerke                         # Ausgaben, nie ins Repo
-W=docs/analyse/belastung-staerke                          # Skripte, README dort
+W=docs/archiv/analyse/belastung-staerke                          # Skripte, README dort
 $W/dump.sh FILE02 FILE03 FILE16A FILE17 FILE24 FILE25 FILE38 FILE39 FILE40
 git apply $W/trace.patch && dotnet build src/EishockeyManager.Tools -c Release   # nur für §2.4/§3, danach git checkout
 ```
@@ -175,7 +175,7 @@ vorher glich der zu hohe Einsatz (55/80) eine andere Abweichung der Strafrechnun
 
 ### 7.2 Teil 1c – Schreiber der Reihenwahl und Minuten-Vorgabe
 
-`OUT=… docs/analyse/belastung-staerke/writers.sh` (ndisasm über die ganze em.exe, schreibende Befehle auf die Vereinsfelder
+`OUT=… docs/archiv/analyse/belastung-staerke/writers.sh` (ndisasm über die ganze em.exe, schreibende Befehle auf die Vereinsfelder
 0x2C/0x2E–0x31 und Kaderplatz +0x15, dazu die Blöcke A701/CC43 der Stände). Zuordnung (Spalte „Funktion“ des Skripts an
 Regionsgrenzen unzuverlässig, hier von Hand):
 
@@ -261,7 +261,7 @@ Base `main` 9f1994e. **Ergebnis: keine Ursache in em.exe belegt; in den Einzelre
 FILE02→50 und die Verteilung Sturm 1 / Sturm 3 in FILE02→03 liegen außerhalb aller Saaten – Ursache offen.** Die Tabelle in
 `abgleich-dosbox.md` §1.3 (und §2.4/§4 oben) beruht zum Teil auf einem Auswertefehler; mit berichtigter Auswertung und 40–200
 Saaten liegt jede einzelne Reihensumme des Originals in der Verteilung des Remakes, die beiden genannten Größen über mehrere
-Reihen nicht (§9.2, Erstreview `docs/reviews/2026-11-14-re-belastung.md` P2-1). Die geprüften Stellen (§9.3) stimmen überein. Kein
+Reihen nicht (§9.2, Erstreview `docs/archiv/reviews/runde-19/2026-11-14-re-belastung.md` P2-1). Die geprüften Stellen (§9.3) stimmen überein. Kein
 Teil 2 (Fehlschlag-Zweig R19-D3 → A); Entscheidung des Nutzers in §9.5 (R19-E2 = A).
 
 ### 9.1 Auswertefehler der bisherigen Tabellen

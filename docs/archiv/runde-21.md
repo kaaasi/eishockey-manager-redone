@@ -2,7 +2,7 @@
 
 Aus `docs/arbeitspakete.md` ausgelagert am 17.11.2026. Inhalt unverändert bis auf Überschrift, „Ergebnis“, „Abschluss“ und
 „Entscheidungen während der Runde“, ohne „Zurückgestellt“ und „Vormerkungen“ (bleiben in `arbeitspakete.md`). Die Statuszeilen
-der Spuren geben den Stand vor dem jeweiligen Merge wieder. Reviews: `docs/reviews/` (Dateien vom 16.–17.11.2026). Nur bei Bedarf
+der Spuren geben den Stand vor dem jeweiligen Merge wieder. Reviews: `docs/archiv/reviews/runde-21/` (Dateien vom 16.–17.11.2026). Nur bei Bedarf
 lesen. Relative Links beziehen sich auf `docs/`.
 
 **Ergebnis:** Plan #889 (Plan-Review #890). Alle acht Spuren gemergt: `re-vor-dosbox` (#891, Erstreview #898; 22 D „RE zuerst“
@@ -16,7 +16,7 @@ Funktionskarte). Gesamtreview (#913, ChatGPT/Codex) **Ja** für `e5cf5e3`: keine
 
 **Abschluss (17.11.2026):** offen für Runde 22: #896 (A612 Play-off-Marken), #897 (neue Abweichungen), #899 (Präzisierungen
 A093/A206/A059), #908 (HOK-Import Reihentausch, 0x952C beim Verlassen der Aufstellung), #912, #914 (P3/Testlücke); neue V aus
-`re-vor-dosbox` (`analyse/re-vor-dosbox.md` „Zuschnittsvorschlag Runde 22“) und die übrigen V-Themen der Restliste.
+`re-vor-dosbox` (`archiv/analyse/re-vor-dosbox.md` „Zuschnittsvorschlag Runde 22“) und die übrigen V-Themen der Restliste.
 
 **Entscheidungen während der Runde:** Nutzer 16.11.2026: R21-D1 = A, R21-D2 = A, R21-D3 = A, R21-D4 = A; `re-vor-dosbox` mit
 Claude Fable 5.2; Go. **R21-E1 = A** (A059, A480 E mit Kennung N2), **R21-E2 = A** (A612 eigene V-Spur Runde 22, #896). Nutzer
@@ -80,12 +80,12 @@ von `zufallsstrom`. Danach Gesamtreview (R21-D4).
      Aufwand S/M/L und Beleg nach `zusammenarbeit.md` §5 Punkt 7), **X**, **K** oder bleibt **D** (dann konkreter Aufnahmeauftrag).
   2. **A093 aus `a093`** (FILE71–FILE74, #888; Notizen dort): Technikabzug außerhalb der eigenen Reihe (Kaderplatz +0x02,
      Datei 0x98F8) gegen die Stände prüfen; Einordnung wie Teil 1 (bei V mit Testvorschlag). Fixes #888.
-  3. **Ergebnis:** `docs/analyse/re-vor-dosbox.md` (neu, höchstens 150 Zeilen: Tabelle ID, Klasse alt→neu, Fundstelle, Beleg),
+  3. **Ergebnis:** `docs/archiv/analyse/re-vor-dosbox.md` (neu, höchstens 150 Zeilen: Tabelle ID, Klasse alt→neu, Fundstelle, Beleg),
      Klassen in `restliste-v1-klassen.csv` (nur diese 23 Zeilen), Handtext der DOSBox-Sammelliste in `restliste-v1.md` (übrige D),
      Liste der neuen V als Zuschnittsvorschlag für Runde 22.
 - **Abgrenzung:** keine Änderung unter `src/`, `tests/`; kein `markerliste.py --write`.
 - **Modell:** Claude Fable 5.2 (Nutzer 16.11.2026). **Erstreview:** Claude Opus 5.5 (Stichprobe je neuer Klasse gegen
-  em.exe). **Status:** fertig – Review (PR #891, 16.11.2026): Teile 1–3 erledigt, [analyse/re-vor-dosbox.md](analyse/re-vor-dosbox.md);
+  em.exe). **Status:** fertig – Review (PR #891, 16.11.2026): Teile 1–3 erledigt, [archiv/analyse/re-vor-dosbox.md](analyse/re-vor-dosbox.md);
   V 15, X 5, K 1, E-Vorschlag 2 (A059, A480), kein D mehr.
 
 ### Spur `hok-import-werte` – im HOK geführte Werte übernehmen (Welle 1, N4 = C)

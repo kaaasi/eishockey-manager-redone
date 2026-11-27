@@ -1,7 +1,7 @@
 # Archiv: Runde 14 – Restpunkte, DOSBox-Auswertung `runde-13`, Import `*.HOK` (05.–10.11.2026)
 
 Aus `docs/arbeitspakete.md` ausgelagert am 10.11.2026. Inhalt unverändert bis auf Überschrift, „Ergebnis“ und „Abschluss“, ohne „Zurückgestellt“ und „Vormerkungen“ (bleiben in `arbeitspakete.md`). Die
-Statuszeilen der Spuren geben den Stand vor der jeweiligen Integration wieder. Reviews: `docs/reviews/` (Dateien vom 05.–10.11.2026).
+Statuszeilen der Spuren geben den Stand vor der jeweiligen Integration wieder. Reviews: `docs/archiv/reviews/runde-14/` (Dateien vom 05.–10.11.2026).
 Nur bei Bedarf lesen. Relative Links beziehen sich auf `docs/`.
 
 **Ergebnis:** Spuren `re-dosbox`, `saison`, `nationalteam`, `kader-start`, `ui-rest`, `hok-import` und `pruefung-karte` integriert
@@ -44,7 +44,7 @@ gemergt ist (sonst blockiert, übrige Teile zuerst). **Integration** je Spur am 
 ### Zuständigkeit für gemeinsame Dateien
 
 Wie Runde 13 (Archiv) mit diesen Änderungen:
-- `docs/analyse/re-runde-14.md`: allein `re-dosbox`. `docs/analyse/inventur.md` (Stand je Zeile), `docs/re-abdeckung.md`,
+- `docs/archiv/analyse/re-runde-14.md`: allein `re-dosbox`. `docs/analyse/inventur.md` (Stand je Zeile), `docs/re-abdeckung.md`,
   `tools/reverse-engineering/*`, `tests/**/Support/`: allein `pruefung-karte` (Welle 2); die anderen Spuren nennen ihre Zeilen
   im PR.
 - `Core/SeasonFlow*.cs`, `Core/GameState.SeasonEndTurn.cs`: allein `saison`.
@@ -70,10 +70,10 @@ Wie Runde 13 (Archiv) mit diesen Änderungen:
   soweit diese Stände sie belegen.
 - **Teil 2 (Fortsetzung, sobald abgelegt):** Sitzungen 3–6 (FILE43–49): A323, A325, A326 (Bau-Tabelle), A362, A085, A091,
   A009, A085 Handaufnahme, A293 „Endrunde“, A338. Eigener PR, gleiche Datei.
-- **Abnahme:** Datei `docs/analyse/re-runde-14.md` mit Ergebnis je ID (belegt / widerlegt / nicht entscheidbar, Fundstelle:
+- **Abnahme:** Datei `docs/archiv/analyse/re-runde-14.md` mit Ergebnis je ID (belegt / widerlegt / nicht entscheidbar, Fundstelle:
   Datei, Byte, Bild) und Abschnitt „Umsetzung“ je Punkt (Ziel, Dateien, Testidee, Spur dieser Runde). Selbstprüfung
   `funktionskarte.py --csv` ohne `--write`.
-- **Dateigrenzen:** nur `docs/analyse/re-runde-14.md` und der eigene Statuspunkt. **Modell:** Claude Opus 5.5.
+- **Dateigrenzen:** nur `docs/archiv/analyse/re-runde-14.md` und der eigene Statuspunkt. **Modell:** Claude Opus 5.5.
   **Status:** Teil 1 (Sitzungen 1–2, FILE29–41, FILE37A) fertig, PR #628 (gemergt nach Review #643/#644); Teil 2
   (Sitzungen 3–7, FILE43–49A) fertig, PR #642.
 

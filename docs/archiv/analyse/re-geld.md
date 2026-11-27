@@ -1,8 +1,8 @@
 # Analyse em.exe: Geld, Börse, Stadion (Spur `re-geld`, Runde 10)
 
 Alle Adressen in dieser Datei sind **Dateioffsets** in `em.exe` (Schreibweise und Umrechnung wie in
-[re-abdeckung.md](../re-abdeckung.md)); Werte im Datensegment stehen ausdrücklich als `DGROUP 0x…`. Beträge sind wie im
-Original in **Drittel-DM** angegeben, wenn nicht „DM“ dabeisteht ([reverse-engineering.md](../reverse-engineering.md),
+[re-abdeckung.md](../../re-abdeckung.md)); Werte im Datensegment stehen ausdrücklich als `DGROUP 0x…`. Beträge sind wie im
+Original in **Drittel-DM** angegeben, wenn nicht „DM“ dabeisteht ([reverse-engineering.md](../../reverse-engineering.md),
 „Geldbeträge“). Hilfsfunktionen der Laufzeit und der Fensterbasis (Spur `re-meldungen`) stehen nur mit ihrem Fernaufruf
 in der Schreibweise des Plans (`38h:847h`), damit die Funktionskarte sie nicht dieser Datei zuordnet:
 
@@ -19,7 +19,7 @@ in der Schreibweise des Plans (`38h:847h`), damit die Funktionskarte sie nicht d
 
 Belege: Disassembly mit `ndisasm` über die Funktionskarte (`tools/reverse-engineering/funktionskarte.py`, Grenzen und
 Aufrufer aus der CSV), DGROUP-Inhalte aus em.exe (Datei 0x163C0 ff., `DGROUP_FILE` im Skript). Spielstände aus dem
-Referenz-Repo nur dort, wo sie schon ausgewertet sind ([spielstand-original.md](../formate/spielstand-original.md)).
+Referenz-Repo nur dort, wo sie schon ausgewertet sind ([spielstand-original.md](../../formate/spielstand-original.md)).
 Es wurden keine neuen DOSBox-Bilder gebraucht.
 
 ## Übersicht
@@ -165,7 +165,7 @@ der Frage abgezogen, kann es also nicht sein).
 ## Finanzen-Bildschirm (Ov 0x138)
 
 Alle vier Funktionen ruft nur der Finanzen-Bildschirm Datei 0x58A57 (Aufbau Datei 0x58CED–0x58D04, Balken Datei 0x5900E,
-0x5910E, 0x59A5D). Datensätze wie in [finanzen-rekonstruktion.md](../finanzen-rekonstruktion.md) („Börse“, „Werkzeug“):
+0x5910E, 0x59A5D). Datensätze wie in [finanzen-rekonstruktion.md](../../finanzen-rekonstruktion.md) („Börse“, „Werkzeug“):
 Konto `DGROUP 0x97EA`, Darlehen `DGROUP 0x97F6 + 4·i` (negativ = ich schulde i; i = 4 Bank), Bestand
 `DGROUP 0xD214 + 32·m + 8·i` (Kaufpreis, `+4` Stückzahl), Kurs `DGROUP 0xD13A + 0x48·i`.
 
@@ -227,7 +227,7 @@ Texte `DGROUP 0xE3C ff.`):
 | Mitmanager j | nur wenn sein Konto > 0: min(3.000.000 − was ich j schulde, Konto von j); Vorgabe = was j mir schuldet | min(3.000.000 − was j mir schuldet, eigenes Konto); Vorgabe = was ich j schulde |
 
 Also **Bankkredit bis 2.000.000 DM**, zwischen Managern bis 1.000.000 DM je Richtung. Spielstand FILE08
-(Bankkredit 701.000 DM, [spielstand-original.md](../formate/spielstand-original.md)) liegt über dem Video-Wert 584.000 DM
+(Bankkredit 701.000 DM, [spielstand-original.md](../../formate/spielstand-original.md)) liegt über dem Video-Wert 584.000 DM
 und im Rahmen.
 
 **Buchung im Aufrufer** (Datei 0x5915F–0x5952D, Betrag v):
@@ -254,7 +254,7 @@ Managern (auch für die Höchstwerte im Finanzen-Bildschirm) umgesetzt (`Core/Fi
 
 **Status (Runde 11, Spur `geld` Teil 5, PR #442):** Betragsbalken (Pixel · q, 1.000-DM-Rundung, Vorgabe je Auswahl, Knöpfe
 ±1.000 DM / 1 Stück), eine Seite statt zweier Beträge, Leihen beim Mitmanager sofort (E2), Höchstwerte mit Abzug nur bei
-positivem Darlehensfeld; Ablauf in [finanzen-rekonstruktion.md](../finanzen-rekonstruktion.md), „Bedienung“. Stand vor Teil 5:
+positivem Darlehensfeld; Ablauf in [finanzen-rekonstruktion.md](../../finanzen-rekonstruktion.md), „Bedienung“. Stand vor Teil 5:
 
 - Leihen bei einem Mitmanager geht im Remake als Anfrage in den Posteingang, im Original sofort.
 - Betrag über ±-Knöpfe in festen Schritten statt Balken (Klick = Pixel · `q`, Rundung auf 1.000 DM).
@@ -262,7 +262,7 @@ positivem Darlehensfeld; Ablauf in [finanzen-rekonstruktion.md](../finanzen-reko
 
 **Status (Runde 11, Spur `geld` Teil 6, PR #448):** Talentsuche nach 0x465F1/0x06FA5/0x06D7F/0x3CCEB (R-K1) umgesetzt;
 Preisfeld DGROUP 0x20D ist der Preis der Talentsuche (keine „Prämie“). Ablauf in
-[finanzen-rekonstruktion.md](../finanzen-rekonstruktion.md), „Talentsuche“.
+[finanzen-rekonstruktion.md](../../finanzen-rekonstruktion.md), „Talentsuche“.
 
 ## Transfermarkt: Kontoleiste (Datei 0x463CC)
 
@@ -276,7 +276,7 @@ k = 0–3 bei x = 3 + 65·k, Text (`DGROUP 0x11C5`) auf Grundlinie 229, Wert auf
 | 2 | Anlagen: | Σ Stückzahl · Kurs + Σ_{i ≠ ich} (−Darlehen von i[ich], wenn negativ) – Forderungen samt Sparbuch |
 | 3 | Saldo: | Konto + Anlagen − Schulden |
 
-Das ist die Regel aus [finanzen-rekonstruktion.md](../finanzen-rekonstruktion.md), Abschnitt „Bank (`0x46432` ff.)“ – die
+Das ist die Regel aus [finanzen-rekonstruktion.md](../../finanzen-rekonstruktion.md), Abschnitt „Bank (`0x46432` ff.)“ – die
 Stelle liegt aber im Transfermarkt-Overlay, nicht im Finanzen-Bildschirm. **Remake (vor Runde 11):**
 `TransferScreen.DrawAccountBar` zeigte Schulden und Anlagen fest 0 (`[APPROX]`), Saldo = Konto; x der Anlagen 132 statt 133,
 Zeilen 226/232 statt Grundlinien 229/236 (Lage nicht nachgemessen).
@@ -310,7 +310,7 @@ Verlassen (Datei 0x48E19) mit Vereinssatz, Merker und den vier Bildzeigern des B
 im Remake schon so (`Squad.Tactics.cs`).
 
 **Status (Runde 11, Spur `wettbewerbe-spiel` Teil 5, PR #440; Kandidat G6):** Minuten-Vorgabe (Schritt 3) und Grenze 20 je
-Teil umgesetzt, Einzelheiten in [spielberechnung.md](../spielberechnung.md) §22. Stand vor Teil 5 siehe oben.
+Teil umgesetzt, Einzelheiten in [spielberechnung.md](../../spielberechnung.md) §22. Stand vor Teil 5 siehe oben.
 
 ## Jugendteams (Ov 0xF8)
 

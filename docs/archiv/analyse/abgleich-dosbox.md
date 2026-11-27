@@ -1,7 +1,7 @@
 # Auswertung DOSBox-Aufnahmen `runde-17` (Spur `abgleich-dosbox`, Runde 18) und `runde-19` (Spur `abgleich-dosbox-19`, §4 ff.)
 
 Grundlage: Spielstände und Bilder im Referenz-Repo (`original/spielstaende/README.md`, Abschnitte „Runde 17, Sitzung 1–3“),
-Werkzeuge `emtool abgleich`, `docs/analyse/belastung-staerke/*.sh|py` (Skripte und `trace.patch` wie dort, `trace.patch` nur
+Werkzeuge `emtool abgleich`, `docs/archiv/analyse/belastung-staerke/*.sh|py` (Skripte und `trace.patch` wie dort, `trace.patch` nur
 lokal) und `abgleich-dosbox/lampen.py`. Keine Bilder in diesem Repo.
 
 ## 1. #730 Belastung – FILE50/FILE51 (Teil 1)
@@ -149,7 +149,7 @@ Grenze in `AbgleichRestPenaltyTests` ist damit keine weitere Kopplung nachzuzieh
 
 ### 3.1 #804 Vereinsfelder 0x26/0x2C
 
-`OUT=… docs/analyse/belastung-staerke/dump.sh FILE03 FILE16A FILE44 FILE53 EXPORT2D && python3 …/clubs.py …` (Computervereine
+`OUT=… docs/archiv/analyse/belastung-staerke/dump.sh FILE03 FILE16A FILE44 FILE53 EXPORT2D && python3 …/clubs.py …` (Computervereine
 0–51, Tripel 0x26/0x2D/Angriff 0x2C Bits 4–6):
 
 | Stand | Verteilung |

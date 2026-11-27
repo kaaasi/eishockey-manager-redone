@@ -393,7 +393,7 @@ einer Gruppe und der Fall mit doppeltem Platz weiter ohne Beleg.
 
 ### Umsetzung S-K6-Rest (Spur `saison` Teil 3, Runde 13, 04.11.2026)
 
-Grundlage `docs/analyse/re-runde-13.md` (S-K6-a/b/c) und Entscheidungen der Leitstelle L3, L5, L8, L12 in PR #567.
+Grundlage `docs/archiv/analyse/re-runde-13.md` (S-K6-a/b/c) und Entscheidungen der Leitstelle L3, L5, L8, L12 in PR #567.
 
 - **S-K6-a (Mischzeitpunkt, `[APPROX]` → `[ORIGINAL]`):** `FinishSeason` (29. April) bildet nach Zwangsabstieg und Ewiger Tabelle die
   Satzfolge der **nächsten** Saison (`PrepareNextLeagueSlots`: Mitglieder aus `SeasonRecord.NextLeague`, Partnerersatz wie bisher, dann
@@ -404,7 +404,7 @@ Grundlage `docs/analyse/re-runde-13.md` (S-K6-a/b/c) und Entscheidungen der Leit
   `AdvanceLeagueSlots` (übernimmt die vorab gebildete Folge, sonst wie bisher), neu `PrepareNextLeagueSlots`, `SuccessorSlots`
   (Partnerersatz aus `AdvanceLeagueSlots` herausgelöst), `Mix`, `NextLeagueSlots`.
 - **S-K6-b (Zufallsquelle):** Verhalten unverändert, Begründung des `[APPROX]` im Code berichtigt (lrandom Datei 0xBFD5, Zustand DGROUP
-  0xE017 nicht im Spielstand). Die gleichlautenden Stellen in `docs/spielberechnung.md` §14 und `docs/analyse/re-runde-12.md` ändert
+  0xE017 nicht im Spielstand). Die gleichlautenden Stellen in `docs/spielberechnung.md` §14 und `docs/archiv/analyse/re-runde-12.md` ändert
   nach L12 `pruefung-karte` (Bedarf im PR genannt).
 - **S-K6-c (Fair-Play-Prämie):** über die Liga der nächsten Saison in der neuen Satzfolge (`SeasonFlow.FairPlay.cs`,
   `FairPlayPremiumWinner`), mit den Strafminuten der abgelaufenen Saison; Nachrücker aus den ligalosen Vereinen haben 0. Torhüter

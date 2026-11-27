@@ -1,7 +1,7 @@
 # Archiv: Runde 8 – Funktionskarte: Spielerwert, Transfers, Tabellen, Statistiken (31.10.–01.11.2026)
 
 Aus `docs/arbeitspakete.md` ausgelagert am 01.11.2026, damit Agenten beim Einstieg nur die aktuelle Runde lesen.
-Inhalt unverändert bis auf die Überschrift, den ergänzten Absatz „Ergebnis“ und ohne den Abschnitt „Zurückgestellt“ (jeder Punkt in Runde 9 übernommen). Ergebnisse und Reviews: `docs/reviews/`. Nur bei Bedarf lesen.
+Inhalt unverändert bis auf die Überschrift, den ergänzten Absatz „Ergebnis“ und ohne den Abschnitt „Zurückgestellt“ (jeder Punkt in Runde 9 übernommen). Ergebnisse und Reviews: `docs/archiv/reviews/`. Nur bei Bedarf lesen.
 
 **Ergebnis:** Vorab `spielerwert` (#239, Review #247). Welle 1/2: Integration #250 (`befunde-p3`, `tabellen-original`,
 `nationalteam`, `statistiken`, `spielstaerke-manager`, `spielerinfo`, `transfer-original`, `optionen-kalender` Teil 1;
@@ -252,7 +252,7 @@ Nutzer 31.10.) `spielerinfo` (#249), `transfer-original` (#248), `optionen-kalen
   (Einstellungsbildschirm, Kalender, #228); `transfer-original` Teil 2 (Vertragsverhandlung 0x4A1DB, Gehalt 0x49A3B,
   Kaufablauf 0x494EF, Sperre nach Ablehnung, unaufgeforderte Angebote, Pixelvergleich).
 
-- **Review** `docs/reviews/2026-10-31-integration-runde-8.md`: R8-D01 (P2, #253) in der Integration behoben. P3 als
+- **Review** `docs/archiv/reviews/runde-8/2026-10-31-integration-runde-8.md`: R8-D01 (P2, #253) in der Integration behoben. P3 als
   Restlücken: R8-A01 Spielstände aus den Spurbranches `statistiken`/`spielstaerke-manager` (vorläufige Schemanummer) laden
   nicht; R8-A02 Seed-Proben hängen am Zufall (robustere Prüfung statt Seed-Wechsel); R8-C01 sieben ältere Core-Tests kaufen
   zum Listenpreis und sind nur wegen des Seeds grün; R8-C02 Reihenfolge Geld/Unfair beim Gebot an einen anderen Manager;
@@ -316,7 +316,7 @@ Branch `integration/runde-8-welle-3` von `main` 99fa995, zusammengeführt in Pla
   `transfer-original` Kauf mit Verhandlung 0x4786A, Verhandlung am Saisonende 0x27D05, Versicherungsprämie,
   unaufgeforderte Angebote, Listenwechsel 0x494EF; `tabellen-original` Startordnung ab Saison 2, Abzug in der Titelzahl
   0x4F986; `optionen-kalender` Pixelvergleich Einstellungen (Bild 48), Kalender-Tiefenanalyse; `optionen-wirkung`.
-- **Review** `docs/reviews/2026-11-01-integration-runde-8-welle-3.md`: R8W3I-01 (#269, Spielstand vor den Toren der
+- **Review** `docs/archiv/reviews/runde-8/2026-11-01-integration-runde-8-welle-3.md`: R8W3I-01 (#269, Spielstand vor den Toren der
   Minute für 0x80CB/0x939A) und R8W3I-02 (#270, Forderung nach dem Saisonende ohne Untergrenze, Laufzeit und Forderung
   zurückgeschrieben) in der Integration behoben. P3 als Restlücken (Runde 9): R8W3I-03 bis -05 Strafen in der
   Managerpaarung (`PenalizedPlayer`, Rückgabe 100, Managerwert), -06 Nationalteam des Bundestrainers, -07 Versicherung im
@@ -328,7 +328,7 @@ Branch `integration/runde-8-welle-3` von `main` 99fa995, zusammengeführt in Pla
   Originaldaten: vorher 2/8, danach 0/8 Seeds), spielen jetzt mit Datenbankstärke (`ManagedSquadsUi`, 7/8). Tore je Spiel:
   Videobeleg nur Oberliga (6–10), übrige Ligen 5–11 (Bundesliga 5,97). Restlücke: Kader von Manager 0 in der Mode4-Probe
   schrumpft auf 12 bis 13 Spieler (nicht spielfähig) – Probe robuster machen.
-- **Nachprüfung** `docs/reviews/2026-11-01-integration-runde-8-welle-3-nachpruefung.md`: R8W3I-12 (#272, Rückschreiben nach
+- **Nachprüfung** `docs/archiv/reviews/runde-8/2026-11-01-integration-runde-8-welle-3-nachpruefung.md`: R8W3I-12 (#272, Rückschreiben nach
   dem Saisonende auch auf Level 5) behoben; R8W3I-13 (Zurückstellen bei Ablehnung ist `[ORIGINAL]` 0x4AD3E→0x4AD54) und
   R8W3I-14 (Begründung Tore je Spiel) berichtigt. **R8W3I-15 (Verdacht, Runde 9, spielstaerke-manager Teil 3):**
   Managervereine spielen mit Spielerwerten deutlich schwächer als mit Datenbankstärke (Originaldaten, 40 Seeds: Düsseldorf

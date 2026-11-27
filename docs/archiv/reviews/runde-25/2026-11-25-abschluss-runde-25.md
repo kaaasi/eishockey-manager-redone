@@ -9,7 +9,7 @@
 
 ## 2. Befunde
 
-- **P3-1 – Widerspruch zu #1024:** [`docs/archiv/runde-25.md` Z. 16](../archiv/runde-25.md) nennt „#1024 (Rest P3-2/P3-3)“ im Aufräumen,
+- **P3-1 – Widerspruch zu #1024:** [`docs/archiv/runde-25.md` Z. 16](../../runde-25.md) nennt „#1024 (Rest P3-2/P3-3)“ im Aufräumen,
   P3-3 (Wortlaut K13/B29) setzt dieser PR aber um (`abweichungen-v1.md` Abschnitt 0, Diff 2 Zeilen). Richtig: „Rest P3-2“.
   Beleg: `sed -n 16p docs/archiv/runde-25.md`; PR-Text: „P3-3 … umgesetzt“. Rein sprachlich.
 

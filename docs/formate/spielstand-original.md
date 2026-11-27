@@ -317,7 +317,7 @@ Bild: Referenz-Repo `original/spielstaende/bilder/kaputt_mogelguru.png`. Für `h
 
 Zusätzliche Feldbelege aus der Auswertung der DOSBox-Sitzungen 2 und 3 (Grundlage FILE16A, FILE22, FILE23 – Sitzung 2 –,
 FILE05, FILE24–FILE26 – Sitzung 3 –, zum Vergleich FILE06/FILE07 und die Startstände FILE01, FILE27, FILE28; Auswertung
-[re-runde-13.md](../analyse/re-runde-13.md), Abschnitt „Sitzung 2 und 3“). Kaderplatz = `0x5DC3` + 0x618 · Satz + 0x34 · Platz
+[re-runde-13.md](../archiv/analyse/re-runde-13.md), Abschnitt „Sitzung 2 und 3“). Kaderplatz = `0x5DC3` + 0x618 · Satz + 0x34 · Platz
 (DGROUP), im Strom ab `0x06A27`; Spielerpool ab `0x0505F` (`far:8253`, 33 Byte). Befehlsadressen sind Dateioffsets in
 `em.exe`, Offsets im Spielstand stehen als „HOK 0x…“.
 
@@ -1067,7 +1067,7 @@ Saisonwechsel). Zuordnung aus em.exe (Overlay 0xE8, Datei-Offsets):
 
 ### Feldbelege aus der DOSBox-Aufnahme `runde-13` (re-runde-14.md, Leitstelle L7)
 
-Belegt in `docs/analyse/re-runde-14.md` (Spur `re-dosbox`), hier für die Feldkarte zusammengefasst; die Umsetzung im Spielkern
+Belegt in `docs/archiv/analyse/re-runde-14.md` (Spur `re-dosbox`), hier für die Feldkarte zusammengefasst; die Umsetzung im Spielkern
 liegt bei den genannten Spuren.
 
 - **DGROUP 0x9744 + 0x1AF · m** (`965B+0xE9`): 1 bei „eine Saison, ein Manager“ (Spielende 1994, ein Manager; em.exe Datei

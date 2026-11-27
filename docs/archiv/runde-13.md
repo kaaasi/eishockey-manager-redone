@@ -3,7 +3,7 @@
 Aus `docs/arbeitspakete.md` ausgelagert am 05.11.2026. Inhalt unverändert bis auf die Überschrift, den Absatz „Ergebnis“, die
 nachgeführten Status im Abschnitt „Integration Runde 13“, die relativen Links und die Abschnitte „Entscheidungen während der
 Runde“, „Abschluss“ und „Funktionskarte“ am Ende. Die Statuszeilen der einzelnen Spuren geben den Stand vor der Integration
-wieder; maßgeblich ist „Integration Runde 13“. Reviews: `docs/reviews/` (Dateien vom 04.–05.11.2026). Nur bei Bedarf lesen.
+wieder; maßgeblich ist „Integration Runde 13“. Reviews: `docs/archiv/reviews/runde-13/` (Dateien vom 04.–05.11.2026). Nur bei Bedarf lesen.
 
 **Ergebnis:** Analyse `re-dosbox` (#567, Review #576, Nachprüfung #577) und vier Umsetzungsspuren, je Spur ein
 Integrations-PR in der Folge L15: `saison` (#586, Review #590), `nationalteam` (#587, Review #593), `ui-rest` (#588, Review #596),
@@ -41,7 +41,7 @@ Bei Unklarheit gilt „wie im Original“; bleibt es unklar, Teil blockiert lass
 ### Zuständigkeit für gemeinsame Dateien
 
 Wie Runde 12 (Archiv) mit diesen Änderungen:
-- `docs/analyse/re-runde-13.md`: allein `re-dosbox`. `docs/analyse/inventur.md` (Stand je Zeile), `docs/re-abdeckung.md`,
+- `docs/archiv/analyse/re-runde-13.md`: allein `re-dosbox`. `docs/analyse/inventur.md` (Stand je Zeile), `docs/re-abdeckung.md`,
   `tools/reverse-engineering/*`: allein `pruefung-karte` (Welle 2); die anderen Spuren nennen ihre Zeilen im PR. Ausnahme:
   #565 (A324, ein Satz) darf `ui-rest` ändern.
 - `UI/Screens/SetupScreen.cs`: allein `kader-start` (U15-Rest, R-K5).
@@ -66,10 +66,10 @@ Wie Runde 12 (Archiv) mit diesen Änderungen:
   Fenster „Saisonende“ und Zufallsquelle der 55 Tausche; rechnet die Fair-Play-Prämie 27213h über die alte oder neue Liga
   (`re-saisonwechsel.md`, #510)? Und **R-K5:** Reihenfolge der Vereinsauswahl innerhalb der Seite (28030h, A347/F058,
   Video `oberflaeche_0128/_0133/_0136`, Zusammenhang mit der Satzfolge S-K6/A194).
-- **Abnahme:** wie Runde 12 `re-pruefung`: Datei `docs/analyse/re-runde-13.md` mit Ergebnis je ID (belegt / widerlegt /
+- **Abnahme:** wie Runde 12 `re-pruefung`: Datei `docs/archiv/analyse/re-runde-13.md` mit Ergebnis je ID (belegt / widerlegt /
   nicht entscheidbar, Fundstelle: Datei, Byte, Bild) und Abschnitt „Umsetzung“ je Punkt (Ziel, Dateien, Testidee, Spur dieser
   Runde). Selbstprüfung `funktionskarte.py --csv` ohne `--write`. Ein Lauf, keine Teile, keine Fortsetzung.
-- **Dateigrenzen:** nur `docs/analyse/re-runde-13.md` und der eigene Statuspunkt. **Modell:** Claude Opus 5.5. **Status:** fertig, PR #567 (04.11.2026): `docs/analyse/re-runde-13.md`, 25 Punkte ausgewertet, 8 offene Fragen an die Leitstelle.
+- **Dateigrenzen:** nur `docs/archiv/analyse/re-runde-13.md` und der eigene Statuspunkt. **Modell:** Claude Opus 5.5. **Status:** fertig, PR #567 (04.11.2026): `docs/archiv/analyse/re-runde-13.md`, 25 Punkte ausgewertet, 8 offene Fragen an die Leitstelle.
 
 ### Spur `kader-start` – U15-Rest, Vereinsauswahl, Kaderbefunde
 
@@ -100,7 +100,7 @@ Wie Runde 12 (Archiv) mit diesen Änderungen:
      Zufallsquelle nach Befund angleichen; Fair-Play-Prämie über die belegte Liga; Schema + Migration nur, falls nötig.
   4. **A058/A088/A163 (nach `re-dosbox`):** Saisonwechsel im Modus „nur Weltkugel“ (Teamwert-Wanderung, Oberliga-Austausch,
      Zurücksetzen der Spielerzähler) nach Befund; Mehrsaisonprobe im Modus „nur Weltkugel“.
-- **Dateigrenzen:** siehe Zuständigkeit; Tests, `docs/analyse/re-saisonwechsel.md`, `docs/saison.md`. **Modell:** Claude Opus 5.5.
+- **Dateigrenzen:** siehe Zuständigkeit; Tests, `docs/archiv/analyse/re-saisonwechsel.md`, `docs/saison.md`. **Modell:** Claude Opus 5.5.
   **Status:** Teil 1 in Review (PR #569), Teil 2 in Review (PR #571), Teil 3 in Review (PR #579), Teil 4 in Review (A058, A163; A088 wartet auf Entscheidung der Leitstelle).
 
 ### Spur `nationalteam` – Bundestrainer nach der DOSBox-Aufnahme (nach `re-dosbox`)
@@ -141,8 +141,8 @@ Wie Runde 12 (Archiv) mit diesen Änderungen:
   2. **Funktionskarte und Inventur** auf den Rundenstand (`funktionskarte.py --write`, zweiter Lauf ohne Diff), Stand je Zeile in
      `analyse/inventur.md` für alle in Runde 13 belegten IDs.
 - **Dateigrenzen:** `tests/**/Support/`, neue Testdatei, `tools/reverse-engineering/*`, `docs/re-abdeckung.md`, `docs/analyse/inventur.md`;
-  nach L12 zusätzlich `docs/spielberechnung.md` §14, `docs/analyse/re-runde-12.md` (S-K6: `lrandom`) und Feldbelege nach
-  `docs/formate/spielstand-original.md`; nach R13RDN-01 (#577) die veralteten Verweise in `docs/analyse/re-runde-13.md`.
+  nach L12 zusätzlich `docs/spielberechnung.md` §14, `docs/archiv/analyse/re-runde-12.md` (S-K6: `lrandom`) und Feldbelege nach
+  `docs/formate/spielstand-original.md`; nach R13RDN-01 (#577) die veralteten Verweise in `docs/archiv/analyse/re-runde-13.md`.
   **Modell:** Claude Sonnet 5.5. **Status:** Teil 1 fertig (PR #607 `paket/pruefung-karte-1`, 04.11.2026): 0 Abweichungen, keine
   Befund-Issues; Teil 2 fertig (PR #608 `paket/pruefung-karte-2`, gestapelt auf Teil 1): Funktionskarte neu (Spielcode 257/2/104/1,
   zweiter Lauf ohne Diff), Inventur „Stand Runde 13“, Doku nach L12. Spur fertig – Review.

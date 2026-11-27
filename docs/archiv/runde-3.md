@@ -1,7 +1,7 @@
 # Archiv: Runde 3 – Kader, Wettbewerbe, Finanzen, Speichern (26.–29.10.2026)
 
 Aus `docs/arbeitspakete.md` ausgelagert am 29.10.2026, damit Agenten beim Einstieg nur die aktuelle Runde lesen.
-Inhalt unverändert bis auf die Überschriftenebene. Ergebnisse und Reviews: `docs/reviews/`. Nur bei Bedarf lesen.
+Inhalt unverändert bis auf die Überschriftenebene. Ergebnisse und Reviews: `docs/archiv/reviews/`. Nur bei Bedarf lesen.
 
 **Ergebnis:** Welle A (#54, `main` `5f8e02a`), Welle B (#67, #69, #71; `main` `51c110a`), Welle C (#89 mit #87/#88,
 `main` `b75af6d`). Offen übernommen nach Runde 4: Aufstellung/Taktik des Nationalteams, „Tabelle DEB-Pokal“/
@@ -127,8 +127,8 @@ Messbasis; der Rest folgt als Spur `finanzen-2`).
   - Prozess-PRs #45/#46/#50 sind noch nicht auf `main`: `tools/pruefen.sh` und `EM_SKIP_GAMEDATA` fehlen dort. Lauf 2/3
     wurden deshalb mit entfernten Originaldaten ausgeführt (Skript vom Branch `prozess/sparsam`, Lauf 1 identisch).
 - **Ergebnis (28.10.2026):** #54 gemergt mit Head `3e44a84` → `main` `5f8e02a`. Review
-  [integration-runde-3a](../reviews/2026-10-28-integration-runde-3a.md) (R3A-01 P2, R3A-02/03 P3), Nachprüfung
-  [integration-runde-3a-nachpruefung](../reviews/2026-10-28-integration-runde-3a-nachpruefung.md): alle drei behoben,
+  [integration-runde-3a](reviews/runde-3/2026-10-28-integration-runde-3a.md) (R3A-01 P2, R3A-02/03 P3), Nachprüfung
+  [integration-runde-3a-nachpruefung](reviews/runde-3/2026-10-28-integration-runde-3a-nachpruefung.md): alle drei behoben,
   Freigabe für `3e44a84`. Die Prozess-PRs #45/#46/#50/#52 sind vor #54 gemergt; `tools/pruefen.sh` und
   `EM_SKIP_GAMEDATA` stehen damit auf `main`. Welle A ist abgeschlossen; die übrigen Restlücken gehen an Welle B
   (`finanzen-2`, `speichern`).
@@ -146,7 +146,7 @@ Mehrsaisonprobe Pflicht. Kleine PRs je Teil (`paket/<spur>-<teil>`), jeder Teil 
 ### Spur `speichern` – Spielstand mit Schemaversion (G11)
 
 - **Ziel:** eigenes Spielstandformat für den **gesamten** Zustand, robust gegen Saisonwechsel und spätere
-  Schemaänderungen (Audit G11, [audit-validierung](../prozess/2026-10-27-audit-validierung.md), Maßnahme M6).
+  Schemaänderungen (Audit G11, [audit-validierung](2026-10-27-audit-validierung.md), Maßnahme M6).
 - **Branch / Base:** `paket/speichern[-<teil>]` von `main` (≥ `5f8e02a`). Vorschlag Teile: `-rng` (Generator),
   `-ids` (stabile IDs), `-format` (Schema, Roundtrip), `-dialog` (Laden/Sichern, „Automatisch speichern“).
 - **Inhalt:**
@@ -191,8 +191,8 @@ Mehrsaisonprobe Pflicht. Kleine PRs je Teil (`paket/<spur>-<teil>`), jeder Teil 
 ### Status Spur `speichern`
 
 Stand 29.10.2026: Teile `-rng` (#68), `-ids` (#70) und `-format` (#71, Schema mit Version, Roundtrip, Zwillingsprobe)
-**gemergt**; Abnahme 1–5 erfüllt. Reviews [speichern-68-70-71](../reviews/2026-10-28-speichern-68-70-71.md) und
-[speichern-71-nachpruefung](../reviews/2026-10-28-speichern-71-nachpruefung.md). Schema 2 kam mit `finanzen-2` (#67).
+**gemergt**; Abnahme 1–5 erfüllt. Reviews [speichern-68-70-71](reviews/runde-3/2026-10-28-speichern-68-70-71.md) und
+[speichern-71-nachpruefung](reviews/runde-3/2026-10-28-speichern-71-nachpruefung.md). Schema 2 kam mit `finanzen-2` (#67).
 
 - Offen: Teil `-dialog` (Abnahme 6, Welle C); #80 (Reihenfolge von Wörterbüchern nach Remove/Add, P3) vom Nutzer
   zurückgestellt.
@@ -237,8 +237,8 @@ verschieben sich die Referenzwerte aus `finanzen-2`.
 ### Status Spur `finanzen-2`
 
 Stand 29.10.2026: **gemergt** (PR #67, Head `9f51e14` → `main` `32101ab`). Review
-[finanzen-2-67](../reviews/2026-10-28-finanzen-2-67.md): F67-01…04 (#75–#78) behoben; Nachprüfung
-[finanzen-2-67-nachpruefung](../reviews/2026-10-28-finanzen-2-67-nachpruefung.md) ohne Codebefunde, die dort blockierten
+[finanzen-2-67](reviews/runde-3/2026-10-28-finanzen-2-67.md): F67-01…04 (#75–#78) behoben; Nachprüfung
+[finanzen-2-67-nachpruefung](reviews/runde-3/2026-10-28-finanzen-2-67-nachpruefung.md) ohne Codebefunde, die dort blockierten
 drei Testläufe hat die Leitstelle auf dem Head nachgeholt (614/0/0 · 530/0/69 · Pflichtlauf wie gewollt). Belege in
 [finanzen-rekonstruktion.md](../finanzen-rekonstruktion.md) (Disassembly em.exe + Karriere-/UI-Video).
 
@@ -274,7 +274,7 @@ drei Testläufe hat die Leitstelle auf dem Head nachgeholt (614/0/0 · 530/0/69 
 
 ### Spur `markerbericht` – Pilot Übergabe (ChatGPT)
 
-Ziel und Bewertung: [audit-validierung](../prozess/2026-10-27-audit-validierung.md) §5. Voraussetzungen (#45, #46, #50)
+Ziel und Bewertung: [audit-validierung](2026-10-27-audit-validierung.md) §5. Voraussetzungen (#45, #46, #50)
 sind auf `main`.
 
 | Feld | Inhalt |
@@ -285,7 +285,7 @@ sind auf `main`.
 | Dateigrenzen | `tools/markerbericht.py` (neu), ein Schritt am Ende des Jobs `build` in `.github/workflows/build.yml` |
 | Abnahme | Zahlen gleich `grep -rho "\[APPROX\]\|\[ORIGINAL\]" src \| sort \| uniq -c`; Ausgabe sortiert und deterministisch; keine neuen Abhängigkeiten; CI grün; PR nach Vorlage mit `tools/pruefen.sh`-Tabelle und Trailer |
 | Review | Claude Code (Leitstelle, andere Sitzung als jede Umsetzung) |
-| Status | **abgeschlossen** 28.10.2026: PR #69 gemergt (Übergabe ChatGPT → Claude Code vollständig), Review [markerbericht-69](../reviews/2026-10-28-markerbericht-69.md) ohne Befunde |
+| Status | **abgeschlossen** 28.10.2026: PR #69 gemergt (Übergabe ChatGPT → Claude Code vollständig), Review [markerbericht-69](reviews/runde-3/2026-10-28-markerbericht-69.md) ohne Befunde |
 
 ## Runde 3, Welle C (ab 29.10.2026)
 
@@ -365,7 +365,7 @@ Head `ceb3afc`), dann #88 (`speichern-dialog`, Head `88a149c`).
   dem Stand der jeweiligen Spur. Die 7 Bilder von `speichern` weichen nur ab in der Meldung „Schema 4, unterstützt bis 3“
   (vorher 3/2, erwartet) und im angezeigten Verzeichnis: Der Ablauf nutzt ein zufälliges Temp-Verzeichnis, seine Bilder
   sind deshalb zwischen Läufen nie bytegleich (Restlücke, Spur `speichern-dialog`).
-- Review [integration-runde-3c](../reviews/2026-10-29-integration-runde-3c.md): **R3C-01 (P2, #93)** – im Hot-Seat
+- Review [integration-runde-3c](reviews/runde-3/2026-10-29-integration-runde-3c.md): **R3C-01 (P2, #93)** – im Hot-Seat
   fehlte beim direkten Weitergeben an den nächsten Manager der Autosave-Aufruf; der Spielstand hing vom Kachelbesuch ab.
   Behoben im Integrations-Branch (`MainMenuScreen.Continue_`), Regressionstest
   `IntegrationRunde3cTests.HotSeat_AutoSave_DoesNotDependOnTileVisits` (vorher rot: ohne Kachelbesuch geschrieben bei

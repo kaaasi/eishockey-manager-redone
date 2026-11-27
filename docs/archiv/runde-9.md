@@ -2,7 +2,7 @@
 
 Aus `docs/arbeitspakete.md` ausgelagert am 01.11.2026, damit Agenten beim Einstieg nur die aktuelle Runde lesen.
 Inhalt unverändert bis auf die Überschrift, den ergänzten Absatz „Ergebnis“ und ohne den Abschnitt „Zurückgestellt“ (in
-Runde 10 übernommen). Ergebnisse und Reviews: `docs/reviews/` (Dateien vom 01.11.2026). Nur bei Bedarf lesen.
+Runde 10 übernommen). Ergebnisse und Reviews: `docs/archiv/reviews/runde-9/` (Dateien vom 01.11.2026). Nur bei Bedarf lesen.
 
 **Ergebnis:** Fünf Spuren mit Teilen und Selbstfortsetzung (`finanzen-rest`, `wettbewerbe-komplett`, `optionen-wirkung`,
 `transfer-vertraege-komplett`, `spielberechnung-komplett`), integriert je Spur in `integration/runde-9-*` und gemergt mit

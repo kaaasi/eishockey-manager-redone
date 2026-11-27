@@ -2,7 +2,7 @@
 
 Aus `docs/arbeitspakete.md` ausgelagert am 16.11.2026. Inhalt unverändert bis auf Überschrift, „Ergebnis“, „Abschluss“ und
 „Entscheidungen während der Runde“, ohne „Zurückgestellt“ und „Vormerkungen“ (bleiben in `arbeitspakete.md`). Die Statuszeilen
-der Spuren geben den Stand vor dem jeweiligen Merge wieder. Reviews: `docs/reviews/` (Dateien vom 15.–16.11.2026). Nur bei Bedarf
+der Spuren geben den Stand vor dem jeweiligen Merge wieder. Reviews: `docs/archiv/reviews/runde-20/` (Dateien vom 15.–16.11.2026). Nur bei Bedarf
 lesen. Relative Links beziehen sich auf `docs/`.
 
 **Ergebnis:** Spuren `pruefung-karte` (#880, Erstreview #881 Ja) und `inventur-v1` (#883, Erstreview #884 Nein → Fixlauf,
@@ -59,8 +59,8 @@ Danach Gesamtreview nach R20-D4 = C.
   v0.9, minimal): allein `inventur-v1`. `inventur-v1` ändert **keinen** Code und keinen Marker in `src/`.
 - `Core/MatchEngine.Minutes.cs`, `Core/MatchEngine.Managed.cs` (`ChangeLines`, Reihe bei Spielbeginn, #872), `OriginalMinutes`,
   `Core/GameState.DailyRun.cs` (nur `UpdateManagerTeamValues`, #871 P3-3, minimal), `Core/Highscore*.cs` und Tests der Bestenliste
-  (#874), `tests/**/AbgleichOriginalPaareTests.cs`, `AbgleichDosboxStrainHitsTests`, `docs/analyse/abgleich-dosbox.md`,
-  `docs/analyse/belastung-staerke/`, `.gitignore` (#871), `docs/re-abdeckung.md`, `tests/**/Support/`: allein `pruefung-karte`.
+  (#874), `tests/**/AbgleichOriginalPaareTests.cs`, `AbgleichDosboxStrainHitsTests`, `docs/archiv/analyse/abgleich-dosbox.md`,
+  `docs/archiv/analyse/belastung-staerke/`, `.gitignore` (#871), `docs/re-abdeckung.md`, `tests/**/Support/`: allein `pruefung-karte`.
   `pruefung-karte` nennt die geänderten Markerzeilen im PR (Eingabe für `inventur-v1`), trägt aber nichts in `inventur.md` ein.
 
 ### Spur `inventur-v1` – Restliste bis v1.0 (Welle 2, R20-D1 = A, R20-D3 = A)

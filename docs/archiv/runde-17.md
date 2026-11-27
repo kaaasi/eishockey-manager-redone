@@ -2,7 +2,7 @@
 
 Aus `docs/arbeitspakete.md` ausgelagert am 13.11.2026. Inhalt unverändert bis auf Überschrift, „Ergebnis“, „Abschluss“ und
 „Entscheidungen während der Runde“, ohne „Zurückgestellt“ und „Vormerkungen“ (bleiben in `arbeitspakete.md`). Die Statuszeilen
-der Spuren geben den Stand vor dem jeweiligen Merge wieder. Reviews: `docs/reviews/` (Dateien vom 12.–13.11.2026). Nur bei Bedarf
+der Spuren geben den Stand vor dem jeweiligen Merge wieder. Reviews: `docs/archiv/reviews/runde-17/` (Dateien vom 12.–13.11.2026). Nur bei Bedarf
 lesen. Relative Links beziehen sich auf `docs/`.
 
 **Ergebnis:** Spuren `pruefung-karte` Teil 1 (#794), `re-livespiel-2` (#793), `wettbewerbe-rest` (#790), `kader-rest` (#791),
@@ -10,12 +10,12 @@ lesen. Relative Links beziehen sich auf `docs/`.
 Spielvorbereitung 0x8365 je Paarung Heim → Gast behoben), A004, A008/A110, A024, A045, A077, A084, A113 (Liga-Spielplan über die
 Satzfolge 0x4E7C7), A142, A130, A066, A196, A253, F089, A244/A245, Ereignissymbol 9 (Jugend am Saisonende vor dem Fenster,
 Schema 50), A280/A282 (Ligapaarungen Play-Off/Aufstieg), A332, A363, Hintergrund `file46_3`; Live-Spiel-Analyse L6/L7 samt
-Umsetzungsplan L1–L8 (`analyse/re-livespiel.md` §10–§12), 0x575C3 nicht mehr unbekannt; #800 kein Befund. Gesamtreview (#806,
+Umsetzungsplan L1–L8 (`archiv/analyse/re-livespiel.md` §10–§12), 0x575C3 nicht mehr unbekannt; #800 kein Befund. Gesamtreview (#806,
 ChatGPT GPT-6.1 Terra) **Ja** für `20e739c`: keine neuen Befunde.
 
 **Abschluss (13.11.2026):** offen #730 (P2), #773 (P3) – DOSBox-Aufnahme `runde-17`; #803, #804, #805 (P3); A037 bleibt
 `[APPROX]`; übrige Restzeilen in der Inventur „Stand Runde 17“. DOSBox-Aufnahme `runde-17` am 13.11.2026 abgelegt
-(Referenz-Repo #29–#34), Auswertung in Runde 18. Nächste Runde: Live-Spiel L1–L8 nach dem Plan in `analyse/re-livespiel.md`.
+(Referenz-Repo #29–#34), Auswertung in Runde 18. Nächste Runde: Live-Spiel L1–L8 nach dem Plan in `archiv/analyse/re-livespiel.md`.
 
 **Entscheidungen während der Runde (Leitstelle, nach Prozess):** Auflagen R788-01…04 aus dem Plan-Review eingearbeitet;
 Rebase-Fixläufe ohne Befund vor dem Merge von `wettbewerbe-rest`, `kader-rest`, `ui-rest` (Abdrücke neu, Delta-Prüfung der
@@ -28,7 +28,7 @@ Leitstelle); wo der Force-Push im geplanten Lauf abgelehnt wurde, Merge-Commit n
 Runde 16 abgeschlossen am 12.11.2026: [archiv/runde-16.md](archiv/runde-16.md). Grundlage: offene Issues #730, #773 (P2/P3,
 DOSBox nötig), #784, #785 (Testlücken), Inventur `analyse/inventur.md` (offene `[APPROX]` der Gruppen a/c/d mit Prio P2) und
 Funktionskarte `re-abdeckung.md`: Spielcode zu 91 % umgesetzt; fehlende Funktionen gehören bis auf F107 (R-K7) alle zum
-Live-Spiel (L1–L8, `analyse/re-livespiel.md`). Diese Runde schließt die übrigen P2-Lücken, damit danach das Live-Spiel und die
+Live-Spiel (L1–L8, `archiv/analyse/re-livespiel.md`). Diese Runde schließt die übrigen P2-Lücken, damit danach das Live-Spiel und die
 Abschlussprüfung folgen können.
 
 **Base für alle Spuren:** aktueller `main` (Planstand `3a8070c`); tatsächlichen Base-SHA in den Draft-PR. Regeln wie Runde 16
@@ -107,10 +107,10 @@ danach Welle 2 `pruefung-karte` Teil 2 (eigener Branch `paket/pruefung-karte-2`)
 
 - **Teile:**
   1. **Eingriff (L6):** Eingriffsmenü Datei 0x38D96 (Mausweg in der Managerzeile: Einsatz, Angriff, Modus, Reihe), Treffer-Tests
-     0x534BC/0x53508, Neuaufbau 0x5434C; Ergebnis als Abschnitt in `analyse/re-livespiel.md`.
+     0x534BC/0x53508, Neuaufbau 0x5434C; Ergebnis als Abschnitt in `archiv/analyse/re-livespiel.md`.
   2. **Torszenen-Lader (L7):** 575C3h (Ov 138h, einziger Aufrufer 567C8h), Szenenwahl `138h:25h`, Format `tore\` so weit
-     lesbar; Umsetzungsplan L1–L8 für Runde 18 (Teile, Dateien, Abnahme) am Ende von `analyse/re-livespiel.md`.
-- **Dateigrenzen:** nur `docs/analyse/re-livespiel.md`, `docs/reverse-engineering.md` (eigener Abschnitt); kein Code.
+     lesbar; Umsetzungsplan L1–L8 für Runde 18 (Teile, Dateien, Abnahme) am Ende von `archiv/analyse/re-livespiel.md`.
+- **Dateigrenzen:** nur `docs/archiv/analyse/re-livespiel.md`, `docs/reverse-engineering.md` (eigener Abschnitt); kein Code.
 - **Abnahme:** jede Lesart mit Fundstelle und ausführbarem Beleg (`ndisasm`-Befehl, Bytes), Funktionskarte führt 575C3h danach
   nicht mehr als „unbekannt“ (Probe mit `funktionskarte.py`, Schreiben macht `pruefung-karte` Teil 2).
 - **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5 (Disassembly). **Status:** Go 12.11.2026; Teile 1 und 2 fertig (PR #793, 12.11.2026); Erstreview #795 „nein“ (P2-1), Fixlauf P2-1, P3-1…3 behoben 12.11.2026, wartet auf Delta-Prüfung der Leitstelle.
@@ -151,7 +151,7 @@ Spielcode nahezu vollständig. Offen ist, wann es beginnt.
 - **A** Start in Runde 18 nach Abschluss dieser Runde (L1–L5 zuerst, L6–L8 danach). + klare Reihenfolge, keine Konflikte mit
   `MatchEngine.Live.cs`/`MatchDayScreen`; − eine Runde später.
 - **B** In dieser Runde zusätzlich Analysespur für L6 (Eingriffsmenü 0x38D96, Treffer-Tests 0x534BC/0x53508) und 575C3h
-  (`tore\`) als Spur `re-livespiel-2` (Doku-Nachtrag zu `analyse/re-livespiel.md`, kein Code; Claude Opus 5.5, Erstreview
+  (`tore\`) als Spur `re-livespiel-2` (Doku-Nachtrag zu `archiv/analyse/re-livespiel.md`, kein Code; Claude Opus 5.5, Erstreview
   Claude Opus 5.5, weil Disassembly). + Runde 18 startet mit vollständiger Analyse; − ein Lauf mehr.
 - **C** In dieser Runde schon L1 (Drittelzähler im Core) als fünfte Spur. + früher Fortschritt; − Konflikt mit
   `wettbewerbe-rest` an `MatchEngine.Live.cs`.
@@ -161,7 +161,7 @@ Spielcode nahezu vollständig. Offen ist, wann es beginnt.
 **R17-D3 – #730/#773 (DOSBox nötig).** Problem: Beide Befunde lassen sich ohne Aufnahme im Original nicht belegen
 (R16-E2 = C); weitere Prüfaufträge haben in Runde 16 nichts ergeben.
 - **A** Die Leitstelle legt eine gebündelte Aufnahmeliste `runde-17` in `vorlagen/dosbox-aufnahme.md` an (#730 nach
-  `analyse/belastung-staerke.md` §7.3, #773, Highscore „nur Weltkugel“, A115/A189/A321/A357/A364, EXPORT2C); Aufnahme nach Lust,
+  `archiv/analyse/belastung-staerke.md` §7.3, #773, Highscore „nur Weltkugel“, A115/A189/A321/A357/A364, EXPORT2C); Aufnahme nach Lust,
   Auswertung in der Runde nach Eintreffen. + kein Druck, Liste fertig; − Issues bleiben offen.
 - **B** Weiter zurückgestellt, keine Liste. + kein Aufwand; − Vorbereitung später nötig.
 - **C** #730 als Remake-Verhalten mit `[APPROX]` annehmen und schließen, #773 ebenso. + Issues weg; − Abweichung bleibt

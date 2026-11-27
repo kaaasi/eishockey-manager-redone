@@ -1,7 +1,7 @@
 # Analyse em.exe: Darstellung 2 „Dauer-Eisfeld“ (Spur `torszene-dauer`, Teil 1, Runde 26)
 
 Befund S02 / A472 ([abweichungen-v1.md](abweichungen-v1.md)). Alle Adressen sind **Dateioffsets** in `em.exe`, Werte im
-Datensegment stehen als `DGROUP 0x…` (Schreibweise wie in [re-livespiel.md](re-livespiel.md)). Teil 1 ist nur Beleg, kein
+Datensegment stehen als `DGROUP 0x…` (Schreibweise wie in [re-livespiel.md](../archiv/analyse/re-livespiel.md)). Teil 1 ist nur Beleg, kein
 Produktcode.
 
 **Nachbildung:** `python3 tools/reverse-engineering/live/torszene_dauer.py [~/referenz/original/gamedata/em.exe]` lässt die

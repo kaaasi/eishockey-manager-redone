@@ -2,7 +2,7 @@
 
 Aus `docs/arbeitspakete.md` ausgelagert am 14.11.2026. Inhalt unverändert bis auf Überschrift, „Ergebnis“, „Abschluss“ und
 „Entscheidungen während der Runde“, ohne „Zurückgestellt“ und „Vormerkungen“ (bleiben in `arbeitspakete.md`). Die Statuszeilen
-der Spuren geben den Stand vor dem jeweiligen Merge wieder. Reviews: `docs/reviews/` (Dateien vom 13.–14.11.2026). Nur bei Bedarf
+der Spuren geben den Stand vor dem jeweiligen Merge wieder. Reviews: `docs/archiv/reviews/runde-18/` (Dateien vom 13.–14.11.2026). Nur bei Bedarf
 lesen. Relative Links beziehen sich auf `docs/`.
 
 **Ergebnis:** Spuren `pruefung-karte` Teil 1 (#813), `abgleich-dosbox` (#812), `livespiel-kern` A1–A5 (#814), `livespiel-ui`
@@ -31,7 +31,7 @@ R18-E5 = A (Platztausch in Runde 19). Leitstelle nach Prozess: Rebase-Fixlauf `l
 ## Aktuelle Runde: Runde 18 – Live-Spiel und Auswertung DOSBox `runde-17` (Plan 13.11.2026, Go 13.11.2026)
 
 Runde 17 abgeschlossen am 13.11.2026: [archiv/runde-17.md](archiv/runde-17.md). Grundlage: Umsetzungsplan Live-Spiel L1–L8 in
-[analyse/re-livespiel.md](analyse/re-livespiel.md) §12 (Spuren A/B/C), DOSBox-Aufnahme `runde-17` (Referenz-Repo #29–#34) für
+[archiv/analyse/re-livespiel.md](analyse/re-livespiel.md) §12 (Spuren A/B/C), DOSBox-Aufnahme `runde-17` (Referenz-Repo #29–#34) für
 #730 und #773, offene P3 #803, #804, #805. Ziel: Live-Spiel ohne Torszenen spielbar (L1–L6, L8), offene Abgleich-Issues belegt
 geschlossen oder mit Beleg zurückgestellt. **Entscheidungen Nutzer 13.11.2026** (Optionen im Plan-PR #809): R18-D1 = A
 (Zuschnitt zwei Wellen, Torszenen Runde 19), R18-D2 = A (eigene Spur `abgleich-dosbox`), R18-D3 = A (Zufallszüge der Anzeige im
@@ -77,7 +77,7 @@ Merge von `livespiel-kern`: `livespiel-ui-2` (B2, B3, eigener Branch `paket/live
 - `Core/OriginalImport*.cs`, `Core/OriginalExport*.cs`, `Formats/OriginalSave*.cs`, `tests/**/AbgleichOriginalPaareTests.cs`:
   allein `abgleich-dosbox`; andere Spuren nur die erwarteten Einträge ihrer IDs, im PR genannt.
 - `Core/GameState.Integration.cs`, `GameState.cs`: höchstens minimal, im PR begründet.
-- `docs/reverse-engineering.md`, `docs/analyse/re-livespiel.md`: je Spur ein eigener Abschnitt, die Leitstelle löst beim Merge auf.
+- `docs/reverse-engineering.md`, `docs/archiv/analyse/re-livespiel.md`: je Spur ein eigener Abschnitt, die Leitstelle löst beim Merge auf.
 - `docs/analyse/inventur.md`, `docs/re-abdeckung.md`, `tools/reverse-engineering/*`, `tests/**/Support/`: allein
   `pruefung-karte` (Teil 2); die anderen Spuren nennen ihre Inventurzeilen im PR.
 

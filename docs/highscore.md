@@ -44,7 +44,7 @@ Belege aus `em.exe` (Datei-Offsets; Overlay-Stub Highscore = 0x140:0x7A).
 - **Nur Weltkugel** (DGROUP 0xD0B9 = 1, Datei 0x5D59B–0x5D607, `HighscoreRules.WorldOnlyScore`, #826): statt der Formel
   Σ (9 − Byte) über die Platzierungsfolge des Landes DGROUP 0x828B + 0x50 · Land (Plätze 1 … 8, sonst 11 → −2 je WM),
   mindestens 1; Titel 0/0/0, Verein = Land. Beleg DOSBox FILE54 (Platz 4 → 5) und FILE20 (Gruppe → 1),
-  `analyse/abgleich-dosbox.md` §3.3; Test `HighscoreWeltkugelTests`.
+  `archiv/analyse/abgleich-dosbox.md` §3.3; Test `HighscoreWeltkugelTests`.
 - **Beleg:** eigener 8086-Emulator lief die Originalfunktion gegen das Modell, 14 Fälle als Goldtest
   (`HighscoreTests.Points_MatchOriginalFunction`), 500 Zufallsfälle zusätzlich gleich. Die Emulator-Skripte liegen nicht im Repo.
 

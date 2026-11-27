@@ -1,6 +1,10 @@
 # Bestandsaufnahme der Originaldateien
 
-Stand: 25.10.2026 · Formatdetails: [formate/dateiformate.md](formate/dateiformate.md)
+Stand: 25.10.2026 · Formatdetails: [formate/dateiformate.md](../formate/dateiformate.md)
+
+Archiviert am 27.11.2026 (Runde 27, `aufraeumen-archiv`): überholter Zwischenstand; Gültiges (Amiga-Version) steht in
+[formate/dateiformate.md](../formate/dateiformate.md), Stand der Formate und Spielregeln dort bzw. in
+[reverse-engineering.md](../reverse-engineering.md). Sound und Musik sind inzwischen umgesetzt.
 
 ## Versionen
 
@@ -43,5 +47,5 @@ Bedeutung der Rahmen (28 Bytes) noch offen.
 
 1. Sound: VOC-Wiedergabe, CMF über OPL2-Emulation
 2. Torszenen-Format `tore\*` und `kb\246`
-3. Bildschirme nach [anforderungen/bildschirme.md](anforderungen/bildschirme.md) nachbauen, beginnend mit Titel → Setup → Hauptmenü
-4. Spielregeln aus [reverse-engineering.md](reverse-engineering.md) an `em.exe` nachprüfen
+3. Bildschirme nach [anforderungen/bildschirme.md](../anforderungen/bildschirme.md) nachbauen, beginnend mit Titel → Setup → Hauptmenü
+4. Spielregeln aus [reverse-engineering.md](../reverse-engineering.md) an `em.exe` nachprüfen

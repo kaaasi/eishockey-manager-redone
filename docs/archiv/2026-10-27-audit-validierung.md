@@ -2,7 +2,7 @@
 
 **Datum:** 27.10.2026 · **Leitstelle:** Claude Code · **Geprüfter Stand:** `main` @ `cc26bde939f6a94485bb2ee7f4dc3053741a8d3a`
 **Grundlage:** [Audit in PR #42](https://github.com/kaaasi/eishockey-manager-redone/pull/42)
-(`docs/reviews/2026-10-27-repository-audit-github-free.md`, Head `046f461`), `AGENTS.md`/`CLAUDE.md`,
+(`docs/archiv/reviews/runde-3/2026-10-27-repository-audit-github-free.md`, Head `046f461`), `AGENTS.md`/`CLAUDE.md`,
 `docs/arbeitspakete.md`, Reviews in `docs/reviews/`, Workflows, Repo-Einstellungen über die REST-API, Build und Tests lokal.
 
 **Kennzeichnung:** *bestätigt* = selbst nachgeprüft; *teilweise* = Befund stimmt nur zum Teil oder ist schon zum Teil
@@ -80,7 +80,7 @@ Keine Maßnahme ändert Dateien der offenen PRs #39–#41, #43, #44 (geprüft an
 
 ## 4. Multi-Agenten-Konzept (Kurzfassung)
 
-Ausgeführt in [zusammenarbeit.md](zusammenarbeit.md):
+Ausgeführt in [zusammenarbeit.md](../prozess/zusammenarbeit.md):
 
 - **Gemeinsame Regeln:** `AGENTS.md` ist der werkzeugneutrale Einstieg; `CLAUDE.md` importiert ihn (`@AGENTS.md`) und
   enthält nur noch Claude-spezifische Bedienhinweise. Keine Regel steht doppelt.
