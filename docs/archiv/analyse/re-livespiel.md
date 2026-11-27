@@ -1,7 +1,7 @@
 # Analyse em.exe: Livespiel Ov 0x130 (Spur `re-livespiel`, Runde 10)
 
 Alle Adressen in dieser Datei sind **Dateioffsets** in `em.exe` (Schreibweise und Umrechnung wie in
-[re-abdeckung.md](../re-abdeckung.md)); Werte im Datensegment stehen ausdrücklich als `DGROUP 0x…`. Overlay 0x130
+[re-abdeckung.md](../../re-abdeckung.md)); Werte im Datensegment stehen ausdrücklich als `DGROUP 0x…`. Overlay 0x130
 (Ghidra 5E73) liegt ab Datei 0x51E90; Stub-Einträge stehen als `0x130:0x75` (= Datei 0x5353C). Hilfsfunktionen der
 Laufzeit, der Fenster- und Grafikbasis stehen nur mit ihrem Fernaufruf in der Schreibweise des Plans (`30h:885h`), damit
 die Funktionskarte sie nicht dieser Datei zuordnet. Bedeutung aus der Benutzung hier (Argumente in C-Reihenfolge,
@@ -455,7 +455,7 @@ Rückgabe immer 0 (`[bp-0xD]`, Datei 0x38D9E/0x39012). Ohne Live-Anzeige (`[0x5A
 **Wirkung im Spielkern:** Einsatz und Angriff gelten ab sofort für die Minutenrechnung (`spielberechnung.md` §5–§7), bis
 das Nachführen 0x939A sie in einer geraden Minute der Managerpaarung überschreibt (Einsatz nur bei Modus ≠ 2, Angriff
 nur bei Modus < 2; A176 „MANUELL“). Die Reihe auf dem Eis gilt bis zum nächsten Reihenwechsel 0x8EF2 (`ChangeLines`).
-Damit ist die Lesart in `analyse/belastung-staerke.md` §7 („0x38F40 (Modus)“) zu berichtigen: Datei 0x38F40 schreibt die
+Damit ist die Lesart in `archiv/analyse/belastung-staerke.md` §7 („0x38F40 (Modus)“) zu berichtigen: Datei 0x38F40 schreibt die
 **Angriffsbits** 4–6, einen Modus schreibt das Eingriffsmenü nicht (Hinweis für `pruefung-karte`, Datei außerhalb der
 Spur).
 

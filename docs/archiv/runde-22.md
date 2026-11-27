@@ -32,7 +32,7 @@ Abschlussprüfung; Läufe vom 18.–22.11. warteten auf die Leitstelle (Ende ohn
 
 Runde 21 abgeschlossen am 17.11.2026: [archiv/runde-21.md](archiv/runde-21.md). Grundlage: Restliste
 [analyse/restliste-v1.md](analyse/restliste-v1.md) (V 67, D 21; „Klasse V nach Themen“, „Zuschnitt Runde 21 ff.“), neue V aus
-[analyse/re-vor-dosbox.md](analyse/re-vor-dosbox.md), Issues #896, #897, #899, #908, #912, #914. **Ziel der Runde:** alle 67 V
+[archiv/analyse/re-vor-dosbox.md](analyse/re-vor-dosbox.md), Issues #896, #897, #899, #908, #912, #914. **Ziel der Runde:** alle 67 V
 umsetzen (Zuordnung je ID unten, vollständig geprüft), dazu die neuen Befunde aus #897/#908; X auf `[ORIGINAL]` (`marker-x`), danach
 Generatorlauf. Danach bleiben bis zur Abschlussprüfung nur D (DOSBox, R22-D4) und die Abweichungsliste an den Nutzer.
 **Entscheidungen Nutzer 17.11.2026** (Optionen im Plan-PR #917): R22-D1 = A, R22-D2 = A, R22-D3 = B, R22-D4 = A, R22-D5 = A. Plan-Review #918 Ja (P3-1…3 eingearbeitet). **Go Nutzer 17.11.2026** (alle Spuren samt Folgeläufen, Modelle wie unten).

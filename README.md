@@ -71,6 +71,6 @@ dotnet run --project src/EishockeyManager.Tools -- screens gamedata screens setu
 - [ ] **danach:** neue Funktionen nach [docs/anforderungen/zusatzfunktionen.md](docs/anforderungen/zusatzfunktionen.md)
   (moderne Grafik, weitere Sprachen, Cheatmenü, Netzwerk mit Dedicated Server, Ex-/Import)
 
-Details zum aktuellen Analysestand: [docs/bestandsaufnahme.md](docs/bestandsaufnahme.md) ·
+Details zum aktuellen Analysestand: [docs/formate/dateiformate.md](docs/formate/dateiformate.md) ·
 Parallele Arbeit in Paketen: [docs/arbeitspakete.md](docs/arbeitspakete.md) · Regeln für alle Agenten: [AGENTS.md](AGENTS.md)
 (Claude Code zusätzlich: [CLAUDE.md](CLAUDE.md))

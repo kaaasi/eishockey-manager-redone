@@ -171,11 +171,19 @@ Die Breite enthält den Zeichenabstand bereits – Text wird **ohne** zusätzlic
   Register 0xBD = 0xC0 (tiefes Tremolo/Vibrato), im Rhythmusmodus 0xE0 mit 6 Melodiestimmen.
   Tonhöhenbeugung, Aftertouch und andere Controller ignoriert der Treiber.
 
+## Amiga-Version (nur Referenz)
+
+Aus der Bestandsaufnahme vom 25.10.2026 übernommen ([archiv/bestandsaufnahme.md](../archiv/bestandsaufnahme.md)): Die Amiga-Fassung
+(v1.00, 1991) besteht aus dem 68000-Programm `eh` (154 KB), `kleinbilder\` und `bilder\` (weniger Dateien als `kb\`), hat
+dieselbe Verzeichnisstruktur, ältere Datenstände und nur die Torszenen 2–3 (`tore\`); es gibt keinen Sound Blaster. Hauptvorlage
+ist die DOS-Fassung; die Amiga-Fassung dient nur zum Vergleich der Datenstände. `infofile` (Spielmodus „nur Eisfläche“, Korrektur
+des Handbuchs S. 37) liegt in beiden Fassungen.
+
 ## Offen
 
 - `kb\246`: vermutlich Animationstabelle.
 - `tore\*`: Kopf `TOR!`, Big-Endian-`u16`, Rahmen zu 28 Bytes – Lader 0x575C3 und Format so weit gelesen in
-  [re-livespiel.md](../analyse/re-livespiel.md) §11 (Runde 17, `re-livespiel-2`); offen nur die dort genannten Restpunkte.
+  [re-livespiel.md](../archiv/analyse/re-livespiel.md) §11 (Runde 17, `re-livespiel-2`); offen nur die dort genannten Restpunkte.
 - ✓ Spielstände `*.HOK`: Klartextkopf (0xBA Byte), dann 94 Blöcke mit `verschlüsselt = (klar XOR k) + k`, `k -= 0x29`;
   Startschlüssel `random(0..255) + 0x6E` (8 Bit) bei 0xB9, 8-Bit-Prüfsumme (Start = Schlüssel) zweimal im Strom.
   An drei Original-Spielständen belegt; Aufbau und Fundstellen: [spielstand-original.md](spielstand-original.md).

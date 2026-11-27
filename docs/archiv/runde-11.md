@@ -82,9 +82,9 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
 - **DOSBox-Spielstandpaar** (A085, A088, A091, A125): Saisonwechsel vorher/nachher mit `emtool hok`; Aufnahme durch den
   Nutzer. Die Spur beschreibt den Ablauf; fehlt das Paar, bleibt es begründet offen.
 - **Abnahme:** wie Runde 10 „Abnahme je Spur“ (Selbstprüfung `funktionskarte.py --csv` ohne `--write`); Datei
-  `docs/analyse/re-nachtrag.md` mit Abschnitt „Umsetzung“ je Stelle (Ziel, Dateien, Testidee, Spur dieser Runde).
-- **Dateigrenzen:** nur `docs/analyse/re-nachtrag.md` und der eigene Statuspunkt. **Modell:** Claude Opus 5.5. **Status:** Analyse
-  fertig – integriert (#424, Review [2026-11-02-re-nachtrag.md](reviews/runde-11/2026-11-02-re-nachtrag.md)), Umsetzung U1–U16 in `docs/analyse/re-nachtrag.md`; A085/A088 offen (Spielstandpaar).
+  `docs/archiv/analyse/re-nachtrag.md` mit Abschnitt „Umsetzung“ je Stelle (Ziel, Dateien, Testidee, Spur dieser Runde).
+- **Dateigrenzen:** nur `docs/archiv/analyse/re-nachtrag.md` und der eigene Statuspunkt. **Modell:** Claude Opus 5.5. **Status:** Analyse
+  fertig – integriert (#424, Review [2026-11-02-re-nachtrag.md](reviews/runde-11/2026-11-02-re-nachtrag.md)), Umsetzung U1–U16 in `docs/archiv/analyse/re-nachtrag.md`; A085/A088 offen (Spielstandpaar).
 
 ### Spur `geld` – Stadion, Jugend, Bank, Sponsoren, Finanzbedienung
 
@@ -106,7 +106,7 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
   7. **Probe:** Ausweg der Finanzprobe (#352).
 - **Abnahme:** je Regel roter Test, danach grün; Mehrsaisonprobe (Geld) je Teil mit Geldwirkung; Jugend: Platzverlauf mit
   festem Zufall über 4 Saisonwechsel.
-- **Dateigrenzen:** siehe Zuständigkeit; `docs/finanzen-rekonstruktion.md`, `docs/analyse/re-geld.md` (nur Status), Tests.
+- **Dateigrenzen:** siehe Zuständigkeit; `docs/finanzen-rekonstruktion.md`, `docs/archiv/analyse/re-geld.md` (nur Status), Tests.
 - **Modell:** Claude Opus 5.5. **Status:** Teil 1 (Stadionausbau) PR #417, fertig zum Review; Teil 2 (Sponsorbewertung, Angebote, Monatseinnahme) PR #429, fertig zum Review; Teil 3 (Jugendteams) PR #433, fertig zum Review. Teil 4 (Bank und Börse) PR #436, fertig zum Review (BoerseStartTests-Probe braucht Leitstellen-Anpassung, siehe PR). Teil 5 (Finanzbedienung) PR #442, fertig zum Review. Teil 6 (Talentsuche) PR #448, fertig zum Review (Anschluss Knopf „Talent“ in `TransferScreen.cs` für die Leitstelle). Teil 7 (Probe #352) PR #451, fertig zum Review. Spur fertig – integriert (#452, Review [2026-11-02-integration-geld.md](reviews/runde-11/2026-11-02-integration-geld.md)).
 
 ### Spur `saisonwechsel` – Oberliga, Zwangsabstieg, Ewige Tabelle
@@ -123,7 +123,7 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
      zugleich über die Aufstiegsrunde auf → Ligen 12/13/11) mit rotem Regressionstest und Regel, die 12/12/12 hält; SW-03
      (Prämientest schärfen). #428 bis #432 bleiben unverändert; der Stapel wird nur als Ganzes gemergt.
 - **Abnahme:** Mehrsaisonprobe 20 Saisons (Modus 1, 2, 4; passiv/aktiv); je Regel roter Test.
-- **Dateigrenzen:** siehe Zuständigkeit; `docs/analyse/re-saisonwechsel.md` (nur Status), Tests. **Modell:** Claude Opus 5.5.
+- **Dateigrenzen:** siehe Zuständigkeit; `docs/archiv/analyse/re-saisonwechsel.md` (nur Status), Tests. **Modell:** Claude Opus 5.5.
   **Status:** Teil 1 fertig, Review offen (PR #419); Teil 2 fertig, Review offen (PR #428, gestapelt auf #419); Teil 3 fertig, Review offen (PR #431, gestapelt auf #428); Teil 4 fertig, Review offen (PR #432, gestapelt auf #431); Review #441: Teil 5 (PR #449, gestapelt auf #432) behebt SW-01 (Zwangsabsteiger mit Aufstieg bleibt oben, Partner in die Oberliga, `[APPROX]`) und SW-03 – Nachprüfung durch die Leitstelle. Restlücke SW-02 (P3): Ewige Tabelle, Ewige Bilanz und „Früher“ fehlen die letzte Saison, wenn am 29. April alle Manager entlassen werden (`GameOver` aus `CheckDebts` vor `FinishSeason`); offen (Runde 12). Spur fertig – integriert (#460, Reviews [2026-11-02-integration-saisonwechsel.md](reviews/runde-11/2026-11-02-integration-saisonwechsel.md)).
 
 ### Spur `kader-transfer` – Kader, Transfermarkt, Verträge, Pool
@@ -164,7 +164,7 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
      für Code 10 mit Vorbehalt (#358).
   7. **Versteckte Fähigkeiten +19h (P2 Nr. 15) – nach `re-nachtrag`:** A185, A186.
   8. **Automatische Aufstellung (A068) und Neuzählung der Eingesetzten (A089, A070) – nach `re-nachtrag`
-     (Entscheidung Nutzer 02.11.2026):** Regel aus `docs/analyse/re-nachtrag.md` (426BCh/42838h), danach die Neuzählung
+     (Entscheidung Nutzer 02.11.2026):** Regel aus `docs/archiv/analyse/re-nachtrag.md` (426BCh/42838h), danach die Neuzählung
      38A36h aus Teil 5. Nur wenn das Review von #424 die Analyse für A068 als umsetzbar bestätigt; sonst Runde 12.
 - **Abnahme:** je Regel roter Test; Saisonverteilung (Meister, Tore, Strafminuten) im PR; Mehrsaisonprobe Modus 1, 2, 4;
   Referenzwerte begründet.

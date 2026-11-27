@@ -11,7 +11,7 @@ lesen. Relative Links beziehen sich auf `docs/`.
 #768, #770, #775, #780; #776/#778 belegt geschlossen. Gesamtreview (#783, ChatGPT GPT-6.1 Terra) **Ja** für `d233989`: keine
 neuen Produktfehler, zwei Testlücken (#784, #785).
 
-**Abschluss (12.11.2026):** offen #730 (Belastung, zurückgestellt R16-E2 = C, DOSBox-Liste `analyse/belastung-staerke.md` §7.3),
+**Abschluss (12.11.2026):** offen #730 (Belastung, zurückgestellt R16-E2 = C, DOSBox-Liste `archiv/analyse/belastung-staerke.md` §7.3),
 #773 (Strafminuten erster Spieltage, DOSBox-Stand nach Spieltag 1 nötig), #784, #785 (Testlücken). Prozess: Namen geplanter
 Läufe „EM R<runde> …“ (Nutzer 11.11.2026, `prozess/anhang.md` F). Repo `eishockey-manager-redone` öffentlich (R16-E3, Nutzer
 12.11.2026), Referenz-Repo bleibt privat.
@@ -53,7 +53,7 @@ Fixlauf ohne Befund, falls die Listen gegen den neuen `main` zu erneuern sind); 
   braucht `pool` dort eine Zeile (Besitzer, Poolplatz), nennt es sie im PR. Satz 0 im Export (`OriginalExport*.cs`): Stellen
   nennt `abgleich-rest` im PR, `pool` löst beim Merge auf.
 - `Core/FinanceStocks.cs`, `UI/Screens/**/Finance*Screen*.cs` (nur Kurs 0), `Tools/HokCompare*.cs`,
-  `docs/analyse/abgleich-original.md`: allein `pruefung-karte`.
+  `docs/archiv/analyse/abgleich-original.md`: allein `pruefung-karte`.
 - `tests/**/AbgleichOriginalPaareTests.cs`: jede Spur nur die erwarteten Einträge ihrer Issues.
 - `Core/GameState.Integration.cs`, `GameState.cs`: höchstens minimal, im PR begründet.
 - `docs/analyse/inventur.md`, `docs/re-abdeckung.md`, `tools/reverse-engineering/*`, `tests/**/Support/`: allein
@@ -92,7 +92,7 @@ Fixlauf ohne Befund, falls die Listen gegen den neuen `main` zu erneuern sind); 
 - **Lauf-Budget (R763-04):** ein Lauf darf mehrere Teile erledigen; reichen die vier Läufe nicht, bleibt Teil 4 offen
   (`spur-wartet`), die Leitstelle legt dem Nutzer einen Zusatzlauf oder Runde 17 vor.
 - **Modell:** Claude Opus 5.5. **Erstreview:** Claude Opus 5.5. **Status:** PR #766 (Ready for review, `spur-wartet`): Teile 1/2
-  zurückgestellt (R16-E2 = C: Ursache #730 nicht belegt, [analyse/belastung-staerke.md](analyse/belastung-staerke.md) §7,
+  zurückgestellt (R16-E2 = C: Ursache #730 nicht belegt, [archiv/analyse/belastung-staerke.md](analyse/belastung-staerke.md) §7,
   `[APPROX]` an `OriginalMinutes.ChangeLines`, Pflichteinträge bleiben, DOSBox-Liste §7.3, #730 offen); Teil 3 fertig (#732);
   Teil 4 fertig (#699); #772 fertig (Spielvorbereitung 0x8365, Schema 48); #773 kein Fehler (Strafrechnung wie im Original,
   FILE02→03 Zufall, §8; Wächtertest FILE05→24).

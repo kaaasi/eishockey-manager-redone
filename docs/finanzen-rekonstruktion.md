@@ -591,7 +591,7 @@ rechnet weiter mit Maßstab 2.
 ## Bedienung (Spur `geld`, Teil 5, G4)
 
 Bildschirmschleife Datei 0x58A57 (Ov 0x138), Betragsbalken Datei 0x58409 (Regel in
-[analyse/re-geld.md](analyse/re-geld.md), „Datei 0x58409 – Betragsbalken“). Umsetzung `FinanceScreen.Update`,
+[archiv/analyse/re-geld.md](archiv/analyse/re-geld.md), „Datei 0x58409 – Betragsbalken“). Umsetzung `FinanceScreen.Update`,
 `FinanceAmountBar`; Tests `FinanceBedienungTests` (Core und UI), `FinanceScreenTests`. Ereignisse `[0x5A16]`: 1 = links
 gedrückt, 2 = losgelassen, 3 = rechts (Ende). Zustand: Auswahl `[bp-0x16]` (0xFF = keine, anfangs keine), Seite
 `[bp-0x1c]` (0 / 36 / 167), Betrag `[bp-0x2a]` (−1 = keiner), Höchstwert `[bp-0x2e]`, q `[bp-0x32]`.

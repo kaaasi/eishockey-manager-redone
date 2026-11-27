@@ -80,7 +80,7 @@ Keine Maßnahme ändert Dateien der offenen PRs #39–#41, #43, #44 (geprüft an
 
 ## 4. Multi-Agenten-Konzept (Kurzfassung)
 
-Ausgeführt in [zusammenarbeit.md](zusammenarbeit.md):
+Ausgeführt in [zusammenarbeit.md](../prozess/zusammenarbeit.md):
 
 - **Gemeinsame Regeln:** `AGENTS.md` ist der werkzeugneutrale Einstieg; `CLAUDE.md` importiert ihn (`@AGENTS.md`) und
   enthält nur noch Claude-spezifische Bedienhinweise. Keine Regel steht doppelt.

@@ -23,7 +23,7 @@ als Fundstelle zählt (R10P-01). Im Code und in `docs/analyse/` gilt die normale
 
 **Ziel der Runde:** alle Kandidaten aus Runde 11 (Liste im Archiv-Übergang, Stand `main` @ `e401dbd`) genau einer Spur
 zuordnen und abarbeiten: Prüfaufträge E2, E4, E5 und S-K6 in em.exe, Rückbau E3, Restbefunde der Reviews (R11G, SW, WS, UM),
-Umsetzungen U4/U5/U8/U9/U15 aus `analyse/re-nachtrag.md`, A174/A184, die zwei offenen Prüfbereiche des Gesamtreviews #474
+Umsetzungen U4/U5/U8/U9/U15 aus `archiv/analyse/re-nachtrag.md`, A174/A184, die zwei offenen Prüfbereiche des Gesamtreviews #474
 und P3 Nr. 2 (Pixel). `livespiel` bleibt zurückgestellt. Entscheidungen D1–D3 und Go des Nutzers am 03.11.2026 (unten).
 
 **Base für alle Spuren:** aktueller `main` (Planstand `e401dbd`); tatsächlichen Base-SHA in den Draft-PR. Regeln wie Runde 11
@@ -43,7 +43,7 @@ Wie Runde 11 (Archiv, „Zuständigkeit für gemeinsame Dateien“) mit diesen �
   `kader-transfer` ändert `TeamUi.cs` nicht.
 - `Core/SeasonFlow*.cs` einschließlich `SeasonFlow.Oberliga.cs` (E5): allein `saisonwechsel`.
 - `Core/Player.Attributes.cs` (nur das Feld Belastung, A184): `wettbewerbe-spiel`.
-- `docs/analyse/re-runde-12.md`: allein `re-pruefung`. `tools/reverse-engineering/*`, `docs/re-abdeckung.md`,
+- `docs/archiv/analyse/re-runde-12.md`: allein `re-pruefung`. `tools/reverse-engineering/*`, `docs/re-abdeckung.md`,
   `docs/analyse/inventur.md` (Stand je Zeile): allein `pixel-marker` (Welle 2); die anderen Spuren nennen ihre Zeilen im PR.
 
 ### Spur `re-pruefung` – Prüfaufträge in em.exe (zuerst, nur Doku)
@@ -55,11 +55,11 @@ Wie Runde 11 (Archiv, „Zuständigkeit für gemeinsame Dateien“) mit diesen �
   (46DEFh, 40EF7h, 414C6h, 3DE9Fh, 5C559h/5C59Ah): Anlass, Text, Zeitpunkt; UM-2 – Aufbau des Vereinsfensters und der Kurve
   4D385h (x + 30, y − 30).
 - **Abnahme:** wie Runde 10 „Abnahme je Spur“ (Selbstprüfung `funktionskarte.py --csv` ohne `--write`); Datei
-  `docs/analyse/re-runde-12.md` mit Abschnitt „Umsetzung“ je Punkt (Ziel, Dateien, Testidee, Spur dieser Runde). Ein Lauf,
+  `docs/archiv/analyse/re-runde-12.md` mit Abschnitt „Umsetzung“ je Punkt (Ziel, Dateien, Testidee, Spur dieser Runde). Ein Lauf,
   keine Teile, keine Fortsetzung.
-- **Dateigrenzen:** nur `docs/analyse/re-runde-12.md` und der eigene Statuspunkt. **Modell:** Claude Opus 5.5. **Status:** fertig,
+- **Dateigrenzen:** nur `docs/archiv/analyse/re-runde-12.md` und der eigene Statuspunkt. **Modell:** Claude Opus 5.5. **Status:** fertig,
   PR #480; Befunde Review #494 (R12RP-01 bis -06) behoben, Nachprüfung #507 („Ja“), gemergt; Ergebnis und Umsetzung je Punkt in
-  `analyse/re-runde-12.md`.
+  `archiv/analyse/re-runde-12.md`.
 
 ### Spur `geld` – Testlücken, Stadionstärke, Pixel Finanzen
 
@@ -77,7 +77,7 @@ Wie Runde 11 (Archiv, „Zuständigkeit für gemeinsame Dateien“) mit diesen �
   1. **SW-02:** Ewige Tabelle ohne die letzte Saison, wenn am 29. April alle Manager entlassen werden (Review #441).
   2. **SW-05, SW-06:** Partner im Doppelwechsel im Test festlegen (`down[k]`); Paarindex im Fall „doppelter Platz“ (Review #458).
   3. **E5/S-K1** (nach `re-pruefung`): Konto am 29. April nach dem Befund angleichen oder Marker auf `[ORIGINAL]`
-     (`SeasonFlow.Oberliga.cs`, `docs/analyse/re-saisonwechsel.md`); **S-K6** umsetzen, falls die Analyse eine Abweichung zeigt.
+     (`SeasonFlow.Oberliga.cs`, `docs/archiv/analyse/re-saisonwechsel.md`); **S-K6** umsetzen, falls die Analyse eine Abweichung zeigt.
   4. **Gesamtreview #474, Bereich 1:** echter Schema-22-Spielstand (vom Code am letzten Schema-22-Commit erzeugt, kein
      Originalmaterial) als Testdatei, laden, migrieren, 4 Saisonwechsel weiterspielen.
   5. **Gesamtreview #474, Bereich 2 (D3):** Spielstand für den Doppelwechsel per `hok-patch` vorbereiten, Aufnahmeablauf

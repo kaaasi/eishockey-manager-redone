@@ -7,7 +7,7 @@ Inhalt unverändert. Ergebnisse und Reviews: `docs/archiv/reviews/`. Nur bei Bed
 
 ### Ursprünglicher Plan Runde 2 (ab 26.10.2026)
 
-Grundlage: unabhängiges Folgereview [archiv/reviews/runde-3/2026-10-26-folgereview.md](archiv/reviews/runde-3/2026-10-26-folgereview.md) zu Commit `e1ac97e`.
+Grundlage: unabhängiges Folgereview [archiv/reviews/runde-3/2026-10-26-folgereview.md](reviews/runde-3/2026-10-26-folgereview.md) zu Commit `e1ac97e`.
 Die Befunde R2-02, R2-06, R2-07, die verkürzten Stärkewerte (A01) und die Levelgrenze wurden vom Koordinations-Chat
 mit den Originaldaten nachvollzogen. **Erst stabilisieren, dann ausbauen:** `wettbewerbe` und das endgültige
 Speicherformat starten erst nach dieser Runde.
@@ -131,7 +131,7 @@ Befunde im Gesamtstand vom Koordinations-Chat nachgestellt (eigene Probe gegen d
 | Level | umgesetzt – Level 0–5 (LevelCount 6) |
 | R2-04, R2-08, R2-09 | erwartungsgemäß offen → Welle B (`lebenszyklus`) |
 
-**Review und Merge:** ChatGPT-Review [archiv/reviews/runde-3/2026-10-26-pr31-review.md](archiv/reviews/runde-3/2026-10-26-pr31-review.md) am Head
+**Review und Merge:** ChatGPT-Review [archiv/reviews/runde-3/2026-10-26-pr31-review.md](reviews/runde-3/2026-10-26-pr31-review.md) am Head
 `9bddf6f`: **Freigabe für Welle A**, keine neuen P0–P2-Befunde. Gemergt als `fce0760` (PR #31, damit auch #16–#30).
 Neu bzw. präzisiert:
 
@@ -224,7 +224,7 @@ vollständig, jeder Spieler altert um 3 Jahre und hat einen gültigen Vertrag.
 | **R2-11 (neu, offen)** | Ein passiver Manager verliert zu Beginn der dritten Saison seinen gesamten Kader (alle Verträge laufen gleichzeitig aus), ohne Vorwarnung im Posteingang. Ob und wie das Original warnt oder verlängert, ist nicht rekonstruiert → Runde 3 (Kader-KI/Verträge) |
 | R2-12 (neu, offen) | Keine Neuzugänge, Talente oder Ruhestand bei Computervereinen; der Pool vertragsloser Spieler wächst und altert unbegrenzt → Runde 3 |
 
-**Review 1** ([archiv/reviews/runde-3/2026-10-26-pr35-review.md](archiv/reviews/runde-3/2026-10-26-pr35-review.md), Head `c4fca70`): keine Freigabe wegen
+**Review 1** ([archiv/reviews/runde-3/2026-10-26-pr35-review.md](reviews/runde-3/2026-10-26-pr35-review.md), Head `c4fca70`): keine Freigabe wegen
 zwei P2-Befunden; die ursprünglichen Gegenbeispiele und die Mehrsaisonprobe (4 Wechsel) wurden bestätigt.
 R2-11 bekommt die Priorität P1 und R2-12 die Priorität P2, beide für Runde 3. Behoben im zweiten Integrations-Commit:
 

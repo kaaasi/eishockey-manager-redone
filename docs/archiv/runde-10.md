@@ -61,7 +61,7 @@ die Funktionskarte den Plan nicht als Fundstelle zählt (R10P-01, #368). In `doc
   48E62h; Jugendförderung 39DECh und 3A13Bh (genähert, Restlücke `finanzen-rest`).
 - **Abgleich:** `FinanceStocks.cs`, `FinanceYouth.cs`, Stadion- und Kontobuchungen über `GameState.Book`,
   `docs/finanzen-rekonstruktion.md`.
-- **Modell:** Claude Opus 5.5. **Status:** Analyse fertig, PR #375 (`docs/analyse/re-geld.md`, Kandidaten G1–G8;
+- **Modell:** Claude Opus 5.5. **Status:** Analyse fertig, PR #375 (`docs/archiv/analyse/re-geld.md`, Kandidaten G1–G8;
   48E62h ist Taktik, nicht Geld).
 
 ### Spur `re-meldungen` – Meldungen, Tagesablauf, Fenster
@@ -71,7 +71,7 @@ die Funktionskarte den Plan nicht als Fundstelle zählt (R10P-01, #368). In `doc
   99Fh (Base-Stand 16): 0AF8Dh, 0B019h, 0B0E6h, 0B447h, 0B7B5h, 0B830h, 0B8C2h, 0B8FEh, 0BE71h, 0BECDh, 0BEFAh, 0BF64h,
   0C0B8h, 0C5CEh, 0C729h, 0C789h.
 - **Abgleich:** `docs/tagesablauf.md`, `GameState.Integration.cs`, Meldungs- und Fensterbausteine in `Widgets.cs`.
-- **Modell:** Claude Opus 5.5. **Status:** Analyse fertig, PR #376 (`docs/analyse/re-meldungen.md`, 24 von 24 Funktionen
+- **Modell:** Claude Opus 5.5. **Status:** Analyse fertig, PR #376 (`docs/archiv/analyse/re-meldungen.md`, 24 von 24 Funktionen
   mit Fundstelle, Kandidaten K1–K10).
 
 ### Spur `re-saisonwechsel` – Manager ohne Liga (#166)
@@ -83,7 +83,7 @@ die Funktionskarte den Plan nicht als Fundstelle zählt (R10P-01, #368). In `doc
   festhalten). Den Spielstand selbst erzeugt die Leitstelle und gibt ihn dem Nutzer; der Nutzer spielt und liefert
   Bilder ins Referenz-Repo. Die Auswertung der Bilder ist ein weiterer Lauf nach Entscheidung des Nutzers.
 - **Abgleich:** `SeasonFlow.cs`, `docs/saison.md`, `[APPROX]` aus #307. **Modell:** Claude Opus 5.5. **Status:** Analyse
-  fertig (#377, `docs/analyse/re-saisonwechsel.md`): Managervereine verlassen die Oberliga nie (zweiter Tausch hebt den ersten
+  fertig (#377, `docs/archiv/analyse/re-saisonwechsel.md`): Managervereine verlassen die Oberliga nie (zweiter Tausch hebt den ersten
   auf), Konto 400.000 DM, beide Pfeile. DOSBox-Beleg: `FILE12`–`FILE14` und Bilder im Referenz-Repo
   (kaaasi/eishockey-manager-referenz#7). **Auswertung** (zweiter Lauf, `paket/re-saisonwechsel-2`): alle Aussagen bestätigt
   (Krefelder EV bleibt, ein Nachrücker, Konto 400.000 DM, beide Pfeile), dazu Ewige Tabelle (K4 → P2) und Darstellung im
@@ -99,7 +99,7 @@ die Funktionskarte den Plan nicht als Fundstelle zählt (R10P-01, #368). In `doc
   v1.0): Ablauf, Ereignisse aus der Spielberechnung, Grafik- und Textquellen, Zeitsteuerung. Keine Umsetzung.
 - **Modell:** Claude Fable 5.1; blockieren die Schutzmaßnahmen die Analyse, meldet der Lauf das im PR (`spur-wartet`)
   und die Leitstelle startet die Spur nach Freigabe des Nutzers mit Claude Opus 5.5 neu. **Status:** Analyse fertig
-  (PR #378, `docs/analyse/re-livespiel.md`): alle 19 Adressen zugeordnet, Kandidaten L1–L8 für Runde 11; keine
+  (PR #378, `docs/archiv/analyse/re-livespiel.md`): alle 19 Adressen zugeordnet, Kandidaten L1–L8 für Runde 11; keine
   Schutzmaßnahme hat blockiert. Offen: Eingriffsmenü 38D96h (Ov F0h) und `tore\`-Format (Kandidat L7).
 
 ### Spur `re-rest` – übrige unbekannte Funktionen (Nachtrag, Go Nutzer 01.11.2026)
@@ -118,7 +118,7 @@ die Funktionskarte den Plan nicht als Fundstelle zählt (R10P-01, #368). In `doc
   dürfen zusammengefasst beschrieben werden. Analysen der anderen Spuren (`docs/analyse/`, auch auf den offenen
   Spurbranches) nur lesen. Nach einer Adresse kein Doppelpunkt (sonst erkennt die Karte sie nicht; Hinweis in
   `archiv/reviews/runde-10/2026-11-01-plan-runde-10-nachpruefung.md`, R10R-02 #388).
-- **Modell:** Claude Opus 5.5. **Status:** Analyse fertig (PR #381, `docs/analyse/re-rest.md`): 53 von 53 Funktionen
+- **Modell:** Claude Opus 5.5. **Status:** Analyse fertig (PR #381, `docs/archiv/analyse/re-rest.md`): 53 von 53 Funktionen
   zugeordnet, Kandidaten K1–K7 (K1 Talentsuche P2); Übergaben an `livespiel`: 3183Ch, 35CBEh, 40290h.
 
 ### Spur `inventur` – Annahmen und Umsetzungslücken (Nachtrag, Go Nutzer 01.11.2026)

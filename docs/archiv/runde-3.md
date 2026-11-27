@@ -146,7 +146,7 @@ Mehrsaisonprobe Pflicht. Kleine PRs je Teil (`paket/<spur>-<teil>`), jeder Teil 
 ### Spur `speichern` – Spielstand mit Schemaversion (G11)
 
 - **Ziel:** eigenes Spielstandformat für den **gesamten** Zustand, robust gegen Saisonwechsel und spätere
-  Schemaänderungen (Audit G11, [audit-validierung](../prozess/2026-10-27-audit-validierung.md), Maßnahme M6).
+  Schemaänderungen (Audit G11, [audit-validierung](2026-10-27-audit-validierung.md), Maßnahme M6).
 - **Branch / Base:** `paket/speichern[-<teil>]` von `main` (≥ `5f8e02a`). Vorschlag Teile: `-rng` (Generator),
   `-ids` (stabile IDs), `-format` (Schema, Roundtrip), `-dialog` (Laden/Sichern, „Automatisch speichern“).
 - **Inhalt:**
@@ -274,7 +274,7 @@ drei Testläufe hat die Leitstelle auf dem Head nachgeholt (614/0/0 · 530/0/69 
 
 ### Spur `markerbericht` – Pilot Übergabe (ChatGPT)
 
-Ziel und Bewertung: [audit-validierung](../prozess/2026-10-27-audit-validierung.md) §5. Voraussetzungen (#45, #46, #50)
+Ziel und Bewertung: [audit-validierung](2026-10-27-audit-validierung.md) §5. Voraussetzungen (#45, #46, #50)
 sind auf `main`.
 
 | Feld | Inhalt |

@@ -156,7 +156,7 @@ Aufnahme nach [`vorlagen/dosbox-aufnahme.md`](../vorlagen/dosbox-aufnahme.md); w
   je Spieltag), A899 (Feldspieler im Tor zählt), A910 (Penaltyschießen Bit 7), A912 (Verletzungsmerker), A918 (Freundschaftsspiel
   Bundestrainer), A945 (verlorener Poolplatz).
 
-**RE zuerst erledigt** (Spur `re-vor-dosbox`, Runde 21; [re-vor-dosbox.md](re-vor-dosbox.md)): Die 22 D mit „RE zuerst“ und A093
+**RE zuerst erledigt** (Spur `re-vor-dosbox`, Runde 21; [re-vor-dosbox.md](../archiv/analyse/re-vor-dosbox.md)): Die 22 D mit „RE zuerst“ und A093
 (Aufnahme `a093`) sind gelesen und in `restliste-v1-klassen.csv` eingeordnet, keiner bleibt D – V: A080, A093, A101, A206,
 A421, A455, A492, A494, A497, A553, A628, A670, A671, A672, A698; X: A038, A425, A500, A694, A801; K: A002; E als Vorschlag
 mit Kennung N2 (R21-E1 = A, Nutzer 16.11.2026): A059, A480. Zusammenfassung, „Klasse V nach Themen“ und der erzeugte Block

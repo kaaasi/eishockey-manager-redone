@@ -16,7 +16,7 @@ Teil 2 blockiert** (Fallback R16-E2: C).
 ```bash
 source ~/claude-tools/env.sh && dotnet build src/EishockeyManager.Tools -c Release
 export OUT=/tmp/belastung-staerke                         # Ausgaben, nie ins Repo
-W=docs/analyse/belastung-staerke                          # Skripte, README dort
+W=docs/archiv/analyse/belastung-staerke                          # Skripte, README dort
 $W/dump.sh FILE02 FILE03 FILE16A FILE17 FILE24 FILE25 FILE38 FILE39 FILE40
 git apply $W/trace.patch && dotnet build src/EishockeyManager.Tools -c Release   # nur für §2.4/§3, danach git checkout
 ```
@@ -175,7 +175,7 @@ vorher glich der zu hohe Einsatz (55/80) eine andere Abweichung der Strafrechnun
 
 ### 7.2 Teil 1c – Schreiber der Reihenwahl und Minuten-Vorgabe
 
-`OUT=… docs/analyse/belastung-staerke/writers.sh` (ndisasm über die ganze em.exe, schreibende Befehle auf die Vereinsfelder
+`OUT=… docs/archiv/analyse/belastung-staerke/writers.sh` (ndisasm über die ganze em.exe, schreibende Befehle auf die Vereinsfelder
 0x2C/0x2E–0x31 und Kaderplatz +0x15, dazu die Blöcke A701/CC43 der Stände). Zuordnung (Spalte „Funktion“ des Skripts an
 Regionsgrenzen unzuverlässig, hier von Hand):
 

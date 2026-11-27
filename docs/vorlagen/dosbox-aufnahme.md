@@ -73,7 +73,7 @@ Stand derselben Sitzung („Keinen heutigen Spielstand laden !“) – dann DOSB
 
 ## Aufnahme `runde-13` (Plan Leitstelle 04.11.2026)
 
-Gesammelt aus den offenen Punkten von `docs/analyse/re-runde-13.md` (Frage 7, „nicht entscheidbar“) und allen noch offenen
+Gesammelt aus den offenen Punkten von `docs/archiv/analyse/re-runde-13.md` (Frage 7, „nicht entscheidbar“) und allen noch offenen
 Zeilen der Gruppe c in `docs/analyse/inventur.md`, die nur mit DOSBox belegbar sind. Videopunkte (A002, A005, A057, A142, A272,
 A291, A301) sind ausgenommen. Nummern ab **FILE29** (höchste vorhandene: FILE28); sie rücken auf, wenn eine Nummer schon belegt ist.
 Je Schritt sind die Inventur-IDs genannt. Die mit „optional“ markierten Schritte nur machen, wenn sie ohne großen Aufwand gehen.
@@ -137,7 +137,7 @@ Bilder heißen `fileNN_<k>_<inhalt>.png`, Notizen des Nutzers kommen wörtlich i
 Gebündelt aus `docs/arbeitspakete.md` „Zurückgestellt“ und „Vormerkungen“. Nummern ab **FILE50** (Vorschlag; höchste vorhandene
 laut README bestimmen, die Nummern rücken auf). Auswertung erst in der Runde nach Eintreffen (Analysespur, nicht hier).
 
-### Sitzung 1 – Belastung #730 (`analyse/belastung-staerke.md` §7.3), Start FILE02
+### Sitzung 1 – Belastung #730 (`archiv/analyse/belastung-staerke.md` §7.3), Start FILE02
 
 1. FILE02 laden, den 1. Spieltag **ohne** Mausklick im Live-Spiel spielen; je Spielminute ein Bild der Reihenanzeige beider
    Managerteile (Bildschirmfoto-Taste reicht). Danach im Hauptmenü sichern als **FILE50**.
@@ -172,7 +172,7 @@ laut README bestimmen, die Nummern rücken auf). Auswertung erst in der Runde na
 Gebündelt aus `docs/arbeitspakete.md` „Zurückgestellt“ (#730 Rest, A093, #838) und zur Gegenprobe für #847. Nummern: nächste
 freie laut README (Vorschlag ab **FILE60**; FILE59 frei lassen, falls belegt – README entscheidet, R852 P3-5). Auswertung erst in der Runde nach Eintreffen (Analysespur, nicht hier).
 
-### Sitzung 1 – Belastung #730 Spieltag 2/3 (`analyse/abgleich-dosbox.md` §1.3), Start FILE50
+### Sitzung 1 – Belastung #730 Spieltag 2/3 (`archiv/analyse/abgleich-dosbox.md` §1.3), Start FILE50
 
 1. FILE50 laden (Stand nach Spieltag 1). Bis vor den 2. Spieltag spielen (Training wie eingestellt, nichts ändern), im Hauptmenü
    sichern als **FILE60**.

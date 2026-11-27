@@ -29,7 +29,7 @@ entschlüsselt sind, ist das im Code mit [APPROX] markiert.
 
 ### 4. Netzwerkmodus mit Dedicated Server
 - **Anforderung:** Mehrspieler über das Netzwerk, auch mit eigenständigem Server.
-- **Leihen bei einem Mitmanager** (Entscheidung Nutzer 01.11.2026, E2 in `docs/analyse/re-geld.md`): Im Netzwerkspiel
+- **Leihen bei einem Mitmanager** (Entscheidung Nutzer 01.11.2026, E2 in `docs/archiv/analyse/re-geld.md`): Im Netzwerkspiel
   (alle spielen den Spieltag gleichzeitig, er endet erst, wenn alle fertig sind) als Anfrage mit Zustimmung des Verleihers;
   im lokalen Spiel wie im Original sofort. Stand Runde 11 (`geld` Teil 5, #442): Das lokale Spiel leiht sofort; die
   Anfrage samt Meldung bleibt als `FinanceInbox.RequestLoan` und `FinanceBank` (Annahme) für den Netzwerkmodus erhalten,

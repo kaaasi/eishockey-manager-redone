@@ -53,7 +53,7 @@ Welle 2 `pruefung-karte`, am Rundenende Gesamtreview.
 - `src/EishockeyManager.Formats/OriginalSave*.cs`, neue Dateien `Core/OriginalExport*.cs`, `Tools/HokExport.cs`,
   `docs/formate/spielstand-original.md`: allein `hok-export`. `Core/OriginalImport*.cs`: `hok-export` (nur was die Rundreise
   verlangt, im PR genannt); `abgleich-original` liest nur und meldet Importlücken als Issue.
-- Neue Dateien `Tools/HokCompare*.cs`, `docs/analyse/abgleich-original.md`, Tests `Abgleich*`: allein `abgleich-original`.
+- Neue Dateien `Tools/HokCompare*.cs`, `docs/archiv/analyse/abgleich-original.md`, Tests `Abgleich*`: allein `abgleich-original`.
 - `src/EishockeyManager.Tools/Program.cs`: je Spur eine Registrierungszeile (`hok-export`, `abgleich-original`).
 - `Core/GameState.Integration.cs`: höchstens minimal, im PR begründet.
 - `docs/analyse/inventur.md`, `docs/re-abdeckung.md`, `tools/reverse-engineering/*`, `tests/**/Support/`, fremde Testdateien:
@@ -124,11 +124,11 @@ Welle 2 `pruefung-karte`, am Rundenende Gesamtreview.
   2. **Paare:** ohne Eingriff FILE02→03, FILE13→14, FILE16A→17, FILE20→21, FILE22→23, FILE24→25, FILE30→31, FILE38→39→40;
      mit bekanntem Eingriff (nur übrige Felder) FILE44→46, FILE18→48. Je Paar ein `[GameDataTheory]`-Fall; bekannte Abweichungen
      als erwartete Liste mit Issue-Nummer, jede neue Abweichung macht den Test rot.
-  3. **Bericht:** `docs/analyse/abgleich-original.md` (je Abweichung: Einordnung Remake-Fehler mit Fundstelle / Importlücke /
+  3. **Bericht:** `docs/archiv/analyse/abgleich-original.md` (je Abweichung: Einordnung Remake-Fehler mit Fundstelle / Importlücke /
      Zufall / Eingriff); je Remake-Fehler ein Issue (Label `befund`, `P0`–`P3`). Behoben wird in Welle 2 bzw. Runde 16
      (Leitstelle bündelt), nicht in dieser Spur.
 - **Hinweis:** wird als letzte Spur gemergt; vor dem Merge erwartete Listen gegen den dann aktuellen `main` erneuern.
-- **Modell:** Claude Opus 5.5. **Status:** Teile 1–3 fertig (PR #728), Fixlauf zum Review (#735: P2-1, P3-1, P3-2) fertig; Listen gegen `main` 62e4927 erneuert (#729 durch #727, #699 Tag 0 durch #725 behoben); Befunde #729–#734, #737, #738, #747–#749, Beleg zu #699; Bericht `analyse/abgleich-original.md`.
+- **Modell:** Claude Opus 5.5. **Status:** Teile 1–3 fertig (PR #728), Fixlauf zum Review (#735: P2-1, P3-1, P3-2) fertig; Listen gegen `main` 62e4927 erneuert (#729 durch #727, #699 Tag 0 durch #725 behoben); Befunde #729–#734, #737, #738, #747–#749, Beleg zu #699; Bericht `archiv/analyse/abgleich-original.md`.
 
 ### Welle 2 (R15-E5 = A, Nutzer 11.11.2026)
 
@@ -152,7 +152,7 @@ anpassen, wenn ihre eigene Verhaltensänderung sie bricht – je Test Begründun
   in `AbgleichOriginalPaareTests` (die Spur darf diese Listen ändern, nur für ihre Issues); Mehrsaisonprobe bei Geld/Kader;
   `Fixes #<nr>` je behobenem Issue; was sich nicht belegen lässt, bleibt offen mit Begründung im Issue.
 - **Dateigrenzen:** `src/EishockeyManager.Core/**` außer `GameState.Integration.cs` (höchstens minimal), eigene Testdateien,
-  `AbgleichOriginalPaareTests.cs` (nur erwartete Listen), `docs/analyse/abgleich-original.md` (Spalte „behoben durch“).
+  `AbgleichOriginalPaareTests.cs` (nur erwartete Listen), `docs/archiv/analyse/abgleich-original.md` (Spalte „behoben durch“).
 - **Modell:** Claude Opus 5.5. **Status:** PR #752 (Review). Lauf 1: #747, #749, #731 (Kondition/Technik) behoben; #737 Zufall
   (Einzelprämien, Beleg-Test); #734 kein Finanzfehler (Aufstellung des Originals nach dem Laden, offen unter #733). Fortsetzung 1:
   #730 behoben (Training begrenzt die Belastung vorzeichenbehaftet, 0x4BD56), #736 behoben (Managerkader nach Datenbankplätzen,

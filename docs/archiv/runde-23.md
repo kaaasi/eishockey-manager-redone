@@ -111,12 +111,12 @@ Modell der Spur, Fixläufe ohne Befund Sonnet 5.5. Plan-Review Sonnet 5.5. Gesam
 
 ### Spur `re-reste` – Reste ohne Beleg per em.exe (Welle 1, R23-D2 = D)
 
-- **Teile:** 1. em.exe lesen, Bericht `docs/analyse/re-reste-23.md` je Punkt mit ausführbarem Beleg: #925 (b) eigener Gleichstand
+- **Teile:** 1. em.exe lesen, Bericht `docs/archiv/analyse/re-reste-23.md` je Punkt mit ausführbarem Beleg: #925 (b) eigener Gleichstand
   bleibt nach Wurf x = y stehen und zählt für den Gast (0x3166E) auch beim DEB-Pokal? (0x32B5F, FILE44 `D014` 4:4, widerspricht
   A003); #938 P3-3 Belastungszug 0x8C53 im Länderspiel zu stark?; A876 (Zähler Satz 5 über den Saisonwechsel) und A917 (HOK-Import
   0x18–0x1D nach Neuaufstellung, Datei 0x54D84–0x54DAA) nur bestätigen bzw. Klasse begründen; 2. belegte Abweichungen umsetzen (nach
   Merge von `v-rest`), sonst Vermerk K/E bzw. „nicht belegt“ im PR. Fixes #925.
-- **Dateien:** `docs/analyse/re-reste-23.md`, Stellen oben, Tests. **Erstreview:** Opus 5.5. **Status:** Teil 1 und 2 fertig
+- **Dateien:** `docs/archiv/analyse/re-reste-23.md`, Stellen oben, Tests. **Erstreview:** Opus 5.5. **Status:** Teil 1 und 2 fertig
   (PR #965, 23.11.2026): #925 (b) im DEB-Pokal umgesetzt (`FastCupResultWithTie` `debCup`, `CupMatch.FromReport` zwei Marken, Heimverein),
   #938 P3-3 nicht belegt (Kommentar 0x8C53), A876/A917 K bestätigt – Review. Fixlauf RR-01/RR-02 (23.11.2026): Zusatzwurf des
   schnellen Wegs auch für ungleiche Paarungen mit offener Paarung dahinter (`MatchEngine.DebCupExtraRoll`, nur die ersten zwei je
@@ -127,10 +127,10 @@ Modell der Spur, Fixläufe ohne Befund Sonnet 5.5. Plan-Review Sonnet 5.5. Gesam
 - **Voraussetzung:** kaaasi/eishockey-manager-referenz#41 gemergt (23.11.2026; FILE75, FILE76, Bilder `file75_*`, `file76_*`).
 - **Teile:** 1. Auswertung je ID mit Beleg (Spielstand, Bild, em.exe): A427 Startwerte der Computervereinsspieler, A065 Bestenliste,
   A057 Zugfolge, A402/A613/A614/A629 (Sparbuch, Darlehen, Leihe, Bandenwerbung im HOK), A117 Gehalt 0 und sehr hoch; Bericht
-  `docs/analyse/abgleich-dosbox-22.md`, Klassenvorschlag je ID (V/X/K/E) für `pruefung-karte`; 2. belegte Abweichungen der Größe S
+  `docs/archiv/analyse/abgleich-dosbox-22.md`, Klassenvorschlag je ID (V/X/K/E) für `pruefung-karte`; 2. belegte Abweichungen der Größe S
   umsetzen (nach Merge von `v-rest`, A117 an `ContractDialog.cs`/Kern); größere als Issue mit Vorschlag an die Leitstelle.
-- **Dateien:** `docs/analyse/abgleich-dosbox-22.md`, Stellen oben, eigene `OriginalImport.<Teil>.cs`, Tests mit FILE75/76.
-  **Erstreview:** Opus 5.5. **Status:** Teil 1 fertig (PR #964, Bericht `analyse/abgleich-dosbox-22.md`: V A065, A402, A614,
+- **Dateien:** `docs/archiv/analyse/abgleich-dosbox-22.md`, Stellen oben, eigene `OriginalImport.<Teil>.cs`, Tests mit FILE75/76.
+  **Erstreview:** Opus 5.5. **Status:** Teil 1 fertig (PR #964, Bericht `archiv/analyse/abgleich-dosbox-22.md`: V A065, A402, A614,
   A629-Export; X A057, A613; K A427, A117; A629-Leihende bleibt D); Teil 2 fertig (Fortsetzung 1: A065, A402, A614, A629-Export,
   A117-Anzeige, 0xA70D; Bericht „Teil 2“), Ready for review.
 
