@@ -18,7 +18,8 @@ P3 #978, #980, #1019, #1024 (Rest P3-2) und die Themen K04, K11, K13, L11, L12, 
 [analyse/abweichungen-v1.md](analyse/abweichungen-v1.md) Abschnitt 0 („ins Aufräumen #936“). **Nicht in dieser Runde:** D-Themen
 (DOSBox nach Lust), Abschlussprüfung (Runde 28). **Entscheidungen Nutzer 27.11.2026** (Optionen im Plan-PR #1056):
 R27-D1 = C (eigene Spur `aufraeumen-archiv` parallel in Welle 1), R27-D2 = B (nur Schema 65 ladbar, alle Migrationsschritte
-entfallen), R27-D3 = B (enges Gesamtreview am Rundenende, ChatGPT GPT-6.2 Astra), R27-D4 = B (Modelle wie unten). **Go Nutzer
+entfallen), R27-D3 = B (enges Gesamtreview am Rundenende, ChatGPT GPT-6.2 Astra; Nutzerangabe lautete „R22-D3 = B“, von der Leitstelle als
+R27-D3 gelesen, Bestätigung erbeten), R27-D4 = B (Modelle wie unten). **Go Nutzer
 27.11.2026** (alle Spuren samt Folgeläufen; Start nach Merge des Plans).
 
 **Regeln der Runde:**
@@ -30,9 +31,16 @@ entfallen), R27-D3 = B (enges Gesamtreview am Rundenende, ChatGPT GPT-6.2 Astra)
 - **Abnahmeproben** nach Konzept §2.4 in jedem Code-PR: Testliste `dotnet test --list-tests` vor/nach (Abbildung alt → neu,
   entfernte Fälle nur bei totem Weg oder entfallener Migration mit Begründung, neue Fälle nur #978, #1019 und der
   Lader-Test von `aufraeumen-migration`); Zustandsabdruck (`StateFingerprint`) einer
-  festen Partie über 4 Saisonwechsel (passiv/aktiv) auf Base und Head gleich; Bildschirmfotos bytegleich, wo UI berührt ist;
+  festen Partie über 4 Saisonwechsel (passiv/aktiv) auf Base und Head gleich – Harness im PR (nicht eingecheckt) mit Seed und
+  Partie, entfernte oder umbenannte Felder (Reflexion liest alle Instanzfelder) als erwartete Abweichung aufgelistet; Bildschirmfotos bytegleich, wo UI berührt ist;
   `markerliste.py` **ohne** `--write` vor/nach (verlorene IDs nur bei gelöschten toten Pfaden, Liste im PR; `[APPROX]`-Wortlaut
-  beim Verschieben nicht ändern).
+  beim Verschieben nicht ändern; zweiter zulässiger Grund für entfallene IDs: entfallene Migration, z. B. L11, Teile von
+  L12/C02, Liste je ID im PR).
+- **Testhilfen:** Dateien unter `tests/*/Support/` (Link-Dateien zwischen den Testprojekten) werden nicht umbenannt oder
+  verschoben; in Welle 4 nach dem Rebase der zweiten Spur `dotnet build` beider Testprojekte.
+- **Abdeckungskarte:** `docs/re-abdeckung.md` bleibt (erzeugt von `tools/reverse-engineering/funktionskarte.py`). Wer Doku
+  verschiebt, die `funktionskarte.py` (`scan_docs`) als Beleg liest, weist `funktionskarte.py <em.exe> --csv` vor/nach mit
+  gleicher Statusverteilung nach.
 - **Prüfläufe:** Code-Spuren alle drei Läufe von `tools/pruefen.sh` (Konzept §2.2); reine Doku-Spuren entfällt.
 - **Migration (A1 = B, R27-D2 = B):** nur Spielstände mit Schema 65 bleiben ladbar, alle Schritte `[1]`…`[64]` entfallen;
   `SchemaVersion` bleibt 65, keine neue Migration in dieser Runde.
@@ -55,7 +63,7 @@ der Branches (`nur_anzeigen=false`) nur nach seinem Ja. Dann enges Gesamtreview 
 | `aufraeumen-migration` | 1 | A1 = B/R27-D2 = B, L11, Teile von L12/C02 | Opus 5.5 | `AfterLoadPool`, Lader, Rückfälle |
 | `aufraeumen-archiv` | 1 | A2 = A, D2–D4, W2 | Sonnet 5.5 | mechanisch, nur `docs/**` |
 | `aufraeumen-tot` | 2 | K3–K7, K15–K18, K04, C08, #980 P3-3 | Opus 5.5 | Tests auf den echten Weg umstellen |
-| `aufraeumen-doppelt` | 3 | K1, K8, K10, K12, K19 (nur neutral), U1–U8, U10, U11, #1019 | Opus 5.5 | Zusammenlegen ohne Verhaltensänderung |
+| `aufraeumen-doppelt` | 3 | K1, K8, K10, K12, K19 (nur neutral), U1–U8, U10, U11, #1019, `.Rest`/`.Einzelpunkte` | Opus 5.5 | Zusammenlegen ohne Verhaltensänderung |
 | `aufraeumen-tests-core` | 4 | Konzept §1.2 Core-Tests, #978 | Sonnet 5.5 | Umbenennen, Testliste belegt |
 | `aufraeumen-tests-ui` | 4 | Konzept §1.2 UI-Tests, U9, U14 (A5 = A) | Sonnet 5.5 | Umbenennen, Rauchtest |
 | `aufraeumen-doku` | 5 | D1 Rest, D5, D6, W1, K13, #980 P3-1/2, #1024, A6 | Sonnet 5.5 | Verweise, Generatorlauf |
@@ -82,24 +90,28 @@ Erstreviews: Opus 5.5 für `aufraeumen-migration`, `-tot`, `-doppelt`; Sonnet 5.
 ### Spur `aufraeumen-archiv` – Reviews und Arbeitsanalysen ins Archiv (Welle 1, nur `docs/**`)
 
 - **Teile:** 1. `docs/reviews/*` abgeschlossener Runden (bis Runde 26) unverändert nach `docs/archiv/reviews/runde-<n>/`
-  (Zuordnung über die Rundenarchive bzw. das Datum; Tabelle im PR), Reviews der Runde 27 bleiben; 2. Arbeitsstände nach Konzept
-  D2 (`analyse/re-*`, `abgleich-*`, `belastung*` samt Skripten W2) nach `docs/archiv/analyse/`; **bleiben:** `inventur.md`,
+  (Zuordnung nach dem Rundenarchiv `docs/archiv/runde-<n>.md`, nicht nach dem Datum; Tabelle im PR), Reviews der Runde 27 bleiben; 2. Arbeitsstände nach Konzept
+  D2 (`analyse/re-*`, `abgleich-*`, `belastung*` samt Skripten W2) nach `docs/archiv/analyse/`;
+  `funktionskarte.py` (`scan_docs`) liest danach zusätzlich `docs/archiv/analyse/` (minimal, sonst fallen deren Adressen aus der
+  Karte); **bleiben:** `inventur.md`,
   `restliste-v1*`, `abweichungen-v1.md`, `aufraeumen-v1.md` und jede Analyse, die eine Spur dieser Runde noch braucht (Kopf der
-  Spur prüfen); 3. D3, D4 (Gültiges in `formate/dateiformate.md` bzw. `reverse-engineering.md` übernehmen, Rest ins Archiv);
+  Spur prüfen); 3. D3, D4 (`bestandsaufnahme.md`: Gültiges in `formate/dateiformate.md` bzw.
+  `reverse-engineering.md` übernehmen, Rest ins Archiv; `re-abdeckung.md` bleibt);
   4. relative Verweise **innerhalb von `docs/**`** nachziehen. Verweise aus `src/`, `tests/`, `tools/` (Kommentare) zeigen bis
   `aufraeumen-doku` auf alte Pfade; Liste der betroffenen Stellen (grep) als Datei `docs/analyse/aufraeumen-verweise.md` für
   `aufraeumen-doku`.
-- **Dateien:** `docs/**` ohne Planabschnitte von `docs/arbeitspakete.md`. **Prüfung:** Linkprüfung aller relativen Verweise in
+- **Dateien:** `docs/**` ohne Planabschnitte von `docs/arbeitspakete.md`; `tools/reverse-engineering/funktionskarte.py` (nur
+  `scan_docs`). **Prüfung:** `funktionskarte.py <em.exe> --csv` vor/nach mit gleicher Statusverteilung; Linkprüfung aller relativen Verweise in
   `docs/**` (Skript im PR, nicht eingecheckt); `tools/reverse-engineering/markerliste.py` (ohne `--write`) läuft unverändert
   (liest `inventur.md`). CI entfällt.
 - **Status:** nicht gestartet.
 
 ### Spur `aufraeumen-tot` – tote und Nur-Test-Pfade im Core (Welle 2, nach Merge von `aufraeumen-migration`)
 
-- **Teile:** 0. Stand neu erheben (Konzept §1.5 K3–K7, K15–K18 und abweichungen-v1 K04, C08, K11 „nur Tests“); 1. K3 (Poisson-Weg,
+- **Teile:** 0. Stand neu erheben (Konzept §1.5 K3–K7, K15–K18 und abweichungen-v1 K04, C08, K11 – Thema K11 der Abweichungsliste deckt sich mit Konzept K6); 1. K3 (Poisson-Weg,
   `MatchStrength`; Feld `ReferenceRating` bleibt im Schema, wird nur nicht mehr gelesen), K16, K17, C08, K04 (tote Wege) entfernen;
   2. K4–K7 und K18 („API ohne Anschluss“, gewollte Testhaken bleiben): Tests auf den echten Weg (`Continue()`,
-  `TestSeason.PlayMatchDay`) umstellen, dann Nur-Test-Pfad entfernen – erwartete Werte je Testdatei begründen (R21-D2 = A);
+  `TestSeason.PlayMatchDay`) umstellen, dann Nur-Test-Pfad entfernen (K6 = Thema K11 der Abweichungsliste, soweit nur Tests) – erwartete Werte je Testdatei begründen (R21-D2 = A);
   K15 bleibt (A4 = A, Kommentar genügt); 3. #980 P3-3 (Kommentar `MatchEngine.Managed.cs`, Bedingung +0x0A ≠ 0, Datei
   0x54918–0x54927).
 - **Dateien:** `src/EishockeyManager.Core/**` außer `SaveGame*`; `GameState.cs`, `GameState.Integration.cs` minimal (K3); betroffene
@@ -112,7 +124,9 @@ Erstreviews: Opus 5.5 für `aufraeumen-migration`, `-tot`, `-doppelt`; Sonnet 5.
   gleicher Bedeutung (Helfer je Bedeutung, z. B. `IsManagedClub`/`IsActiveManagedClub`); K1 nur, wenn die Gleichheit per Test
   belegt ist, sonst liegen lassen und im PR begründen; 2. UI/Tools/Formats: U1–U6, U10 (Konstanten in `OriginalSaveGame`), U11;
   U12/U13 liegen lassen („fraglich“); 3. Test-Hilfen U7/U8 einmal in `tests/EishockeyManager.Core.Tests/Support/`, UI-Tests als
-  Link-Datei (Muster `GameDataFact.cs`); 4. #1019: Testnaht für den Stromstand nach `FinishSeason` (minimal) und Test zu T03.
+  Link-Datei (Muster `GameDataFact.cs`); 4. #1019: Testnaht für den Stromstand nach `FinishSeason` (minimal) und Test zu T03;
+  5. nach Spur benannte Core-Dateien (Konzept §1.2): `Manager.Einzelpunkte.cs`, `OriginalImport.Rest.cs`, `OriginalExport.Rest.cs`
+  nach Inhalt umbenennen bzw. aufteilen (z. B. `.Finance.cs`, `.Season.cs`), Verhalten unverändert.
 - **Dateien:** Core (ohne `SaveGame*`), UI (`Widgets.cs` minimal), Tools, Formats; aus `tests/` nur U7/U8-Dateien, Testprojekte,
   betroffene Tests. **Prüfung:** alle drei Läufe, Zustandsabdruck, Bildschirmfotos bytegleich, Markerprobe.
 - **Status:** nicht gestartet.
@@ -143,10 +157,11 @@ Erstreviews: Opus 5.5 für `aufraeumen-migration`, `-tot`, `-doppelt`; Sonnet 5.
   (nur Pfadangaben in Kommentaren), Datei danach entfernen; 2. D5 Themendokus (`saison.md`, `tagesablauf.md`, `spielberechnung.md`,
   `transfer.md`, `wettbewerbe.md`, `finanzen-rekonstruktion.md`, `highscore.md`) gegen den Code prüfen, Veraltetes korrigieren
   (Widerspruch zum Code = P3-Issue, nicht still angleichen); D6/#980 P3-1/P3-2; #1024; Klassenlistentext K13 (abweichungen-v1);
-  W1 (`markerbericht.py` bleibt, nur Doku); 3. A6 = A: `markerliste.py --write` einmal, Restliste und Abweichungsliste auf neue
+  W1 (`markerbericht.py` bleibt, nur Doku); #980 P3-4 ohne Dateiänderung, nur Vermerk im PR; 3. A6 = A: `markerliste.py --write` einmal, Restliste und Abweichungsliste auf neue
   Dateinamen, Diff im PR (keine ID verloren außer den Listen der Spuren).
 - **Dateien:** `docs/**`, `tools/**`, Kommentare mit Doku-Pfaden in `src/`/`tests/` (nur die Pfadangabe). **Prüfung:** alle drei
-  Läufe (Kommentare in Code), Linkprüfung des ganzen Repos ohne tote Ziele, Markerdiff.
+  Läufe (Kommentare in Code), Linkprüfung des ganzen Repos ohne tote Ziele, Markerdiff, `funktionskarte.py <em.exe> --csv`
+  vor/nach (Statusverteilung gleich).
 - **Status:** nicht gestartet.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
