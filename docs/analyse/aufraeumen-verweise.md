@@ -1,6 +1,6 @@
 # Verweise auf verschobene Doku (Übergabe an `aufraeumen-doku`)
 
-Spur `aufraeumen-archiv` (Runde 27, Teil 4), Stand `main` `7412a50` + Spur. In `docs/**` sind alle Verweise nachgezogen; die
+Spur `aufraeumen-archiv` (Runde 27, Teil 4), Stand `main` `b0a548d` + Spur. In `docs/**` sind alle Verweise nachgezogen; die
 folgenden Stellen **außerhalb** von `docs/**` (Kommentare in `src/`, `tests/`, `tools/`, `AGENTS.md`) zeigen noch auf die alten Pfade
 und werden von `aufraeumen-doku` nur in der Pfadangabe geändert (Verhalten unverändert). Nicht aufgeführt: `docs/reviews/` als
 Ordnerangabe (bleibt gültig, dort liegen die Reviews der laufenden Runde) und `docs/analyse/inventur.md` u. a. (bleiben).
