@@ -5,11 +5,16 @@ folgenden Stellen **außerhalb** von `docs/**` (Kommentare in `src/`, `tests/`, 
 und werden von `aufraeumen-doku` nur in der Pfadangabe geändert (Verhalten unverändert). Nicht aufgeführt: `docs/reviews/` als
 Ordnerangabe (bleibt gültig, dort liegen die Reviews der laufenden Runde) und `docs/analyse/inventur.md` u. a. (bleiben).
 
-Verschoben: `docs/reviews/<datei>` → `docs/archiv/reviews/runde-<n>/<datei>`; `docs/analyse/{re-*,abgleich-*,belastung*}` (samt
+Verschoben: `docs/reviews/<datei>` → `docs/archiv/reviews/runde-<n>/<datei>` (Runde nach dem Rundenarchiv `docs/archiv/runde-<n>.md`, nicht nach
+Datum; vier Reviews aus `runden-1-2.md` unter `runde-…/` → `docs/archiv/reviews/runden-1-2/`); `docs/analyse/{re-*,abgleich-*,belastung*}` (samt
 `abgleich-dosbox/`, `belastung-staerke/`) → `docs/archiv/analyse/`; `docs/prozess/2026-10-27-audit-validierung.md` und
 `docs/bestandsaufnahme.md` → `docs/archiv/`. Der Befehl `git diff -M --name-status origin/main` zeigt die vollständige Zuordnung.
 
 Erzeugt mit einem Einmalskript (Suche nach den Dateinamen der verschobenen Dateien, nur ganze Namen); 255 Stellen in 196 Dateien.
+
+**Hinweis P3-1 (Marker-Wortlaut):** Drei Marker in `docs/analyse/restliste-v1.md` tragen alte Pfade im Wortlaut (A659
+`re-nachtrag.md`, A686 `re-runde-14.md`, A754 `re-runde-12.md`; Zeilen 484, 514, 617). Ändert `aufraeumen-doku` diese Pfade, ändert sich der
+ID-Schlüssel (Datei + Wortlaut); danach `markerliste.py`-Lauf einplanen (`aufraeumen-v1.md` §2.4/A6).
 
 | Datei:Zeile | alter Pfad | neuer Pfad |
 |---|---|---|
@@ -205,13 +210,13 @@ Erzeugt mit einem Einmalskript (Suche nach den Dateinamen der verschobenen Datei
 | `tests/EishockeyManager.Core.Tests/NationalteamRunde13Tests.cs:7` | `docs/analyse/re-runde-13.md` | `docs/archiv/analyse/re-runde-13.md` |
 | `tests/EishockeyManager.Core.Tests/NationalteamRunde14Teil3Tests.cs:7` | `docs/analyse/re-runde-14.md` | `docs/archiv/analyse/re-runde-14.md` |
 | `tests/EishockeyManager.Core.Tests/NationalteamRunde14Tests.cs:415` | `docs/reviews/2026-11-04-integration-nationalteam-r13.md` | `docs/archiv/reviews/runde-13/2026-11-04-integration-nationalteam-r13.md` |
-| `tests/EishockeyManager.Core.Tests/NeuerManagerEuropaTests.cs:7` | `docs/reviews/2026-11-14-neuer-manager.md` | `docs/archiv/reviews/runde-18/2026-11-14-neuer-manager.md` |
-| `tests/EishockeyManager.Core.Tests/NeuerManagerExportTests.cs:7` | `docs/reviews/2026-11-14-neuer-manager.md` | `docs/archiv/reviews/runde-18/2026-11-14-neuer-manager.md` |
+| `tests/EishockeyManager.Core.Tests/NeuerManagerEuropaTests.cs:7` | `docs/reviews/2026-11-14-neuer-manager.md` | `docs/archiv/reviews/runde-19/2026-11-14-neuer-manager.md` |
+| `tests/EishockeyManager.Core.Tests/NeuerManagerExportTests.cs:7` | `docs/reviews/2026-11-14-neuer-manager.md` | `docs/archiv/reviews/runde-19/2026-11-14-neuer-manager.md` |
 | `tests/EishockeyManager.Core.Tests/OriginalImportPostseasonTests.cs:8` | `docs/reviews/2026-11-09-integration-hok-import-r14.md` | `docs/archiv/reviews/runde-14/2026-11-09-integration-hok-import-r14.md` |
 | `tests/EishockeyManager.Core.Tests/OriginalImportReviewR14Tests.cs:8` | `docs/reviews/2026-11-09-integration-hok-import-r14.md` | `docs/archiv/reviews/runde-14/2026-11-09-integration-hok-import-r14.md` |
-| `tests/EishockeyManager.Core.Tests/PruefungKarteRunde16Tests.cs:13` | `docs/reviews/2026-11-11-pool-nachpruefung.md` | `docs/archiv/reviews/runde-15/2026-11-11-pool-nachpruefung.md` |
+| `tests/EishockeyManager.Core.Tests/PruefungKarteRunde16Tests.cs:13` | `docs/reviews/2026-11-11-pool-nachpruefung.md` | `docs/archiv/reviews/runde-16/2026-11-11-pool-nachpruefung.md` |
 | `tests/EishockeyManager.Core.Tests/PruefungKarteRunde16Tests.cs:53` | `docs/reviews/2026-11-11-abgleich-rest.md` | `docs/archiv/reviews/runde-16/2026-11-11-abgleich-rest.md` |
-| `tests/EishockeyManager.Core.Tests/PruefungKarteRunde16Tests.cs:94` | `docs/reviews/2026-11-11-pool.md` | `docs/archiv/reviews/runde-15/2026-11-11-pool.md` |
+| `tests/EishockeyManager.Core.Tests/PruefungKarteRunde16Tests.cs:94` | `docs/reviews/2026-11-11-pool.md` | `docs/archiv/reviews/runde-16/2026-11-11-pool.md` |
 | `tests/EishockeyManager.Core.Tests/PruefungKarteRunde18Tests.cs:5` | `docs/analyse/abgleich-dosbox.md` | `docs/archiv/analyse/abgleich-dosbox.md` |
 | `tests/EishockeyManager.Core.Tests/ReResteTests.cs:6` | `docs/analyse/re-reste-23.md` | `docs/archiv/analyse/re-reste-23.md` |
 | `tests/EishockeyManager.Core.Tests/RngTwinProbeTests.cs:167` | `docs/analyse/re-runde-13.md` | `docs/archiv/analyse/re-runde-13.md` |
@@ -234,7 +239,7 @@ Erzeugt mit einem Einmalskript (Suche nach den Dateinamen der verschobenen Datei
 | `tests/EishockeyManager.Core.Tests/TagestaktHauptwegReviewTests.cs:8` | `docs/reviews/2026-11-09-tagestakt-hauptweg.md` | `docs/archiv/reviews/runde-14/2026-11-09-tagestakt-hauptweg.md` |
 | `tests/EishockeyManager.Core.Tests/TagestaktSommerpauseReviewTests.cs:8` | `docs/reviews/2026-11-09-tagestakt-hauptweg-sommerpause.md` | `docs/archiv/reviews/runde-14/2026-11-09-tagestakt-hauptweg-sommerpause.md` |
 | `tests/EishockeyManager.Core.Tests/TaktikTeil5Tests.cs:29` | `docs/analyse/re-geld.md` | `docs/archiv/analyse/re-geld.md` |
-| `tests/EishockeyManager.Core.Tests/WaveBReviewRegressionTests.cs:6` | `docs/reviews/2026-10-26-pr35-review.md` | `docs/archiv/reviews/runde-3/2026-10-26-pr35-review.md` |
+| `tests/EishockeyManager.Core.Tests/WaveBReviewRegressionTests.cs:6` | `docs/reviews/2026-10-26-pr35-review.md` | `docs/archiv/reviews/runden-1-2/2026-10-26-pr35-review.md` |
 | `tests/EishockeyManager.Core.Tests/WettbewerbeAnzeigeMarkenTests.cs:7` | `docs/analyse/re-abweichungen.md` | `docs/archiv/analyse/re-abweichungen.md` |
 | `tests/EishockeyManager.Core.Tests/WettbewerbeSpiel12Teil4Tests.cs:7` | `docs/analyse/re-nachtrag.md` | `docs/archiv/analyse/re-nachtrag.md` |
 | `tests/EishockeyManager.Core.Tests/WettbewerbeSpiel1Tests.cs:36` | `docs/analyse/re-reste-23.md` | `docs/archiv/analyse/re-reste-23.md` |
@@ -262,7 +267,7 @@ Erzeugt mit einem Einmalskript (Suche nach den Dateinamen der verschobenen Datei
 | `tests/EishockeyManager.UI.Tests/StatistikAnzeigeTeil1Tests.cs:10` | `docs/analyse/re-abweichungen.md` | `docs/archiv/analyse/re-abweichungen.md` |
 | `tests/EishockeyManager.UI.Tests/UiMeldungenTeil1Tests.cs:9` | `docs/analyse/re-meldungen.md` | `docs/archiv/analyse/re-meldungen.md` |
 | `tests/EishockeyManager.UI.Tests/VereinsfensterTests.cs:10` | `docs/analyse/re-runde-12.md` | `docs/archiv/analyse/re-runde-12.md` |
-| `tests/EishockeyManager.UI.Tests/WaveBReviewScreenTests.cs:8` | `docs/reviews/2026-10-26-pr35-review.md` | `docs/archiv/reviews/runde-3/2026-10-26-pr35-review.md` |
+| `tests/EishockeyManager.UI.Tests/WaveBReviewScreenTests.cs:8` | `docs/reviews/2026-10-26-pr35-review.md` | `docs/archiv/reviews/runden-1-2/2026-10-26-pr35-review.md` |
 | `tests/EishockeyManager.UI.Tests/WettbewerbeAnzeigeTests.cs:41` | `docs/analyse/re-abweichungen.md` | `docs/archiv/analyse/re-abweichungen.md` |
 | `tools/reverse-engineering/README.md:32` | `docs/analyse/re-runde-13.md` | `docs/archiv/analyse/re-runde-13.md` |
 | `tools/reverse-engineering/funktionskarte.py:430` | `docs/analyse/re-runde-13.md` | `docs/archiv/analyse/re-runde-13.md` |

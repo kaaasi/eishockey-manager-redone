@@ -261,7 +261,7 @@ Base `main` 9f1994e. **Ergebnis: keine Ursache in em.exe belegt; in den Einzelre
 FILE02→50 und die Verteilung Sturm 1 / Sturm 3 in FILE02→03 liegen außerhalb aller Saaten – Ursache offen.** Die Tabelle in
 `abgleich-dosbox.md` §1.3 (und §2.4/§4 oben) beruht zum Teil auf einem Auswertefehler; mit berichtigter Auswertung und 40–200
 Saaten liegt jede einzelne Reihensumme des Originals in der Verteilung des Remakes, die beiden genannten Größen über mehrere
-Reihen nicht (§9.2, Erstreview `docs/archiv/reviews/runde-18/2026-11-14-re-belastung.md` P2-1). Die geprüften Stellen (§9.3) stimmen überein. Kein
+Reihen nicht (§9.2, Erstreview `docs/archiv/reviews/runde-19/2026-11-14-re-belastung.md` P2-1). Die geprüften Stellen (§9.3) stimmen überein. Kein
 Teil 2 (Fehlschlag-Zweig R19-D3 → A); Entscheidung des Nutzers in §9.5 (R19-E2 = A).
 
 ### 9.1 Auswertefehler der bisherigen Tabellen
