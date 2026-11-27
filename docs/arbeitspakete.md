@@ -18,8 +18,8 @@ P3 #978, #980, #1019, #1024 (Rest P3-2) und die Themen K04, K11, K13, L11, L12, 
 [analyse/abweichungen-v1.md](analyse/abweichungen-v1.md) Abschnitt 0 („ins Aufräumen #936“). **Nicht in dieser Runde:** D-Themen
 (DOSBox nach Lust), Abschlussprüfung (Runde 28). **Entscheidungen Nutzer 27.11.2026** (Optionen im Plan-PR #1056):
 R27-D1 = C (eigene Spur `aufraeumen-archiv` parallel in Welle 1), R27-D2 = B (nur Schema 65 ladbar, alle Migrationsschritte
-entfallen), R27-D3 = B (enges Gesamtreview am Rundenende, ChatGPT GPT-6.2 Astra; Nutzerangabe lautete „R22-D3 = B“, von der Leitstelle als
-R27-D3 gelesen, Bestätigung erbeten), R27-D4 = B (Modelle wie unten). **Go Nutzer
+entfallen), R27-D3 = B (enges Gesamtreview am Rundenende, ChatGPT GPT-6.2 Astra; Nutzerangabe „R22-D3 = B“, vom Nutzer am
+27.11.2026 als R27-D3 bestätigt), R27-D4 = B (Modelle wie unten). **Go Nutzer
 27.11.2026** (alle Spuren samt Folgeläufen; Start nach Merge des Plans).
 
 **Regeln der Runde:**
@@ -51,8 +51,8 @@ R27-D3 gelesen, Bestätigung erbeten), R27-D4 = B (Modelle wie unten). **Go Nutz
   Fortsetzungen; keine geplanten Aufgaben aus Läufen (R15-E4); fremde Tests nach R15-E2 = C. Kein `markerliste.py --write` außer
   in `aufraeumen-doku` (A6 = A).
 
-**Folge (R27-D1 = C):** Welle 1 `aufraeumen-migration` und `aufraeumen-archiv` parallel (Dateien disjunkt: Code gegen
-`docs/**`); Welle 2 `aufraeumen-tot` nach Merge von `aufraeumen-migration`; Welle 3 `aufraeumen-doppelt`; Welle 4
+**Folge (R27-D1 = C):** Welle 1 `aufraeumen-migration` und `aufraeumen-archiv` parallel (Dateien disjunkt: `SaveGame*`/Tests
+gegen `docs/**` und `funktionskarte.py`); Welle 2 `aufraeumen-tot` nach Merge von `aufraeumen-migration`; Welle 3 `aufraeumen-doppelt`; Welle 4
 `aufraeumen-tests-core` und `aufraeumen-tests-ui` parallel (Prüfbefehl „keine Überschneidung“, Konzept §2.2); Welle 5
 `aufraeumen-doku`. Danach Leitstelle: Workflow `aufraeumen.yml` mit `nur_anzeigen=true`, Liste dem Nutzer vorlegen; Löschen
 der Branches (`nur_anzeigen=false`) nur nach seinem Ja. Dann enges Gesamtreview (R27-D3 = B): Verhaltensgleichheit Base
@@ -61,7 +61,7 @@ der Branches (`nur_anzeigen=false`) nur nach seinem Ja. Dann enges Gesamtreview 
 | Spur | Welle | Inhalt | Modell (R27-D4 = B) | Grund |
 |---|---|---|---|---|
 | `aufraeumen-migration` | 1 | A1 = B/R27-D2 = B, L11, Teile von L12/C02 | Opus 5.5 | `AfterLoadPool`, Lader, Rückfälle |
-| `aufraeumen-archiv` | 1 | A2 = A, D2–D4, W2 | Sonnet 5.5 | mechanisch, nur `docs/**` |
+| `aufraeumen-archiv` | 1 | A2 = A, D2–D4, W2 | Sonnet 5.5 | mechanisch, `docs/**` und `scan_docs` |
 | `aufraeumen-tot` | 2 | K3–K7, K15–K18, K04, C08, #980 P3-3 | Opus 5.5 | Tests auf den echten Weg umstellen |
 | `aufraeumen-doppelt` | 3 | K1, K8, K10, K12, K19 (nur neutral), U1–U8, U10, U11, #1019, `.Rest`/`.Einzelpunkte` | Opus 5.5 | Zusammenlegen ohne Verhaltensänderung |
 | `aufraeumen-tests-core` | 4 | Konzept §1.2 Core-Tests, #978 | Sonnet 5.5 | Umbenennen, Testliste belegt |
@@ -87,7 +87,7 @@ Erstreviews: Opus 5.5 für `aufraeumen-migration`, `-tot`, `-doppelt`; Sonnet 5.
   Markerprobe.
 - **Status:** nicht gestartet.
 
-### Spur `aufraeumen-archiv` – Reviews und Arbeitsanalysen ins Archiv (Welle 1, nur `docs/**`)
+### Spur `aufraeumen-archiv` – Reviews und Arbeitsanalysen ins Archiv (Welle 1, `docs/**` und `funktionskarte.py`)
 
 - **Teile:** 1. `docs/reviews/*` abgeschlossener Runden (bis Runde 26) unverändert nach `docs/archiv/reviews/runde-<n>/`
   (Zuordnung nach dem Rundenarchiv `docs/archiv/runde-<n>.md`, nicht nach dem Datum; Tabelle im PR), Reviews der Runde 27 bleiben; 2. Arbeitsstände nach Konzept
