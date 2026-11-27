@@ -269,6 +269,26 @@ public class SaveGameTests
         Assert.Contains("neueren Version", result.Error);
     }
 
+    /// <summary>
+    /// Lader (Runde 27, A1 = B, R27-D2 = B): Migrationen gibt es nicht mehr. Ein sonst vollständiger Spielstand mit Schema 64
+    /// endet in der Versionsmeldung, ohne gelesen zu werden; derselbe Stand mit Schema 65 lädt.
+    /// </summary>
+    [Fact]
+    public void Schema64_CanNoLongerBeLoaded()
+    {
+        var text = Encoding.UTF8.GetString(SaveGame.Save(TestGames.Create()));
+        var current = $"\"schema\": {SaveGame.SchemaVersion},";
+        Assert.Contains(current, text);
+        var old = text.Replace(current, $"\"schema\": {SaveGame.SchemaVersion - 1},", StringComparison.Ordinal);
+
+        var result = SaveGame.Load(Encoding.UTF8.GetBytes(old));
+
+        Assert.False(result.Success);
+        Assert.True(result.WrongVersion);
+        Assert.Equal("Spielstände mit Schema 64 können nicht mehr geladen werden.", result.Error);
+        Assert.True(SaveGame.Load(Encoding.UTF8.GetBytes(text)).Success);
+    }
+
     [Theory]
     [InlineData("0")]
     [InlineData("-3")]

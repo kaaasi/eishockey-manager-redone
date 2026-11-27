@@ -928,20 +928,12 @@ public sealed partial class TransferMarket
     ///   neuer Kaderplatz am Ende (0x108:0x5C), Besitzer 4, +0x1D = Poolverein, Preis +0x2C = Wert(Preis), Gehalt +0x28 =
     ///   Wert(Gehalt), +0x19 (<see cref="TransferPoolRules.RollSlotFields"/>).</item>
     /// </list>
-    /// [APPROX] Ohne Pool (Spielstände vor Teil 5) wird er zuerst gebaut. Markt-Einträge vertragsloser Spieler alter Spielstände
-    /// zählen als Markt-Plätze.
+    /// Den Pool baut der Spielstart (<see cref="Initialize"/>, <see cref="NewGame.Create"/>) bzw. der Import; seit Runde 27
+    /// (A1 = B, R27-D2 = B) gibt es keinen Rückfall mehr für Spielstände ohne Pool.
     /// </summary>
     public void ChangeList(GameState game, Random random)
     {
         ArgumentNullException.ThrowIfNull(game);
-        if (_pool.Count == 0)
-        {
-            // [APPROX] Spielstand vor Teil 5: Datenbank nicht mehr bekannt; Namen der Kader gelten als vergeben.
-            if (_databaseNames.Count == 0)
-                CaptureDatabaseNames(game);
-            BuildPool(game, random, TransferPoolLayout.Original, HeldNames(game));
-            SeatManagerSquads(game);
-        }
         var layout = PoolLayout;
 
         var held = 0;
@@ -1010,11 +1002,11 @@ public sealed partial class TransferMarket
         game.Managers.Count == 0 ? 3 : game.ActiveManager.Level;
 
     /// <summary>
-    /// Platz, den der Listenwechsel nicht räumt: eigener Spieler eines Managers ([ORIGINAL] Besitzer ≠ 4, 0x425F0) oder
-    /// [APPROX] ein Vertragsloser auf der Liste (nur Spielstände vor Runde 15: Remake-Ergänzung R204, seither entfernt,
-    /// <see cref="TransferMarket.StartSeason"/>; seit R15-E3 = C sind Vertragslose aus Managervereinen ganz verloren).
+    /// Platz, den der Listenwechsel nicht räumt: eigener Spieler eines Managers ([ORIGINAL] Besitzer ≠ 4, 0x425F0). Vertragslose
+    /// stehen seit Runde 15 nicht mehr auf der Liste (R204 entfernt, R15-E3 = C); ihr Rückfall für ältere Spielstände entfällt
+    /// seit Runde 27 (A1 = B, R27-D2 = B).
     /// </summary>
-    private static bool IsHeld(TransferListing listing) => listing.Seller is not null || listing.IsFreeAgent;
+    private static bool IsHeld(TransferListing listing) => listing.Seller is not null;
 
     /// <summary>Entfernt den Markt-Platz k (die folgenden rücken auf) und gibt einen Poolspieler frei.</summary>
     private void RemoveMarketSlot(int k)

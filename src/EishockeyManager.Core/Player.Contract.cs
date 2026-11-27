@@ -301,7 +301,8 @@ public static class Contracts
     public const int MinSalary = 1;
 
     /// <summary>[APPROX] Prämie in Prozent des Gehalts, wenn eine Versicherung ohne bekannten Betrag gesetzt wird
-    /// (<see cref="Player.Insured"/>, Migration älterer Spielstände). Das Original kennt nur den Betrag +0x30.</summary>
+    /// (<see cref="Player.Insured"/>, Aufrufer ohne Spielstand; früher auch Migration älterer Spielstände). Das Original kennt nur
+    /// den Betrag +0x30.</summary>
     public const int LegacyInsurancePercent = 10;
 
     /// <summary>Vielfaches der Prämie bei einer Verletzung (Datei 0x7089: +0x30 · 4, Aufrufe 0x7542 Tagesablauf, 0x38D6A Spiel).</summary>

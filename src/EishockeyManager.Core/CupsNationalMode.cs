@@ -39,7 +39,7 @@ public enum NationalBookingKind
     /// <summary>Kosten eines Freundschaftsspiels (Datei 0x3BFC4).</summary>
     Friendly,
 
-    /// <summary>Stand aus einem älteren Spielstand ohne Buchungsliste (Migration Schema 2 → 3).</summary>
+    /// <summary>Übernommener Kontostand ohne Buchungsliste (Import eines Originalspielstands; früher auch Migration Schema 2 → 3).</summary>
     Carryover,
 }
 
