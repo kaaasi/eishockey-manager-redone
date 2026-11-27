@@ -1,13 +1,13 @@
 # Archiv: Runde 1 und Runde 2
 
 Aus `docs/arbeitspakete.md` ausgelagert am 28.10.2026, damit Agenten beim Einstieg nur die aktuelle Runde lesen.
-Inhalt unverändert. Ergebnisse und Reviews: `docs/reviews/`. Nur bei Bedarf lesen (z. B. Herkunft eines Befunds).
+Inhalt unverändert. Ergebnisse und Reviews: `docs/archiv/reviews/`. Nur bei Bedarf lesen (z. B. Herkunft eines Befunds).
 
 ## Runde 2 – Plan, Status und Integration
 
 ### Ursprünglicher Plan Runde 2 (ab 26.10.2026)
 
-Grundlage: unabhängiges Folgereview [reviews/2026-10-26-folgereview.md](reviews/2026-10-26-folgereview.md) zu Commit `e1ac97e`.
+Grundlage: unabhängiges Folgereview [archiv/reviews/runde-3/2026-10-26-folgereview.md](archiv/reviews/runde-3/2026-10-26-folgereview.md) zu Commit `e1ac97e`.
 Die Befunde R2-02, R2-06, R2-07, die verkürzten Stärkewerte (A01) und die Levelgrenze wurden vom Koordinations-Chat
 mit den Originaldaten nachvollzogen. **Erst stabilisieren, dann ausbauen:** `wettbewerbe` und das endgültige
 Speicherformat starten erst nach dieser Runde.
@@ -59,7 +59,7 @@ Berührungen außerhalb der eigenen Grenzen im PR begründen. `GameState.Integra
 
 Spur-Chat liefert PR → Koordinations-Chat prüft gegen `main` und die anderen offenen PRs (Integrationstest mit Originaldaten)
 → **unabhängiges Review (ChatGPT) mit festem Base-/Head-SHA**: zuerst die reproduzierten Gegenbeispiele erneut ausführen,
-dann Aufrufer und neue Tests prüfen → Merge durch den Koordinations-Chat. Review-Ergebnisse unter `docs/reviews/`.
+dann Aufrufer und neue Tests prüfen → Merge durch den Koordinations-Chat. Review-Ergebnisse unter `docs/archiv/reviews/`.
 
 **Review durch ChatGPT:** Der Koordinations-Chat formuliert die Review-Anfrage immer als fertigen, kopierbaren Text
 (PR, Base-/Head-SHA, Gegenbeispiele, erwartet offene Befunde, gewünschte Bewertung). ChatGPT legt das Ergebnis als
@@ -131,7 +131,7 @@ Befunde im Gesamtstand vom Koordinations-Chat nachgestellt (eigene Probe gegen d
 | Level | umgesetzt – Level 0–5 (LevelCount 6) |
 | R2-04, R2-08, R2-09 | erwartungsgemäß offen → Welle B (`lebenszyklus`) |
 
-**Review und Merge:** ChatGPT-Review [reviews/2026-10-26-pr31-review.md](reviews/2026-10-26-pr31-review.md) am Head
+**Review und Merge:** ChatGPT-Review [archiv/reviews/runde-3/2026-10-26-pr31-review.md](archiv/reviews/runde-3/2026-10-26-pr31-review.md) am Head
 `9bddf6f`: **Freigabe für Welle A**, keine neuen P0–P2-Befunde. Gemergt als `fce0760` (PR #31, damit auch #16–#30).
 Neu bzw. präzisiert:
 
@@ -224,7 +224,7 @@ vollständig, jeder Spieler altert um 3 Jahre und hat einen gültigen Vertrag.
 | **R2-11 (neu, offen)** | Ein passiver Manager verliert zu Beginn der dritten Saison seinen gesamten Kader (alle Verträge laufen gleichzeitig aus), ohne Vorwarnung im Posteingang. Ob und wie das Original warnt oder verlängert, ist nicht rekonstruiert → Runde 3 (Kader-KI/Verträge) |
 | R2-12 (neu, offen) | Keine Neuzugänge, Talente oder Ruhestand bei Computervereinen; der Pool vertragsloser Spieler wächst und altert unbegrenzt → Runde 3 |
 
-**Review 1** ([reviews/2026-10-26-pr35-review.md](reviews/2026-10-26-pr35-review.md), Head `c4fca70`): keine Freigabe wegen
+**Review 1** ([archiv/reviews/runde-3/2026-10-26-pr35-review.md](archiv/reviews/runde-3/2026-10-26-pr35-review.md), Head `c4fca70`): keine Freigabe wegen
 zwei P2-Befunden; die ursprünglichen Gegenbeispiele und die Mehrsaisonprobe (4 Wechsel) wurden bestätigt.
 R2-11 bekommt die Priorität P1 und R2-12 die Priorität P2, beide für Runde 3. Behoben im zweiten Integrations-Commit:
 
@@ -313,8 +313,8 @@ Offene Punkte (stehen jetzt als Spuren in Runde 2):
 
 ## Runde 2 – Stabilisierung (abgeschlossen am 26.10.2026)
 
-Ergebnis: Welle A gemergt mit #31 (Review [pr31](../reviews/2026-10-26-pr31-review.md)), Welle B mit #35
-(Review [pr35](../reviews/2026-10-26-pr35-review.md), Nachprüfung [pr35-nachpruefung](../reviews/2026-10-26-pr35-nachpruefung.md):
+Ergebnis: Welle A gemergt mit #31 (Review [pr31](reviews/runde-3/2026-10-26-pr31-review.md)), Welle B mit #35
+(Review [pr35](reviews/runde-3/2026-10-26-pr35-review.md), Nachprüfung [pr35-nachpruefung](reviews/runde-3/2026-10-26-pr35-nachpruefung.md):
 Freigabe für `9bd8fea`). Der P3-Befund PR35-N01 (UI-Test prüfte die Meldung nicht) ist nach dem Merge behoben.
 Offen in Runde 3: R2-11, R2-12.
 

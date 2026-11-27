@@ -5,7 +5,7 @@ keine Datei außer dieser wurde verschoben oder geändert. Zeilennummern gelten 
 letzte Schritt vor v1.0 (Nutzer 17.11.2026), nach Runde 25 (Änderungswünsche aus `abweichungen-v1.md`); danach nur noch die
 Abschlussprüfung. P3 #978 und #980 sind nach R24-D2 = B Teil des Umbaus (§2.4).
 
-**Fixlauf** (Review `docs/reviews/2026-11-23-aufraeum-konzept.md`, P2-1, P2-2, P3-1, P3-2): auf `main` `69e9c40` rebast.
+**Fixlauf** (Review `docs/archiv/reviews/runde-24/2026-11-23-aufraeum-konzept.md`, P2-1, P2-2, P3-1, P3-2): auf `main` `69e9c40` rebast.
 Zählungen und Zeilennummern bleiben auf `e0b0ea5`; die Probe der Abläufe (A5) und die Überschneidungsprobe (§2.2) liefen auf
 `69e9c40`.
 

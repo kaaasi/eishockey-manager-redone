@@ -4,7 +4,7 @@ Aus `docs/arbeitspakete.md` ausgelagert am 03.11.2026, damit Agenten beim Einsti
 Inhalt unverändert bis auf die Überschrift, den ergänzten Absatz „Ergebnis“, die nachgeführten Status der Spuren, die
 relativen Links und die Abschnitte „Entscheidungen Rundenende“ und „Funktionskarte“ am Ende; die Abschnitte „Nicht in
 Runde 11“ und „Zurückgestellt“ bleiben als Übergang für Runde 12 in `arbeitspakete.md`. Ergebnisse: `docs/analyse/inventur.md`
-(Stand je Zeile), `docs/finanzen-rekonstruktion.md`, `docs/spielberechnung.md`, `docs/transfer.md`; Reviews: `docs/reviews/`
+(Stand je Zeile), `docs/finanzen-rekonstruktion.md`, `docs/spielberechnung.md`, `docs/transfer.md`; Reviews: `docs/archiv/reviews/`
 (Dateien vom 02.–03.11.2026). Nur bei Bedarf lesen.
 
 **Ergebnis:** Sechs Umsetzungs-Spuren und eine Analyse-Spur, je Spur ein Integrations-PR: `geld` (#452), `saisonwechsel`
@@ -84,7 +84,7 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
 - **Abnahme:** wie Runde 10 „Abnahme je Spur“ (Selbstprüfung `funktionskarte.py --csv` ohne `--write`); Datei
   `docs/analyse/re-nachtrag.md` mit Abschnitt „Umsetzung“ je Stelle (Ziel, Dateien, Testidee, Spur dieser Runde).
 - **Dateigrenzen:** nur `docs/analyse/re-nachtrag.md` und der eigene Statuspunkt. **Modell:** Claude Opus 5.5. **Status:** Analyse
-  fertig – integriert (#424, Review [2026-11-02-re-nachtrag.md](../reviews/2026-11-02-re-nachtrag.md)), Umsetzung U1–U16 in `docs/analyse/re-nachtrag.md`; A085/A088 offen (Spielstandpaar).
+  fertig – integriert (#424, Review [2026-11-02-re-nachtrag.md](reviews/runde-11/2026-11-02-re-nachtrag.md)), Umsetzung U1–U16 in `docs/analyse/re-nachtrag.md`; A085/A088 offen (Spielstandpaar).
 
 ### Spur `geld` – Stadion, Jugend, Bank, Sponsoren, Finanzbedienung
 
@@ -107,7 +107,7 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
 - **Abnahme:** je Regel roter Test, danach grün; Mehrsaisonprobe (Geld) je Teil mit Geldwirkung; Jugend: Platzverlauf mit
   festem Zufall über 4 Saisonwechsel.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/finanzen-rekonstruktion.md`, `docs/analyse/re-geld.md` (nur Status), Tests.
-- **Modell:** Claude Opus 5.5. **Status:** Teil 1 (Stadionausbau) PR #417, fertig zum Review; Teil 2 (Sponsorbewertung, Angebote, Monatseinnahme) PR #429, fertig zum Review; Teil 3 (Jugendteams) PR #433, fertig zum Review. Teil 4 (Bank und Börse) PR #436, fertig zum Review (BoerseStartTests-Probe braucht Leitstellen-Anpassung, siehe PR). Teil 5 (Finanzbedienung) PR #442, fertig zum Review. Teil 6 (Talentsuche) PR #448, fertig zum Review (Anschluss Knopf „Talent“ in `TransferScreen.cs` für die Leitstelle). Teil 7 (Probe #352) PR #451, fertig zum Review. Spur fertig – integriert (#452, Review [2026-11-02-integration-geld.md](../reviews/2026-11-02-integration-geld.md)).
+- **Modell:** Claude Opus 5.5. **Status:** Teil 1 (Stadionausbau) PR #417, fertig zum Review; Teil 2 (Sponsorbewertung, Angebote, Monatseinnahme) PR #429, fertig zum Review; Teil 3 (Jugendteams) PR #433, fertig zum Review. Teil 4 (Bank und Börse) PR #436, fertig zum Review (BoerseStartTests-Probe braucht Leitstellen-Anpassung, siehe PR). Teil 5 (Finanzbedienung) PR #442, fertig zum Review. Teil 6 (Talentsuche) PR #448, fertig zum Review (Anschluss Knopf „Talent“ in `TransferScreen.cs` für die Leitstelle). Teil 7 (Probe #352) PR #451, fertig zum Review. Spur fertig – integriert (#452, Review [2026-11-02-integration-geld.md](reviews/runde-11/2026-11-02-integration-geld.md)).
 
 ### Spur `saisonwechsel` – Oberliga, Zwangsabstieg, Ewige Tabelle
 
@@ -124,7 +124,7 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
      (Prämientest schärfen). #428 bis #432 bleiben unverändert; der Stapel wird nur als Ganzes gemergt.
 - **Abnahme:** Mehrsaisonprobe 20 Saisons (Modus 1, 2, 4; passiv/aktiv); je Regel roter Test.
 - **Dateigrenzen:** siehe Zuständigkeit; `docs/analyse/re-saisonwechsel.md` (nur Status), Tests. **Modell:** Claude Opus 5.5.
-  **Status:** Teil 1 fertig, Review offen (PR #419); Teil 2 fertig, Review offen (PR #428, gestapelt auf #419); Teil 3 fertig, Review offen (PR #431, gestapelt auf #428); Teil 4 fertig, Review offen (PR #432, gestapelt auf #431); Review #441: Teil 5 (PR #449, gestapelt auf #432) behebt SW-01 (Zwangsabsteiger mit Aufstieg bleibt oben, Partner in die Oberliga, `[APPROX]`) und SW-03 – Nachprüfung durch die Leitstelle. Restlücke SW-02 (P3): Ewige Tabelle, Ewige Bilanz und „Früher“ fehlen die letzte Saison, wenn am 29. April alle Manager entlassen werden (`GameOver` aus `CheckDebts` vor `FinishSeason`); offen (Runde 12). Spur fertig – integriert (#460, Reviews [2026-11-02-integration-saisonwechsel.md](../reviews/2026-11-02-integration-saisonwechsel.md)).
+  **Status:** Teil 1 fertig, Review offen (PR #419); Teil 2 fertig, Review offen (PR #428, gestapelt auf #419); Teil 3 fertig, Review offen (PR #431, gestapelt auf #428); Teil 4 fertig, Review offen (PR #432, gestapelt auf #431); Review #441: Teil 5 (PR #449, gestapelt auf #432) behebt SW-01 (Zwangsabsteiger mit Aufstieg bleibt oben, Partner in die Oberliga, `[APPROX]`) und SW-03 – Nachprüfung durch die Leitstelle. Restlücke SW-02 (P3): Ewige Tabelle, Ewige Bilanz und „Früher“ fehlen die letzte Saison, wenn am 29. April alle Manager entlassen werden (`GameOver` aus `CheckDebts` vor `FinishSeason`); offen (Runde 12). Spur fertig – integriert (#460, Reviews [2026-11-02-integration-saisonwechsel.md](reviews/runde-11/2026-11-02-integration-saisonwechsel.md)).
 
 ### Spur `kader-transfer` – Kader, Transfermarkt, Verträge, Pool
 
@@ -256,7 +256,7 @@ mit `Datei 0x…` bzw. Stub-Schreibweise; geänderte Abdrücke und Referenzwerte
   den alten Rahmen [APPROX]; Zeile 1 von „noch gesperrt !“ ist im Original „Spieler ist“ (DGROUP 0x1255), im Remake der Spielername.
   Review #469: MU-01 (linker Knopf einer Meldung immer Zeile 5, 0x4C4E2) behoben, MU-02 (Test je Kurzmeldung), MU-03 erledigt.
 - **`marker-werkzeug`** (Teile 1–2, `integration/runde-11-marker-werkzeug`, Stapel #422 → #423): Review
-  [2026-11-02-marker-werkzeug.md](../reviews/2026-11-02-marker-werkzeug.md) (beide mergebar); Befunde R11M-01 (Cache-Schlüssel von
+  [2026-11-02-marker-werkzeug.md](reviews/runde-11/2026-11-02-marker-werkzeug.md) (beide mergebar); Befunde R11M-01 (Cache-Schlüssel von
   `disasm.py` enthält jetzt die SHA-256 von `funktionskarte.py` und `disasm.py`), R11M-02 (README-Beispiel) und R11M-03
   (Wortlaut in `inventur.md` Tabelle 2, F016/F069/F070/F080) behoben. Die Kommentare in `MatchEngine.Live.cs` (#423, Teil 2, #363)
   ließen sich ohne Konflikt mit `wettbewerbe-spiel` vereinen. Funktionskarte auf dem integrierten Stand mit `--write` neu

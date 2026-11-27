@@ -4,7 +4,7 @@ Löst die Tabellen 1 und 2 von [inventur.md](inventur.md) ab (dort bleiben sie a
 Umfang der Abschlussprüfung (`docs/prozess/anhang.md` C). **Stand:** `main` 4f2ec64 (Runde 22, Generatorlauf der Spur
 `pruefung-karte`, Welle 3): 644 `[APPROX]`-Zeilen in 231 Dateien und 71 Funktionen der Funktionskarte (Runde 21, `main` 69c9143: 626 `[APPROX]`-Zeilen in 217 Dateien; CSV-Zeilen F001 ff. der Funktionskarte: Stand Fixlauf „dokumentiert“ 68,
 „genähert“ 3, nach Runde 21 laut neu erzeugter Karte 66 und 1; F018 ist umgesetzt), alle eingeordnet. **Fixlauf 16.11.2026:** Befunde aus Review #884
-([2026-11-16-inventur-v1.md](../reviews/2026-11-16-inventur-v1.md)) und Entscheidungen des Nutzers zu N1–N5 eingearbeitet.
+([2026-11-16-inventur-v1.md](../archiv/reviews/runde-21/2026-11-16-inventur-v1.md)) und Entscheidungen des Nutzers zu N1–N5 eingearbeitet.
 **Runde 21 (Generatorlauf `pruefung-karte`):** neue, umformulierte und entfallene Markerzeilen der Spuren `re-vor-dosbox`,
 `hok-import-werte`, `finanzuebersicht`, `zusehen`, `start-lader`, `teamwert-aufstellung`, `zufallsstrom` eingeordnet
 (49 neue IDs A822–A870, 41 Klassenzeilen entfallener oder ersetzter IDs entfernt); V 100 → 67 (Fixlauf 85).

@@ -2,7 +2,7 @@
 
 Aus `docs/arbeitspakete.md` ausgelagert am 11.11.2026. Inhalt unverändert bis auf Überschrift, „Ergebnis“ und „Abschluss“, ohne
 „Zurückgestellt“ und „Vormerkungen“ (bleiben in `arbeitspakete.md`). Die Statuszeilen der Spuren geben den Stand vor dem
-jeweiligen Merge wieder. Reviews: `docs/reviews/` (Dateien vom 10.–11.11.2026). Nur bei Bedarf lesen. Relative Links beziehen
+jeweiligen Merge wieder. Reviews: `docs/archiv/reviews/runde-15/` (Dateien vom 10.–11.11.2026). Nur bei Bedarf lesen. Relative Links beziehen
 sich auf `docs/`.
 
 **Ergebnis:** Spuren `prozess-kern` (#722), `tagesablauf` (#725), `kader` (#726), `hok-export` (#727; DOSBox-Probe R15-D5 = D mit
@@ -66,7 +66,7 @@ Welle 2 `pruefung-karte`, am Rundenende Gesamtreview.
   unverändert. Pfade und Namen der Kurzaufrufe bleiben (`spur-start.md`, `review-anfrage.md`, `leitstelle-start.md`), damit
   laufende Spuren nicht brechen. Dazu #712 (R-06, N-01, N-02, P3-1…3).
 - **Abnahme:** Gegenliste im PR: jede Regel der alten Fassung → Fundstelle in Kern oder Anhang (keine fehlt, keine neu – außer
-  den Klärungen aus #712, je mit Verweis); Zeilenzählung vorher/nachher. Dazu R719-02 aus `reviews/2026-11-10-plan-runde-15.md`
+  den Klärungen aus #712, je mit Verweis); Zeilenzählung vorher/nachher. Dazu R719-02 aus `archiv/reviews/runde-15/2026-11-10-plan-runde-15.md`
   (Reste des Stapelmodells), soweit nicht schon erledigt.
 - **Modell:** Claude Sonnet 5.5 (mechanisch). **Review:** Doku-Prüfung, Claude Sonnet 5.5. **Status:** fertig, Review offen (PR #722).
 

@@ -1,7 +1,7 @@
 # Archiv: Runde 7 – Spielberechnung, Startwerte, DOSBox-Befunde (30.–31.10.2026)
 
 Aus `docs/arbeitspakete.md` ausgelagert am 31.10.2026, damit Agenten beim Einstieg nur die aktuelle Runde lesen.
-Inhalt unverändert bis auf die Überschrift und die markierte Berichtigung. Ergebnisse und Reviews: `docs/reviews/`.
+Inhalt unverändert bis auf die Überschrift und die markierte Berichtigung. Ergebnisse und Reviews: `docs/archiv/reviews/`.
 Nur bei Bedarf lesen.
 
 **Ergebnis:** Integration #198 (`kader-start`, `boerse-start`, `weltkugel-dosbox`, `menue-befunde`, `hok-patch`,
@@ -187,7 +187,7 @@ sobald `spielberechnung` fertig ist. Zusammengeführt in Planfolge: #187 (`kader
   Verlauf, keine Handbuchfrage, Sichern/Laden bytegleich) und ein Spieltag mit Ereignissen beim eigenen Verein (Spiele,
   Tore = eigene Tore, Vorlagen ≤ 2 je Tor, Torhüterminuten).
 - Plan berichtigt: #183, #184, #185 (Zuständigkeiten oben).
-- **Review** (`docs/reviews/2026-10-30-integration-runde-7.md`, Head `eafbbae`, „Nein“): **R7-02** (#200, P2)
+- **Review** (`docs/archiv/reviews/runde-7/2026-10-30-integration-runde-7.md`, Head `eafbbae`, „Nein“): **R7-02** (#200, P2)
   Angriffszuschlag zog `random(0, Angriff)` statt `lrandom(Angriff, 7)` (em.exe 0x9F92–0xA019) – behoben,
   `IntegrationRunde7ReviewTests` (rot vorher); **R7-03** (#201, P2) Nationalteam zählte keine Spielerereignisse – behoben,
   `IntegrationRunde7NationalCountersTests` (beide rot vorher); **R7-04** (#202, P3) Energie 70 unabhängig aus em.exe

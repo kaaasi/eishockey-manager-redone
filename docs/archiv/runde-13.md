@@ -3,7 +3,7 @@
 Aus `docs/arbeitspakete.md` ausgelagert am 05.11.2026. Inhalt unverändert bis auf die Überschrift, den Absatz „Ergebnis“, die
 nachgeführten Status im Abschnitt „Integration Runde 13“, die relativen Links und die Abschnitte „Entscheidungen während der
 Runde“, „Abschluss“ und „Funktionskarte“ am Ende. Die Statuszeilen der einzelnen Spuren geben den Stand vor der Integration
-wieder; maßgeblich ist „Integration Runde 13“. Reviews: `docs/reviews/` (Dateien vom 04.–05.11.2026). Nur bei Bedarf lesen.
+wieder; maßgeblich ist „Integration Runde 13“. Reviews: `docs/archiv/reviews/runde-13/` (Dateien vom 04.–05.11.2026). Nur bei Bedarf lesen.
 
 **Ergebnis:** Analyse `re-dosbox` (#567, Review #576, Nachprüfung #577) und vier Umsetzungsspuren, je Spur ein
 Integrations-PR in der Folge L15: `saison` (#586, Review #590), `nationalteam` (#587, Review #593), `ui-rest` (#588, Review #596),

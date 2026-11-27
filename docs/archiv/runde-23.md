@@ -2,7 +2,7 @@
 
 Aus `docs/arbeitspakete.md` ausgelagert am 23.11.2026. Inhalt unverändert bis auf Überschrift, „Ergebnis“, „Abschluss“ und
 „Entscheidungen während der Runde“, ohne „Zurückgestellt“ und „Vormerkungen“ (bleiben in `arbeitspakete.md`). Die Statuszeilen
-der Spuren geben den Stand vor dem jeweiligen Merge wieder. Reviews: `docs/reviews/` (Dateien vom 23.11.2026). Nur bei Bedarf
+der Spuren geben den Stand vor dem jeweiligen Merge wieder. Reviews: `docs/archiv/reviews/runde-23/` (Dateien vom 23.11.2026). Nur bei Bedarf
 lesen. Relative Links beziehen sich auf `docs/`.
 
 **Ergebnis:** Plan #958 (Plan-Review #961), Prozess-PR #959 (#960: Erfahrungen Runde 22, Rebase statt Merge-Commit). Alle sechs
@@ -84,7 +84,7 @@ Modell der Spur, Fixläufe ohne Befund Sonnet 5.5. Plan-Review Sonnet 5.5. Gesam
 
 ### Spur `pruefen-sh` – Test-Infrastruktur (Welle 1)
 
-- **Teile:** 1. #951 `pruefen.sh`-Punkte aus `docs/reviews/2026-11-22-test-zeitlimit.md` (#950): P3-1 Selbsttest prüft die Summen der
+- **Teile:** 1. #951 `pruefen.sh`-Punkte aus `docs/archiv/reviews/runde-22/2026-11-22-test-zeitlimit.md` (#950): P3-1 Selbsttest prüft die Summen der
   Tabelle, P3-2 Tabellenzeile bei Hänger mit Fehlervermerk, P3-3 Kleinigkeiten; je Punkt roter Fall im Selbsttest. Fixes #951.
 - **Dateien:** `tools/pruefen.sh`, `tools/pruefen-selbsttest.sh`. **Prüfung:** alle drei Läufe und `tools/pruefen-selbsttest.sh`
   (`AGENTS.md` §5). **Erstreview:** Sonnet 5.5. **Status:** Teil 1 fertig, PR #966 (Ready for review).

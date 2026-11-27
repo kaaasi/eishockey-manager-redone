@@ -1,7 +1,7 @@
 # Abgleich Remake ↔ Original an Spielstandpaaren
 
 Spur `abgleich-original` (Runde 15, Vormerkung Vorschlag 1, R15-D2 = A). Stand: `main` 62e4927 (nach `tagesablauf` #725, `kader` #726, `hok-export` #727) + PR #728 (Fixlauf zum Review
-`docs/reviews/2026-11-10-abgleich-original.md`, Listen erneuert), Saat 1993.
+`docs/archiv/reviews/runde-14/2026-11-10-abgleich-original.md`, Listen erneuert), Saat 1993.
 
 ## Verfahren
 

@@ -1,6 +1,6 @@
 # Tagesablauf (verbindlich seit Runde 2, Spur `fundament`)
 
-Festgelegt mit Befund R2-02 aus dem [Folgereview](reviews/2026-10-26-folgereview.md). Zeit vergeht **nur** über
+Festgelegt mit Befund R2-02 aus dem [Folgereview](archiv/reviews/runde-3/2026-10-26-folgereview.md). Zeit vergeht **nur** über
 `GameState.Continue()` („Tag weiter“ per Klick aufs Vereinslogo der Infoleiste; „und tschüß…“ beendet seit #205 wie
 im Original das Programm); Bildschirme schreiben beim Öffnen nichts fort.
 

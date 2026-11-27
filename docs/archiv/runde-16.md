@@ -2,7 +2,7 @@
 
 Aus `docs/arbeitspakete.md` ausgelagert am 12.11.2026. Inhalt unverändert bis auf Überschrift, „Ergebnis“, „Abschluss“ und
 „Entscheidungen während der Runde“, ohne „Zurückgestellt“ und „Vormerkungen“ (bleiben in `arbeitspakete.md`). Die Statuszeilen
-der Spuren geben den Stand vor dem jeweiligen Merge wieder. Reviews: `docs/reviews/` (Dateien vom 11.–12.11.2026). Nur bei Bedarf
+der Spuren geben den Stand vor dem jeweiligen Merge wieder. Reviews: `docs/archiv/reviews/runde-16/` (Dateien vom 11.–12.11.2026). Nur bei Bedarf
 lesen. Relative Links beziehen sich auf `docs/`.
 
 **Ergebnis:** Spuren `abgleich-rest` (#766, mit Prüfauftrag #771), `pruefung-karte` Teil 1 (#767), `pool` (#765) und
@@ -81,7 +81,7 @@ Fixlauf ohne Befund, falls die Listen gegen den neuen `main` zu erneuern sind); 
 - **Teile:**
   1. **Belastung – Ursache belegen (#730):** Zuwachs je Reihe/Einsatz im Original (Minutenrechnung, Reihenwechsel, Training vor
      dem Tagesabschluss), warum Vielspieler der Reihen 1/2 im Original vor dem Training über 127 kippen
-     (`reviews/2026-11-11-abgleich-fix.md` B1; FILE02→03 HOCK/SIKORA, FILE16A→17).
+     (`archiv/reviews/runde-15/2026-11-11-abgleich-fix.md` B1; FILE02→03 HOCK/SIKORA, FILE16A→17).
   2. **Belastung – umsetzen:** wie im Original; Regressionstest FILE02 → 3 Spieltage (HOCK ≤ 70), Pflichteinträge unter #730 aus
      `AbgleichOriginalPaareTests` entfernen, Mehrsaisonprobe.
   3. **#732 (R16-D2 = A):** Kader und Finanzen des Satzes 0 im Modus 1 wie im Original führen – Import des Kaders von Satz 0,

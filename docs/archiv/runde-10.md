@@ -2,7 +2,7 @@
 
 Aus `docs/arbeitspakete.md` ausgelagert am 02.11.2026, damit Agenten beim Einstieg nur die aktuelle Runde lesen.
 Inhalt unverändert bis auf die Überschrift, den ergänzten Absatz „Ergebnis“, die nachgeführten Status (`re-meldungen`,
-`inventur`), die zwei relativen Links und ohne den Abschnitt „Zurückgestellt“ (in Runde 11 übernommen). Ergebnisse: `docs/analyse/`; Reviews: `docs/reviews/` (Dateien vom 01.11.2026). Nur bei Bedarf lesen.
+`inventur`), die zwei relativen Links und ohne den Abschnitt „Zurückgestellt“ (in Runde 11 übernommen). Ergebnisse: `docs/analyse/`; Reviews: `docs/archiv/reviews/runde-10/` (Dateien vom 01.11.2026). Nur bei Bedarf lesen.
 
 **Ergebnis:** Sechs Analyse-Spuren, nur Doku: `re-geld` (#375), `re-meldungen` (#376), `re-saisonwechsel` (#377, DOSBox-Beleg
 #389), `re-livespiel` (#378, Fable 5.1), `re-rest` (#381) und `inventur` (#395); Integration #380 (Review #390). Plan #366
@@ -117,7 +117,7 @@ die Funktionskarte den Plan nicht als Fundstelle zählt (R10P-01, #368). In `doc
 - **Vorgehen:** je Funktion Aufrufer lesen (meist schon umgesetzt) und die Funktion dem Remake zuordnen; kleine Hilfen
   dürfen zusammengefasst beschrieben werden. Analysen der anderen Spuren (`docs/analyse/`, auch auf den offenen
   Spurbranches) nur lesen. Nach einer Adresse kein Doppelpunkt (sonst erkennt die Karte sie nicht; Hinweis in
-  `reviews/2026-11-01-plan-runde-10-nachpruefung.md`, R10R-02 #388).
+  `archiv/reviews/runde-10/2026-11-01-plan-runde-10-nachpruefung.md`, R10R-02 #388).
 - **Modell:** Claude Opus 5.5. **Status:** Analyse fertig (PR #381, `docs/analyse/re-rest.md`): 53 von 53 Funktionen
   zugeordnet, Kandidaten K1–K7 (K1 Talentsuche P2); Übergaben an `livespiel`: 3183Ch, 35CBEh, 40290h.
 

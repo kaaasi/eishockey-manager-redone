@@ -1,11 +1,11 @@
 # Archiv: Runde 4 – Lücken bis v0.9 ohne Live-Spiel (29.10.2026)
 
 Aus `docs/arbeitspakete.md` ausgelagert am 29.10.2026, damit Agenten beim Einstieg nur die aktuelle Runde lesen.
-Inhalt unverändert bis auf die Überschrift. Ergebnisse und Reviews: `docs/reviews/`. Nur bei Bedarf lesen.
+Inhalt unverändert bis auf die Überschrift. Ergebnisse und Reviews: `docs/archiv/reviews/`. Nur bei Bedarf lesen.
 
 **Ergebnis:** Integration #106 (`nationalteam-2`, `tabellen-highscore` Teil 1, `speichern-reihenfolge`; `main` `caf9700`)
-und #112 (`tabellen-highscore` Teil 2 aus #111; `main` `7c1cee1`), Reviews [integration-runde-4](../reviews/2026-10-29-integration-runde-4.md)
-mit Nachprüfung und [integration-runde-4-teil-2](../reviews/2026-10-29-integration-runde-4-teil-2.md). Befunde R4-01 (#108) und
+und #112 (`tabellen-highscore` Teil 2 aus #111; `main` `7c1cee1`), Reviews [integration-runde-4](reviews/runde-4/2026-10-29-integration-runde-4.md)
+mit Nachprüfung und [integration-runde-4-teil-2](reviews/runde-4/2026-10-29-integration-runde-4-teil-2.md). Befunde R4-01 (#108) und
 R4-02 (#109) behoben; P3-Befunde H2-01–H2-04 (#114–#117) und das Zurückgestellte gehen in Runde 5.
 
 ## Runde 4 – Lücken bis v0.9 ohne Live-Spiel (ab 29.10.2026)
@@ -71,7 +71,7 @@ Runde 4 (parallel):  nationalteam-2   tabellen-highscore   speichern-reihenfolge
 
 - **Ziel:** Befund S71-02 (#80, P3, in Runde 3 zurückgestellt): Nach Entfernen und Wiedereinfügen hängt die
   Reihenfolge von Wörterbüchern/Mengen vom Verlauf ab; nach dem Laden ist sie anders.
-- **Abnahme:** (1) Gegenbeispiel aus dem Review (`docs/reviews/2026-10-28-speichern-68-70-71.md`, S71-02) als roter
+- **Abnahme:** (1) Gegenbeispiel aus dem Review (`docs/archiv/reviews/runde-3/2026-10-28-speichern-68-70-71.md`, S71-02) als roter
   Test; (2) Lösung nach Wahl, im PR begründet: reihenfolgerelevante Aufrufer stabil sortieren **oder** Sammlungen beim
   Laden/Speichern in definierter Ordnung führen; (3) alle Zwillings- und Roundtrip-Proben grün, Schemaabdruck nur bei
   echter Formatänderung (dann mit Migration).
@@ -96,7 +96,7 @@ Head `38f0e70`), #104 (`tabellen-highscore` **Teil 1**: Pokaltabellen, Sperren W
 - Doku `spielstand.md`: Migration 3 → 4 (aus #103) in der Tabelle ergänzt; Hinweis aus #105 auf Schema 4 angepasst.
 - Bildschirmfotos `wettbewerbe wm nationalteam weltkugel nationalteam-2 tabellen-pokale speichern`: ohne Fehler;
   alle außer `speichern` (zufälliges Verzeichnis, bekannt) bytegleich mit dem Stand der jeweiligen Spur.
-- Review [integration-runde-4](../reviews/2026-10-29-integration-runde-4.md): **R4-01 (P2, #108)** – „Tabelle DEB-Pokal“
+- Review [integration-runde-4](reviews/runde-4/2026-10-29-integration-runde-4.md): **R4-01 (P2, #108)** – „Tabelle DEB-Pokal“
   führt im Original zur Übersicht „DEB-Pokalspiele“ (Datei 0x32E23), nicht zur Auslosung. Entscheidung des Nutzers
   (29.10.2026): Kachel bis dahin wieder **Platzhalter** (Integrations-Branch), die Übersicht baut `tabellen-highscore`
   Teil 2 mit. **R4-02 (P3, #109)** – Hinweis „(Neuer)“ bei vier Managern auf gesperrte Kachel → ebenfalls Teil 2.

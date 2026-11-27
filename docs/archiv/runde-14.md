@@ -1,7 +1,7 @@
 # Archiv: Runde 14 – Restpunkte, DOSBox-Auswertung `runde-13`, Import `*.HOK` (05.–10.11.2026)
 
 Aus `docs/arbeitspakete.md` ausgelagert am 10.11.2026. Inhalt unverändert bis auf Überschrift, „Ergebnis“ und „Abschluss“, ohne „Zurückgestellt“ und „Vormerkungen“ (bleiben in `arbeitspakete.md`). Die
-Statuszeilen der Spuren geben den Stand vor der jeweiligen Integration wieder. Reviews: `docs/reviews/` (Dateien vom 05.–10.11.2026).
+Statuszeilen der Spuren geben den Stand vor der jeweiligen Integration wieder. Reviews: `docs/archiv/reviews/runde-14/` (Dateien vom 05.–10.11.2026).
 Nur bei Bedarf lesen. Relative Links beziehen sich auf `docs/`.
 
 **Ergebnis:** Spuren `re-dosbox`, `saison`, `nationalteam`, `kader-start`, `ui-rest`, `hok-import` und `pruefung-karte` integriert

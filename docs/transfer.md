@@ -398,7 +398,7 @@ den Markt-Platz. Anzeige (blauer Art-Buchstabe, Statuszeile „von <Manager>“)
 
 ## Belegt und umgesetzt (Spur `kader-start`, Runde 14, Teil 4: Saisonende-Abgang)
 
-Grundlage `docs/analyse/re-runde-14.md` Sitzung 4 (FILE44 → FILE46) und Review `docs/reviews/2026-11-08-re-dosbox-r14-2.md`
+Grundlage `docs/analyse/re-runde-14.md` Sitzung 4 (FILE44 → FILE46) und Review `docs/archiv/reviews/runde-14/2026-11-08-re-dosbox-r14-2.md`
 (R14RD2-03, -05).
 
 | Was | Fundstelle | Regel |

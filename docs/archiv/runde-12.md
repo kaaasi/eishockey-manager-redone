@@ -2,7 +2,7 @@
 
 Aus `docs/arbeitspakete.md` ausgelagert am 04.11.2026. Inhalt unverändert bis auf die Überschrift, den Absatz „Ergebnis“, die nachgeführten Status der Spuren (Review #562, P3-1), die
 relativen Links und die Abschnitte „Entscheidungen während der Runde“, „Abschluss“ und „Funktionskarte“ am Ende; der Abschnitt
-„Zurückgestellt“ bleibt als Übergang für Runde 13 in `arbeitspakete.md`. Reviews: `docs/reviews/` (Dateien vom 03.–04.11.2026).
+„Zurückgestellt“ bleibt als Übergang für Runde 13 in `arbeitspakete.md`. Reviews: `docs/archiv/reviews/runde-12/` (Dateien vom 03.–04.11.2026).
 Nur bei Bedarf lesen.
 
 **Ergebnis:** Analyse `re-pruefung` (#480, Review #494, Nachprüfung #507) und sechs Umsetzungsspuren, je Spur ein
