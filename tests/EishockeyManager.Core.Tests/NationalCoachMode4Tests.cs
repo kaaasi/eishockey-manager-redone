@@ -336,21 +336,4 @@ public class NationalCoachMode4Tests
         Assert.Equal(game.CurrentDay, loaded.CurrentDay);
         Assert.Equal(SaveGame.Save(game), SaveGame.Save(loaded));
     }
-
-    /// <summary>Abnahme (4): Schema 5 → 6 (Integration Runde 5, vorher 4 → 5) – alte Spielstände bekommen den Zug des Bundestrainers als „nicht offen“.</summary>
-    [Fact]
-    public void SchemaFourSave_IsMigrated()
-    {
-        var game = GameModeTests.Create(3, true, true, 8, 2);
-        ManagedSquads.PlayAtDatabaseStrength(game); // Vorbedingung Tabellenplatz (spielstaerke-manager-2, 0x98F8)
-        PlayToClubSeasonEnd(game);
-        var root = System.Text.Json.Nodes.JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        root["schema"] = 5;
-        Assert.True(root["spiel"]!.AsObject().Remove("_nationalTurn"));
-
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        Assert.False(result.Game!.NationalTurn);
-        Assert.Equal(SaveGame.Save(game), SaveGame.Save(result.Game));
-    }
 }

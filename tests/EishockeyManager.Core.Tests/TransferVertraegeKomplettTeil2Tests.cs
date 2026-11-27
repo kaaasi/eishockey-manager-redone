@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 
 namespace EishockeyManager.Core.Tests;
 
@@ -115,28 +114,6 @@ public class TransferVertraegeKomplettTeil2Tests
         p.NegotiationLock = 7;
         game.StartNextSeason();
         Assert.Equal(7, p.NegotiationLock);
-    }
-
-    /// <summary>Migration 19 → 20: „Insured“ → Prämie (bisher 10 % des Gehalts), nicht abgeschlossen.</summary>
-    [Fact]
-    public void Migration_FromSchema19()
-    {
-        var (game, _, club, p) = Setup();
-        p.MonthlySalary = 4_567;
-        p.InsurancePremium = 456;
-        var json = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        json["schema"] = 19;
-        foreach (var player in json["spieler"]!.AsArray().OfType<JsonObject>())
-        {
-            var premium = player["InsurancePremium"]!.GetValue<int>();
-            player.Remove("InsurancePremium");
-            player.Remove("InsuranceLocked");
-            player["Insured"] = premium > 0;
-        }
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(json.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        Assert.Equal(SaveGame.Save(game), SaveGame.Save(result.Game!));
-        Assert.NotNull(club);
     }
 
     /// <summary>

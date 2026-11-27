@@ -203,34 +203,6 @@ public class FeldspielerSechsTests
     }
 
     /// <summary>
-    /// Migration 62 → 63 (<c>SaveGame.Migration.FeldspielerSechs.cs</c>): Ein Stand mit Feldspieler im Tor (<c>_goalieStandIn</c>) lädt mit
-    /// diesem Spieler auf dem sechsten Platz; Speichern → Laden → Speichern byte-gleich.
-    /// </summary>
-    [Fact]
-    public void Migration_62To63_StandInBecomesSixthSkater()
-    {
-        var game = TestGames.Create();
-        var club = game.Clubs[game.Managers[0].ClubIndex];
-        foreach (var g in club.Players.Where(p => p.Role == PlayerRole.Goalkeeper))
-            g.InjuredGames = 5;
-        Assert.True(club.ApplyAutoLineup());
-        var standInId = club.Lineup.SixthSkater!.Id;
-        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        var renamed = Rename(root, "_sixthSkater", "_goalieStandIn");
-        Assert.True(renamed > 0);
-        root["schema"] = 62;
-
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-
-        Assert.True(result.Success, result.Error);
-        Assert.Equal(standInId, result.Game!.Clubs[club.Index].Lineup.SixthSkater?.Id);
-        var again = SaveGame.Save(result.Game!);
-        var twice = SaveGame.Load(again);
-        Assert.True(twice.Success, twice.Error);
-        Assert.Equal(again, SaveGame.Save(twice.Game!));
-    }
-
-    /// <summary>
     /// HOK-Export und -Import (A937): Der sechste Feldspieler steht im Kaderplatz mit +0x15 = 1 (Abwehr, Reihe 1) wie die übrigen
     /// Verteidiger der Reihe 1; der Import ordnet den dritten Spieler der Abwehrhälfte in Reihe 1 dem sechsten Platz zu (Gitter Datei
     /// 0x40478–0x404D7). Vorher: dritter Verteidiger beim Import verworfen.

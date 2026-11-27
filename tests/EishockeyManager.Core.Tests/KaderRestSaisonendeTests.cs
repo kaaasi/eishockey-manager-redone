@@ -87,43 +87,5 @@ public class KaderRestSaisonendeTests
         Assert.True(total > 0, "Keine Jugend am Saisonende");
     }
 
-    /// <summary>
-    /// Spielstand vor Schema 50 vom Bildschirm „Saisonende“: Die Migration merkt Jugendwechsel und Jugend als ausstehend vor
-    /// (<c>_seasonEndYouthPending</c>), der Saisonwechsel holt sie nach und löscht die Marke; in anderen Phasen keine Marke.
-    /// </summary>
-    [Fact]
-    public void SaveGame_Before50_AtSeasonEnd_CatchesUpYouth()
-    {
-        var game = TestGames.Create(3);
-        Assert.False(Pending(SaveGame.Save(Migrated(game))));
-        PlayToSeasonEnd(game);
-        var loaded = Migrated(game);
-        Assert.True(Pending(SaveGame.Save(loaded)));
-
-        var manager = loaded.Managers[0];
-        // Erwartet: der Jugendwechsel (0x3A13B) noch einmal auf den Stand des Bildschirms (Platz und Liga ohne Zufall).
-        var expected = loaded.Finance(manager).Youth.Select(t =>
-        {
-            var (p, l) = (t.Rank - 1, t.League - 1);
-            if (p < 2 && l > 0) return (p + 11, l);
-            if (p > 10 && l < YouthTeam.Leagues - 1) return (p - 9, l + 2);
-            return (YouthTeam.StartRank, l + 1);
-        }).ToArray();
-        loaded.StartNextSeason();
-        Assert.False(Pending(SaveGame.Save(loaded)));
-        Assert.Equal(expected, loaded.Finance(manager).Youth.Select(t => (t.Rank, t.League)).ToArray());
-    }
-
-    /// <summary>Spielstand als Schema 49 ohne die Marke laden (Migration KaderRest).</summary>
-    private static GameState Migrated(GameState game)
-    {
-        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        Assert.True(root["spiel"]!.AsObject().Remove("_seasonEndYouthPending"));
-        root["schema"] = 49;
-        var loaded = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.Null(loaded.Error);
-        return loaded.Game!;
-    }
-
     private static bool Pending(byte[] save) => JsonNode.Parse(save)!["spiel"]!["_seasonEndYouthPending"]!.GetValue<bool>();
 }

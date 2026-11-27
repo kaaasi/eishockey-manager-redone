@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 
 namespace EishockeyManager.Core.Tests;
 
@@ -138,61 +137,6 @@ public class NationalteamRunde14Teil3Tests
             if (season < 4)
                 game.StartNextSeason();
         }
-    }
-
-    /// <summary>
-    /// Migration 40 → 41: Ein Bundestrainer mit eigener Aufstellung behält sie (Einstellung aus), einer ohne bekommt den Startwert 1.
-    /// </summary>
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void Migration_SetsSettingFromFormation(bool handMade)
-    {
-        var (game, coach) = CoachWithSquad();
-        coach.ClearFormation();
-        if (handMade)
-        {
-            var keeper = coach.Squad.Select(m => m.Player).First(p => p.Role == Formats.PlayerRole.Goalkeeper && p.Available);
-            Assert.Equal(LineupResult.Assigned, coach.Assign(LineupSlot.Goalkeeper, keeper));
-        }
-        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        root["schema"] = 40;
-        Assert.True(root["spiel"]!.AsObject().Remove("_nationalAutoLineupSaved"));
-        var json = root["spiel"]!["NationalCoach"]!.AsObject();
-        foreach (var key in new[] { "_autoLineup", "_autoLineupSaved", "_turnOpen" })
-            Assert.True(json.Remove(key), key);
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        var loaded = result.Game!;
-        Assert.Equal(!handMade, loaded.NationalCoach!.AutoLineupEnabled);
-        loaded.OnMainMenu(loaded.ActiveManager, isReturn: false);
-        if (handMade)
-            Assert.Equal(1, loaded.NationalCoach.Formation.Count);
-        else
-            Assert.Equal(NationalCoach.MaxDressed, loaded.NationalCoach.DressedCount);
-    }
-
-    /// <summary>
-    /// Kette 39 → 40 → 41 (Integration Runde 14): Ein echter Schema-39-Stand kennt weder <c>ManagerDayMinuteLoop</c> (saison, 40)
-    /// noch die Felder der Bundestrainer-Einstellung (nationalteam, 41); beide Migrationen laufen nacheinander und ändern sich nicht.
-    /// </summary>
-    [Fact]
-    public void Migration_Chain39To41_AddsBothSettings()
-    {
-        var (game, coach) = CoachWithSquad();
-        coach.ClearFormation();
-        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        root["schema"] = 39;
-        Assert.True(root["spiel"]!["Setup"]!["Options"]!.AsObject().Remove("ManagerDayMinuteLoop"));
-        Assert.True(root["spiel"]!.AsObject().Remove("_nationalAutoLineupSaved"));
-        var json = root["spiel"]!["NationalCoach"]!.AsObject();
-        foreach (var key in new[] { "_autoLineup", "_autoLineupSaved", "_turnOpen" })
-            Assert.True(json.Remove(key), key);
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        Assert.False(result.Game!.Options.ManagerDayMinuteLoop);
-        Assert.True(result.Game.NationalCoach!.AutoLineupEnabled);
-        Assert.Equal(SaveGame.Save(result.Game), SaveGame.Save(SaveGame.Load(SaveGame.Save(result.Game)).Game!));
     }
 
     /// <summary>

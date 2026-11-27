@@ -15,10 +15,6 @@
     <Compile Include="..\..\src\EishockeyManager.Tools\HokCompare*.cs" Link="Abgleich\%(Filename)%(Extension)" />
   </ItemGroup>
   <ItemGroup>
-    <!-- Spielstände älterer Schemata aus der synthetischen Datenbank (keine Originaldaten), für Migrationstests -->
-    <EmbeddedResource Include="Fixtures\*.ems.gz" LogicalName="Fixtures.%(Filename)%(Extension)" />
-  </ItemGroup>
-  <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
   <ItemGroup>

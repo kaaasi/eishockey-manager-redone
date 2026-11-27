@@ -271,32 +271,4 @@ public class SpielberechnungTests
         MatchStatistics.CreditGoalies(two, 3, new ScriptedRandom(0, 50, 25));
         Assert.Equal((4, 75, 2, 45), (two[0].GoalsAgainst, two[0].GoalieMinutes, two[1].GoalsAgainst, two[1].GoalieMinutes));
     }
-
-    [Fact]
-    public void SchemaTenSave_IsMigrated_GoalieCountersZero()
-    {
-        var setup = new GameSetup();
-        setup.Managers.Add(new ManagerSetup { Name = "Test", Head = 0, ClubIndex = 12, StartLeague = League.Oberliga });
-        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 3);
-        TestSeason.PlayMatchDay(game);
-        // Seit dem Anschluss (Teil 3) zählt der Spieltag die Torhüter; ein Spielstand aus Schema 10 (boerse-start,
-        // Integration Runde 7) kennt die Felder nicht.
-        foreach (var p in game.Clubs.SelectMany(c => c.Players))
-            p.GoalsAgainst = p.GoalieMinutes = 0;
-        var root = System.Text.Json.Nodes.JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        root["schema"] = 10;
-        var removed = 0;
-        foreach (var node in root["spieler"]!.AsArray())
-        {
-            var player = node!.AsObject();
-            Assert.True(player.Remove("GoalsAgainst"));
-            Assert.True(player.Remove("GoalieMinutes"));
-            removed++;
-        }
-        Assert.True(removed > 0);
-
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        Assert.Equal(SaveGame.Save(game), SaveGame.Save(result.Game!));
-    }
 }

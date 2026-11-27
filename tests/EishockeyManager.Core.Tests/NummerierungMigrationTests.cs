@@ -1,12 +1,11 @@
-using System.Text.Json.Nodes;
 using EishockeyManager.Core;
 
 namespace EishockeyManager.Core.Tests;
 
 /// <summary>
 /// Fix Runde 13 (R13G-01, #613; R13KI-04, #606): A091 Nr. = Kaderplatz + 1. Das Hauptmenü nummeriert nicht mehr um (AGENTS.md §4:
-/// dort nur die Neuaufstellung mit „automatisch aufstellen“); Spielstände aus der Zeit der freien Rückennummern werden einmalig
-/// beim Laden für alle Vereine umnummeriert (Schema 38 → 39, <c>SaveGame.Migration.Nummern.cs</c>).
+/// dort nur die Neuaufstellung mit „automatisch aufstellen“). Die Umnummerierung älterer Stände beim Laden (Schema 38 → 39) entfiel
+/// in Runde 27 mit allen Migrationen (aufraeumen-migration, R27-D2 = B).
 /// </summary>
 public class NummerierungMigrationTests
 {
@@ -49,37 +48,9 @@ public class NummerierungMigrationTests
         Assert.Equal(77, club.Players[0].Number);
     }
 
-    [Theory]
-    [InlineData(36)]
-    [InlineData(38)]
-    public void OldSave_WithFreeNumbers_RenumbersAllClubsOnLoad(int schema)
-    {
-        var game = Create();
-        var managerClub = game.Managers[0].ClubIndex;
-        var computerClub = game.Clubs.First(c => c.Index != managerClub && c.Players.Count > 0).Index;
-        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        root["schema"] = schema;
-        var players = root["spieler"]!.AsArray().Select(p => p!.AsObject()).ToDictionary(p => (int)p["Id"]!);
-        foreach (var index in new[] { managerClub, computerClub })
-        {
-            var items = root["vereine"]![index]!["Players"]!["items"]!.AsArray();
-            for (var i = 0; i < items.Count; i++)
-                players[(int)items[i]!["$spieler"]!]["Number"] = 99 - 3 * i; // freie Rückennummern wie vor A091
-        }
-
-        var loaded = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-
-        Assert.True(loaded.Success, loaded.Error);
-        foreach (var club in loaded.Game!.Clubs)
-            for (var i = 0; i < club.Players.Count; i++)
-                Assert.Equal(i + 1, club.Players[i].Number);
-        Assert.Equal(SaveGame.Save(game), SaveGame.Save(loaded.Game));
-    }
-
     /// <summary>
-    /// Aktuelle Stände laufen nicht durch die Migration 38 → 39. #620 (R13GN-03): Vorher blieb der Test auch grün, wenn die
-    /// Migration auf aktuelle Stände angewandt wurde (Nr. = Platz + 1 ist dort ohnehin erfüllt). Daher eine abweichende Nr.
-    /// vor dem Sichern: Sie muss das Laden überstehen.
+    /// Laden nummeriert nicht um. #620 (R13GN-03): Nr. = Platz + 1 ist ohnehin erfüllt, daher eine abweichende Nr. vor dem
+    /// Sichern: Sie muss das Laden überstehen.
     /// </summary>
     [Fact]
     public void CurrentSave_RoundTrip_Unchanged()

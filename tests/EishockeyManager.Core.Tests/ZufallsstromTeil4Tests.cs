@@ -1,5 +1,3 @@
-using System.Text;
-using System.Text.Json.Nodes;
 using EishockeyManager.Core;
 using EishockeyManager.Tests.Support;
 
@@ -393,64 +391,6 @@ public class ZufallsstromTeil4Tests
         Assert.Equal(b.Stocks.Stocks.Select(k => k.Price), a.Stocks.Stocks.Select(k => k.Price));
         Assert.Equal(sim.Capture(), a.Random.Capture());
         Assert.NotEqual(b.Random.Capture(), a.Random.Capture());
-    }
-
-    /// <summary>
-    /// Spielstand Schema 53 mit den entfallenen Quellen <c>_cupRandom</c> und <c>_financeRandom</c> lädt nach der Migration 53 → 54; der gemeinsame Strom
-    /// bleibt.
-    /// </summary>
-    [Fact]
-    public void SaveGame_Schema53_DropsOwnSources()
-    {
-        var (game, _) = Create(3, null, 2);
-        var root = JsonNode.Parse(Encoding.UTF8.GetString(SaveGame.Save(game)))!.AsObject();
-        Assert.True(SaveGame.SchemaVersion >= 54); // kaderplatz-werte: Schema 55 hängt eine weitere Migration an (Runde 22)
-        var state = root["spiel"]!.AsObject();
-        foreach (var field in RemovedFields)
-            Assert.False(state.ContainsKey(field));
-        // Stand „Schema 53“ nachbauen: die Quellen als eigene Objekte an ihrem Platz in der Feldfolge, Objektnummern fortlaufend
-        // in Dateireihenfolge (wie der Schreiber von Schema 53), Verweise umgeschrieben.
-        root["schema"] = 53;
-        var nextId = -1;
-        foreach (var field in RemovedFields)
-        {
-            var source = state["Random"]!.DeepClone().AsObject();
-            source["$id"] = nextId--;
-            state[field] = source;
-        }
-        var fields = state.ToList();
-        state.Clear();
-        foreach (var (key, value) in fields.OrderBy(f => f.Key switch { "$id" => 0, "$type" => 1, _ => 2 })
-                     .ThenBy(f => f.Key, StringComparer.Ordinal))
-            state[key] = value;
-        var map = new Dictionary<int, int>();
-        var next = 0;
-        void Number(JsonNode? node)
-        {
-            if (node is JsonObject obj)
-            {
-                if (obj["$id"] is JsonValue id)
-                {
-                    map[id.GetValue<int>()] = next;
-                    obj["$id"] = next++;
-                }
-                else if (obj.Count == 1 && obj["$ref"] is JsonValue target)
-                    obj["$ref"] = map[target.GetValue<int>()];
-                foreach (var (key, child) in obj.ToArray())
-                    if (key is not "$id" and not "$ref")
-                        Number(child);
-            }
-            else if (node is JsonArray array)
-                foreach (var child in array.ToArray())
-                    Number(child);
-        }
-        Number(root);
-
-        var loaded = SaveGame.Load(Encoding.UTF8.GetBytes(root.ToJsonString()));
-
-        Assert.True(loaded.Success, loaded.Error);
-        Assert.Equal(game.Random.Capture(), loaded.Game!.Random.Capture());
-        Assert.Equal(SaveGame.Save(game), SaveGame.Save(loaded.Game));
     }
 
     private static readonly string[] RemovedFields = ["_cupRandom", "_financeRandom"];

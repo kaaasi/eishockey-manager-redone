@@ -285,9 +285,9 @@ public class KaderTransferTeil4Tests
         Assert.Equal(36, PlayerValue.Inputs(p, null).Trend);
     }
 
-    /// <summary>Tendenz und Steuerbyte überstehen Sichern und Laden; Spielstände vor Schema 29 bekommen 0 (Stufe gilt).</summary>
+    /// <summary>Tendenz und Steuerbyte überstehen Sichern und Laden.</summary>
     [Fact]
-    public void TrendScore_RoundTripsAndMigrates()
+    public void TrendScore_RoundTrips()
     {
         var game = TestGames.Create();
         var player = game.TransferMarket.Listings[0].Player;
@@ -298,18 +298,6 @@ public class KaderTransferTeil4Tests
         var again = loaded.Game!.TransferMarket.Listings[0].Player;
         Assert.Equal((player.TrendScore, player.TrendControl, player.Trend), (again.TrendScore, again.TrendControl, again.Trend));
         Assert.Equal(saved, SaveGame.Save(loaded.Game!));
-
-        var root = System.Text.Json.Nodes.JsonNode.Parse(saved)!.AsObject();
-        root["schema"] = 28; // vor Teil 4 (Integration Runde 11: 28 → 29)
-        foreach (var p in root["spieler"]!.AsArray().OfType<System.Text.Json.Nodes.JsonObject>())
-        {
-            p.Remove("TrendScore");
-            p.Remove("TrendControl");
-        }
-        var old = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(old.Success, old.Error);
-        Assert.All(old.Game!.Clubs.SelectMany(c => c.Players), p => Assert.Equal(0, p.TrendScore));
-        Assert.All(old.Game!.TransferMarket.Listings, l => Assert.Equal((0, 0), (l.Player.TrendScore, l.Player.TrendControl)));
     }
 
     /// <summary>Zwei Manager (Bundesliga 2 und 7); Manager 1 bietet einen Stürmer an.</summary>

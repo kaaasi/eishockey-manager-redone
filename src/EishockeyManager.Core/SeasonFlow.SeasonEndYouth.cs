@@ -17,7 +17,8 @@ public sealed partial class GameState
 {
     /// <summary>
     /// Nur aus Spielständen vor Schema 50, gespeichert auf dem Bildschirm „Saisonende“: Jugendwechsel und Jugend am Saisonende
-    /// standen damals noch aus (Migration <c>SaveGame.Migration.KaderRest.cs</c>). <see cref="StartNextSeason"/> holt sie nach.
+    /// standen damals noch aus (gesetzt von der Migration auf Schema 50, seit Runde 27 entfallen; der Zustand kann in einem
+    /// daraus entstandenen Schema-65-Stand noch stehen). <see cref="StartNextSeason"/> holt sie nach.
     /// </summary>
     private bool _seasonEndYouthPending;
 

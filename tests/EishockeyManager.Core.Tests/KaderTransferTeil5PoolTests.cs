@@ -193,9 +193,9 @@ public class KaderTransferTeil5PoolTests
         }
     }
 
-    /// <summary>Die Zähler je Liga (DGROUP 0x48FB) überstehen Sichern und Laden; Spielstände vor Schema 30 beginnen bei 0.</summary>
+    /// <summary>Die Zähler je Liga (DGROUP 0x48FB) überstehen Sichern und Laden.</summary>
     [Fact]
-    public void PoolTurns_RoundTripAndMigrate()
+    public void PoolTurns_RoundTrip()
     {
         var game = TestGames.Create();
         var saved = SaveGame.Save(game);
@@ -205,33 +205,5 @@ public class KaderTransferTeil5PoolTests
         var a = Enumerable.Range(0, 20).Select(_ => game.TransferMarket.NextPoolClub(game, 0, new GameRandom(0))).ToList();
         var b = Enumerable.Range(0, 20).Select(_ => loaded.Game!.TransferMarket.NextPoolClub(loaded.Game!, 0, new GameRandom(0))).ToList();
         Assert.Equal(a, b);
-
-        var root = System.Text.Json.Nodes.JsonNode.Parse(saved)!.AsObject();
-        root["schema"] = 29; // vor Teil 5 (Integration Runde 11: 29 → 30)
-        var text = root.ToJsonString();
-        foreach (var name in new[] { "_poolTurnBundesliga", "_poolTurnZweiteLiga", "_poolTurnOberliga" })
-            Assert.Contains($"\"{name}\"", text);
-        RemoveFields(root, "_poolTurnBundesliga", "_poolTurnZweiteLiga", "_poolTurnOberliga");
-        var old = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(old.Success, old.Error);
-        var bundesliga = old.Game!.LeagueClubs(League.Bundesliga).OrderBy(c => c.Index).First().Index;
-        Assert.Equal(bundesliga, old.Game!.TransferMarket.NextPoolClub(old.Game!, 0, new GameRandom(0)));
-    }
-
-    private static void RemoveFields(System.Text.Json.Nodes.JsonNode? node, params string[] names)
-    {
-        switch (node)
-        {
-            case System.Text.Json.Nodes.JsonObject obj:
-                foreach (var name in names)
-                    obj.Remove(name);
-                foreach (var (_, child) in obj.ToArray())
-                    RemoveFields(child, names);
-                break;
-            case System.Text.Json.Nodes.JsonArray array:
-                foreach (var child in array)
-                    RemoveFields(child, names);
-                break;
-        }
     }
 }

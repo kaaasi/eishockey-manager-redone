@@ -552,32 +552,4 @@ public class GameModeSaveGameTests
         Assert.Equal(game.NationalAccount, loaded.NationalBookings.Sum(b => b.Amount));
         Assert.Equal(bytes, SaveGame.Save(loaded));
     }
-
-    /// <summary>Schema 2 → 3: Fahne gedrückt (Schema 2 kannte nur Modi mit Liga), Kontostand als Übertragsbuchung.</summary>
-    [Theory]
-    [InlineData(0L)]
-    [InlineData(275_000L)]
-    public void SchemaTwoSave_IsMigrated(long account)
-    {
-        var game = TestGames.Create(3);
-        game.Setup.DebCup = false;
-        var root = System.Text.Json.Nodes.JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        root["schema"] = 2;
-        var spiel = root["spiel"]!.AsObject();
-        spiel.Remove("NationalBookings");
-        spiel["Setup"]!.AsObject().Remove("ClubCompetitions");
-        spiel["NationalAccount"] = account;
-
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        var loaded = result.Game!;
-        Assert.True(loaded.Setup.ClubCompetitions);
-        Assert.False(loaded.Setup.DebCup);
-        Assert.Equal(GameMode.Full, loaded.Mode);
-        Assert.Equal(account, loaded.NationalAccount);
-        Assert.Equal(account, loaded.NationalBookings.Sum(b => b.Amount));
-        Assert.Equal(account == 0 ? 0 : 1, loaded.NationalBookings.Count);
-        var again = SaveGame.Save(loaded);
-        Assert.Equal(again, SaveGame.Save(SaveGame.Load(again).Game!));
-    }
 }

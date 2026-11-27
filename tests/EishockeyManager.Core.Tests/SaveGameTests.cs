@@ -20,7 +20,7 @@ public class SaveGameTests
 
     /// <summary>
     /// Schemawächter: Ändert sich ein Zustandsfeld (neu, umbenannt, anderer Typ), ändert sich dieser Abdruck. Dann
-    /// <see cref="SaveGame.SchemaVersion"/> erhöhen, eine Migration eintragen und den Abdruck hier nachführen.
+    /// <see cref="SaveGame.SchemaVersion"/> erhöhen und den Abdruck hier nachführen (Migrationen gibt es seit Runde 27 nicht mehr).
     /// </summary>
     [Fact]
     public void SchemaFingerprint_MatchesSchemaVersion()
@@ -267,6 +267,26 @@ public class SaveGameTests
         var result = SaveGame.Load(Encoding.UTF8.GetBytes(text));
         Assert.False(result.Success);
         Assert.Contains("neueren Version", result.Error);
+    }
+
+    /// <summary>
+    /// Lader (Runde 27, A1 = B, R27-D2 = B): Migrationen gibt es nicht mehr. Ein sonst vollständiger Spielstand mit Schema 64
+    /// endet in der Versionsmeldung, ohne gelesen zu werden; derselbe Stand mit Schema 65 lädt.
+    /// </summary>
+    [Fact]
+    public void Schema64_CanNoLongerBeLoaded()
+    {
+        var text = Encoding.UTF8.GetString(SaveGame.Save(TestGames.Create()));
+        var current = $"\"schema\": {SaveGame.SchemaVersion},";
+        Assert.Contains(current, text);
+        var old = text.Replace(current, $"\"schema\": {SaveGame.SchemaVersion - 1},", StringComparison.Ordinal);
+
+        var result = SaveGame.Load(Encoding.UTF8.GetBytes(old));
+
+        Assert.False(result.Success);
+        Assert.True(result.WrongVersion);
+        Assert.Equal("Spielstände mit Schema 64 können nicht mehr geladen werden.", result.Error);
+        Assert.True(SaveGame.Load(Encoding.UTF8.GetBytes(text)).Success);
     }
 
     [Theory]

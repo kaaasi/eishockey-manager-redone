@@ -1,4 +1,3 @@
-using System.Text;
 using System.Text.Json.Nodes;
 using EishockeyManager.Formats;
 using EishockeyManager.Tests.Support;
@@ -193,39 +192,6 @@ public sealed class HokPlayOffMarkenTests
                 return candidate;
         }
         throw new InvalidOperationException("Keine offene Viertelfinalrunde gefunden.");
-    }
-
-    /// <summary>
-    /// Migration 55 → 56 (<c>SaveGame.Migration.HokPlayOffMarken.cs</c>): ein Stand ohne <c>Marks</c> bekommt je Spiel zwei Marken bei
-    /// Penaltysieger, sonst 0, und lädt. Synthetisch (ohne Originaldaten): Hauptrunde und drei Play-off-Termine.
-    /// </summary>
-    [Fact]
-    public void SaveGame_Schema55_GetsPlayoffMarks()
-    {
-        var game = NewGame.Create(TestGames.CreateDatabase(), Setup(), 7);
-        TestSeason.PlayRegularSeason(game);
-        PlayPlayoffGames(game, 2 * 4);
-        Assert.NotEmpty(game.PlayoffResults);
-        // R924-03 (#928): at least one game with a penalty winner, so the branch "penalty winner → 2 marks" runs.
-        var first = game.Playoffs!.Rounds[0][0];
-        first.Games[0] = first.Games[0] with { HomeGoals = 2, AwayGoals = 2, PenaltyWinner = first.Games[0].Home };
-        var root = JsonNode.Parse(Encoding.UTF8.GetString(SaveGame.Save(game)))!.AsObject();
-        root["schema"] = 55;
-        var removed = 0;
-        foreach (var series in Objects(root).Where(o => o.ContainsKey("HomeClub") && o.ContainsKey("Games")).ToList())
-            removed += series.Remove("Marks") ? 1 : 0;
-        Assert.True(removed >= 4);
-
-        var loaded = SaveGame.Load(Encoding.UTF8.GetBytes(root.ToJsonString()));
-
-        Assert.True(loaded.Success, loaded.Error);
-        foreach (var s in loaded.Game!.Playoffs!.Rounds[0])
-        {
-            Assert.Equal(s.Games.Count, s.Marks.Count);
-            for (var g = 0; g < s.Games.Count; g++)
-                Assert.Equal(s.Games[g].PenaltyWinner is null ? 0 : PlayoffSeries.TieMarks, s.Marks[g]);
-        }
-        Assert.Equal(PlayoffSeries.TieMarks, loaded.Game.Playoffs.Rounds[0][0].Marks[0]);
     }
 
     /// <summary>

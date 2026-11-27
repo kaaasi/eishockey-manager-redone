@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using EishockeyManager.Core;
 
 namespace EishockeyManager.Core.Tests;
@@ -143,18 +142,6 @@ public class SaisonManagerTagTests
         Assert.True(loaded.Success, loaded.Error);
         Assert.True(loaded.Game!.Options.ManagerDayMinuteLoop);
         Assert.Equal(SaveGame.Save(game), SaveGame.Save(loaded.Game));
-    }
-
-    [Fact]
-    public void Schema39Save_Migrates_OptionOff()
-    {
-        var game = Create(seed: 4, option: false, 5);
-        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        root["schema"] = 39;
-        Assert.True(root["spiel"]!["Setup"]!["Options"]!.AsObject().Remove("ManagerDayMinuteLoop"));
-        var loaded = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(loaded.Success, loaded.Error);
-        Assert.False(loaded.Game!.Options.ManagerDayMinuteLoop);
     }
 
     [Theory]

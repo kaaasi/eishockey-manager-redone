@@ -1,6 +1,4 @@
 using System.Buffers.Binary;
-using System.Text;
-using System.Text.Json.Nodes;
 using EishockeyManager.Formats;
 using EishockeyManager.Tests.Support;
 
@@ -342,48 +340,6 @@ public sealed class PlayoffSemifinalTests
         Assert.True(cupCarries > 0, "kein Stand mit Pokalübertrag");
     }
 
-    /// <summary>
-    /// R683-01 (Migration 43 → 44): Ein Stand mit laufendem Viertelfinale (4 Spiele gespielt) aus der Zeit vor #676 führte die
-    /// Serien als 1–8, 4–5, 2–7, 3–6 und die Felder <c>HigherSeed</c>/<c>LowerSeed</c>. Der Test baut diesen Stand aus einem heutigen
-    /// (Schema 44 → 43, alte Folge, Objektnummern neu). Nach dem Laden stehen die Serien in Platzfolge, der Stand ist Byte für
-    /// Byte der ungesicherte, und das Halbfinale paart nach Tabelle 0x144 wie ohne Sichern: Sieger 1–8 gegen 3–6, 2–7 gegen 4–5.
-    /// Ohne Migration paarte dieser Stand 1–8 gegen 2–7 (Gegenbeispiel des Reviews: Sieger 1, 4, 2, 3 → 1–2 | 4–3 statt 1–3 | 2–4).
-    /// </summary>
-    [Fact]
-    public void Load_Schema43_RunningQuarterFinal_SemifinalByTable0x144()
-    {
-        // #784 (Runde 17, Gast nach dem Heimverein): Saat 3 → 4 – mit 3 erreicht der Managerverein die Play-offs nicht mehr,
-        // der Halt nach vier Viertelfinalspielen entfällt (12 gespielt); Vorbedingung unten unverändert.
-        var game = TestGames.Create(4);
-        for (var guard = 0; game.Playoffs is not { } p || p.Rounds[0].Sum(x => x.Games.Count) < 4; guard++)
-        {
-            Assert.True(guard < 5000, "Viertelfinale nicht erreicht");
-            game.Continue();
-        }
-        Assert.Equal(4, game.Playoffs!.Rounds[0].Sum(x => x.Games.Count));
-        var current = SaveGame.Save(game);
-
-        var old = SaveGame.Load(ToSchema43(current));
-        Assert.True(old.Success, old.Error);
-        var loaded = old.Game!;
-        var s = loaded.Playoffs!.Seeds;
-        Assert.Equal(new[] { (s[0], s[7]), (s[1], s[6]), (s[2], s[5]), (s[3], s[4]) },
-            loaded.Playoffs.Rounds[0].Select(x => (x.HomeClub, x.AwayClub)));
-        Assert.True(current.AsSpan().SequenceEqual(SaveGame.Save(loaded)), "migrierter Stand weicht vom ungesicherten ab");
-
-        foreach (var g in new[] { game, loaded })
-            for (var guard = 0; g.Playoffs!.Rounds.Count < 2 || g.Playoffs.Rounds[1].Sum(x => x.Games.Count) == 0; guard++)
-            {
-                Assert.True(guard < 500, "Halbfinale nicht erreicht");
-                g.Continue();
-            }
-        var quarter = loaded.Playoffs!.Rounds[0];
-        Assert.Equal(new[] { (quarter[0].Winner, quarter[2].Winner), (quarter[1].Winner, quarter[3].Winner) },
-            loaded.Playoffs.Rounds[1].Select(x => ((int?)x.HomeClub, (int?)x.AwayClub)));
-        Assert.Equal(game.Playoffs!.Rounds[1].Select(x => (x.HomeClub, x.AwayClub)),
-            loaded.Playoffs.Rounds[1].Select(x => (x.HomeClub, x.AwayClub)));
-    }
-
     /// <summary>Kauft den ersten Spieler vom Markt, der nicht aus dem eigenen Verein kommt, zum Listenpreis (Kader höchstens 26).</summary>
     private static int BuyOne(GameState game, Manager manager)
     {
@@ -393,51 +349,6 @@ public sealed class PlayoffSemifinalTests
             if (game.TransferMarket.Buy(game, manager, listing, listing.Price, loan: false) == TransferResult.Accepted)
                 return 1;
         return 0;
-    }
-
-    /// <summary>Heutigen Stand in die Form von Schema 43 vor #676 bringen (nur Testhilfe).</summary>
-    private static byte[] ToSchema43(byte[] data)
-    {
-        var root = JsonNode.Parse(data)!.AsObject();
-        root["schema"] = 43;
-        var playoffs = root["spiel"]!["Playoffs"]!.AsObject();
-        foreach (var series in playoffs["_rounds"]!["items"]!.AsArray().SelectMany(r => r!["items"]!.AsArray()).Select(x => x!.AsObject()))
-        {
-            var (home, away) = (series["HomeClub"]!, series["AwayClub"]!);
-            series.Remove("HomeClub");
-            series.Remove("AwayClub");
-            series["HigherSeed"] = home;
-            series["LowerSeed"] = away;
-        }
-        var first = playoffs["_rounds"]!["items"]![0]!["items"]!.AsArray();
-        var neu = first.ToList();
-        first.Clear();
-        foreach (var k in new[] { 0, 3, 1, 2 }) // vor #676: 1–8, 4–5, 2–7, 3–6
-            first.Add(neu[k]);
-        var map = new Dictionary<int, int>();
-        var next = 0;
-        Renumber(root);
-        return Encoding.UTF8.GetBytes(root.ToJsonString());
-
-        void Renumber(JsonNode? node)
-        {
-            if (node is JsonObject obj)
-            {
-                if (obj["$id"] is JsonValue id)
-                {
-                    map[id.GetValue<int>()] = next;
-                    obj["$id"] = next++;
-                }
-                else if (obj.Count == 1 && obj["$ref"] is JsonValue r)
-                    obj["$ref"] = map[r.GetValue<int>()];
-                foreach (var (key, child) in obj.ToArray())
-                    if (key is not "$id" and not "$ref")
-                        Renumber(child);
-            }
-            else if (node is JsonArray array)
-                foreach (var child in array.ToArray())
-                    Renumber(child);
-        }
     }
 
     private static List<byte[]> OccupiedSlots(OriginalSaveGame save, int record) =>

@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using EishockeyManager.Core;
 using EishockeyManager.Formats;
 
@@ -103,31 +102,6 @@ public class WettbewerbeSpiel12Teil2Tests
         Assert.False(report.Forfeit);
         Assert.Equal(150, bench[0].Strain);
         Assert.Equal(50, bench[1].Strain);
-    }
-
-    /// <summary>Schema 32 → 33: Belastung = 150 − Energie (bisherige Ableitung), das Feld Energy entfällt.</summary>
-    [Fact]
-    public void Migration_32To33_StrainFromEnergy()
-    {
-        var game = TestGames.Create(3);
-        var player = game.Clubs[game.ActiveManager.ClubIndex].Players[0];
-        player.Strain = 87;
-        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        root["schema"] = 32;
-        var players = root["spieler"]!.AsArray().OfType<JsonObject>().ToList();
-        Assert.All(players, p => Assert.Null(p["Energy"]));
-        foreach (var p in players)
-        {
-            var strain = p["Strain"]!.GetValue<int>();
-            p.Remove("Strain");
-            p["Energy"] = 150 - strain;
-        }
-        var loaded = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(loaded.Success, loaded.Error);
-        var all = game.Clubs.SelectMany(c => c.Players).ToList();
-        var allLoaded = loaded.Game!.Clubs.SelectMany(c => c.Players).ToList();
-        Assert.Equal(all.Select(p => p.Strain), allLoaded.Select(p => p.Strain));
-        Assert.Equal(87, loaded.Game.Clubs[game.ActiveManager.ClubIndex].Players[0].Strain);
     }
 
     /// <summary>

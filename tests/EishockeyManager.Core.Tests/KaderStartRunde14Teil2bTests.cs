@@ -206,29 +206,4 @@ public class KaderStartRunde14Teil2bTests
         }
         Assert.Equal(5, game.History.Count);
     }
-
-    /// <summary>Schema 42 → 43: alte Stände zählen alles als Liga; Tabellenfeld aus dem letzten gespeicherten Platzfeld.</summary>
-    [Fact]
-    public void Migration_OldSave_LeagueOnlyAndTableRankFromRankSlots()
-    {
-        var game = TestGames.Create();
-        for (var i = 0; i < 3; i++)
-            TestSeason.PlayMatchDay(game);
-        game.RecordRankSlots();
-        var json = System.Text.Json.Nodes.JsonNode.Parse(SaveGame.Save(game), documentOptions: new System.Text.Json.JsonDocumentOptions { MaxDepth = 1024 })!.AsObject();
-        json["schema"] = 42;
-        foreach (var club in json["vereine"]!.AsArray().OfType<System.Text.Json.Nodes.JsonObject>())
-            club.Remove("_tableRank");
-        foreach (var player in json["spieler"]!.AsArray().OfType<System.Text.Json.Nodes.JsonObject>())
-            foreach (var name in new[] { "CupGames", "EuropeGames", "CupGoals", "EuropeGoals", "ClubCupGamesCarry",
-                         "ClubEuropeGamesCarry", "ClubGoalsCarry", "ClubCupGoalsCarry", "ClubEuropeGoalsCarry" })
-                player.Remove(name);
-
-        var loaded = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(json.ToJsonString()));
-
-        Assert.True(loaded.Success, loaded.Error);
-        var slot = game.RankSlotsRecorded - 1;
-        Assert.All(loaded.Game!.Clubs, c => Assert.Equal(c.StoredRankSlot(slot), c.StoredTableRank));
-        Assert.All(loaded.Game.Clubs.SelectMany(c => c.Players), p => Assert.Equal(p.Games, p.SeasonGames(CompetitionSlot.League)));
-    }
 }

@@ -286,22 +286,3 @@ public class SponsorBewertungTests
         return signed;
     }
 }
-
-/// <summary>Migration Schema 23 → 24 (Spur geld, Teil 2): Platzverlauf je Verein und Zähler.</summary>
-public class SponsorBewertungMigrationTests
-{
-    [Fact]
-    public void Schema23_GetsEmptyRankSlots()
-    {
-        var game = TestGames.Create();
-        var json = System.Text.Json.Nodes.JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        json["schema"] = 23;
-        Assert.True(json["spiel"]!.AsObject().Remove("RankSlotsRecorded"));
-        foreach (var club in json["vereine"]!.AsArray())
-            Assert.True(club!.AsObject().Remove("_rankSlots"));
-
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(json.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        Assert.Equal(SaveGame.Save(game), SaveGame.Save(result.Game!));
-    }
-}

@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 
 namespace EishockeyManager.Core.Tests;
 
@@ -152,22 +151,5 @@ public class GameOptionsTests
         Assert.Equal(30, loaded.MatchSpeed);
         Assert.True(loaded.ShowsReport(ReportKind.Intermission, League.Oberliga));
         Assert.Equal(SaveGame.Save(game), SaveGame.Save(result.Game));
-    }
-
-    /// <summary>
-    /// Migration 18 → 19: Spielstände ohne Optionen bekommen die Anfangswerte des Originals; Laden ergibt denselben Spielstand
-    /// wie ein neues Spiel.
-    /// </summary>
-    [Fact]
-    public void Migration_FromSchema18_UsesOriginalInitialValues()
-    {
-        var game = NewTestGame();
-        var json = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        json["schema"] = 18;
-        Assert.True(json["spiel"]!["Setup"]!.AsObject().Remove("Options"));
-
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(json.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        Assert.Equal(SaveGame.Save(game), SaveGame.Save(result.Game!));
     }
 }

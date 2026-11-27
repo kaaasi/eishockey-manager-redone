@@ -144,49 +144,6 @@ public class WettbewerbeSpiel1Tests
     }
 
     /// <summary>
-    /// Migration 22 → 23: Ein älterer Stand ohne Marken bekommt je Spiel 1 bei Penaltysieger, sonst 0; nach dem Laden sichert
-    /// der Stand wieder byteidentisch, weitere Pokalspiele hängen ihre Marken richtig an.
-    /// </summary>
-    [Fact]
-    public void Migration_OldSaveWithoutMarks_DerivesMarksFromPenaltyWinner()
-    {
-        var game = SeasonWithCups(5);
-        PlayToSeasonEnd(game);
-        var root = System.Text.Json.Nodes.JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        root["schema"] = 30; // vor Teil 1 (Integration Runde 11: 30 → 31)
-        var stripped = 0;
-        Strip(root);
-        Assert.True(stripped >= 2, "Keine Marken im Stand gefunden");
-
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        var loaded = result.Game!;
-        var cup = Assert.IsType<DebCup>(loaded.DebCup);
-        foreach (var tie in cup.Rounds.SelectMany(r => r))
-        {
-            Assert.Equal(tie.Games.Count, tie.Marks.Count);
-            for (var i = 0; i < tie.Games.Count; i++)
-                Assert.Equal(tie.Games[i].PenaltyWinner is null ? 0 : 1, tie.Marks[i]);
-        }
-        var bytes = SaveGame.Save(loaded);
-        Assert.Equal(bytes, SaveGame.Save(SaveGame.Load(bytes).Game!));
-
-        void Strip(System.Text.Json.Nodes.JsonNode? node)
-        {
-            if (node is System.Text.Json.Nodes.JsonObject obj)
-            {
-                if (obj.Remove("Marks") | obj.Remove("_knockoutMarks"))
-                    stripped++;
-                foreach (var (_, child) in obj.ToArray())
-                    Strip(child);
-            }
-            else if (node is System.Text.Json.Nodes.JsonArray array)
-                foreach (var child in array)
-                    Strip(child);
-        }
-    }
-
-    /// <summary>
     /// Schneller Weg: Der Bericht trägt die Zusatztore random(0, 2) als <see cref="MatchReport.ShootoutGoals"/>; der Spielstand
     /// des Berichts bleibt der Gleichstand (Spielerzähler nur für echte Tore). Seit Spur re-reste Teil 2 (#925 (b)) darf der Wurf im
     /// DEB-Pokal gleich bleiben (x = y, <c>ShootoutHomeWins</c> = false, Wertung für den Heimverein in <see cref="CupMatch.FromReport"/>);

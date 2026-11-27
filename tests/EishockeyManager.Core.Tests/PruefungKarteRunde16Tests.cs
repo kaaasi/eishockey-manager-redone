@@ -50,19 +50,21 @@ public class PruefungKarteRunde16Tests
     }
 
     /// <summary>
-    /// #778 (R766-P3-3, <c>docs/reviews/2026-11-11-abgleich-rest.md</c>): Der Kaderverlust in <see cref="SaisonwechselSchema22Tests"/>
-    /// ohne <c>extendExpired</c> ist kein Fehler. Es gehen nur Spieler, deren Vertrag am Saisonende ausläuft: Verlängert wird im Lauf
+    /// #778 (R766-P3-3, <c>docs/reviews/2026-11-11-abgleich-rest.md</c>): Der Kaderverlust ohne <c>extendExpired</c> ist kein
+    /// Fehler. Es gehen nur Spieler, deren Vertrag am Saisonende ausläuft: Verlängert wird im Lauf
     /// der Saison nur, wer sich meldet ([ORIGINAL] Datei 0x076FA–0x07951, je Takt random(0, Grenze) = 0 und random(0, 3) = 0); die
     /// übrigen kommen in die Verhandlung am Saisonende (Datei 0x27B64/0x27D05), die <see cref="GameState.StartNextSeason"/> ohne
-    /// Oberfläche wie „Abbruch“ abschließt (Spieler geht). Die Manager der Probe kaufen nicht nach, also schrumpft der Kader
-    /// (Fixture, Saat 22: 20 → 10 → 6/5 → 5); die Probe hält ihn deshalb mit <c>extendExpired</c> wie die übrigen Mehrsaisonproben.
+    /// Oberfläche wie „Abbruch“ abschließt (Spieler geht). Die Manager der Probe kaufen nicht nach, also schrumpft der Kader; die
+    /// übrigen Mehrsaisonproben halten ihn deshalb mit <c>extendExpired</c>. Runde 27 (aufraeumen-migration): Aufbau wie die
+    /// entfallene Schema-22-Fixture (synthetische Datenbank, Saat 22, Vereine 2 und 14), aber neu begonnen statt geladen.
     /// </summary>
     [Fact]
-    public void Schema22Fixture_SquadLoss_OnlyExpiringContracts()
+    public void TwoManagers_SquadLoss_OnlyExpiringContracts()
     {
-        var loaded = SaveGame.Load(SaisonwechselSchema22Tests.LoadFixture());
-        Assert.True(loaded.Success, loaded.Error);
-        var game = loaded.Game!;
+        var setup = new GameSetup();
+        setup.Managers.Add(new ManagerSetup { Name = "Aktiv", Head = 0, ClubIndex = 2 });
+        setup.Managers.Add(new ManagerSetup { Name = "Passiv", Head = 1, ClubIndex = 14 });
+        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 22);
         var lost = 0;
         for (var change = 0; change < 4; change++)
         {

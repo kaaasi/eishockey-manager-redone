@@ -14,7 +14,7 @@ namespace EishockeyManager.Core;
 public sealed partial class GameState
 {
     /// <summary>
-    /// Nur aus Spielständen vor Schema 62 (Migration <c>SaveGame.Migration.WettbewerbeRegeln.cs</c>): gesichert nach dem Tageswechsel
+    /// Nur aus Spielständen vor Schema 62 (gesetzt von der Migration auf Schema 62, seit Runde 27 entfallen): gesichert nach dem Tageswechsel
     /// eines Tages ab 1, der die Jugendteams damals schon gerechnet hatte. <see cref="ProcessDayCore"/> rechnet sie dann nicht noch
     /// einmal.
     /// </summary>

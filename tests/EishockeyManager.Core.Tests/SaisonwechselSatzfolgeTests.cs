@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using EishockeyManager.Core;
 
 namespace EishockeyManager.Core.Tests;
@@ -139,26 +138,6 @@ public class SaisonwechselSatzfolgeTests
         game.StartNextSeason();
         foreach (var league in Enum.GetValues<League>())
             Assert.Equal(Members(game, league), game.LeagueSlots(league));
-    }
-
-    [Fact]
-    public void Schema32Save_WithoutSlots_MigratesTo34_LoadsWithIndexOrder_MixedAtNextSeasonChange()
-    {
-        // Weg 32 → 33 (A184) → 34 (S-K6, Satzfolge); R12S-03 (#523).
-        var game = Create(seed: 7, 5);
-        TestSeason.PlayMatchDay(game);
-        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        root["schema"] = 32;
-        Assert.True(root["spiel"]!.AsObject().Remove("_leagueSlots"));
-        var loaded = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(loaded.Success, loaded.Error);
-        var old = loaded.Game!;
-        foreach (var league in Enum.GetValues<League>())
-            Assert.Equal(Members(old, league), old.LeagueSlots(league));
-
-        PlayToSeasonEnd(old, active: false);
-        old.StartNextSeason();
-        Assert.Contains(Enum.GetValues<League>(), l => !old.LeagueSlots(l).SequenceEqual(Members(old, l)));
     }
 
     [Fact]

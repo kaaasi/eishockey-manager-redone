@@ -39,14 +39,16 @@ public sealed partial class GameState
 
     /// <summary>
     /// Satzfolge aller drei Ligen hintereinander (Bundesliga, 2. Liga, Oberliga; je <see cref="ClubsPerLeague"/> Einträge).
-    /// Leer in Spielständen vor Schema 34 (Migration); dann gilt bis zum nächsten Saisonwechsel die Indexfolge.
+    /// Leer in Spielständen vor Schema 34 (damals ohne Migrationsschritt) und bei ungewöhnlicher Ligabelegung (synthetische
+    /// Spielstände); dann gilt bis zum nächsten Saisonwechsel die Indexfolge.
     /// </summary>
     private readonly List<int> _leagueSlots = [];
 
     /// <summary>
     /// Satzfolge der nächsten Saison (gleiches Format wie <see cref="_leagueSlots"/>, nach Liga der nächsten Saison), gebildet am
     /// 29. April in <see cref="FinishSeason"/> und in <see cref="StartNextSeason"/> übernommen; sonst leer. Leer auch in
-    /// Spielständen vor Schema 38 (Migration): dann bildet <see cref="StartNextSeason"/> die Folge wie bisher selbst.
+    /// Spielständen vor Schema 38 (damals ohne Migrationsschritt) und in synthetischen Spielständen: dann bildet
+    /// <see cref="StartNextSeason"/> die Folge wie bisher selbst.
     /// </summary>
     private readonly List<int> _nextLeagueSlots = [];
 

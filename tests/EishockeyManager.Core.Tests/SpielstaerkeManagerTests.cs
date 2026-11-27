@@ -159,24 +159,15 @@ public class SpielstaerkeManagerTests(ITestOutputHelper output)
         Assert.True(changed);
     }
 
-    /// <summary>Spielstand vor Schema 12: TeamValues fehlen → null, beim nächsten Spiel gezogen; Sichern und Laden erhält sie.</summary>
+    /// <summary>Sichern und Laden erhält die Teamwerte.</summary>
     [Fact]
-    public void SaveGame_RoundTripAndMigration()
+    public void SaveGame_RoundTrip()
     {
         var game = Game();
         TestSeason.PlayMatchDay(game);
         var data = SaveGame.Save(game);
         var loaded = Load(data);
         Assert.Equal(game.Clubs.Select(c => c.TeamValues), loaded.Clubs.Select(c => c.TeamValues));
-
-        var root = System.Text.Json.Nodes.JsonNode.Parse(data)!.AsObject();
-        root["schema"] = 11;
-        foreach (var club in root["vereine"]!.AsArray().OfType<System.Text.Json.Nodes.JsonObject>())
-            Assert.True(club.Remove("TeamValues"));
-        var old = Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.All(old.Clubs, c => Assert.Null(c.TeamValues));
-        TestSeason.PlayMatchDay(old);
-        Assert.All(old.Clubs, c => Assert.NotNull(c.TeamValues));
     }
 
     /// <summary>

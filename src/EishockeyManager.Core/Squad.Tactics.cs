@@ -161,7 +161,8 @@ public sealed partial class Tactics
     /// <summary>
     /// Startwerte eines Vereins vor Runde 14 (ausgeglichene Zeile 60/0/25/20/30/0 und 0/4/5/6/7/4, Anzeige „AUTOM.“ ohne
     /// letzte Automatik, <see cref="KeepsLastAutoLine"/> = false) – so laden Spielstände vor A180. Gebraucht zum Erkennen
-    /// unveränderter alter Startwerte (<c>SaveGame.Migration.Nationalteam.cs</c>) und in Tests der Taktikrechnung.
+    /// unveränderter alter Startwerte (früher in der Migration des Nationalteams, seit Runde 27 entfallen) und in Tests der
+    /// Taktikrechnung.
     /// </summary>
     public static Tactics LegacyStart() => new(EvenEffort, FavouriteAttack);
 

@@ -145,35 +145,6 @@ public class ReiheBeiSpielbeginnTests
             loaded.Game!.Clubs.Select(c => (c.Tactics.MatchDefenseLine, c.Tactics.MatchAttackLine)));
     }
 
-    /// <summary>
-    /// Migration 50 → 51 (<c>SaveGame.Migration.PruefungKarte.cs</c>): Ein Stand ohne <c>_matchDefenseLine</c>/<c>_matchAttackLine</c>
-    /// lädt mit 0/0 (wie FILE02); das aktuelle Schema ohne die Felder lehnt der strenge Leser ab. Gespeicherte Reihen bleiben über
-    /// Speichern und Laden. Rot ohne den Eintrag <c>[50] = MigratePruefungKarte</c>.
-    /// </summary>
-    [Fact]
-    public void Schema50_WithoutMatchLines_LoadsWithZero()
-    {
-        var game = TestGames.Create(3);
-        foreach (var club in game.Clubs)
-            club.Tactics.RecordMatchLines(1, 2);
-        var saved = SaveGame.Load(SaveGame.Save(game));
-        Assert.True(saved.Success, saved.Error);
-        Assert.All(saved.Game!.Clubs, c => Assert.Equal((1, 2), (c.Tactics.MatchDefenseLine, c.Tactics.MatchAttackLine)));
-
-        var root = System.Text.Json.Nodes.JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        var removed = 0;
-        foreach (var node in Objects(root))
-            if (node.Remove("_matchDefenseLine") & node.Remove("_matchAttackLine"))
-                removed++;
-        Assert.True(removed >= game.Clubs.Count);
-        Assert.False(SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString())).Success);
-
-        root["schema"] = 50;
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        Assert.All(result.Game!.Clubs, c => Assert.Equal((0, 0), (c.Tactics.MatchDefenseLine, c.Tactics.MatchAttackLine)));
-    }
-
     private static IEnumerable<System.Text.Json.Nodes.JsonObject> Objects(System.Text.Json.Nodes.JsonNode? node)
     {
         switch (node)

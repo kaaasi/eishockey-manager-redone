@@ -153,9 +153,9 @@ public class KaderTransferTeil5Tests
         Assert.Equal(3, p.GamesForClub);
     }
 
-    /// <summary>Der Übertrag der Spiele beim Verein übersteht Sichern und Laden; Spielstände vor Schema 30 bekommen 0.</summary>
+    /// <summary>Der Übertrag der Spiele beim Verein übersteht Sichern und Laden.</summary>
     [Fact]
-    public void GamesForClub_RoundTripsAndMigrates()
+    public void GamesForClub_RoundTrips()
     {
         var game = TestGames.Create();
         PlaySeason(game);
@@ -167,13 +167,5 @@ public class KaderTransferTeil5Tests
         var again = loaded.Game!.Clubs[game.ActiveManager.ClubIndex].Players.First(x => x.Id == p.Id);
         Assert.Equal(p.GamesForClub, again.GamesForClub);
         Assert.Equal(saved, SaveGame.Save(loaded.Game!));
-
-        var root = System.Text.Json.Nodes.JsonNode.Parse(saved)!.AsObject();
-        root["schema"] = 29; // vor Teil 5 (Integration Runde 11: 29 → 30)
-        foreach (var o in root["spieler"]!.AsArray().OfType<System.Text.Json.Nodes.JsonObject>())
-            o.Remove("ClubGamesCarry");
-        var old = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(old.Success, old.Error);
-        Assert.All(old.Game!.Clubs.SelectMany(c => c.Players), x => Assert.Equal(x.Games, x.GamesForClub));
     }
 }

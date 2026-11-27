@@ -1,5 +1,3 @@
-using System.Text;
-using System.Text.Json.Nodes;
 using EishockeyManager.Core;
 
 namespace EishockeyManager.Core.Tests;
@@ -165,35 +163,6 @@ public sealed class ZusehenWatchTests
         MatchEngine.PlayWithEvents(game, managed, opponents[2], MatchCompetition.League, knockOut: false, new Random(2));
         Assert.Single(game.LiveScoreboard!.Rows);
         Assert.Null(game.LiveScoreboard.RowOf(managed.Index));
-    }
-
-    /// <summary>
-    /// Migration 51 → 52 (<c>SaveGame.Migration.Zusehen.cs</c>): Ein Stand ohne <c>WatchMode</c> lädt mit Modus 2 genau für die
-    /// Vereine nicht entlassener Manager und das Land des Bundestrainers (die feste Regel vorher). Rot ohne den Eintrag
-    /// <c>[51] = MigrateZusehen</c>; der strenge Leser lehnt das aktuelle Schema ohne das Feld ab.
-    /// </summary>
-    [Fact]
-    public void Schema51_WithoutWatchMode_MarksManagedClubs()
-    {
-        var game = Game(1, 2, 5);
-        game.AppointNationalCoach(game.Managers[1]);
-        game.ToggleWatch(game.Clubs[9]);
-        game.ToggleWatch(game.Clubs[9]);
-        var saved = SaveGame.Load(SaveGame.Save(game));
-        Assert.True(saved.Success, saved.Error);
-        Assert.Equal(game.Clubs.Select(c => c.WatchMode), saved.Game!.Clubs.Select(c => c.WatchMode));
-
-        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        foreach (var club in root["vereine"]!.AsArray().OfType<JsonObject>())
-            Assert.True(club.Remove("WatchMode"));
-        Assert.False(SaveGame.Load(Encoding.UTF8.GetBytes(root.ToJsonString())).Success);
-
-        root["schema"] = 51;
-        var result = SaveGame.Load(Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        Assert.Equal([2, 5, NationalTeams.Germany],
-            result.Game!.Clubs.Where(c => c.WatchMode == GameState.WatchLive).Select(c => c.Index).Order());
-        Assert.All(result.Game.Clubs.Where(c => c.Index is not (2 or 5 or NationalTeams.Germany)), c => Assert.Equal(0, c.WatchMode));
     }
 
     /// <summary>

@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using EishockeyManager.Core;
 
 namespace EishockeyManager.Core.Tests;
@@ -166,21 +165,5 @@ public class GegnerFensterTests
         Assert.All(nations, n => Assert.All(game.NationalForm(n), f => Assert.Equal(0, f)));
         Assert.Equal(records, nations.Select(n => game.TeamRecord(n, TeamRecordKind.HomeWin).Word).ToList());
         Assert.Equal(headToHead, nations.Select(n => game.HeadToHead(0, n).ToArray()).ToList());
-    }
-
-    /// <summary>Schema 17 (vor dieser Spur): Die Felder werden leer angelegt (Kopf-an-Kopf 255).</summary>
-    [Fact]
-    public void Schema17_IsMigrated_WithEmptyTeamData()
-    {
-        var game = GameModeTests.Create(7, false, true, 2);
-        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        root["schema"] = 17;
-        var spiel = root["spiel"]!.AsObject();
-        foreach (var f in new[] { "_teamRecords", "_teamRecordOpponents", "_headToHead", "_nationalForm" })
-            Assert.True(spiel.Remove(f), f);
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        Assert.All(Enumerable.Range(0, TeamRecords.Teams), c => Assert.All(result.Game!.HeadToHead(5, c), v => Assert.Equal(GameState.HeadToHeadEmpty, v)));
-        Assert.Equal(SaveGame.Save(game), SaveGame.Save(result.Game!));
     }
 }

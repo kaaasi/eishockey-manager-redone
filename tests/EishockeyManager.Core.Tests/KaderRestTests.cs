@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using EishockeyManager.Core;
 using EishockeyManager.Formats;
 using EishockeyManager.Tests.Support;
@@ -130,22 +129,14 @@ public class KaderRestTests
         }
     }
 
-    /// <summary>Spielstand: Poolform bleibt über Speichern/Laden; Schema 49 ohne Feld lädt mit null (Migration KaderRest).</summary>
+    /// <summary>Spielstand: Poolform bleibt über Speichern/Laden.</summary>
     [Fact]
-    public void SaveGame_PoolForm_RoundTripAndMigration()
+    public void SaveGame_PoolForm_RoundTrip()
     {
         var game = TestGames.Create(3);
         var player = game.Clubs[game.ActiveManager.ClubIndex].Players[0];
         player.PoolForm = 33;
         var loaded = SaveGame.Load(SaveGame.Save(game)).Game!;
         Assert.Equal(33, loaded.Clubs[game.ActiveManager.ClubIndex].Players[0].PoolForm);
-
-        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        root["schema"] = 49;
-        foreach (var p in root["spieler"]!.AsArray().OfType<JsonObject>())
-            p.Remove("PoolForm");
-        var old = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.Null(old.Error);
-        Assert.All(old.Game!.Clubs.SelectMany(c => c.Players), p => Assert.Null(p.PoolForm));
     }
 }

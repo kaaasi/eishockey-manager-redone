@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using EishockeyManager.Core;
 using EishockeyManager.Formats;
 
@@ -139,53 +138,6 @@ public class AutoLineupTeil8Tests
         Assert.False(club.IsDressed(victim));
         Assert.Equal(16, club.Lineup.Count);
         Assert.True(club.DressedCount <= Club.MaxDressed);
-    }
-
-    [Fact]
-    public void Migration_31To32_SetsSettingOn()
-    {
-        var game = Create();
-        game.Clubs[2].AutoLineupEnabled = true;
-        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        root["schema"] = 31; // vor Teil 8 (Integration Runde 11: 31 → 32)
-        foreach (var club in root["vereine"]!.AsArray().Select(n => n!.AsObject()))
-        {
-            Assert.True(club.Remove("_autoLineup"));
-            club["_dressedByHand"] = false; // Stand vor Teil 8 ohne Eingriff von Hand (der Start setzt seit Teil 8 von Hand ein)
-        }
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        Assert.All(result.Game!.Clubs, c => Assert.True(c.AutoLineupEnabled));
-        var again = SaveGame.Save(result.Game);
-        Assert.Equal(again, SaveGame.Save(SaveGame.Load(again).Game!));
-    }
-
-    /// <summary>
-    /// WS-01 (Review #468): Ein Stand vor Teil 8, in dem von Hand aufgestellt wurde, behält seine Aufstellung – die
-    /// Migration setzt die Einstellung dann aus (im Original schaltet jeder Eingriff sie ab, Datei 0x40ADE/0x40DE4).
-    /// </summary>
-    [Fact]
-    public void Migration_31To32_KeepsHandMadeLineup()
-    {
-        var game = Create(4); // kader-start U15-a/R-K5 (L13): Saat 3 → 4, Vorbedingung nach dem Starttausch
-        var club = game.Clubs[2];
-        var slot = LineupSlot.Forward(0, 0);
-        var choice = club.Players.First(p => p.Role == PlayerRole.Forward && p.Available && club.IsDressed(p) && !club.Lineup.Contains(p));
-        Assert.Equal(LineupResult.Assigned, club.AssignToLineup(slot, choice));
-        Assert.False(club.AutoLineupEnabled);
-        var root = JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        root["schema"] = 31;
-        foreach (var c in root["vereine"]!.AsArray().Select(n => n!.AsObject()))
-            Assert.True(c.Remove("_autoLineup"));
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        var loaded = result.Game!;
-        Assert.False(loaded.Clubs[2].AutoLineupEnabled);
-        loaded.Continue();
-        // #604 (R13KI-02): Vorbedingung ausdrücklich – der Spieler ist nach dem Tag noch spielfähig (sonst nimmt ihn der Tag
-        // regelgerecht vom Platz, z. B. Saat 3: verletzt).
-        Assert.True(loaded.FindPlayer(choice.Id)!.Available, "Vorbedingung verletzt: Spieler nicht mehr spielfähig");
-        Assert.Equal(choice.Id, loaded.Clubs[2].Lineup[slot]!.Id);
     }
 
     // ---- Mehrsaisonprobe -----------------------------------------------------------------------------------------------

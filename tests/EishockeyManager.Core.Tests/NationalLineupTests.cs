@@ -201,44 +201,6 @@ public class NationalLineupTests
         Assert.Equal(bytes, SaveGame.Save(loaded));
     }
 
-    /// <summary>Abnahme (2): Schema 3 → 4 – ein Bundestrainer ohne Aufstellung bekommt eine leere Formation.</summary>
-    [Fact]
-    public void SchemaThreeSave_IsMigrated()
-    {
-        var game = Create();
-        var coach = Nominated(game);
-        var strength = game.NationalMatchStrength(NationalTeams.Germany);
-        var root = System.Text.Json.Nodes.JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        root["schema"] = 3;
-        var national = root["spiel"]!["NationalCoach"]!.AsObject();
-        Assert.True(national.Remove("Formation"));
-        Assert.True(national.Remove("Tactics"));
-        Assert.True(national.Remove("_dressed"));
-
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        var loaded = result.Game!.NationalCoach!;
-        Assert.Equal(0, loaded.Formation.Count);
-        Assert.Equal(0, loaded.DressedCount);
-        Assert.Equal(TacticMode.Auto, loaded.Tactics.EffortMode);
-        Assert.Equal(coach.Squad.Count, loaded.Squad.Count);
-        Assert.Equal(strength, result.Game.NationalMatchStrength(NationalTeams.Germany));
-        var again = SaveGame.Save(result.Game);
-        Assert.Equal(again, SaveGame.Save(SaveGame.Load(again).Game!));
-    }
-
-    /// <summary>Schema 3 ohne Bundestrainer (null) bleibt ladbar.</summary>
-    [Fact]
-    public void SchemaThreeSave_WithoutCoach_IsMigrated()
-    {
-        var game = Create();
-        var root = System.Text.Json.Nodes.JsonNode.Parse(SaveGame.Save(game))!.AsObject();
-        root["schema"] = 3;
-        var result = SaveGame.Load(System.Text.Encoding.UTF8.GetBytes(root.ToJsonString()));
-        Assert.True(result.Success, result.Error);
-        Assert.Null(result.Game!.NationalCoach);
-    }
-
     /// <summary>
     /// Abnahme (4): Mehrsaisonprobe Modus 1 („nur Weltkugel“), 4 Saisonwechsel, passiver und aktiver Bundestrainer.
     /// Der aktive stellt jede Saison selbst auf (schwächster Torhüter, Reihe 4 besetzt, Taktik geändert): Länderspiele
