@@ -8,7 +8,7 @@ Abgeschlossene Runden stehen in [archiv/](archiv/) und müssen beim Einstieg nic
 **Koordination:** Die Leitstelle verteilt Pakete, prüft und mergt Pull Requests und pflegt Fahrplan und Doku
 (Rollen: [prozess/zusammenarbeit.md](prozess/zusammenarbeit.md)).
 
-## Aktuelle Runde: Runde 27 – Aufräumen vor v1.0 (#936; Plan 27.11.2026, Go offen)
+## Aktuelle Runde: Runde 27 – Aufräumen vor v1.0 (#936; Plan 27.11.2026, Go 27.11.2026)
 
 Runde 26 abgeschlossen am 26.11.2026: [archiv/runde-26.md](archiv/runde-26.md). Stand: Restliste
 [analyse/restliste-v1.md](analyse/restliste-v1.md) **V = 0**, D 25, E 321, K 197; `main` `6506d62`, Schema 65.
@@ -16,7 +16,10 @@ Runde 26 abgeschlossen am 26.11.2026: [archiv/runde-26.md](archiv/runde-26.md). 
 A3 = B, A4 = A, A5 = A mit Skripten ins Archiv, A6 = A; Nutzer 24.11.2026), **Verhalten unverändert** (Konzept §2.1 Nr. 6). Dazu
 P3 #978, #980, #1019, #1024 (Rest P3-2) und die Themen K04, K11, K13, L11, L12, C02, C08 aus
 [analyse/abweichungen-v1.md](analyse/abweichungen-v1.md) Abschnitt 0 („ins Aufräumen #936“). **Nicht in dieser Runde:** D-Themen
-(DOSBox nach Lust), Abschlussprüfung (Runde 28). **Entscheidungen** R27-D1 bis R27-D4: Optionen im Plan-PR, offen.
+(DOSBox nach Lust), Abschlussprüfung (Runde 28). **Entscheidungen Nutzer 27.11.2026** (Optionen im Plan-PR #1056):
+R27-D1 = C (eigene Spur `aufraeumen-archiv` parallel in Welle 1), R27-D2 = B (nur Schema 65 ladbar, alle Migrationsschritte
+entfallen), R27-D3 = B (enges Gesamtreview am Rundenende, ChatGPT GPT-6.2 Astra), R27-D4 = B (Modelle wie unten). **Go Nutzer
+27.11.2026** (alle Spuren samt Folgeläufen; Start nach Merge des Plans).
 
 **Regeln der Runde:**
 
@@ -30,8 +33,8 @@ P3 #978, #980, #1019, #1024 (Rest P3-2) und die Themen K04, K11, K13, L11, L12, 
   `markerliste.py` **ohne** `--write` vor/nach (verlorene IDs nur bei gelöschten toten Pfaden, Liste im PR; `[APPROX]`-Wortlaut
   beim Verschieben nicht ändern).
 - **Prüfläufe:** Code-Spuren alle drei Läufe von `tools/pruefen.sh` (Konzept §2.2); reine Doku-Spuren entfällt.
-- **Migration (A1 = B):** Spielstände ab Schema 63 bleiben ladbar (Schritte `[63]`, `[64]` bleiben); `SchemaVersion` bleibt 65,
-  keine neue Migration in dieser Runde.
+- **Migration (A1 = B, R27-D2 = B):** nur Spielstände mit Schema 65 bleiben ladbar, alle Schritte `[1]`…`[64]` entfallen;
+  `SchemaVersion` bleibt 65, keine neue Migration in dieser Runde.
 - **Testnamen (A3 = B):** deutsch erlaubt, nur Spur/Runde/Teil/Fix/Review/Welle aus den Namen; Ausnahme steht in `AGENTS.md` §1.
 - **Gemeinsame Dateien:** `GameState.cs`, `GameState.Integration.cs`, `Widgets.cs` je minimal, nur in der Spur, die sie laut
   Konzept braucht, nie zwei Spuren derselben Welle.
@@ -39,15 +42,16 @@ P3 #978, #980, #1019, #1024 (Rest P3-2) und die Themen K04, K11, K13, L11, L12, 
   Fortsetzungen; keine geplanten Aufgaben aus Läufen (R15-E4); fremde Tests nach R15-E2 = C. Kein `markerliste.py --write` außer
   in `aufraeumen-doku` (A6 = A).
 
-**Folge (Vorschlag R27-D1 = C):** Welle 1 `aufraeumen-migration` und `aufraeumen-archiv` parallel (Dateien disjunkt: Code gegen
+**Folge (R27-D1 = C):** Welle 1 `aufraeumen-migration` und `aufraeumen-archiv` parallel (Dateien disjunkt: Code gegen
 `docs/**`); Welle 2 `aufraeumen-tot` nach Merge von `aufraeumen-migration`; Welle 3 `aufraeumen-doppelt`; Welle 4
 `aufraeumen-tests-core` und `aufraeumen-tests-ui` parallel (Prüfbefehl „keine Überschneidung“, Konzept §2.2); Welle 5
 `aufraeumen-doku`. Danach Leitstelle: Workflow `aufraeumen.yml` mit `nur_anzeigen=true`, Liste dem Nutzer vorlegen; Löschen
-der Branches (`nur_anzeigen=false`) nur nach seinem Ja. Abschlussprüfung in Runde 28 (R27-D3).
+der Branches (`nur_anzeigen=false`) nur nach seinem Ja. Dann enges Gesamtreview (R27-D3 = B): Verhaltensgleichheit Base
+`6506d62` gegen den Stand nach Welle 5, Linkprüfung, Ladeweg Schema 65. Abschlussprüfung in Runde 28.
 
-| Spur | Welle | Inhalt | Modell (Vorschlag R27-D4 = B) | Grund |
+| Spur | Welle | Inhalt | Modell (R27-D4 = B) | Grund |
 |---|---|---|---|---|
-| `aufraeumen-migration` | 1 | A1 = B, L11, Teile von L12/C02 | Opus 5.5 | `AfterLoadPool`, neues Fixture, Lader |
+| `aufraeumen-migration` | 1 | A1 = B/R27-D2 = B, L11, Teile von L12/C02 | Opus 5.5 | `AfterLoadPool`, Lader, Rückfälle |
 | `aufraeumen-archiv` | 1 | A2 = A, D2–D4, W2 | Sonnet 5.5 | mechanisch, nur `docs/**` |
 | `aufraeumen-tot` | 2 | K3–K7, K15–K18, K04, C08, #980 P3-3 | Opus 5.5 | Tests auf den echten Weg umstellen |
 | `aufraeumen-doppelt` | 3 | K1, K8, K10, K12, K19 (nur neutral), U1–U8, U10, U11, #1019 | Opus 5.5 | Zusammenlegen ohne Verhaltensänderung |
@@ -56,21 +60,22 @@ der Branches (`nur_anzeigen=false`) nur nach seinem Ja. Abschlussprüfung in Run
 | `aufraeumen-doku` | 5 | D1 Rest, D5, D6, W1, K13, #980 P3-1/2, #1024, A6 | Sonnet 5.5 | Verweise, Generatorlauf |
 
 Erstreviews: Opus 5.5 für `aufraeumen-migration`, `-tot`, `-doppelt`; Sonnet 5.5 für `-archiv`, `-tests-core`, `-tests-ui`,
-`-doku` (R27-D4). Fixläufe im Modell der Spur. Plan-Review Sonnet 5.5.
+`-doku` (R27-D4). Fixläufe im Modell der Spur. Plan-Review Sonnet 5.5. Gesamtreview ChatGPT GPT-6.2 Astra mit Claude-Auswertung.
 
-### Spur `aufraeumen-migration` – Migrationen vor Schema 63 entfernen (Welle 1)
+### Spur `aufraeumen-migration` – alle Migrationen entfernen, nur Schema 65 (Welle 1)
 
 - **Teile:** 0. Stand neu erheben (Wörterbuch `Migrations`, `SaveGame.cs`; Dateien `SaveGame.Migration*.cs`; Testdateien mit
-  `Migrat|SchemaVersion|schema[0-9]+-synth`). 1. Fixture `Fixtures/schema63-synthetisch.ems.gz` aus dem letzten `main`-Commit
-  mit `SchemaVersion = 63` erzeugen (Commit und Befehl im PR; R27-D2 = A) und in `MigrationEchteStaendeTests` statt
-  `schema{19,22,51,52,53}` verwenden; 2. Schritte `[1]`…`[62]` und ihre Dateien entfernen, Schritte `[63]`, `[64]` bleiben
-  (Dateinamen nach Thema, z. B. `SaveGame.Migration.Lineup.cs`, `SaveGame.Migration.SeasonMoney.cs`); Kommentarliste
-  `SaveGame.cs:54` ff. auf die verbliebenen Schritte kürzen; `AfterLoadPool` für `loadedSchema ≥ 63` prüfen und vereinfachen;
-  Rückfälle aus L12/C02, die **nur** Stände vor Schema 63 betreffen, entfernen (je Marker-ID im PR), Rückfälle für Aufbauten ohne
-  `NewGame.Create` bleiben; Migrationstests für Schritte < 63 entfernen, Lader-Test „Schema 62 kann nicht mehr geladen werden“.
+  `Migrat|SchemaVersion|schema[0-9]+-synth`). 1. Alle Schritte `[1]`…`[64]` und ihre Dateien entfernen (R27-D2 = B), Wörterbuch
+  und Kommentarliste `SaveGame.cs:54` ff. entfallen bzw. auf einen Satz gekürzt; Lader nimmt nur Schema 65 an, älteres meldet
+  „Spielstände mit Schema n können nicht mehr geladen werden.“ (`SaveGame.Reader.cs`); `AfterLoadPool` für `loadedSchema = 65`
+  prüfen und vereinfachen; Fixtures `schema{19,22,51,52,53}-synthetisch.ems.gz` und ihre Tests entfernen; 2. Rückfälle aus
+  L12/C02, die **nur** Stände vor Schema 65 betreffen, entfernen (je Marker-ID im PR), Rückfälle für Aufbauten ohne
+  `NewGame.Create` bleiben; Migrationstests entfernen, Lader-Test „Schema 64 kann nicht mehr geladen werden“; Rundreise Speichern
+  → Laden mit Schema 65 bleibt.
 - **Dateien:** `src/EishockeyManager.Core/SaveGame*.cs`, Fundstellen der L12/C02-Rückfälle in `src/EishockeyManager.Core/**` (je
   minimal, Liste im PR), Migrationstests, `tests/EishockeyManager.Core.Tests/Fixtures/`.
-- **Prüfung:** alle drei Läufe; Probe: Fixture schema 63 lädt, Ergebnis = Laden auf Base; Zustandsabdruck; Markerprobe.
+- **Prüfung:** alle drei Läufe; Rundreise Schema 65 (Zustandsabdruck vor Speichern = nach Laden); Zustandsabdruck Base/Head;
+  Markerprobe.
 - **Status:** nicht gestartet.
 
 ### Spur `aufraeumen-archiv` – Reviews und Arbeitsanalysen ins Archiv (Welle 1, nur `docs/**`)
