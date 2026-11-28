@@ -241,4 +241,57 @@ public class SaisonGeldT03Tests
         foreach (var league in Enum.GetValues<League>())
             Assert.Equal(GameState.ClubsPerLeague, game.LeagueClubs(league).Count());
     }
+
+    /// <summary>
+    /// #1019 (Review saison-geld SG-02, T03): Stromlage am 29. April – die große Wanderung zieht vor den 40 Würfen der Länder
+    /// (Datei 0x56448 vor 0x5644E). Zwischen <see cref="GameState.SeasonEndCheckpoint.Drift"/> und
+    /// <see cref="GameState.SeasonEndCheckpoint.NationMix"/> wandern die Teamwerte und der Strom rückt weiter; von dort bis
+    /// <see cref="GameState.SeasonEndCheckpoint.LeagueMix"/> zieht er genau die 40 Würfe von 0x35EDD (<see cref="WorldCup.MixThrows"/>).
+    /// Mit der Wanderung hinter der Ländermischung (Probe des Reviews) rot.
+    /// </summary>
+    [Theory]
+    [InlineData(GameMode.ClubOnly)]
+    [InlineData(GameMode.Full)]
+    public void SeasonEnd_DriftBeforeTheFortyNationThrows(GameMode mode)
+    {
+        var setup = new GameSetup { Duration = GameDuration.Unbegrenzt, EuropeAndWorldCup = mode == GameMode.Full };
+        setup.Managers.Add(new ManagerSetup { Name = "M0", Head = 0, ClubIndex = 2 });
+        var game = NewGame.Create(TestGames.CreateDatabase(), setup, 11);
+        Assert.Equal(mode == GameMode.Full, game.WorldCup is not null);
+        var seen = new List<GameState.SeasonEndCheckpoint>();
+        List<ClubTeamValues?>? beforeDrift = null;
+        RngState? driftStart = null;
+        GameRandom? afterDrift = null;
+        GameState.SeasonEndObserver = (step, g) =>
+        {
+            seen.Add(step);
+            switch (step)
+            {
+                case GameState.SeasonEndCheckpoint.Drift:
+                    beforeDrift = g.Clubs.Select(c => c.TeamValues).ToList();
+                    driftStart = g.Random.Capture();
+                    break;
+                case GameState.SeasonEndCheckpoint.NationMix:
+                    var drifted = g.Clubs.Where(c => c.Index < NewGame.SelectableClubs && c.TeamValues is not null)
+                        .Count(c => beforeDrift![c.Index] != c.TeamValues);
+                    Assert.True(drifted > 40, $"vor den Länderwürfen erst {drifted} Vereine gewandert");
+                    Assert.NotEqual(driftStart, g.Random.Capture());
+                    afterDrift = Copy(g.Random);
+                    break;
+                case GameState.SeasonEndCheckpoint.LeagueMix:
+                    WorldCup.MixThrows(afterDrift!);
+                    Assert.Equal(afterDrift!.Capture(), g.Random.Capture());
+                    break;
+            }
+        };
+        try
+        {
+            PlayUntil(game, g => g.Phase == SeasonPhase.SeasonOver);
+        }
+        finally
+        {
+            GameState.SeasonEndObserver = null;
+        }
+        Assert.Equal([GameState.SeasonEndCheckpoint.Drift, GameState.SeasonEndCheckpoint.NationMix, GameState.SeasonEndCheckpoint.LeagueMix], seen);
+    }
 }
