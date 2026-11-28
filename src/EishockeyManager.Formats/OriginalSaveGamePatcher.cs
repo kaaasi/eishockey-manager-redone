@@ -33,13 +33,18 @@ public static class OriginalSavePatcher
         new("zaehler", "zaehler=<n>", "Tageszähler (0x3B7 und 0xA969, Spielstart = 1), 1–32767. Ändert nichts sonst."),
         new("spieltag", "spieltag=<n>", "Nächster Spieltag aller drei Ligen (0x7A9–0x7AB) und Kopfbyte 0x0F, 1–255. Ändert weder Tabelle noch Ergebnisse."),
         new("level", "level=<0-5>", "Spiel-Level: Setup-Regler 0x118 und davon abgeleitet 0xED8 = 5 − Level (em.exe 0x2988D)."),
+        new("startliga", "startliga=<0-2>", "Start-Liga des Spiels (Regler 0x11A; 0 Bundesliga, 1 2. Liga, 2 Oberliga). Wirkt nur auf neue Manager " +
+            "(Kachel „Neuer“: Platzwahl, Startkader, Liga-Stufe); Vereine und Tabellen bleiben. Bei Dauer „eine Saison“ nur 0."),
+        new("ligaplaetze", "ligaplaetze=<liga>:s1,…,s12", "Platzliste einer Liga (0x5CCB + 12 · Liga, Satznummern für Platz 1–12): nur eine " +
+            "Umordnung der gespeicherten Sätze. Vor dem 45. Spieltag muss sie Fixpunkt der Sortierung 0x50B45 sein, nach der Saison " +
+            "zu den Teilnehmern der Aufstiegsrunde (0xCFFC) passen."),
     ];
 
     /// <summary>Regler, die das Original nur beim Spielstart auswertet; ein Patch im geladenen Stand wäre wirkungslos oder widersprüchlich.</summary>
     private static readonly Dictionary<string, string> Rejected = new(StringComparer.OrdinalIgnoreCase)
     {
         ["dauer"] = "Dauer bestimmt das Spielende (0x5A14), die Zuordnung ist nicht belegt (Wert 22222 bei Dauer 3).",
-        ["liga"] = "Start-Liga würde Verein, Tabelle und Gegner betreffen; nicht belegt. Stattdessen einen Stand mit der gewünschten Liga neu anlegen.",
+        ["liga"] = "Die Liga eines Vereins ist nicht patchbar (kein Vereinstausch). Für neue Manager „startliga“, für die Reihenfolge einer Liga „ligaplaetze“.",
         ["staerke"] = "Start-Stärke wirkt nur bei der Erzeugung der Mannschaften; im Stand stehen die fertigen Werte.",
     };
 
@@ -78,6 +83,7 @@ public static class OriginalSavePatcher
         var rec = save.Block("965B");
         var recStart = manager * OriginalSaveGame.ManagerRecordLength;
         void Rec16(int field, int value) => BitConverter.GetBytes((short)value).CopyTo(rec, recStart + field);
+        (int League, int[] Order)? places = null;
 
         foreach (var (rawName, value) in list)
         {
@@ -143,12 +149,142 @@ public static class OriginalSavePatcher
                     save.Block("0ED8")[0] = (byte)(5 - level);
                     break;
                 }
+                case "startliga":
+                {
+                    var league = Int(rawName, value, 0, OriginalSaveGame.LeagueCount - 1);
+                    var setup = save.Block("0118");
+                    // [ORIGINAL] 0x11A lesen nur die Spielvorbereitung 0x28165 (u. a. Startkader Datei 0x29A3F, Liga-Stufe 0x29BBB,
+                    // Platzwahl 0x29BCE – auch für „Neuer“ im laufenden Spiel) und 0x5AF50 (Datei 0x5B289);
+                    // `disasm.py --xref <em.exe> 0x11A 0x11A`. Im Hinzufügen-Modus ist der Regler nicht verstellbar (Datei 0x286DA).
+                    // [ORIGINAL] Spielvorbereitung Datei 0x2890E–0x28920: Bei Dauer „eine Saison“ (0x119 = 0) nimmt sie jede
+                    // Start-Liga ≠ Bundesliga zurück; einen solchen Stand erzeugt das Original nicht.
+                    if (league != 0 && setup[OriginalSaveGame.SetupDurationField] == 0)
+                        throw new ArgumentException("Feld „startliga“: Bei Dauer „eine Saison“ lässt das Original nur die Bundesliga zu (Datei 0x2890E).");
+                    setup[OriginalSaveGame.SetupStartLeagueField] = (byte)league;
+                    break;
+                }
+                case "ligaplaetze":
+                    places = ParsePlaces(value);
+                    break;
             }
         }
+
+        // Nach den übrigen Feldern prüfen: „spieltag“ ändert, ob die Sortierung noch läuft.
+        if (places is { } chosen)
+            ApplyPlaces(save, chosen.League, chosen.Order);
 
         var id = newId ?? NewId(save.SaveId, random ?? Random.Shared);
         BitConverter.GetBytes(id).CopyTo(header, 0xB4);
         return Encode(header, save);
+    }
+
+    private static (int League, int[] Order) ParsePlaces(string value)
+    {
+        var colon = value.IndexOf(':');
+        if (colon <= 0)
+            throw new ArgumentException("Feld „ligaplaetze“ erwartet <liga>:s1,…,s12.");
+        var league = Int("ligaplaetze (Liga)", value[..colon], 0, OriginalSaveGame.LeagueCount - 1);
+        var parts = value[(colon + 1)..].Split(',');
+        if (parts.Length != OriginalSaveGame.LeagueSize)
+            throw new ArgumentException($"Feld „ligaplaetze“ braucht {OriginalSaveGame.LeagueSize} Satznummern, durch Komma getrennt.");
+        return (league, parts.Select(p => Int("ligaplaetze (Satz)", p, 0, 255)).ToArray());
+    }
+
+    /// <summary>
+    /// Schreibt die Platzliste einer Liga, wenn sie zum übrigen Stand passt (sonst <see cref="ArgumentException"/>):
+    /// <list type="number">
+    /// <item>dieselben Sätze wie gespeichert (kein Vereinstausch; der 29. April sucht den Managerverein in der Zeile seiner Liga,
+    ///   Datei 0x55F93–0x560D8);</item>
+    /// <item>solange DGROUP 0x7A9 + Liga ≤ 44: Fixpunkt der Sortierung 0x50B45, die das Hauptmenü bei jedem Aufbau ausführt
+    ///   (Datei 0x44EFD; <see cref="SortLeague"/>);</item>
+    /// <item>danach, wenn die Aufstiegsrunde ausgelost ist (Teilnehmer DGROUP 0xCFFC + 4 · Gruppe nicht alle 0): Teilnehmer =
+    ///   Plätze 11, 12 der oberen und 1, 2 der unteren Liga in dieser Reihenfolge (Auslosung 0x30427; FILE22, FILE44);</item>
+    /// <item>Bundesliga danach, wenn die Play-offs gesetzt sind (DGROUP 0x5D3B nicht alle 0): Plätze 1–8 unverändert (Setzung
+    ///   0x319AC aus 0x5CCB; FILE22, FILE44; der Import prüft die Paare in Setzfolge).</item>
+    /// </list>
+    /// [APPROX] Regeln 3 und 4 sind eine Vorsicht des Patchers: Nach dem 44. Spieltag, aber vor Auslosung bzw. Setzung könnten
+    /// 0xCFFC und 0x5D3B noch Werte der Vorsaison halten (FILE23, FILE44A tragen sie nach dem Saisonwechsel weiter); einen solchen
+    /// Stand weist der Patcher ab, auch wenn das Original neu auslosen würde.
+    /// Die Platzfelder der Tabellensätze (0x8288, 0x828B) bleiben; 0x51049 schreibt sie am nächsten Ligaspieltag neu.
+    /// </summary>
+    private static void ApplyPlaces(OriginalSaveGame save, int league, int[] order)
+    {
+        var size = OriginalSaveGame.LeagueSize;
+        var block = save.Block("5CCB");
+        var stored = block.AsSpan(league * size, size).ToArray().Select(b => (int)b).ToArray();
+        if (!order.Order().SequenceEqual(stored.Order()))
+            throw new ArgumentException($"Feld „ligaplaetze“: Liga {league} hat die Sätze {string.Join(",", stored)}; " +
+                                        "erlaubt ist nur eine Umordnung (jeder Satz genau einmal).");
+
+        var matchDay = save.Block("07A9")[league];
+        if (matchDay <= OriginalSaveGame.LastSortedMatchDay)
+        {
+            var sorted = SortLeague(save.Block("8257"), order);
+            if (!sorted.SequenceEqual(order))
+                throw new ArgumentException($"Feld „ligaplaetze“: Vor dem 45. Spieltag (0x7A9 + {league} = {matchDay}) sortiert das Hauptmenü " +
+                                            $"die Liste nach der Tabelle um (0x50B45) zu {string.Join(",", sorted)}; nur ein Fixpunkt bleibt stehen.");
+        }
+
+        var next = (byte[])block.Clone();
+        for (var p = 0; p < size; p++)
+            next[league * size + p] = (byte)order[p];
+        var participants = save.Block("CFFC");
+        if (matchDay > OriginalSaveGame.LastSortedMatchDay)
+        {
+            for (var group = Math.Max(0, league - 1); group <= Math.Min(1, league); group++)
+            {
+                var drawn = participants.AsSpan(4 * group, 4);
+                if (!drawn.ContainsAnyExcept((byte)0))
+                    continue;
+                var expected = next.AsSpan(size * group + size - 2, 4);
+                if (!drawn.SequenceEqual(expected))
+                    throw new ArgumentException($"Feld „ligaplaetze“: Teilnehmer der Aufstiegsrunde Gruppe {group} sind {string.Join(",", drawn.ToArray())}, " +
+                                                $"die neue Liste ergäbe {string.Join(",", expected.ToArray())} (Plätze 11, 12 oben, 1, 2 unten).");
+            }
+        }
+        // Play-off-Plätze DGROUP 0x5D3B (= 5CFB + 0x40): Setzung 0x319AC–0x319D4 schreibt Platz 2i = Platz i, 2i + 1 = Platz 7 − i
+        // der Bundesliga (Seite in der laufenden Serie getauscht, 0x31505). Sind sie gesetzt, bleiben die Plätze 1–8 unverändert.
+        var playoffs = save.Block("5CFB")[0x40..0x48];
+        if (league == 0 && matchDay > OriginalSaveGame.LastSortedMatchDay && playoffs.Any(b => b != 0) &&
+            !next.AsSpan(0, 8).SequenceEqual(block.AsSpan(0, 8)))
+            throw new ArgumentException("Feld „ligaplaetze“: Die Play-offs sind gesetzt (0x5D3B); die Plätze 1–8 der Bundesliga müssen bleiben.");
+        next.CopyTo(block, 0);
+    }
+
+    /// <summary>
+    /// [ORIGINAL] Tauschsortierung der Platzliste wie em.exe 0x50B45, Gesamtansicht (Datei 0x50D6D–0x51011): für jeden Platz i
+    /// alle späteren Plätze j; j verdrängt i bei mehr Punkten, bei gleichen Punkten weniger Spielen, dann höherer Tordifferenz,
+    /// dann mehr Toren. Werte je Satz = Heim- + Auswärtsbyte des Tabellensatzes (DGROUP 0x825A + 0x50 · Satz: Punkte +0x00,
+    /// Tore +0x16, Gegentore +0x1A, Spiele +0x1E). Gegenprobe gegen 0x50B45 aus den Bytes:
+    /// <c>tools/reverse-engineering/hok/fixpunkt.py</c> (396 von 396 Folgen gleich).
+    /// </summary>
+    /// <param name="tableBlock">Block <c>8257</c> des Spielstands.</param>
+    /// <param name="order">Satznummern der Liga in Platzfolge (bleibt unverändert).</param>
+    public static int[] SortLeague(ReadOnlySpan<byte> tableBlock, IReadOnlyList<int> order)
+    {
+        var o = order.ToArray();
+        var keys = new Dictionary<int, (int Points, int Games, int Goals, int Against)>();
+        foreach (var slot in o)
+        {
+            var r = tableBlock.Slice(OriginalSaveGame.TableRecordStart + OriginalSaveGame.TableRecordLength * slot, OriginalSaveGame.TableRecordLength);
+            keys[slot] = (r[0x00] + r[0x01], r[0x1E] + r[0x1F], r[0x16] + r[0x17], r[0x1A] + r[0x1B]);
+        }
+        bool Better(int bSlot, int aSlot)
+        {
+            var (b, a) = (keys[bSlot], keys[aSlot]);
+            if (b.Points != a.Points)
+                return b.Points > a.Points;
+            if (b.Games != a.Games)
+                return b.Games < a.Games;
+            if (b.Goals - b.Against != a.Goals - a.Against)
+                return b.Goals - b.Against > a.Goals - a.Against;
+            return b.Goals > a.Goals;
+        }
+        for (var i = 0; i < o.Length - 1; i++)
+            for (var j = i + 1; j < o.Length; j++)
+                if (Better(o[j], o[i]))
+                    (o[i], o[j]) = (o[j], o[i]);
+        return o;
     }
 
     /// <summary>

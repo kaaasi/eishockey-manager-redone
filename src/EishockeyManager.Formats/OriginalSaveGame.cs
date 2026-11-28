@@ -94,6 +94,33 @@ public sealed class OriginalSaveGame
     /// <summary>Größe eines Vereinsdatensatzes im Block hinter 0x9657. [ORIGINAL] Multiplikator 0x3D.</summary>
     public const int ClubRecordLength = 0x3D;
 
+    /// <summary>Vereinssätze je Liga (Platzliste DGROUP 0x5CCB + 12 · Liga). [ORIGINAL] DGROUP 0x7B1 = 12.</summary>
+    public const int LeagueSize = 12;
+
+    /// <summary>Ligen der Platzliste 0x5CCB (0 Bundesliga, 1 2. Liga, 2 Oberliga).</summary>
+    public const int LeagueCount = 3;
+
+    /// <summary>
+    /// Beginn der Tabellensätze im Block <c>8257</c> (DGROUP 0x825A − 0x8257); je Satz <see cref="TableRecordLength"/> Byte.
+    /// [ORIGINAL] reverse-engineering.md „Ligatabelle“.
+    /// </summary>
+    public const int TableRecordStart = 0x825A - 0x8257;
+
+    /// <summary>Größe eines Tabellensatzes (DGROUP 0x825A + 0x50 · Satz).</summary>
+    public const int TableRecordLength = 0x50;
+
+    /// <summary>
+    /// Letzter Spieltag, nach dem 0x50B45 die Platzliste noch sortiert: Ab DGROUP 0x7A9 + Liga ≥ 45 kehrt sie sofort zurück.
+    /// [ORIGINAL] em.exe Datei 0x50B4D–0x50B71 (<c>docs/analyse/hok-tabellen.md</c>, Ergebnis 3).
+    /// </summary>
+    public const int LastSortedMatchDay = 44;
+
+    /// <summary>Setup-Regler im Block <c>0118</c>: Level 0x118, Dauer 0x119, Start-Liga 0x11A, Start-Stärke 0x11B.</summary>
+    public const int SetupDurationField = 1;
+
+    /// <summary>Start-Liga im Block <c>0118</c> (DGROUP 0x11A).</summary>
+    public const int SetupStartLeagueField = 2;
+
     public required IReadOnlyList<OriginalSaveManagerHeader> Managers { get; init; }
     public required int HeaderYear { get; init; }
     public required int HeaderManagerCount { get; init; }
@@ -144,6 +171,21 @@ public sealed class OriginalSaveGame
         }
         return list;
     }
+
+    /// <summary>Platzliste einer Liga (0–2): Satznummern für Platz 1–12 (DGROUP 0x5CCB + 12 · Liga).</summary>
+    public IReadOnlyList<int> LeaguePlaces(int league) =>
+        Block("5CCB").AsSpan(league * LeagueSize, LeagueSize).ToArray().Select(b => (int)b).ToArray();
+
+    /// <summary>Nächster Spieltag einer Liga (DGROUP 0x7A9 + Liga); ab 45 ist die Saison gespielt.</summary>
+    public int NextMatchDay(int league) => Block("07A9")[league];
+
+    /// <summary>
+    /// Teilnehmer der Aufstiegsrunde je Gruppe (0 Bundesliga/2. Liga, 1 2. Liga/Oberliga; DGROUP 0xCFFC + 4 · Gruppe):
+    /// Plätze 11, 12 der oberen und 1, 2 der unteren Liga am Tag der Auslosung 0x30427. Alle 0 = nicht ausgelost
+    /// (<c>docs/analyse/hok-tabellen.md</c>).
+    /// </summary>
+    public IReadOnlyList<int> PromotionParticipants(int group) =>
+        Block("CFFC").AsSpan(4 * group, 4).ToArray().Select(b => (int)b).ToArray();
 
     /// <summary>Gesamtlänge eines Spielstands (unabhängig vom Inhalt).</summary>
     public static int FileLength => PlainLength + Layout.Sum(b => b.IsChecksum ? 1 : b.Length);

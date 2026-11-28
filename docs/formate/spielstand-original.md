@@ -222,10 +222,36 @@ oder eine vorhandene Datei geschrieben (außer `--force`).
 | `zaehler=<n>` | Tageszähler | `0x3B7` und `0xA969` |
 | `spieltag=<n>` | nächster Spieltag aller drei Ligen und Kopfbyte `0x0F` | `0x7A9`–`0x7AB` |
 | `level=<0-5>` | Regler `0x118` und `0xED8 = 5 − Level` | em.exe `0x2988D` |
+| `startliga=<0-2>` | Regler Start-Liga `0x11A` (0 Bundesliga, 1 2. Liga, 2 Oberliga); wirkt nur auf neue Manager (Kachel „Neuer“) | Leser nur `0x28165` (Startkader Datei `0x29A3F`, Liga-Stufe `0x29BBB`, Platzwahl `0x29BCE`) und `0x5AF50` (Datei `0x5B289`) |
+| `ligaplaetze=<liga>:s1,…,s12` | Platzliste einer Liga (Satz je Platz 1–12) | `0x5CCB` + 12 · Liga |
 
 `manager` (Standard 0) wählt den Datensatz für Konto, Eintritt und Stadion. **Abgewiesen** mit Begründung: `dauer`
-(Zuordnung zum Spielende `0x5A14` nicht belegt), `liga` (würde Verein und Tabelle betreffen), `staerke` (wirkt nur bei
+(Zuordnung zum Spielende `0x5A14` nicht belegt), `liga` (Liga eines Vereins, kein Vereinstausch), `staerke` (wirkt nur bei
 der Erzeugung der Mannschaften); unbekannte, doppelte und außerhalb des Bereichs liegende Werte ebenfalls.
+
+**`startliga`** (Spur `hok-patch-tabellen`, Option A): Im Hinzufügen-Modus ist der Regler gesperrt (Datei `0x286DA`); der
+Patch ersetzt ihn für „Neuer“ im laufenden Spiel. Bei Dauer „eine Saison“ (`0x119` = 0) nur 0, wie die Spielvorbereitung
+(Datei `0x2890E`–`0x28920`). Kopfbyte `0x10` + 0x28 · m bleibt (das ist die Liga-Stufe `0x9746` des Managers).
+
+**`ligaplaetze`** (eine Liga je Aufruf) schreibt nur, was zum Stand passt (`docs/analyse/hok-tabellen.md`), sonst Abbruch
+mit Begründung:
+
+1. dieselben zwölf Sätze wie gespeichert (Umordnung, kein Vereinstausch);
+2. solange `0x7A9` + Liga ≤ 44 (nach den übrigen Feldern, `spieltag` zählt): Fixpunkt der Tauschsortierung `0x50B45`, die
+   das Hauptmenü bei jedem Aufbau ausführt (Datei `0x44EFD`). Nachbau `OriginalSavePatcher.SortLeague` aus den
+   Tabellensätzen `8257` (Heim + Auswärts: Punkte `+0x00`, Spiele `+0x1E`, Tore `+0x16`, Gegentore `+0x1A`); Gegenprobe
+   `tools/reverse-engineering/hok/fixpunkt.py`: 396 von 396 Folgen (FILE05/13/18/22/36/44, je Liga gespeichert, umgekehrt,
+   20 zufällig) gleich 0x50B45 aus den Bytes. Bei vollem Gleichstand (Modus „nur Weltkugel“, FILE18) ist jede Folge Fixpunkt;
+3. danach, wenn die Aufstiegsrunde ausgelost ist (`0xCFFC` + 4 · Gruppe nicht alle 0): Teilnehmer = Plätze 11, 12 oben und
+   1, 2 unten, in dieser Folge (FILE22, FILE44);
+4. Bundesliga danach, wenn die Play-offs gesetzt sind (`0x5D3B` = `5CFB` + 0x40 nicht alle 0): Plätze 1–8 unverändert
+   (Setzung `0x319AC`: Platz 2i = Platz i, 2i + 1 = Platz 7 − i; FILE22, FILE44; der Import prüft die Paare in Setzfolge).
+
+`[APPROX]` Regeln 3 und 4 sind Vorsicht des Patchers: Nach dem 44. Spieltag, aber vor Auslosung oder Setzung könnten die
+Blöcke noch Werte der Vorsaison halten (FILE23, FILE44A tragen sie über den Saisonwechsel); solche Stände weist der Patcher ab.
+Die Platzfelder der Tabellensätze (`0x8288`, `0x828B`) bleiben; `0x51049` schreibt sie am nächsten Ligaspieltag neu, nach der
+Saison bleiben sie stehen (Zuschauerformel `0x3F185`). `emtool hok dump` zeigt die Platzlisten, die Spieltage und die
+Teilnehmer der Aufstiegsrunde.
 
 Belegt im Original (Nutzer, 30.10.2026, DOSBox 0.74-3): `hok patch FILE01.HOK FILE04.HOK konto=2000000 eintritt=20
 datum=20.09.1993 zaehler=11 spieltag=4` lädt ohne Meldung; Hauptmenü zeigt „Mittwoch, 20. Sept. 1993“, „4.Spieltag“ und

@@ -160,6 +160,135 @@ public class OriginalSavePatcherTests
         }
     }
 
+    // ---- Teil 2 hok-patch-tabellen (Option A, Nutzer 28.11.2026): startliga und ligaplaetze ----
+
+    [Fact]
+    public void Patch_Startliga_SetsOnlyRegulator0x11A()
+    {
+        var template = Template(fill: b => b["0118"][1] = 3);
+        var before = OriginalSaveGame.Read(template);
+        var after = OriginalSaveGame.Read(OriginalSavePatcher.Patch(template, [C("startliga", "2")], newId: 3));
+
+        Assert.True(after.ChecksumsValid);
+        Assert.Equal([0, 3, 2, 0], after.Block("0118"));
+        Assert.All(before.Blocks.Where(b => b.Block.Name != "0118"), b => Assert.Equal(b.Data, after.Block(b.Block.Name)));
+    }
+
+    /// <summary>[ORIGINAL] Datei 0x2890E–0x28920: bei Dauer „eine Saison“ nur Start-Liga Bundesliga.</summary>
+    [Fact]
+    public void Patch_Startliga_RejectsOtherLeagueForOneSeason()
+    {
+        var template = Template(); // Dauer 0
+        var ex = Assert.Throws<ArgumentException>(() => OriginalSavePatcher.Patch(template, [C("startliga", "1")]));
+        Assert.Contains("eine Saison", ex.Message);
+        Assert.Equal(0, OriginalSaveGame.Read(OriginalSavePatcher.Patch(template, [C("startliga", "0")])).Block("0118")[2]);
+        Assert.Throws<ArgumentException>(() => OriginalSavePatcher.Patch(Template(fill: b => b["0118"][1] = 3), [C("startliga", "3")]));
+    }
+
+    [Fact]
+    public void Patch_Ligaplaetze_WritesFixedPointAndNothingElse()
+    {
+        // Bundesliga: Satz 0–11, Punkte 30 − Satz → gespeicherte Folge 0…11; Satz 4 und 5 punktgleich mit gleichen Toren.
+        var template = LeagueTemplate(day: 10);
+        var before = OriginalSaveGame.Read(template);
+        var after = OriginalSaveGame.Read(OriginalSavePatcher.Patch(template, [C("ligaplaetze", "0:0,1,2,3,5,4,6,7,8,9,10,11")], newId: 4));
+
+        Assert.True(after.ChecksumsValid);
+        Assert.Equal([0, 1, 2, 3, 5, 4, 6, 7, 8, 9, 10, 11], after.LeaguePlaces(0));
+        Assert.Equal(before.LeaguePlaces(1), after.LeaguePlaces(1));
+        Assert.All(before.Blocks.Where(b => b.Block.Name != "5CCB"), b => Assert.Equal(b.Data, after.Block(b.Block.Name)));
+    }
+
+    /// <summary>Regressionstest: Vor dem 45. Spieltag sortiert das Hauptmenü (0x44EFD → 0x50B45) jede andere Folge um.</summary>
+    [Fact]
+    public void Patch_Ligaplaetze_RejectsOrderTheMainMenuWouldResort()
+    {
+        var ex = Assert.Throws<ArgumentException>(() =>
+            OriginalSavePatcher.Patch(LeagueTemplate(day: 44), [C("ligaplaetze", "0:1,0,2,3,4,5,6,7,8,9,10,11")]));
+        Assert.Contains("0x50B45", ex.Message);
+        Assert.Contains("0,1,2,3,4,5,6,7,8,9,10,11", ex.Message);
+    }
+
+    [Theory]
+    [InlineData("0:0,1,2,3,4,5,6,7,8,9,10,12")]  // fremder Satz (2. Liga)
+    [InlineData("0:0,1,2,3,4,5,6,7,8,9,10,10")]  // doppelt
+    [InlineData("0:0,1,2,3,4,5,6,7,8,9,10")]     // nur 11
+    [InlineData("3:0,1,2,3,4,5,6,7,8,9,10,11")]  // Liga
+    [InlineData("0,1,2,3,4,5,6,7,8,9,10,11")]    // ohne Liga
+    public void Patch_Ligaplaetze_RejectsSyntaxAndOtherSlots(string value)
+    {
+        Assert.Throws<ArgumentException>(() => OriginalSavePatcher.Patch(LeagueTemplate(day: 45), [C("ligaplaetze", value)]));
+    }
+
+    /// <summary>Nach dem 44. Spieltag sortiert 0x50B45 nicht mehr (Datei 0x50B4D–0x50B71); „spieltag“ im selben Aufruf zählt.</summary>
+    [Fact]
+    public void Patch_Ligaplaetze_AfterSeasonAcceptsAnyOrder()
+    {
+        const string order = "1:23,22,21,20,19,18,17,16,15,14,13,12";
+        var after = OriginalSaveGame.Read(OriginalSavePatcher.Patch(LeagueTemplate(day: 45), [C("ligaplaetze", order)]));
+        Assert.Equal(Enumerable.Range(12, 12).Reverse(), after.LeaguePlaces(1));
+
+        Assert.Throws<ArgumentException>(() => OriginalSavePatcher.Patch(LeagueTemplate(day: 20), [C("ligaplaetze", order)]));
+        var later = OriginalSaveGame.Read(OriginalSavePatcher.Patch(LeagueTemplate(day: 20), [C("ligaplaetze", order), C("spieltag", "45")]));
+        Assert.Equal(Enumerable.Range(12, 12).Reverse(), later.LeaguePlaces(1));
+    }
+
+    /// <summary>Ausgeloste Aufstiegsrunde (0xCFFC) und gesetzte Play-offs (0x5D3B) müssen zur neuen Liste passen.</summary>
+    [Fact]
+    public void Patch_Ligaplaetze_KeepsPromotionRoundAndPlayoffConsistent()
+    {
+        var drawn = LeagueTemplate(day: 45, fill: b =>
+        {
+            byte[] cffc = [10, 11, 12, 13, 22, 23, 24, 25];
+            cffc.CopyTo(b["CFFC"], 0);
+            byte[] seeds = [0, 7, 1, 6, 2, 5, 3, 4];
+            seeds.CopyTo(b["5CFB"], 0x40);
+        });
+
+        // Gruppe 0: Plätze 11, 12 der Bundesliga, Gruppe 1: Plätze 1, 2 der Oberliga
+        Assert.Throws<ArgumentException>(() => OriginalSavePatcher.Patch(drawn, [C("ligaplaetze", "0:0,1,2,3,4,5,6,7,8,9,11,10")]));
+        Assert.Throws<ArgumentException>(() => OriginalSavePatcher.Patch(drawn, [C("ligaplaetze", "2:25,24,26,27,28,29,30,31,32,33,34,35")]));
+        Assert.Throws<ArgumentException>(() => OriginalSavePatcher.Patch(drawn, [C("ligaplaetze", "1:12,13,14,15,16,17,18,19,20,21,23,22")]));
+        // Play-offs gesetzt: Plätze 1–8 bleiben (auch Tausch innerhalb eines Paars, er ändert die Setzung), 9 und 10 frei
+        Assert.Throws<ArgumentException>(() => OriginalSavePatcher.Patch(drawn, [C("ligaplaetze", "0:0,1,2,3,4,5,6,8,7,9,10,11")]));
+        Assert.Throws<ArgumentException>(() => OriginalSavePatcher.Patch(drawn, [C("ligaplaetze", "0:7,1,2,3,4,5,6,0,8,9,10,11")]));
+        var swapped = OriginalSaveGame.Read(OriginalSavePatcher.Patch(drawn, [C("ligaplaetze", "0:0,1,2,3,4,5,6,7,9,8,10,11")]));
+        Assert.Equal(9, swapped.LeaguePlaces(0)[8]);
+        var noPlayoffs = LeagueTemplate(day: 45);
+        Assert.Equal(7, OriginalSaveGame.Read(OriginalSavePatcher.Patch(noPlayoffs, [C("ligaplaetze", "0:7,1,2,3,4,5,6,0,8,9,10,11")])).LeaguePlaces(0)[0]);
+        // Oberliga Platz 3–12 frei (A671: Managersatz auf Platz 12)
+        var low = OriginalSaveGame.Read(OriginalSavePatcher.Patch(drawn, [C("ligaplaetze", "2:24,25,35,34,33,32,31,30,29,28,27,26")]));
+        Assert.Equal(26, low.LeaguePlaces(2)[11]);
+        // Mitten in der Saison gelten die Altwerte nicht (Fixpunkt reicht)
+        var mid = LeagueTemplate(day: 30, fill: b => ((byte[])[10, 11, 12, 13, 22, 23, 24, 25]).CopyTo(b["CFFC"], 0));
+        Assert.Equal([0, 1, 2, 3, 5, 4, 6, 7, 8, 9, 10, 11],
+            OriginalSaveGame.Read(OriginalSavePatcher.Patch(mid, [C("ligaplaetze", "0:0,1,2,3,5,4,6,7,8,9,10,11")])).LeaguePlaces(0));
+    }
+
+    /// <summary>[ORIGINAL] 0x50B45: Punkte, dann weniger Spiele, dann Tordifferenz, dann Tore; Gleichstand tauscht nicht.</summary>
+    [Fact]
+    public void SortLeague_UsesPointsGamesDifferenceGoals_HomePlusAway()
+    {
+        var table = new byte[0x1400];
+        void Set(int slot, int pointsHome, int pointsAway, int games, int goals, int against)
+        {
+            var r = OriginalSaveGame.TableRecordStart + OriginalSaveGame.TableRecordLength * slot;
+            table[r] = (byte)pointsHome;
+            table[r + 1] = (byte)pointsAway;
+            table[r + 0x1E] = (byte)games;
+            table[r + 0x16] = (byte)goals;
+            table[r + 0x1A] = (byte)against;
+        }
+        Set(0, 5, 5, 10, 30, 30);   // 10 Punkte, 10 Spiele
+        Set(1, 4, 6, 9, 20, 25);    // 10 Punkte, 9 Spiele → vor 0
+        Set(2, 10, 1, 12, 10, 40);  // 11 Punkte → Erster
+        Set(3, 6, 4, 10, 31, 30);   // wie 0, Tordifferenz +1 → vor 0
+        Set(4, 6, 4, 10, 32, 31);   // wie 3, mehr Tore → vor 3
+        Set(5, 6, 4, 10, 32, 31);   // wie 4 → bleibt hinter 4
+
+        Assert.Equal([2, 1, 4, 5, 3, 0], OriginalSavePatcher.SortLeague(table, [0, 1, 2, 3, 4, 5]));
+    }
+
     // ---- Originaldaten: Spielstände des Nutzers (Referenz-Repo original/spielstaende, nie im Code-Repo) ----
 
     [GameDataFact]
@@ -207,6 +336,71 @@ public class OriginalSavePatcherTests
         Assert.All(f2.Blocks, b => Assert.Equal(b.Data, p.Block(b.Block.Name)));
     }
 
+    /// <summary>Gespeicherte Platzlisten sind Fixpunkte der nachgebauten Sortierung (Gegenprobe zu fixpunkt.py).</summary>
+    [GameDataFact]
+    public void Original_StoredPlaceListsAreFixedPointsOfSortLeague()
+    {
+        foreach (var name in new[] { "FILE03.HOK", "FILE05.HOK", "FILE13.HOK", "FILE16A.HOK", "FILE18.HOK", "FILE22.HOK", "FILE36.HOK", "FILE44.HOK" })
+        {
+            var save = OriginalSaveGame.Read(File.ReadAllBytes(OriginalSave(name)));
+            for (var league = 0; league < OriginalSaveGame.LeagueCount; league++)
+                Assert.Equal(save.LeaguePlaces(league), OriginalSavePatcher.SortLeague(save.Block("8257"), save.LeaguePlaces(league)));
+        }
+    }
+
+    /// <summary>FILE05 (4. Spieltag): umgekehrte Bundesliga wird abgewiesen, die gespeicherte angenommen (unveränderter Rest).</summary>
+    [GameDataFact]
+    public void Original_File05_LigaplaetzeOnlyFixedPoint()
+    {
+        var bytes = File.ReadAllBytes(OriginalSave("FILE05.HOK"));
+        var save = OriginalSaveGame.Read(bytes);
+        var stored = save.LeaguePlaces(0);
+        Assert.Throws<ArgumentException>(() => OriginalSavePatcher.Patch(bytes, [C("ligaplaetze", "0:" + string.Join(",", stored.Reverse()))]));
+
+        var same = OriginalSaveGame.Read(OriginalSavePatcher.Patch(bytes, [C("ligaplaetze", "0:" + string.Join(",", stored))]));
+        Assert.All(save.Blocks, b => Assert.Equal(b.Data, same.Block(b.Block.Name)));
+    }
+
+    /// <summary>
+    /// Vorlage A667 (hok-tabellen.md): FILE44 nach der Saison, Aufstiegsrunde und Play-offs ausgelost. Start-Liga 2. Liga geht
+    /// (Dauer 3); die Plätze 9 und 10 der Bundesliga lassen sich tauschen, 1–8 (Play-offs) und 11/12 (Aufstiegsrunde) nicht.
+    /// </summary>
+    [GameDataFact]
+    public void Original_File44_StartligaAndPromotionRoundGuard()
+    {
+        var bytes = File.ReadAllBytes(OriginalSave("FILE44.HOK"));
+        var save = OriginalSaveGame.Read(bytes);
+        Assert.Equal(45, save.NextMatchDay(0));
+
+        var p = OriginalSaveGame.Read(OriginalSavePatcher.Patch(bytes, [C("startliga", "1")]));
+        Assert.True(p.ChecksumsValid);
+        Assert.Equal(1, p.Block("0118")[2]);
+        Assert.Equal(["0118"], save.Blocks.Where(b => !b.Data.AsSpan().SequenceEqual(p.Block(b.Block.Name))).Select(b => b.Block.Name));
+
+        var bl = save.LeaguePlaces(0).ToArray();
+        var outside = (int[])bl.Clone();
+        (outside[8], outside[9]) = (outside[9], outside[8]); // Platz 9 und 10: weder Play-offs noch Aufstiegsrunde
+        Assert.Equal(outside, OriginalSaveGame.Read(OriginalSavePatcher.Patch(bytes, [C("ligaplaetze", "0:" + string.Join(",", outside))])).LeaguePlaces(0));
+        var inside = (int[])bl.Clone();
+        (inside[10], inside[11]) = (inside[11], inside[10]);
+        Assert.Throws<ArgumentException>(() => OriginalSavePatcher.Patch(bytes, [C("ligaplaetze", "0:" + string.Join(",", inside))]));
+        var seeded = (int[])bl.Clone();
+        (seeded[0], seeded[7]) = (seeded[7], seeded[0]);
+        Assert.Throws<ArgumentException>(() => OriginalSavePatcher.Patch(bytes, [C("ligaplaetze", "0:" + string.Join(",", seeded))]));
+    }
+
+    /// <summary>Vorlage A671: im Modus „nur Weltkugel“ (FILE18) sind alle Sortierschlüssel gleich, jede Oberligafolge bleibt stehen.</summary>
+    [GameDataFact]
+    public void Original_File18_WorldOnlyAcceptsAnyOberligaOrder()
+    {
+        var bytes = File.ReadAllBytes(OriginalSave("FILE18.HOK"));
+        var save = OriginalSaveGame.Read(bytes);
+        var reversed = save.LeaguePlaces(2).Reverse().ToArray();
+        var p = OriginalSaveGame.Read(OriginalSavePatcher.Patch(bytes, [C("ligaplaetze", "2:" + string.Join(",", reversed))]));
+        Assert.Equal(reversed, p.LeaguePlaces(2));
+        Assert.Equal(["5CCB"], save.Blocks.Where(b => !b.Data.AsSpan().SequenceEqual(p.Block(b.Block.Name))).Select(b => b.Block.Name));
+    }
+
     private static IEnumerable<string> OriginalSaves() =>
         new[] { "FILE01.HOK", "FILE02.HOK", "FILE03.HOK" }.Select(OriginalSave);
 
@@ -227,6 +421,23 @@ public class OriginalSavePatcherTests
         return File.Exists(path) ? path
             : throw new FileNotFoundException($"Original-Spielstand {name} fehlt in {folder} (Ordner per EM_SAVEGAMES angeben).");
     }
+
+    /// <summary>Stand mit Platzliste Satz 0–35 der Reihe nach, nächster Spieltag <paramref name="day"/>, Punkte 30 − Satz
+    /// je Liga (Satz 4 und 5 punkt- und torgleich), Dauer 3.</summary>
+    private static byte[] LeagueTemplate(int day, Action<Dictionary<string, byte[]>>? fill = null) => Template(fill: b =>
+    {
+        b["0118"][1] = 3;
+        for (var i = 0; i < 36; i++)
+            b["5CCB"][i] = (byte)i;
+        b["07A9"][0] = b["07A9"][1] = b["07A9"][2] = (byte)day;
+        for (var slot = 0; slot < 36; slot++)
+        {
+            var r = OriginalSaveGame.TableRecordStart + OriginalSaveGame.TableRecordLength * slot;
+            b["8257"][r] = (byte)(30 - slot % 12 - (slot % 12 == 4 ? 1 : 0));
+            b["8257"][r + 0x1E] = 10;
+        }
+        fill?.Invoke(b);
+    });
 
     private static byte[] Template(Action<Dictionary<string, byte[]>>? fill = null, byte key = 0xE5)
     {
