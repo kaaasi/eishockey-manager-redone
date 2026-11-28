@@ -186,7 +186,8 @@ Rest gut (0x49332–0x49371, danach 0x4748A). Der Listenwechsel 0x494EF zieht au
 Entscheidungen Nutzer 01.11.2026 (PR #308). Umsetzung: `Core/Transfer.Pool.cs` (`TransferPoolRules`, `PoolSlot`,
 `TransferMarket.BuildPool`, `StartPoolSeason`, `ChangeList`), `Core/Transfer.cs` (`TransferListing.FromPool`, `TransferFee`,
 `Initialize`, `StartSeason`; der Tag läuft über die Zeitleiste, `CatchUpManagerDay` in `Core/Transfer.Listed.cs`), Angebotsfenster für Gebote `UI/Screens/Team/TransferDialog.cs`; Schema 20
-(vorläufig, `Core/SaveGame.Migration.TransferVertraegeKomplett5.cs`); Tests `MarketPoolTests`,
+(vorläufig; die damalige Migrationsdatei `Core/SaveGame.Migration.TransferVertraegeKomplett5.cs` ist mit Runde 27
+entfallen, nur Schema 65 ladbar); Tests `MarketPoolTests`,
 `TransferOwnPlayerBidScreenTests`.
 
 | Regel | Fundstelle | Inhalt |

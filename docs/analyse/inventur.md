@@ -339,7 +339,7 @@ A344 (`SeasonEndWidgets.cs:67`), A363 (`ContractsScreen.cs:168`) und ohne eigene
 (PR #801): #800 kein Befund – die Börse startet in allen Spielsaaten mit denselben Kursen (`FinanceRandom` hängt an Saison und
 Managern), die Probe im Spiel misst nur die Verschränkung (Saaten 1–192: 52,9 %, je 48 Saaten 47–57 %); Kursmodell mit 1000
 unabhängigen Folgen 55–70 % (`StockModelGrowthTests.StockModel_BaseValuesGrow_LargeSeedSet`, ohne Wachstum rot). R17 P3-1:
-#730 HOCK/KUHNEKATH als Bereich über die Saaten (≥ 5 von 6, `OriginalPairsTests.Strain730_DeviatesAtMostSeeds`; mit 6
+#730 HOCK/KUHNEKATH als Bereich über die Saaten (≥ 5 von 6, `OriginalPairsTests.Strain_DeviatesAtMostSeeds_DriftGuard`; mit 6
 rot). P3-2: Kommentar der Bereichsprobe nennt die wirksamen Mehrsaisonproben. P3-3: exakter Gastwert in
 `ComputerMatch_KeepsFieldsAcrossSaveAndLoad` (Preparation.cs von e1476e6 → rot). Import 0x26/0x2C (#794): geprobt, offen –
 der Import allein kippt zwei fremde Abdrücke (`SeasonChangeMoneyDeviationTests.File16A_…`, `PoolSeasonChangeMeansTests.File44_…`), der Abgleich
