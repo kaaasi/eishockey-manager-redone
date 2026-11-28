@@ -1,4 +1,5 @@
 using EishockeyManager.Tests.Support;
+using static EishockeyManager.Tests.Support.ScreenDriverClicks;
 using EishockeyManager.Core;
 using EishockeyManager.UI.Screens.ManagerArea;
 using EishockeyManager.UI.Testing;
@@ -11,8 +12,6 @@ namespace EishockeyManager.UI.Tests;
 /// </summary>
 public class AdvertisingPanelOriginalTests
 {
-    private static void Click(ScreenDriver d, Rect r) => d.Click(r.X + r.W / 2, r.Y + r.H / 2);
-
     private static (ScreenDriver Driver, AdvertisingScreen Screen, GameState Game, Core.Manager Me) Open()
     {
         var d = FlowTests.CreateDriver();

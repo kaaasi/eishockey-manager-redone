@@ -1,4 +1,5 @@
 using EishockeyManager.Tests.Support;
+using static EishockeyManager.Tests.Support.ScreenDriverClicks;
 using EishockeyManager.Core;
 using EishockeyManager.UI.Screens;
 using EishockeyManager.UI.Screens.ManagerArea;
@@ -9,8 +10,6 @@ namespace EishockeyManager.UI.Tests;
 /// <summary>Bildschirm Werbung mit den Originaldateien (ohne „gamedata“ übersprungen).</summary>
 public class AdvertisingScreenTests
 {
-    private static void Click(ScreenDriver d, Rect r) => d.Click(r.X + r.W / 2, r.Y + r.H / 2);
-
     [GameDataFact]
     public void SelectBrowseAcceptAndShowInfo()
     {

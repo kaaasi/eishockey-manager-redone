@@ -2,6 +2,7 @@ using System.Reflection;
 using EishockeyManager.Core;
 using EishockeyManager.Formats;
 using EishockeyManager.UI;
+using EishockeyManager.UI.Screens;
 using EishockeyManager.UI.Screens.Team;
 using EishockeyManager.UI.Testing;
 
@@ -45,8 +46,14 @@ internal static class TransferVertragKaufSaisonende
         d.Move(contract.AcceptButton.X + 30, contract.AcceptButton.Y + 4);
         d.Save("01_kauf_karriere_01924");
         d.Click(contract.CancelButton.X + 5, contract.CancelButton.Y + 3);
-        d.Click(10, 10);
-        d.Press(Key.Escape);
+        // Meldungen schließen nur per Linksklick (0x4C246), Kurzmeldungen laufen von selbst ab; danach verlässt Escape die
+        // Transferliste.
+        for (var guard = 0; d.Host.Current is not MainMenuScreen && guard < 40; guard++)
+        {
+            if (d.MessageOpen) d.CloseMessage();
+            else if (screen.Message.Visible) d.Frames(30);
+            else d.Press(Key.Escape);
+        }
 
         // 2. Saisonende
         for (var guard = 0; game.Phase != SeasonPhase.SeasonOver && guard < 40000; guard++)

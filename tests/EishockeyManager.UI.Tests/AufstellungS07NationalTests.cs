@@ -20,8 +20,8 @@ public sealed class AufstellungS07NationalTests
     [GameDataFact]
     public void WorldCupMatch_GamesCountAtKickOffAndPlacement_NotAgainAtEnd()
     {
-        var (d, _, coach) = NationalTeil4Tests.StartWorldCup();
-        var (_, match, side) = NationalTeil4Tests.RunToCoachMatch(d, coach);
+        var (d, _, coach) = NationalCoachLiveInterventionScreenTests.StartWorldCup();
+        var (_, match, side) = NationalCoachLiveInterventionScreenTests.RunToCoachMatch(d, coach);
         var team = side == 0 ? match.HomeTeam! : match.AwayTeam!;
         var nation = side == 0 ? match.Home : match.Away;
         var squad = team.Squad!;
