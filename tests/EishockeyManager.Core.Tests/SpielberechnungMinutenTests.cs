@@ -235,8 +235,9 @@ public class SpielberechnungMinutenTests
         // 0x9F5C wie in FullResult_EqualTeams (9 Züge) → 4:2; Glättung: lrandom(0, 3) = 1 (Heim bleibt), lrandom(0, 3) = 0 →
         // Gast + lrandom(0, 4) = 2; k = 0 → lrandom(0, 0); Gleichstand 4:4 → random(0, 2) je Seite bis ungleich.
         var random = new ScriptedRandom(0, 0, 1, 2, 1, 2, 0, 1, 0, 1, 0, 2, 0, 1, 1, 2, 0);
-        var result = OriginalMinutes.FastCupResult(new MatchSide(150), new MatchSide(150), true, true, false, false, knockOut: true, random);
-        Assert.Equal((6, 4, true), result);
+        // Früher über den Nur-Test-Mantel FastCupResult (K18); jetzt der Weg, den MatchEngine.Live.cs aufruft.
+        var (rh, ra, rs, _, _) = OriginalMinutes.FastCupResultWithTie(new MatchSide(150), new MatchSide(150), true, true, false, false, knockOut: true, random);
+        Assert.Equal((6, 4, true), (rh, ra, rs));
         Assert.True(random.Exhausted);
         Assert.Equal([(0, 3), (0, 3), (0, 4), (0, 0), (0, 2), (0, 2), (0, 2), (0, 2)], random.Calls[9..]);
     }
@@ -248,7 +249,7 @@ public class SpielberechnungMinutenTests
         int strong = 0, weak = 0;
         for (var i = 0; i < 2000; i++)
         {
-            var (h, a, shootout) = OriginalMinutes.FastCupResult(new MatchSide(120), new MatchSide(200), true, true, false, false, true, random);
+            var (h, a, shootout, _, _) = OriginalMinutes.FastCupResultWithTie(new MatchSide(120), new MatchSide(200), true, true, false, false, true, random);
             Assert.NotEqual(h, a);
             Assert.InRange(h, 0, 29);
             strong += a > h ? 1 : 0;

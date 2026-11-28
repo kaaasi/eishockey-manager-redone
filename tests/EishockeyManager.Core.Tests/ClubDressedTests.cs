@@ -116,7 +116,9 @@ public class ClubDressedTests
         var loaded = SaveGame.Load(bytes).Game!.Clubs[2];
         Assert.Equal(club.Dressed.Select(p => p.Id), loaded.Dressed.Select(p => p.Id));
         Assert.Equal(5, loaded.Tactics.Effort(1, ScoreSituation.Tied));
-        Assert.Equal(club.MatchStrength, loaded.MatchStrength);
+        // Früher über Club.MatchStrength (entfallener Ergebnisweg, Konzept K3): dieselben Bestandteile direkt.
+        Assert.Equal(club.ReferenceRating, loaded.ReferenceRating);
+        Assert.Equal(TeamStrength.Rating(club.Lineup), TeamStrength.Rating(loaded.Lineup));
         Assert.Equal(bytes, SaveGame.Save(SaveGame.Load(bytes).Game!));
     }
 

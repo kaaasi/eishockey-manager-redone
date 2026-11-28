@@ -76,6 +76,35 @@ public static class TestSeason
             Contracts.Negotiate(game, manager, p, 2, Contracts.Demand(p) + 100, false, demandFilled: true);
     }
 
+    /// <summary>
+    /// Über die Zeitleiste, bis der Tag <paramref name="day"/> gespielt ist (<see cref="GameState.Continue"/> spielt den aktuellen
+    /// Tag und die folgenden bis zum nächsten Managerspiel; danach ist <see cref="GameState.Day"/> der nächste offene Tag).
+    /// </summary>
+    public static void RunThroughDay(GameState game, int day)
+    {
+        while (game.Day <= day && game.Phase is SeasonPhase.Running or SeasonPhase.ClubSeasonOver)
+        {
+            game.Continue();
+            MessageLog.For(game).Collect(game);
+        }
+    }
+
+    /// <summary>
+    /// Zeitleiste, bis <paramref name="done"/> gilt – höchstens <paramref name="maxSteps"/> Aufrufe von
+    /// <see cref="GameState.Continue"/> und nur in der laufenden Saison (Abbruchzähler, AGENTS.md §5). Für Aufbauten wie „bis ein
+    /// Gebot auf dem eigenen Markt-Platz liegt“: Angebotswurf und Gebotsverfall laufen im Tagesablauf 0x07169 am Takttag
+    /// (<see cref="GameState.DailyRunMarket"/>), der Listenwechsel je Managerzug (<see cref="TransferMarket.ListChangeTurn"/>).
+    /// </summary>
+    public static bool RunUntil(GameState game, Func<bool> done, int maxSteps = 400)
+    {
+        for (var i = 0; i < maxSteps && !done() && game.Phase == SeasonPhase.Running; i++)
+        {
+            game.Continue();
+            MessageLog.For(game).Collect(game);
+        }
+        return done();
+    }
+
     /// <summary>Die ganze Hauptrunde.</summary>
     public static void PlayRegularSeason(GameState game)
     {

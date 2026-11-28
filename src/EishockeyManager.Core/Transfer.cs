@@ -139,12 +139,6 @@ public sealed partial class TransferMarket
     public const int MaxListings = 11;
 
     /// <summary>
-    /// Anzahl Spieler auf dem Markt zu Spielbeginn im Video (6). Seit Teil 5 ergibt sie sich aus dem Listenwechsel
-    /// (<see cref="ChangeList"/>, im Mittel 6,5); die Konstante bleibt als Bezugswert.
-    /// </summary>
-    public const int StartListings = 6;
-
-    /// <summary>
     /// Größe des Pools vertragsloser Spieler nach dem Saisonwechsel. [APPROX] Das Original führt keinen solchen
     /// Pool sichtbar; die Grenze hält ihn klein, Überzählige (die ältesten) beenden ihre Laufbahn.
     /// </summary>
@@ -169,7 +163,7 @@ public sealed partial class TransferMarket
     /// <summary>Offene Gebote für Spieler der Manager („ANGEBOT von …“).</summary>
     public IReadOnlyList<TransferBid> Bids => _bids;
 
-    /// <summary>Gespielte Ligaspieltage beim letzten Tagesablauf des Markts (<see cref="CatchUp"/>).</summary>
+    /// <summary>Gespielte Ligaspieltage beim letzten Markt-Teil der Zeitleiste (<see cref="ListChangeTurn"/>, <see cref="CatchUpManagerDay"/>).</summary>
     public int UpdatedDay { get; private set; }
 
     public static bool IsNationalTeam(Club club) => club.Index is >= 52 and < 64; // ClubCategory.NationalTeam
@@ -261,7 +255,7 @@ public sealed partial class TransferMarket
         if (_pool.Count == 0)
             BuildPool(game, random, TransferPoolLayout.Original, new HashSet<string>());
         if (!game.WorldOnly)
-            SeatStartSquads(game); // Spur pool (#743): Startkader in ihre Poolplätze (Datei 0x5B0BB–0x5B2BE); Import: keine vorgemerkt
+            SeatManagerSquads(game); // Spur pool (#743): Startkader in ihre Poolplätze (Datei 0x5B0BB–0x5B2BE); Import: keine vorgemerkt
         DistributePoolAtStart(game, random); // [ORIGINAL] 0x057E3 vor dem ersten Listenwechsel (Spur kader-transfer, Teil 5)
         ChangeList(game, random);
     }
@@ -285,45 +279,15 @@ public sealed partial class TransferMarket
     }
 
     /// <summary>
-    /// Markttag in einem Zug (<see cref="AdvanceDay"/>) mit <see cref="UpdatedDay"/> = gespielte Ligaspieltage. Nur Tests und
-    /// Werkzeuge (R688-09); die Zeitleiste ruft ihn seit #678 nicht mehr: Listenwechsel je Managerzug an Tagen mit Ereignis (<see cref="ListChangeTurn"/>, Datei
-    /// 0x54E65–0x54E7C), Angebotswurf und Gebotsverfall nur im Tagesablauf 0x07169 am Takttag (<see cref="CatchUpManagerDay"/>).
+    /// Angebotswurf für die Markt-Plätze von <paramref name="seller"/> (<see cref="CatchUpManagerDay"/>) nach dem Original
+    /// (<see cref="TransferRules.BidRoll"/>, Datei 0x072DD); bietender Verein nach 0x059B8 (<see cref="UnsolicitedOfferRules.Bidder"/>
+    /// mit Europapokal-Schalter 0, Aufruf 0x07364; A257). [ORIGINAL] Die Höhe (<see cref="TransferRules.BidAmountThirds"/>) wird
+    /// erst beim Anklicken gewürfelt (<see cref="RollBid"/>, 0x47347, A731). Den Verfall offener Gebote würfelt der Tagesablauf je
+    /// Markt-Platz (<c>GameState.DailyRunMarket</c>, Datei 0x07215–0x0726A, T03/A829).
     /// </summary>
-    public void CatchUp(GameState game)
+    private void AdvanceBids(GameState game, Random random, Manager seller)
     {
-        UpdatedDay = game.PlayedMatchDays;
-        AdvanceDay(game, game.Random);
-    }
-
-    /// <summary>
-    /// Ein Markttag in einem Zug (Tests, Werkzeuge; die Zeitleiste rechnet seit #678 <see cref="ListChangeTurn"/> und
-    /// <see cref="CatchUpManagerDay"/> getrennt): Listenwechsel mit <see cref="ListChangeRoll"/> ([ORIGINAL] 0x54E71). Angebote für eigene Spieler auf dem Markt
-    /// nach dem Original (<see cref="TransferRules.BidRoll"/>, Datei 0x072DD); bietender Verein nach 0x059B8
-    /// (<see cref="UnsolicitedOfferRules.Bidder"/> mit Europapokal-Schalter 0, Aufruf 0x07364; A257). [ORIGINAL] Die Höhe
-    /// (<see cref="TransferRules.BidAmountThirds"/>) wird erst beim Anklicken gewürfelt (<see cref="RollBid"/>, 0x47347, A731).
-    /// </summary>
-    public void AdvanceDay(GameState game, Random random)
-    {
-        if (ListChangeRoll(game.Managers.Count, random))
-            ChangeList(game, random);
-        AdvanceBids(game, random, expire: true, null);
-    }
-
-    /// <summary>
-    /// Verfall (<paramref name="expire"/>, alle Gebote) und Wurf der Gebote; <paramref name="only"/> = Wurf nur für die Markt-Plätze
-    /// dieses Managers.
-    /// </summary>
-    private void AdvanceBids(GameState game, Random random, bool expire, Manager? only)
-    {
-        // [ORIGINAL] Verfall offener Gebote an den Marktplätzen (Datei 0x07215–0x0726A): random(0, 3) = 0 löscht Bit 0x80 samt
-        // Meldung (Spur kader-transfer, Runde 12, U4). [APPROX] Nur noch Tests und Werkzeuge (AdvanceDay): ein Wurf je Gebot. Der
-        // Tagesablauf würfelt wie das Original für jeden Markt-Platz, auch ohne Gebot (GameState.DailyRunMarket, T03/A829).
-        if (expire)
-            foreach (var bid in _bids.ToList())
-                if (TransferRules.Random16(random, 0, 3) == 0)
-                    _bids.Remove(bid);
-
-        foreach (var listing in _listings.Where(l => l.Seller is not null && (only is null || l.Seller == only)).ToList())
+        foreach (var listing in _listings.Where(l => l.Seller == seller).ToList())
         {
             var value = game.PlayerValueOf(listing.Player, listing.From, PlayerValueKind.Price, random);
             if (!TransferRules.BidRoll(value, random) || _bids.Any(b => b.Listing == listing))

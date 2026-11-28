@@ -285,27 +285,12 @@ public sealed partial class GameState
             Series.UpdateRecords(manager.SeriesRecords, Clubs[manager.ClubIndex].SeriesCurrent);
     }
 
-    /// <summary>
-    /// Ein Tor eines Ligaspiels, Pokal- oder Play-off-Spiels in den Über-/Unterzahl-Zählern der beteiligten Manager
-    /// eintragen (<see cref="PowerPlay.Goal"/>); das Original zählt in jedem Spiel mit Managerbeteiligung (0xA484 prüft
-    /// keinen Wettbewerb). Die Minutenrechnung zählt selbst über <see cref="LiveTeam.PowerPlayCounts"/>
-    /// (<see cref="OriginalMinutes.GoalScored"/>, samt Ausnahme 5 gegen 6); diese Methode bleibt für Tests und Werkzeuge.
-    /// </summary>
-    public void CountPowerPlayGoal(Club home, Club away, int homeSkaters, int awaySkaters, bool homeScored)
-    {
-        foreach (var (club, isHome) in new[] { (home, true), (away, false) })
-            if (ManagerOf(club) is { } manager && PowerPlay.Goal(isHome, homeSkaters, awaySkaters, homeScored) is { } k)
-                manager.PowerPlayCounts[(int)k]++;
-    }
-
     /// <summary>[ORIGINAL] Saisonwechsel Datei 0x5588E–0x558B2: Über-/Unterzahl-Zähler aller Manager auf 0.</summary>
     internal void ResetPowerPlayStatistics()
     {
         foreach (var manager in Managers)
             Array.Clear(manager.PowerPlayCounts);
     }
-
-    private Manager? ManagerOf(Club club) => Managers.FirstOrDefault(m => m.ClubIndex == club.Index);
 
     /// <summary>
     /// „TORE/SPIEL“ bzw. „GEGENTORE/SPIEL“ in Zehnteln. [ORIGINAL] 0x2ECA0: Ligatabelle des Vereins (DGROUP 0x8270 + 0x50 ·

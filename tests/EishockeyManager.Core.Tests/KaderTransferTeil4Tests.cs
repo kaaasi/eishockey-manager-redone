@@ -11,11 +11,12 @@ namespace EishockeyManager.Core.Tests;
 public class KaderTransferTeil4Tests
 {
     /// <summary>
-    /// 0x54E65–0x54E7C: Der Tagesablauf würfelt den Listenwechsel jeden Tag, auch ohne Ligaspieltag. Früher tat ein Aufruf ohne
-    /// neuen Spieltag nichts.
+    /// 0x54E65–0x54E7C: Der Wurf des Listenwechsels im Managerzug (<see cref="TransferMarket.ListChangeTurn"/>) hängt nicht an
+    /// einem neuen Ligaspieltag. Früher tat ein Aufruf ohne neuen Spieltag nichts. Die Zeitleiste über eine Saison prüft
+    /// <see cref="Season_MarketRunsEveryCalendarDay"/>.
     /// </summary>
     [Fact]
-    public void CatchUp_ChangesListOnDaysWithoutMatch()
+    public void ListChangeTurn_ChangesListWithoutMatchDay()
     {
         var game = TestGames.Create();
         var market = game.TransferMarket;
@@ -24,7 +25,7 @@ public class KaderTransferTeil4Tests
         for (var day = 0; day < 40; day++)
         {
             var previous = market.Listings.Select(l => l.Player.Id).ToArray();
-            market.CatchUp(game);
+            market.ListChangeTurn(game);
             if (!previous.SequenceEqual(market.Listings.Select(l => l.Player.Id)))
                 changes++;
         }
@@ -91,8 +92,7 @@ public class KaderTransferTeil4Tests
         var club = game.Clubs[manager.ClubIndex];
         foreach (var player in club.Players.Where(p => p.Role == PlayerRole.Forward).Take(TransferMarket.MaxOwnListings).ToList())
             Assert.Equal(TransferResult.Accepted, market.Offer(game, manager, player));
-        for (var day = 0; day < 400 && market.Bids.Count < TransferMarket.MaxOwnListings; day++)
-            market.AdvanceDay(game, game.Random);
+        TestSeason.RunUntil(game, () => market.Bids.Count >= TransferMarket.MaxOwnListings);
 
         Assert.NotEmpty(market.Bids);
         var differences = new List<int>();

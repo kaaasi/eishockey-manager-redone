@@ -56,8 +56,8 @@ public class KaderStartTeil2cScreenTests
         var (game, screen, player) = Open();
         var manager = game.Managers[0];
         Assert.Equal(TransferResult.Accepted, game.TransferMarket.Offer(game, manager, player));
-        for (var d = 0; game.TransferMarket.Bids.Count == 0 && d < 500; d++)
-            game.TransferMarket.AdvanceDay(game, game.Random);
+        for (var d = 0; game.TransferMarket.Bids.Count == 0 && d < 500 && game.Phase == SeasonPhase.Running; d++)
+            game.Continue(); // Zeitleiste: Angebotswurf am Takttag (GameState.DailyRunMarket)
         Assert.NotEmpty(game.TransferMarket.Bids);
         var i = game.TransferMarket.Listings.ToList().FindIndex(l => l.Player == player);
 

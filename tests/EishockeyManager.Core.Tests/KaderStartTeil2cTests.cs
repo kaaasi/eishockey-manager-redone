@@ -118,8 +118,7 @@ public class KaderStartTeil2cTests
         var (game, manager, club) = Create();
         var p = ListableDefender(club);
         Assert.Equal(TransferResult.Accepted, game.TransferMarket.Offer(game, manager, p));
-        for (var i = 0; game.TransferMarket.Bids.Count == 0 && i < 500; i++)
-            game.TransferMarket.AdvanceDay(game, game.Random);
+        TestSeason.RunUntil(game, () => game.TransferMarket.Bids.Count > 0);
         var bid = Assert.Single(game.TransferMarket.Bids);
         var money = manager.Money;
 

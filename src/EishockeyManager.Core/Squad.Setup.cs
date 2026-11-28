@@ -132,7 +132,7 @@ public static class SquadSetup
             club.Lineup.AutoFill(club.Players);
             club.ReferenceRating = TeamStrength.Rating(club.Lineup);
         }
-        game.TransferMarket.SeatStartSquads(game);
+        game.TransferMarket.SeatManagerSquads(game);
     }
 
     /// <summary>

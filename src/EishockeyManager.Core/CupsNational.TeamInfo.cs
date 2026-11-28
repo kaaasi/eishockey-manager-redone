@@ -99,15 +99,6 @@ public static class TeamRecords
             Update(words, opponents, away, TeamRecordKind.AwayWin, hg, ag, true, 1, 1, home);
         }
     }
-
-    /// <summary>
-    /// [ORIGINAL] Datei 0x4F5A8 (Manager, Verein, Seite, lo, hi): zehn Bytes je Manager und Gegner, Byte = hi · 16 + lo (jedes
-    /// Ergebnis in Halbbytes). Länder (Verein ≥ erstes Land) füllen eine Liste: erst die geraden Plätze 0, 2 … 8, dann die
-    /// ungeraden 1 … 9; ist alles voll, rückt die Folge 0, 2, 4, 6, 8, 1, 3, 5, 7, 9 um eins nach vorn und der neue Wert
-    /// steht auf Platz 9. Vereine haben je Seite fünf Plätze (gerade = Seite 0, ungerade = Seite 1), voll → nach vorn.
-    /// </summary>
-    public static void EnterHeadToHead(int[] list, int offset, bool nation, int side, int lo, int hi) =>
-        MeetingHistory.RecordAt(list, offset, nation, side, lo, hi); // ein Schreiber für Liga und Länder (Integration Runde 9)
 }
 
 /// <summary>
@@ -116,7 +107,7 @@ public static class TeamRecords
 /// <remarks>
 /// <list type="bullet">
 /// <item>[ORIGINAL] Rekorde DGROUP 0xBD0F/0xBB0F (<see cref="TeamRecords.Enter"/>), Kopf-an-Kopf-Liste DGROUP 0xAB7B + 0x280 ·
-///   Manager + 10 · Verein (<see cref="TeamRecords.EnterHeadToHead"/>, beim Spielstart 0xFF, Datei 0x43726), Bilanzzeichen
+///   Manager + 10 · Verein (<see cref="MeetingHistory.RecordAt"/>, beim Spielstart 0xFF, Datei 0x43726), Bilanzzeichen
 ///   DGROUP 0x825E (acht Zeichen, jedes Spiel schiebt nach links, 0x4F4F4). Geschrieben aus 0x50283: Kopf-an-Kopf für jedes
 ///   Spiel eines Teams mit Manager (Vereinsfeld 0x16) und Deutschlands (DGROUP 0x6AC → Platz 0), Rekorde, Serien und
 ///   Bilanz nur bei Code 7 (Liga) und 8 (WM-Gruppe).</item>

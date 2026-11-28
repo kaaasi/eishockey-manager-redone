@@ -76,8 +76,7 @@ public class SaisonGeldT03Tests
             var offered = game.Clubs[other.ClubIndex].Players.Where(p => p.Role == PlayerRole.Forward).Take(2).ToList();
             foreach (var p in offered)
                 game.TransferMarket.Offer(game, other, p);
-            for (var day = 0; day < 400 && game.TransferMarket.Bids.Count < 2; day++)
-                game.TransferMarket.AdvanceDay(game, game.Random);
+            TestSeason.RunUntil(game, () => game.TransferMarket.Bids.Count >= 2);
             if (game.TransferMarket.Bids.Count < 2)
                 continue;
             var day0 = game.CurrentDay;

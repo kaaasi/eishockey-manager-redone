@@ -34,7 +34,7 @@ public sealed partial class TransferMarket
         ArgumentNullException.ThrowIfNull(manager);
         UpdatedDay = game.PlayedMatchDays;
         // Gebotsverfall je Markt-Platz schon in der ersten Schleife von 0x07169 (GameState.DailyRunMarket, Spur saison-geld T03/A829).
-        AdvanceBids(game, game.Random, expire: false, manager);
+        AdvanceBids(game, game.Random, manager);
     }
 
     /// <summary>

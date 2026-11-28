@@ -102,8 +102,7 @@ public class TransferVertraegeKomplettTeil4Tests
         var club = game.Clubs[manager.ClubIndex];
         var bidPlayer = club.Players.First(p => p.Role == PlayerRole.Forward);
         game.TransferMarket.Offer(game, manager, bidPlayer);
-        for (var day = 0; day < 40 && game.TransferMarket.Bids.Count == 0; day++)
-            game.TransferMarket.AdvanceDay(game, game.Random);
+        TestSeason.RunUntil(game, () => game.TransferMarket.Bids.Count > 0);
         Assert.Single(game.TransferMarket.Bids);
         // A380: Der Spieler auf der Liste verlässt den Kader; im Original trägt nur der Markt-Platz Bit 0x80. Der Fall
         // „Kaderplatz mit Gebot“ bleibt für Altstände (vor A380 noch im Kader) erreichbar und wird so nachgestellt.

@@ -553,28 +553,19 @@ public sealed partial class TransferMarket
         beforePlacement && setup.ClubIndex is not null ? setup.StartLeague : club.League ?? setup.StartLeague;
 
     /// <summary>
-    /// Spur pool (#743): Spieler der Managerkader in ihre Poolplätze einsetzen, Besitzer „vergeben“; danach steht jeder Spieler
-    /// mit Kaderplatz in einem der Plätze 1–199 (<c>docs/formate/spielstand-original.md</c>, „Managerkader im Spielerpool“).
+    /// Spur pool (#743): Spieler der Managerkader in ihre Poolplätze einsetzen, Besitzer „vergeben“ (Spielstart, nur die
+    /// vorgemerkten Plätze); danach steht jeder Spieler mit Kaderplatz in einem der Plätze 1–199
+    /// (<c>docs/formate/spielstand-original.md</c>, „Managerkader im Spielerpool“).
     /// <list type="number">
     /// <item>[ORIGINAL] Startkader: der k-te Spieler einer Art im Kader auf den k-ten Platz dieser Art (<see cref="ManagerSquadIndices"/>,
     ///   Datei 0x5B0BB–0x5B2BE; FILE01: Satz 0 verweist in Platzfolge auf diese Indizes).</item>
     /// <item>[APPROX] Übrige Platzhalter (kleinerer Kader) werden freie Plätze „POOLSPIELER n“, die das Umbenennen neu benennt.</item>
-    /// <item>[APPROX] Kaderspieler ohne Platz (Spielstände vor dieser Spur, Managerwechsel zu einem Computerverein, dessen Kader im
-    ///   Remake Spieler hat) bekommen den ersten freien Ligaplatz ihrer Art (nicht auf dem Markt, nicht der erste Platz der Art);
-    ///   dessen Poolspieler entfällt. Ist keiner frei, bleibt der Spieler ohne Platz.</item>
     /// </list>
-    /// Spieler unterscheidet das Remake über ihre ID; der Platz übernimmt den Kaderspieler selbst (Werte, Alter, Name).
+    /// Spieler unterscheidet das Remake über ihre ID; der Platz übernimmt den Kaderspieler selbst (Werte, Alter, Name). Der frühere
+    /// dritte Schritt für Kaderspieler ohne Platz (Altstände vor Spur pool) hatte seit dem Entfallen der Migrationen keinen
+    /// Aufrufer mehr und ist entfallen (#1063).
     /// </summary>
-    public void SeatManagerSquads(GameState game)
-    {
-        if (_pool.Count == 0 || game.WorldOnly)
-            return;
-        var seated = SeatStartSquads(game);
-        SeatLoosePlayers(game, seated);
-    }
-
-    /// <summary>Punkte 1 und 2 von <see cref="SeatManagerSquads"/>: nur die vorgemerkten Plätze (Spielstart).</summary>
-    internal HashSet<Player> SeatStartSquads(GameState game)
+    internal void SeatManagerSquads(GameState game)
     {
         var layout = PoolLayout;
         var seated = new HashSet<Player>(_pool.Select(s => s.Player), ReferenceEqualityComparer.Instance);
@@ -606,26 +597,6 @@ public sealed partial class TransferMarket
                 game.AssignPlayerId(slot.Player);
             slot.Owner = PoolOwner.Free;
         }
-        return seated;
-    }
-
-    /// <summary>Punkt 3 von <see cref="SeatManagerSquads"/>: Kaderspieler ohne Platz auf freie Ligaplätze ihrer Art.</summary>
-    private void SeatLoosePlayers(GameState game, HashSet<Player> seated)
-    {
-        var layout = PoolLayout;
-        var listed = _listings.Select(l => l.Player).ToHashSet(ReferenceEqualityComparer.Instance);
-        var (defenders, forwards) = layout.LeagueRoleStarts;
-        var spare = _pool.Where(s => s.Owner == PoolOwner.Free && s.Index <= layout.LeagueLast && !listed.Contains(s.Player))
-            .OrderBy(s => s.Index == 1 || s.Index == defenders || s.Index == forwards ? 1 : 0).ThenBy(s => s.Index).ToList();
-        foreach (var club in game.Managers.Where(m => !m.Dismissed).Select(m => m.ClubIndex).Distinct())
-            foreach (var player in game.Clubs[club].Players.Where(p => !seated.Contains(p)).ToList())
-            {
-                var at = spare.FindIndex(s => s.Player.Role == player.Role);
-                if (at < 0)
-                    continue; // [APPROX] kein freier Ligaplatz dieser Art
-                Seat(spare[at], player, club, seated);
-                spare.RemoveAt(at);
-            }
     }
 
     private static void Seat(PoolSlot slot, Player player, int club, HashSet<Player> seated)

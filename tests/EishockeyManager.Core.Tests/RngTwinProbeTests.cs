@@ -345,10 +345,13 @@ public class RngTwinProbeTests
     // Pokaltermine (0x37A62, #1032) und Stadionschäden je Manager (0x3CFA0, Datei 0x3D330, #1034) zusammen ergeben einen anderen
     // Zufallsverlauf als jede Änderung allein. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von 9d9ae39
     // (main) bzw. 5d491e5 (alter Head) → deren Werte, hier rot.
-    [InlineData(false, 3, "65A0E50065956F77")]
-    [InlineData(true, 3, "DDE0FFE877A6380D")]
-    [InlineData(false, 11, "710A8EE6A71931AF")]
-    [InlineData(true, 11, "F14C86ECDF1BFE90")]
+    // Aufräumen #936 (Konzept K3/K17, R15-E2 = C): nur der Abdruck – die berechneten Eigenschaften Club.MatchStrength und
+    // Player.RoleName (toter Ergebnisweg bzw. ohne Verweis) sind entfallen und stehen nicht mehr im Abdruck. Spielverlauf gleich:
+    // main f9c4846 mit beiden Namen in Excluded liefert genau diese Werte.
+    [InlineData(false, 3, "B22ACCCF47A568FC")]
+    [InlineData(true, 3, "45DF50CD02EB4ECC")]
+    [InlineData(false, 11, "674EC6174129A18E")]
+    [InlineData(true, 11, "5EBDF1D25BFF3C7B")]
     public void FourSeasonChanges_FingerprintUnchangedBySerializableGenerator(bool active, int seed, string expected)
     {
         var game = TestGames.Create(seed);
@@ -485,8 +488,11 @@ public class RngTwinProbeTests
     // Pokaltermine (0x37A62, #1032) und Stadionschäden je Manager (0x3CFA0, Datei 0x3D330, #1034) zusammen ergeben einen anderen
     // Zufallsverlauf als jede Änderung allein. Kein Originalsollwert, nur interner Abdruck. Rückschaltprobe: src/ von 9d9ae39
     // (main) bzw. 5d491e5 (alter Head) → deren Werte, hier rot.
-    [InlineData(false, "1504F706A00F8EDE")]
-    [InlineData(true, "7505E5A6507D17D3")]
+    // Aufräumen #936 (Konzept K3/K17, R15-E2 = C): nur der Abdruck – die berechneten Eigenschaften Club.MatchStrength und
+    // Player.RoleName (toter Ergebnisweg bzw. ohne Verweis) sind entfallen und stehen nicht mehr im Abdruck. Spielverlauf gleich:
+    // main f9c4846 mit beiden Namen in Excluded liefert genau diese Werte.
+    [InlineData(false, "AF4A4AB0FD120252")]
+    [InlineData(true, "7C115BBF256636AE")]
     public void FourSeasonChanges_OriginalDatabase_FingerprintUnchanged(bool active, string expected)
     {
         var setup = new GameSetup();

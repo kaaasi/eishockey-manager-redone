@@ -69,8 +69,7 @@ public class WaveBReviewRegressionTests
         Assert.Equal(TransferResult.Accepted, market.Offer(game, manager, defenders[1]));
         Assert.Equal(TransferResult.Accepted, market.Withdraw(market.ListingOf(defenders[1])!));
         Assert.Equal(4, club.Players.Count(p => p.Role == PlayerRole.Defender));
-        for (var i = 0; market.Bids.Count(b => b.Listing.Seller == manager) < 1 && i < 500; i++)
-            market.AdvanceDay(game, game.Random);
+        TestSeason.RunUntil(game, () => market.Bids.Count(b => b.Listing.Seller == manager) >= 1);
         var bid = Assert.Single(market.Bids, b => b.Listing.Seller == manager);
 
         var home = manager.ClubIndex;

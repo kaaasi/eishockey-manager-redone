@@ -11,8 +11,11 @@ public class TransferTransactionRegressionTests
         var club = game.Clubs[game.ActiveManager.ClubIndex];
         Assert.Equal(TransferResult.Accepted,
             market.Offer(game, game.ActiveManager, club.Players.First(p => p.Role == PlayerRole.Forward)));
-        for (var i = 0; market.Bids.Count == 0 && i < 100; i++)
-            market.AdvanceDay(game, game.Random);
+        if (game.Phase == SeasonPhase.Running)
+            TestSeason.RunUntil(game, () => market.Bids.Count > 0);
+        else // nach dem Saisonende (LifecycleRegressionTests) läuft kein Tag mehr: Markt-Teil des Tageslaufs 0x07169 direkt
+            for (var i = 0; market.Bids.Count == 0 && i < 100; i++)
+                market.CatchUpManagerDay(game, game.ActiveManager);
         return Assert.Single(market.Bids);
     }
 

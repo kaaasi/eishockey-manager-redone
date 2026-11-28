@@ -34,7 +34,8 @@ public class SquadTests
         foreach (var club in game.Clubs.Where(c => c.League is not null))
         {
             Assert.True(club.Players.Count >= 20, club.Name);
-            Assert.Equal(club.Strength, club.MatchStrength);
+            // Früher Club.MatchStrength == Strength (entfallener Ergebnisweg, Konzept K3): Bezugspunkt = Teamwert der Aufstellung.
+            Assert.Equal(TeamStrength.Rating(club.Lineup), club.ReferenceRating);
             Assert.All(club.Players, p =>
             {
                 Assert.InRange(p.Age, SquadSetup.MinAge, SquadSetup.MaxAge);
@@ -57,16 +58,18 @@ public class SquadTests
     [Fact]
     public void WeakerLineup_LowersMatchStrength()
     {
+        // Früher über Club.MatchStrength = Strength + Rating − ReferenceRating (entfallener Ergebnisweg, Konzept K3); geprüft
+        // wird jetzt der Teamwert der Aufstellung selbst, dessen Veränderung MatchStrength abbildete.
         var club = TestGames.Create().Clubs[2];
-        var before = club.MatchStrength;
+        var before = TeamStrength.Rating(club.Lineup);
         club.Lineup.Clear(LineupSlot.Goalkeeper);
-        Assert.True(club.MatchStrength < before);
+        Assert.True(TeamStrength.Rating(club.Lineup) < before);
         club.Lineup.FillGaps(club.Players);
-        Assert.Equal(before, club.MatchStrength);
+        Assert.Equal(before, TeamStrength.Rating(club.Lineup));
 
         // Reservespieler in Block 4 entlasten: mindestens gleich stark
         club.Lineup.FillGaps(club.Players, blocks: Lineup.Blocks);
-        Assert.True(club.MatchStrength >= before - 1);
+        Assert.True(TeamStrength.Rating(club.Lineup) >= before - 1);
     }
 
     [Fact]

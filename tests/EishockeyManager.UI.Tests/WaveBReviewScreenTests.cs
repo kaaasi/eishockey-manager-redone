@@ -26,8 +26,8 @@ public class WaveBReviewScreenTests
         Assert.Equal(6, club.Players.Count(p => p.Role == PlayerRole.Defender));
         foreach (var defender in club.Players.Where(p => p.Role == PlayerRole.Defender).Take(2).ToArray())
             Assert.Equal(TransferResult.Accepted, market.Offer(game, manager, defender));
-        for (var i = 0; market.Bids.Count(b => b.Listing.Seller == manager) < 2 && i < 500; i++)
-            market.AdvanceDay(game, game.Random);
+        for (var i = 0; market.Bids.Count(b => b.Listing.Seller == manager) < 2 && i < 500 && game.Phase == SeasonPhase.Running; i++)
+            game.Continue(); // Zeitleiste: Angebotswurf am Takttag (GameState.DailyRunMarket)
         var bids = market.Bids.Where(b => b.Listing.Seller == manager).ToArray();
         Assert.Equal(2, bids.Length);
 
