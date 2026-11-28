@@ -137,6 +137,44 @@ public class SpielwertungVorbereitungTests
     }
 
     /// <summary>
+    /// #978: Eigener Fall Europapokalfeld. [ORIGINAL] Das Wettbewerbsfeld des Spiels ([bp+0xA]) ist beim Europapokal 8 (Datei
+    /// 0x54918–0x5499E): Der Aufgestellte zählt das Spiel im Europapokalfeld, nicht im Pokal- oder Ligafeld des Kaderplatzes.
+    /// Der nicht spielfähige Gast zählt nichts; die Belastung des Heimvereins wird wie beim Ligaspiel begrenzt.
+    /// </summary>
+    [Fact]
+    public void AwayShortHanded_LowerIndexHomeManager_EuropeanCup_CountsInEuropeField()
+    {
+        var game = TwoManagers(2, 3);
+        var (m0, m1) = (game.Managers[0], game.Managers[1]);
+        var (home, away) = (game.Clubs[m0.ClubIndex], game.Clubs[m1.ClubIndex]);
+        away.ForfeitsMatch = true;
+        var lineup = home.Lineup.Players.ToHashSet();
+        Assert.NotEmpty(lineup);
+        var bench = home.Players.Where(p => !lineup.Contains(p)).ToList();
+        Assert.NotEmpty(bench);
+        var (low, high) = (home.Players.First(lineup.Contains), bench[0]);
+        (low.Strain, high.Strain) = (10, 200);
+        foreach (var p in away.Players)
+            p.Strain = 10;
+        var homeBefore = home.Players.ToDictionary(p => p, p => (p.Games, p.CupGames, p.EuropeGames));
+        var awayBefore = away.Players.Select(p => (p.Games, p.CupGames, p.EuropeGames)).ToList();
+
+        var report = MatchEngine.PlayWithEvents(game, home, away, MatchCompetition.EuropeanCup, knockOut: false, new Random(1));
+        Assert.True(report.Forfeit);
+
+        foreach (var p in home.Players)
+        {
+            var (games, cupGames, europeGames) = homeBefore[p];
+            var counted = lineup.Contains(p) ? 1 : 0;
+            Assert.Equal((games + counted, cupGames, europeGames + counted), (p.Games, p.CupGames, p.EuropeGames));
+            Assert.InRange(p.Strain, TrainingRules.MinStrain, TrainingRules.MaxStrain);
+        }
+        Assert.Equal((TrainingRules.MinStrain, TrainingRules.MaxStrain), (low.Strain, high.Strain));
+        Assert.Equal(awayBefore, away.Players.Select(p => (p.Games, p.CupGames, p.EuropeGames)).ToList());
+        Assert.All(away.Players, p => Assert.Equal(10, p.Strain));
+    }
+
+    /// <summary>
     /// A961: Hat der nicht spielfähige Manager den kleineren Index, endet 0x544C0 bei ihm (Datei 0x54589 bzw. 0x547AA): Kein Verein
     /// der Paarung zählt Spiele oder begrenzt die Belastung.
     /// </summary>
