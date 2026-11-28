@@ -109,7 +109,7 @@ public sealed partial class GameState
         // DGROUP 0x4C4E bis zum nächsten 0x952C. Die Form 0x1C/0x1D steht im Vereinsplatz (ApplyTeamValues).
         _germanyRatings = (nationRecord[0x18], nationRecord[0x1A], nationRecord[0x19], nationRecord[0x1B]);
         // A097 (Spur national Teil 1): [ORIGINAL] Über-/Unterzahl-Zähler des Satzes 5 (965B + 5 · 0x1AF + 0x177, sechs Wörter wie bei
-        // den Vereinsmanagern, OriginalImport.Rest.cs).
+        // den Vereinsmanagern, OriginalImport.ManagerAreas.cs).
         var coachRecord = save.Block("965B").AsSpan(OriginalImport.NationalRecord * OriginalSaveGame.ManagerRecordLength,
             OriginalSaveGame.ManagerRecordLength);
         for (var k = 0; k < coach.PowerPlayCounts.Length; k++)

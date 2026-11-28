@@ -15,7 +15,8 @@ namespace EishockeyManager.Core;
 /// </para>
 /// <para>
 /// [APPROX] Was das HOK nicht oder nicht belegt führt (Feldkarte Status N/U) und was der Import noch nicht übernimmt
-/// (Teil 4a übernimmt Börse, Werbung, Training, Taktik, Serien, Darlehen in <c>OriginalImport.Rest.cs</c>, Teil 4b Pool und
+/// (Teil 4a übernimmt Börse, Werbung, Training, Taktik, Serien, Darlehen in <c>OriginalImport.ManagerAreas.cs</c>, <c>.Finance.cs</c>,
+/// <c>.Tactics.cs</c> und <c>.Records.cs</c>, Teil 4b Pool und
 /// Markt, Nationalkader und Nachrichten in <c>OriginalImport.Market.cs</c>, <c>.National.cs</c>, <c>.Messages.cs</c>, Teil 4c
 /// Pokale und WM in <c>OriginalImport.Cups.cs</c>), ergibt sich aus dem Nachspielen: es ist
 /// ein gültiger Remake-Zustand am selben Tag, aber nicht der des Originals. Zufall aus neuer Saat (Regel 6).
@@ -346,7 +347,7 @@ public sealed partial class GameState
             // Gehalt und Preis (FILE20/FILE21 `emtool hok dump`: 25 Plätze, Werte über den Saisonwechsel unverändert).
             ApplySquad(save, Clubs[Managers[m].ClubIndex], m, clubOf, foreigners, squadPlayers);
         }
-        ApplyOriginalRest(save, clubOf); // Teil 4a (OriginalImport.Rest.cs)
+        ApplyOriginalRest(save, clubOf); // Teil 4a (OriginalImport.ManagerAreas.cs)
         var pool = ApplyPoolAndMarket(save, clubOf, squadPlayers, foreigners); // Teil 4b (OriginalImport.Market.cs)
         ApplyNationalSquad(save, clubOf, pool, squadPlayers); // Teil 4b (OriginalImport.National.cs)
         ApplyMessages(save, pool); // Teil 4b (OriginalImport.Messages.cs)
@@ -360,7 +361,7 @@ public sealed partial class GameState
             CurrentManager = current;
             BeginManagerTurn();
         }
-        ApplyLoadLineupValues(save); // #930 (OriginalImport.Rest.cs)
+        ApplyLoadLineupValues(save); // #930 (OriginalImport.Tactics.cs)
     }
 
     /// <summary>
@@ -418,7 +419,7 @@ public sealed partial class GameState
         // Restwochen +0x128 + Projekt 0–10 (FILE43: 8, FILE44A: 1); Projekt im Bau, wenn das Ziel ≠ 0 ist (Datei 0x3DF1F–0x3DF81).
         for (var p = 0; p < Stadium.ProjectCount; p++)
             stadium.ImportConstruction(p, p < Stadium.FeatureCount ? record[0x117 + 2 * p] : 0, record[0x128 + p]);
-        // Bank und Managerdarlehen: ApplyLoans (Teil 4a, OriginalImport.Rest.cs).
+        // Bank und Managerdarlehen: ApplyLoans (Teil 4a, OriginalImport.Finance.cs).
         finance.SponsorRating = BinaryPrimitives.ReadInt16LittleEndian(record[0x173..]);
         // [ORIGINAL] Zuschauerstatistik (R14HI-04; Fortschreibung Datei 0x54664–0x54760, Felder als DGROUP bei Manager 0): Heimspiele
         // 0x9748 (+0xED), Kurve 0x9759 + n (+0xFE, Zuschauer / 1000, 22 Plätze), Summe 0x97DE (+0x183), Rekord 0x97E2 (+0x187) mit
@@ -527,7 +528,7 @@ public sealed partial class GameState
         }
         // Spur hok-export (Rundreise): Eingesetzte genau wie +0x0A – erst die von der Automatik zusätzlich Eingesetzten herausnehmen,
         // sonst ist die Zahl schon voll (22) und der Ersatz des HOK käme nicht hinein. Die Einstellung „automatisch aufstellen“
-        // setzt danach ApplyTactics aus 0x375 (OriginalImport.Rest.cs).
+        // setzt danach ApplyTactics aus 0x375 (OriginalImport.Tactics.cs).
         foreach (var (player, _, _, dressed) in players)
             if (!dressed && club.IsDressed(player) && !club.Lineup.Contains(player))
                 club.Undress(player);
