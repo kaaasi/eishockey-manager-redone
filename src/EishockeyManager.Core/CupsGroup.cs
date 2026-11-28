@@ -84,8 +84,8 @@ public sealed class CupGroup(int number, IReadOnlyList<int> teams)
             {
                 if (!rows.TryGetValue(home, out var h) || !rows.TryGetValue(away, out var a))
                     continue;
-                Add(h, homeGoals, awayGoals, true);
-                Add(a, awayGoals, homeGoals, false);
+                h.AddResult(homeGoals, awayGoals, true);
+                a.AddResult(awayGoals, homeGoals, false);
             }
             LeagueTable.ExchangeSort(order, (b, a) => Displaces(rows[b], rows[a]));
         }
@@ -105,18 +105,6 @@ public sealed class CupGroup(int number, IReadOnlyList<int> teams)
         return a.GoalsFor <= b.GoalsFor;
     }
 
-    private static void Add(TableRow row, int goalsFor, int goalsAgainst, bool home)
-    {
-        row.GoalsFor += goalsFor;
-        row.GoalsAgainst += goalsAgainst;
-        char c;
-        if (goalsFor > goalsAgainst) { row.Wins++; c = 'S'; }
-        else if (goalsFor == goalsAgainst) { row.Draws++; c = 'U'; }
-        else { row.Losses++; c = 'N'; }
-        // [ORIGINAL] wie 0x50283 (DGROUP 0x7CE „sSnNuU“): Heimverein klein, Gast groß. Eine Bilanz führt das Original nur
-        // für Liga und WM (Code 7/8); die Gruppenansichten zeigen sie nicht.
-        row.Form.Add(home ? char.ToLowerInvariant(c) : c);
-    }
 
     /// <summary>Spielt Runde <paramref name="round"/>: Unentschieden sind möglich (Gruppenspiel, kein Penaltyschießen).</summary>
     public IReadOnlyList<KnockoutMatch> Play(int round, int day, GameState game, Random random)

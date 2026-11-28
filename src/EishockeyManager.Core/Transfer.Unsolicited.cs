@@ -144,7 +144,7 @@ public sealed partial class GameState
 
     /// <summary>Stärke eines Vereins für <see cref="UnsolicitedOfferRules.Bidder"/>; null = Managerverein bzw. unbekannt.</summary>
     internal int? BidderStrength(int index) =>
-        Managers.Any(m => m.ClubIndex == index) || Clubs.FirstOrDefault(c => c.Index == index) is not { } club
+        IsClubManaged(index) || Clubs.FirstOrDefault(c => c.Index == index) is not { } club
             ? null
             : UnsolicitedOfferRules.ClubStrength(club);
 
@@ -187,7 +187,7 @@ public sealed partial class GameState
         if (buyer.Index < UnsolicitedOfferRules.FirstForeignClub)
             StrengthenBuyer(buyer, p);
         if (buyer.Index < UnsolicitedOfferRules.FirstForeignClub && !TransferMarket.IsNationalTeam(buyer)
-            && buyer.Players.Count < PlayerFactory.MaxNumber && Managers.All(m => m.ClubIndex != buyer.Index))
+            && buyer.Players.Count < PlayerFactory.MaxNumber && !IsClubManaged(buyer.Index))
             PlayerFactory.Join(buyer, p, SquadSetup.StartContractYears, loan: false, managerSquad: false);
         else
             TransferMarket.Release(club, p);

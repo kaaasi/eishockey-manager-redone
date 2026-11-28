@@ -301,7 +301,7 @@ public sealed partial class TransferMarket
         }
     }
 
-    private static bool IsManaged(GameState game, Club club) => game.Managers.Any(m => m.ClubIndex == club.Index);
+    private static bool IsManaged(GameState game, Club club) => game.IsClubManaged(club.Index);
 
     /// <summary>
     /// „Schon 29 Mann / im Team.“ beim Kauf oder bei der Leihe eines Spielers aus <paramref name="playerClub"/>. [ORIGINAL]

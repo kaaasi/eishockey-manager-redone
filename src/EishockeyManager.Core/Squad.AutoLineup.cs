@@ -207,7 +207,7 @@ public sealed partial class GameState
     public void ApplyAutoLineups()
     {
         foreach (var club in Clubs)
-            if (Managers.Any(m => m.ClubIndex == club.Index))
+            if (IsClubManaged(club.Index))
                 club.ApplyAutoLineup();
     }
 }

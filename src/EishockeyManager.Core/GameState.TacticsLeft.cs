@@ -16,7 +16,7 @@ public sealed partial class GameState
     public void OnTacticsLeft(Club club)
     {
         ArgumentNullException.ThrowIfNull(club);
-        if (club.Index >= NationalTeams.First || !ActiveManagers.Any(m => m.ClubIndex == club.Index))
+        if (club.Index >= NationalTeams.First || !IsClubActivelyManaged(club.Index))
             return;
         var tactics = club.Tactics;
         tactics.RecordMatchFields(

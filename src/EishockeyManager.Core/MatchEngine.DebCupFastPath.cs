@@ -30,10 +30,22 @@ public static partial class MatchEngine
         var tie = round.FirstOrDefault(t => !t.IsDecided && t.Involves(home.Index) && t.Involves(away.Index));
         if (tie is null)
             return false;
-        var number = tie.Games.Count;
-        var computed = round.Count(t => t.Games.Count > number); // an diesem Termin schon gerechnet
-        if (computed >= DebCupExtraRollPairings)
+        return OpenPairingStillTied(round, tie, DebCupExtraRollPairings, t => t.IsDecided, t => t.Games.Count);
+    }
+
+    /// <summary>
+    /// Gemeinsame Prüfung der Markierung 0x32AA3 für DEB-Pokal (<see cref="DebCupExtraRoll"/>) und Play-offs
+    /// (<see cref="FirstPlayoffPairingOfDate"/>): true, wenn an diesem Termin weniger als <paramref name="limit"/> Paarungen der
+    /// Runde schon gerechnet sind (mehr Spiele als <paramref name="pairing"/>) und noch eine andere offene Paarung mit gleich vielen
+    /// Spielen aussteht.
+    /// </summary>
+    private static bool OpenPairingStillTied<T>(IReadOnlyList<T> round, T pairing, int limit, Func<T, bool> isDecided,
+        Func<T, int> games) where T : class
+    {
+        var number = games(pairing);
+        var computed = round.Count(t => games(t) > number); // an diesem Termin schon gerechnet
+        if (computed >= limit)
             return false;
-        return round.Any(t => t != tie && !t.IsDecided && t.Games.Count == number);
+        return round.Any(t => t != pairing && !isDecided(t) && games(t) == number);
     }
 }

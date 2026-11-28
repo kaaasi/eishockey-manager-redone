@@ -288,7 +288,7 @@ public sealed partial class GameState
     public void OnLineupLeft(Club club)
     {
         ArgumentNullException.ThrowIfNull(club);
-        if (WorldOnly || club.Index >= NationalTeams.First || !ActiveManagers.Any(m => m.ClubIndex == club.Index))
+        if (WorldOnly || club.Index >= NationalTeams.First || !IsClubActivelyManaged(club.Index))
             return;
         WriteLineupTeamValues(club);
     }

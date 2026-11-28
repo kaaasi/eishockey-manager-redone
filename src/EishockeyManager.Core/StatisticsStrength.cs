@@ -87,11 +87,9 @@ public static class StrengthTable
             // A009 (Spur nationalteam Runde 13): [ORIGINAL] Auch das Land des Bundestrainers zeigt die gespeicherten Felder
             // 0x18–0x1D, die 0x952C mit Manager 5 aus dessen Aufstellung schreibt (GameState.UpdateNationalTeamValues), nicht
             // die aktuelle Aufstellung (Datei 0x5149A–0x514E3 liest nur die Vereinsfelder).
-            var loaded = MatchEngine.TeamValuesOf(club);
-            var (kd, td, ks, ts) = game.NationalRatings(club.Index);
-            return ((kd, td, loaded.DefenseForm), (ks, ts, loaded.AttackForm));
+            return Of(game.NationalTeamValuesOf(club));
         }
-        if (game.ActiveManagers.Any(m => m.ClubIndex == club.Index) && club.Lineup.Count > 0)
+        if (game.IsClubActivelyManaged(club.Index) && club.Lineup.Count > 0)
             return Of(MatchEngine.LineupTeamValues(club.Lineup));
         var (defense, attack) = MatchEngine.ClubFieldValues(club);
         return ((defense.Condition, defense.Technique, defense.Form), (attack.Condition, attack.Technique, attack.Form));

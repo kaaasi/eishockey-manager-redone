@@ -59,7 +59,7 @@ public static partial class MatchEngine
     private static bool Prepare(GameState game, Club club, LiveTeam team, int own, int opponent)
     {
         var tactics = club.Tactics;
-        var unmanaged = !game.ActiveManagers.Any(m => m.ClubIndex == club.Index);
+        var unmanaged = !game.IsClubActivelyManaged(club.Index);
         // A180: [ORIGINAL] Zeile der Automatik im Vereinssatz – für die Anzeige „AUTOM.“ festgehalten; ohne Manager ohne
         // Blick auf die Modi (Datei 0x842B).
         tactics.RecordAutoLine(own, opponent, unmanaged);

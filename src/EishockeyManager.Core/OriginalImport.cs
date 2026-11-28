@@ -376,7 +376,7 @@ public sealed partial class GameState
         {
             var r = records.AsSpan(slot * OriginalSaveGame.ClubRecordLength, OriginalSaveGame.ClubRecordLength);
             var club = Clubs[clubOf[slot]];
-            if (WorldOnly && Managers.Any(m => m.ClubIndex == club.Index))
+            if (WorldOnly && IsClubManaged(club.Index))
             {
                 // Satz des Managervereins trägt im Modus „nur Weltkugel“ das Land (Regel 1): keine Vereinswerte, auch nicht die
                 // des Nachspielens (#747; sonst hinge der Wert vom Tag des Stands ab: FILE18 leer, FILE48 gezogen).

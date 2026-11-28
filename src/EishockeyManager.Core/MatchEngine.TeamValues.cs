@@ -222,7 +222,7 @@ public static partial class MatchEngine
     /// </summary>
     public static void EnsureTeamValues(GameState game)
     {
-        if (!game.Clubs.Any(c => c.TeamValues is null && !(game.WorldOnly && game.Managers.Any(m => m.ClubIndex == c.Index))))
+        if (!game.Clubs.Any(c => c.TeamValues is null && !(game.WorldOnly && game.IsClubManaged(c.Index))))
             return;
         LoadTeamValues(game);
         // [ORIGINAL] Wanderung des Spielstarts (0x43A73, Modus 10); [APPROX] hier erst beim ersten Bedarf (siehe oben).

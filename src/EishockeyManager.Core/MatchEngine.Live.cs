@@ -316,7 +316,7 @@ public static partial class MatchEngine
 
     /// <summary>Hat der Verein einen (nicht entlassenen) Manager oder ist er das Team des Bundestrainers?</summary>
     public static bool IsManaged(GameState game, Club club) =>
-        game.ActiveManagers.Any(m => m.ClubIndex == club.Index)
+        game.IsClubActivelyManaged(club.Index)
         || (club.Index is >= NationalTeams.First and <= NationalTeams.Last && game.NationalCoach?.Nation == club.Index);
 
     /// <summary>
