@@ -58,11 +58,14 @@ internal static class HokDump
         sb.AppendLine($"Regler Level {setup[0]}, Dauer {setup[1]}, Start-Liga {setup[2]}, Start-Stärke {setup[3]}; 5 − Level = {save.Block("0ED8")[0]}");
         sb.AppendLine($"Spielmodus 0xD0B9 = {save.Block("D0B9")[0]}, Manager am Zug {save.Block("A70E")[0]}, Preisindex {I32(save.Block("02BC"), 0)}, Konjunktur {I32(save.Block("02C0"), 0)}");
 
+        var clubBlock = save.Block("far:9657");
+        string ClubName(int slot) => slot < 150 ? GameText.Decode(clubBlock.AsSpan(slot * OriginalSaveGame.ClubRecordLength, 0x16)).TrimEnd('\0', ' ') : "–";
         for (var league = 0; league < OriginalSaveGame.LeagueCount; league++)
         {
             var day = save.NextMatchDay(league);
             sb.AppendLine($"Platzliste Liga {league} (0x5CCB, nächster Spieltag {day}{(day > OriginalSaveGame.LastSortedMatchDay ? ", nicht mehr sortiert" : "")}): " +
                           string.Join(" ", save.LeaguePlaces(league)));
+            sb.AppendLine("  " + string.Join(", ", save.LeaguePlaces(league).Select((slot, place) => $"{place + 1}. {slot} {ClubName(slot)}")));
         }
         sb.AppendLine($"Aufstiegsrunde Teilnehmer (0xCFFC): Gruppe 0 {string.Join(" ", save.PromotionParticipants(0))}, " +
                       $"Gruppe 1 {string.Join(" ", save.PromotionParticipants(1))}");

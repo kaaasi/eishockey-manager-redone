@@ -252,8 +252,27 @@ reicht, A707 ist X – `analyse/abgleich-dosbox-22b.md`.)
 
 ### Sitzung 5 – Doppelter Zwangsabstieg (A667)
 
-1. Stand kurz vor dem Saisonende mit Bundesliga-Zwangsabsteiger auf Platz 3 und 4 der Aufstiegsrunde (Leitstelle legt ihn auf
-   Wunsch per `hok-patch` ab); vor und nach dem Saisonwechsel sichern als **FILE84/FILE85**, Ligatabellen fotografieren.
+Konstellation und Prognose: `analyse/hok-tabellen.md` „Vorlage A667“ (ein Bundesliga- und ein Zweitliga-Manager unter der
+Grenze, Fall 3). Vorlage **FILE44** (14.04.1994, Aufstiegsrunde fertig, Köln = Manager 0); kein Tabellenpatch. Zwischenstände
+legt der Agent mit im Referenz-PR ab; gepatcht wird mit `dotnet run --no-build --project src/EishockeyManager.Tools -- hok patch …`
+(kurz `emtool hok patch`), danach jeweils `hok dump` (Prüfsummen, Platzlisten mit Vereinsnamen, Konten).
+
+1. FILE44 laden, Kachel „Neuer“, beliebiger Verein, „Los jetzt!“. Gebraucht wird der Platz von **Satz 3** (Platz 12 der
+   Bundesliga, Platz 4 der Aufstiegsrunde Gruppe 0): Der neue Verein muss in der Bundesligatabelle auf **Platz 12** stehen.
+   Sonst FILE44 neu laden und wiederholen (Zufall, etwa jeder neunte Versuch). Erster Versuch zugleich Probe, dass „Neuer“ nach
+   dem Saisonende geht (sonst abbrechen und melden). Sichern als **FILE84A**, Tabelle und Aufstiegsrunde fotografieren.
+2. Agent: `emtool hok patch FILE84A.HOK FILE84B.HOK --manager 1 konto=-1000000 startliga=1` (Start-Liga 2. Liga, im
+   Hinzufügen-Modus nicht verstellbar). `hok dump FILE84B.HOK`: Regler Start-Liga 1, Manager 1 auf Satz 3, Konto −1.000.000 DM.
+3. FILE84B laden, „Neuer“ mit dem **Tabellenersten der 2. Liga** (in FILE44 Satz 16; Name aus `hok dump`, Platzliste Liga 1,
+   Platz 1); er bleibt auf seinem Platz. Sichern als **FILE84C**.
+4. Agent: `emtool hok patch FILE84C.HOK FILE84.HOK --manager 2 konto=-1000000 startliga=0`; `hok dump FILE84.HOK`: Manager 1
+   Satz 3, Manager 2 Satz 16, beide −1.000.000 DM; Prognose `python3 -I tools/reverse-engineering/hok/zwangsabstieg.py --hok
+   ~/referenz/original/spielstaende/FILE84.HOK` (Status 0x04 bei Manager 1 und 2).
+5. FILE84 laden, bis nach dem Saisonwechsel weiterspielen (29./30. April); Meldungen zum Zwangsabstieg und die Ligatabellen der
+   neuen Saison (alle drei Ligen) fotografieren, sichern als **FILE85**. Erwartet (Nachbildung): Satz 15 (Erster der
+   Aufstiegsrunde, 2. Liga) → **Oberliga**, Satz 3 (Manager 1) → 2. Liga, Satz 16 (Manager 2) → Bundesliga, Satz 0 bleibt
+   Bundesliga, Satz 17 bleibt 2. Liga, Satz 23 → Oberliga. Entlässt das Original einen Manager vorher wegen des Kontos, dies
+   fotografieren und den Stand davor sichern.
 
 ### Sitzung 6 – KAPUTT.HOK (A599)
 
@@ -274,5 +293,14 @@ Was je ID abzulesen ist: Feld „Beleg“ in `restliste-v1-klassen.csv`. Nummern
    `analyse/abgleich-dosbox-22b.md`.**
 5. (entfällt: A910 ist X; die Fotos zu S04 stehen jetzt in Sitzung 2 Nr. 3.)
 6. Modus „nur Weltkugel“ (Sitzung 4, FILE18): Freundschaftsspiel des Bundestrainers, davor/danach sichern als **FILE90/FILE91**
-   (A918; erledigt mit FILE80/FILE81, ausgewertet in `analyse/abgleich-dosbox-22b.md`). Stand mit Managerverein auf den letzten Oberligaplätzen kurz vor dem Saisonende (Leitstelle legt ihn auf Wunsch per
-   `hok-patch` ab); vor/nach dem Wechsel sichern als **FILE92/FILE93**, Konto fotografieren (A671).
+   (A918; erledigt mit FILE80/FILE81, ausgewertet in `analyse/abgleich-dosbox-22b.md`).
+   **Teil 2 (A671)**, Weg aus `analyse/hok-tabellen.md` „Vorlage A671“ (alle Modus-1-Stände haben den Managersatz in der
+   Bundesliga):
+   1. Neues Spiel, Modus „nur Weltkugel“, Dauer **nicht** „eine Saison“, Start-Liga **Oberliga**. Lässt die Spielvorbereitung
+      die Start-Liga im Modus „nur Weltkugel“ nicht zu, Spielvorbereitung fotografieren und abbrechen (dann kann der Fall im
+      Original nicht eintreten; Einordnung Leitstelle). Nach dem Sprung (14.04.1994) sichern als **FILE92A**; `hok dump`:
+      Managersatz (Verein von Manager 0) steht in der Platzliste Liga 2.
+   2. Agent: `emtool hok patch FILE92A.HOK FILE92.HOK ligaplaetze=2:<Platzliste Liga 2 aus dem Dump, Managersatz ans Ende>`
+      (Platz 12; im Modus „nur Weltkugel“ sind alle Sortierschlüssel gleich, der Patcher prüft den Fixpunkt).
+   3. FILE92 laden, bis nach dem Saisonwechsel weiterspielen, Konto vor und nach dem Wechsel fotografieren, sichern als
+      **FILE93**. Erwartet (Nachbildung, Fall 10): Konto 400.000 DM, beide Pfeile; das Remake lässt das Konto (A671).
