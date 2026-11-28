@@ -229,7 +229,7 @@ Erstreviews: Opus 5.5 für `aufraeumen-migration`, `-tot`, `-doppelt`; Sonnet 5.
 - **Prüfung:** Nur Doku/Python: `markerliste.py` nach `--write` mit Rückgabe 0, `funktionskarte.py <em.exe> --csv` vor/nach im PR,
   Skripte laufen mit `~/referenz/original/gamedata/EM.EXE`; `tools/pruefen.sh` entfällt.
 - **Modell:** Claude Opus 5.5 (Bildvergleich, em.exe); Erstreview Sonnet 5.5.
-- **Status:** nicht gestartet (Go offen).
+- **Status:** nicht gestartet (Go Nutzer 28.11.2026, Start nach Merge des Nachtrags).
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
