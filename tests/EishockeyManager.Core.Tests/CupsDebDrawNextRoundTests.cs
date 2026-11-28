@@ -6,7 +6,7 @@ namespace EishockeyManager.Core.Tests;
 /// Review #909 P3-2 (#902): gezielte Probe für die Auslosung der DEB-Pokalrunden 2–5 (<c>CupsDeb.DrawNextRound</c>, em.exe Datei
 /// 0x3489D): Sieger in Paarungsreihenfolge, dann <see cref="DebCup.DrawSwaps"/> Vertauschungen mit <c>random(1, n) − 1</c> aus dem
 /// gemeinsamen Strom. Vorher schützten nur Abdrücke (<c>RngTwinProbeTests</c> u. a.) die Quelle: Die Mutation <c>new
-/// GameRandom(1)</c> statt <c>game.Random</c> ließ <c>ZufallsstromTeil4Tests</c> grün.
+/// GameRandom(1)</c> statt <c>game.Random</c> ließ <c>SharedStreamOtherSourcesTests</c> grün.
 /// </summary>
 public class CupsDebDrawNextRoundTests
 {

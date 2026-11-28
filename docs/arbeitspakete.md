@@ -139,7 +139,7 @@ Erstreviews: Opus 5.5 für `aufraeumen-migration`, `-tot`, `-doppelt`; Sonnet 5.
   `[bp+0xA] = 8`, Datei 0x5494C–0x5499E).
 - **Dateien:** `tests/EishockeyManager.Core.Tests/**`. **Prüfung:** alle drei Läufe; Testliste alt → neu (gleiche Fallzahl + #978);
   Zeile „Dateiüberschneidung: keine …“ im PR.
-- **Status:** nicht gestartet.
+- **Status:** fertig, Review offen (PR #1069; Teile 0–3 in einem Lauf: 145 Dateien nach Thema umbenannt und in Themenordner gelegt, #978 als eigener Fall).
 
 ### Spur `aufraeumen-tests-ui` – UI-Tests und Abläufe (Welle 4, parallel zu `aufraeumen-tests-core`)
 

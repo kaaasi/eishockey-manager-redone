@@ -85,7 +85,7 @@ public class KaderVertragsloseTests
     /// </summary>
     /// <remarks>
     /// Saatunabhängig (PR #727 beim Nachziehen von <c>main</c>, Nutzer R15-E2 = C, wie N2 in
-    /// <c>TagestaktHauptwegReviewTests.File44_SeasonChange_KeepsListLikeFile46</c>): Geprüft wird der Saisonwechsel ohne Tag 0.
+    /// <c>MainPathDayTests.File44_SeasonChange_KeepsListLikeFile46</c>): Geprüft wird der Saisonwechsel ohne Tag 0.
     /// Tag 0 würfelt den Listenwechsel ([ORIGINAL] Datei 0x54E65); ob der Wurf bei Saat 4711 trifft, hängt am Verbrauch des
     /// Zufallsstroms und ist nicht Teil von R204. „Abbruch“ wie in der Oberfläche über <see cref="GameState.CancelRenewal"/>.
     /// </remarks>

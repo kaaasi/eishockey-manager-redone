@@ -219,7 +219,7 @@ public class NationalCoachTests
         Assert.Equal(6, lineup.Defenders.Count);
         Assert.Equal(9, lineup.Forwards.Count);
         // Spur wettbewerbe-spiel, Teil 3: Stärke 0x368B1 aus dem Kader (0x98F8 mit Manager 5) statt Mittel der 16 Plätze;
-        // die Formel prüft WettbewerbeSpiel3Tests.
+        // die Formel prüft NationStrengthTests.
         Assert.True(SquadStrength() > 0);
     }
 

@@ -22,7 +22,7 @@ public class TeamwertAufstellungTests(ITestOutputHelper output)
     /// Spielern auf dem Eis (z. B. FILE31: KAUFBEUREN Angriff 5 6 4 4 0 statt 4 5 6 7 4, LANDSHUT Grundwert 60 statt 40).
     /// FILE50 → FILE61/66/67 sind drei DOSBox-Läufe desselben Spieltags, FILE72 → FILE73 hat zwei Managervereine. FILE73 entstand
     /// ohne erneutes Laden (Tausch bleibt, 0x375/0x376 = 0/0); der Import von FILE72 bildet das Laden nach (Automatik, Tausch
-    /// verworfen, #908, <c>ZusehenRestAufstellungTests</c>). Die Zeile der Automatik hängt nicht am Tausch.
+    /// verworfen, #908, <c>LineupSwapFieldsTests</c>). Die Zeile der Automatik hängt nicht am Tausch.
     /// </summary>
     [GameDataTheory]
     [InlineData("FILE30", "FILE31", 1)]
@@ -205,7 +205,7 @@ public class TeamwertAufstellungTests(ITestOutputHelper output)
         foreach (var player in club.Lineup.Players.OrderByDescending(p => p.Technique + p.Condition).Take(8).ToList())
             club.Lineup.Remove(player);
         // Felder bis zum nächsten Schreiben unverändert: ohne Bildschirm kein Verlassen der Aufstellung (Datei 0x41513–0x4151A,
-        // GameState.OnLineupLeft, A858; ZusehenRestAufstellungTests). Vor jedem Spiel schreibt der Tageslauf neu (Datei 0x54FBF).
+        // GameState.OnLineupLeft, A858; LineupSwapFieldsTests). Vor jedem Spiel schreibt der Tageslauf neu (Datei 0x54FBF).
         Assert.Equal(expected, MatchEngine.TeamValue(game, club));
         game.UpdateManagerTeamValues();
         var (d, a, _) = MatchEngine.ClubLineupTeamValues(club);

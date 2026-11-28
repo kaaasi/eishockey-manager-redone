@@ -83,7 +83,7 @@ public class AddManagerTests
     /// <summary>
     /// Runde 21, Spur zufallsstrom (A464, N3 = B; R15-E2 = C): Kader, Platztausch und Startwerte des Neuen ziehen aus dem gemeinsamen
     /// Strom (Spielvorbereitung im Hinzufügen-Modus, Datei 0x2993A–0x29EF7, alle Würfe über 0x38:0x847). Vorher prüfte der Test das
-    /// Gegenteil (eigene Quelle, Hauptquelle unberührt); die Folge der Würfe rechnet ZufallsstromTeil2Tests nach.
+    /// Gegenteil (eigene Quelle, Hauptquelle unberührt); die Folge der Würfe rechnet SharedStreamTalentStadiumTests nach.
     /// </summary>
     [Fact]
     public void AddManager_DrawsFromSharedStream()

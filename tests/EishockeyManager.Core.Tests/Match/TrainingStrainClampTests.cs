@@ -1,0 +1,102 @@
+using EishockeyManager.Formats;
+using EishockeyManager.Tests.Support;
+using EishockeyManager.Tools;
+
+namespace EishockeyManager.Core.Tests;
+
+/// <summary>
+/// Spur abgleich-fix, Teil 2 (#730): Belastung nach dem Training. [ORIGINAL] Datei 0x6B08–0x6B25: Belastung − Erholung als Byte,
+/// dann Begrenzung 50 … 150 über Datei 0x4BD56, die das Byte mit <c>cbw</c> vorzeichenbehaftet liest: Ein Ergebnis ab 128 gilt als
+/// negativ und wird 50. Belege FILE02→FILE03: MENDE 120, HOCK 115, SIKORA 117 (Reihen 1/2, viele Spielminuten) stehen danach auf 50,
+/// BRANDL (Reihe 3) 118 → 119. Vorher rot: Das Remake begrenzte vorzeichenlos (Ergebnis bis 150).
+/// </summary>
+public class TrainingStrainClampTests
+{
+    private static Player Defender(int strain) => new()
+    {
+        Name = "TEST", Role = PlayerRole.Defender, Condition = 50, Technique = 50, Form = 50, Age = 30, Energy = 80, Strain = strain,
+    };
+
+    private static int StrainAfterWeights(int strain)
+    {
+        var plan = new TrainingPlan();
+        plan.Fill(TrainingKind.Weights); // Erholung −20 (TrainingTests.HardTraining_CostsEnergyAndBuildsCondition)
+        var p = Defender(strain);
+        Assert.Equal(-20, TrainingRules.Apply(p, plan, 3, new Random(1)).Recovery);
+        return p.Strain;
+    }
+
+    [Theory]
+    [InlineData(80, 100)]
+    [InlineData(107, 127)]
+    [InlineData(108, 50)] // 128 = −128 → 50
+    [InlineData(120, 50)] // 140 = −116 → 50
+    [InlineData(150, 50)]
+    public void Training_StrainByteIsClampedSigned(int before, int after) => Assert.Equal(after, StrainAfterWeights(before));
+
+    /// <summary>
+    /// Abnahme #730: FILE02 → drei Spieltage. MENDE (120, Reihe 1) fällt wie in FILE03 bei jeder Saat auf höchstens 70 (Original 50);
+    /// vorher blieb er über 120. Ob auch HOCK und SIKORA (115/117) die Grenze 128 vor einem Training erreichen, hängt vom Zufall
+    /// der Spiele ab (Original ja, Remake je Saat).
+    /// Runde 20 (#872, R15-E2 = C): Mit den Reihen aus dem Vorspiel kippt MENDE bei 37 von 40 Saaten (1 … 40; alter Code 40 von 40);
+    /// bei 3, 25 und 28 steht er nach Spieltag 3 bei 125–126, also im letzten Zahn vor 128. Saat 3 deshalb durch 4 ersetzt.
+    /// Runde 26, Spur live-verschraenkt Teil 2 (S01, R15-E2 = C): Mit dem verschränkten Ligaspieltag (0x37A62, alle Paarungen je
+    /// Minute aus dem gemeinsamen Zufall) kippt MENDE wieder bei 37 von 40 Saaten (nicht 17, 21; dazu 77 mit 122, letzter Zahn).
+    /// Saat 77 deshalb durch 5 ersetzt.
+    /// </summary>
+    [GameDataTheory]
+    [InlineData(1993)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(4)]
+    [InlineData(5)]
+    public void File02_ThreeMatchDays_MendeFallsTo50(int seed)
+    {
+        var game = GameState.ImportOriginal(OriginalSaveGame.Read(File.ReadAllBytes(OriginalImportTests.OriginalSave("FILE02.HOK"))),
+            ClubDatabase.Load(TestGameData.Load()), seed);
+        for (var i = 0; i < 3; i++)
+            TestSeason.PlayMatchDay(game);
+        var club = game.Clubs[game.Managers[0].ClubIndex];
+        Assert.InRange(club.Players.Single(p => p.Name == "MENDE").Strain, TrainingRules.MinStrain, 70);
+        Assert.All(club.Players, p => Assert.InRange(p.Strain, TrainingRules.MinStrain, TrainingRules.MaxStrain));
+    }
+
+    public static TheoryData<string, string> Pairs() => OriginalPairsTests.Pairs();
+
+    /// <summary>
+    /// Ersatz für den Vergleich je Spieler (Sägezahn, Phase zufällig): Mittel der Belastung je Managerverein nach dem Nachspielen
+    /// höchstens 10 vom Original, bei den Saaten 1993, 1, 2, 3, 77 (gemessen: Abstand 0–7,8, FILE38→39).
+    /// Runde 16, Spur abgleich-rest (#772, R15-E2 = C): je Saat höchstens 15, über die fünf Saaten im Mittel höchstens 10. Mit der
+    /// Spielvorbereitung 0x8365 liegt FILE16A→17 bei Saat 3 bei 97,4 (Original 83,9); über die Saaten 4–15 ist das Mittel 90,5
+    /// (alter Code 91,7), also kein systematischer Zuwachs, nur eine andere Zufallsfolge.
+    /// </summary>
+    [GameDataTheory]
+    [MemberData(nameof(Pairs))]
+    public void Pairs_ManagerClubStrainMean_LikeOriginal(string a, string b)
+    {
+        var database = ClubDatabase.Load(TestGameData.Load());
+        var distances = new List<double>();
+        foreach (var seed in new[] { 1993, 1, 2, 3, 77 })
+        {
+            var start = HokCompare.Import(OriginalImportTests.OriginalSave(a + ".HOK"), database, seed);
+            var target = HokCompare.Import(OriginalImportTests.OriginalSave(b + ".HOK"), database, seed);
+            Assert.Null(HokCompare.PlayTo(start, target));
+            foreach (var manager in target.Managers)
+            {
+                var original = target.Clubs[manager.ClubIndex].Players;
+                if (original.Count == 0)
+                    continue;
+                var remake = start.Clubs[manager.ClubIndex].Players;
+                var distance = remake.Average(p => p.Strain) - original.Average(p => p.Strain);
+                // Runde 18, Spur abgleich-dosbox Teil 2 (#773, R15-E2 = C): ±17 statt ±15 – mit den 5-Minuten-Strafen nach dem
+                // lrandom-Zyklus liegt FILE16A→17 bei Saat 77 bei +15,7 (Saaten 1993, 1–7, 77, 4711: Mittel 9,1, vorher 9,2; nur
+                // Saat 77 über 12). Das Mittel über die Saaten (unten) bleibt die eigentliche Prüfung.
+                Assert.InRange(distance, -17, 17);
+                distances.Add(distance);
+            }
+        }
+        // Runde 18, Spur abgleich-dosbox Teil 2 (#773, R15-E2 = C): ±11 statt ±10 – FILE16A→17 über die fünf Saaten 10,1 (Saat 77
+        // bei 15,7); über zehn Saaten (1993, 1–7, 77, 4711) Mittel 9,1 wie vorher 9,2, also kein Abdriften durch die Änderung.
+        Assert.InRange(distances.Average(), -11, 11);
+    }
+}
