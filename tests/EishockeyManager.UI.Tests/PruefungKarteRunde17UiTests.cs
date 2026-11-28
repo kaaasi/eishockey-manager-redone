@@ -108,7 +108,7 @@ public class PruefungKarteRunde17UiTests
         for (var i = 0; i < clubs.Length; i++)
             setup.Managers.Add(new ManagerSetup { Name = $"M{i}", Head = i, ClubIndex = clubs[i] });
         var game = NewGame.Create(d.Host.Assets.Database, setup, seed);
-        ManagedSquadsUi.PlayAtTopStrength(game);
+        ManagedSquads.PlayAtTopStrength(game);
         d.Host.Game = game;
         d.Host.Show(new MainMenuScreen(d.Host));
         d.Frame();
@@ -116,7 +116,7 @@ public class PruefungKarteRunde17UiTests
         {
             if (nationalCoach && game.NationalCoach is null && game.Phase == SeasonPhase.Running)
                 game.AppointNationalCoach(game.Managers[0]);
-            KeepSquadHelper.KeepSquads(game);
+            SquadKeeper.KeepSquads(game);
             foreach (var m in game.Managers)
                 m.Money = Math.Max(m.Money, 2_000_000); // keine Entlassung im Testlauf
             d.Advance();

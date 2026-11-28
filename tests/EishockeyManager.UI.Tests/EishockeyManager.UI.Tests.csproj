@@ -9,6 +9,11 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Gemeinsame Testhilfen der Core-Tests (Link-Dateien, Muster GameDataFact.cs) -->
+    <Compile Include="..\EishockeyManager.Core.Tests\Support\ManagedSquads.cs" Link="Support\ManagedSquads.cs" />
+    <Compile Include="..\EishockeyManager.Core.Tests\Support\SquadKeeper.cs" Link="Support\SquadKeeper.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
   <ItemGroup>

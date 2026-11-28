@@ -76,7 +76,7 @@ public class BildschirmeOeffnenZustandTests
         var guard = 0;
         while (d.Host.Current is not SeasonEndScreen && guard++ < 20000)
         {
-            KeepSquadHelper.KeepSquads(game);
+            SquadKeeper.KeepSquads(game);
             d.Advance();
         }
         var seasonEnd = Assert.IsType<SeasonEndScreen>(d.Host.Current);

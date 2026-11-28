@@ -19,7 +19,7 @@ public class SeasonEndColorsTests
         var guard = 0;
         while (d.Host.Current is not SeasonEndScreen && guard++ < 20000)
         {
-            KeepSquadHelper.KeepSquads(d.Host.Game!);
+            SquadKeeper.KeepSquads(d.Host.Game!);
             d.Advance();
         }
         Assert.IsType<SeasonEndScreen>(d.Host.Current);

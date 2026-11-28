@@ -1,5 +1,6 @@
 using EishockeyManager.Core;
 using EishockeyManager.Formats;
+using EishockeyManager.Tests.Support;
 
 namespace EishockeyManager.Core.Tests;
 

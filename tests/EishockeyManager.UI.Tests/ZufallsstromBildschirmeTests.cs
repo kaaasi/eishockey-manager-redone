@@ -66,7 +66,7 @@ public class ZufallsstromBildschirmeTests
         d.Host.Show(new MainMenuScreen(d.Host));
         for (var i = 0; i < 6; i++)
         {
-            KeepSquadHelper.KeepSquads(game);
+            SquadKeeper.KeepSquads(game);
             d.Advance();
         }
         var later = game.Random.Capture();

@@ -100,7 +100,7 @@ public class BildschirmeFreipruefungTests
         {
             for (var i = 0; i < 6; i++)
             {
-                KeepSquadHelper.KeepSquads(game);
+                SquadKeeper.KeepSquads(game);
                 d.Advance();
                 if (d.Host.Current is not MainMenuScreen)
                     d.Host.Show(new MainMenuScreen(d.Host));
