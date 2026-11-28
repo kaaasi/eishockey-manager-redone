@@ -204,7 +204,9 @@ Erstreviews: Opus 5.5 für `aufraeumen-migration`, `-tot`, `-doppelt`; Sonnet 5.
   genannten Blöcke bytegleich zur Vorlage; Remake-Import (`OriginalImport`) des Stands zeigt die gepatchten Tabellen. **Merge erst
   nach der Pflichtprobe des Nutzers** im Original (Stand lädt in DOSBox, Tabellen und Aufstiegsrunde wie gepatcht; wie R15-D5 = D).
 - **Modell:** Claude Opus 5.5 (Disassembly, Dateiformat); Erstreview Opus 5.5.
-- **Status:** nicht gestartet (Go Nutzer 28.11.2026, Start nach Merge des Nachtrags).
+- **Status:** Teil 1 fertig (Lauf 28.11.2026, PR #1082): [analyse/hok-tabellen.md](analyse/hok-tabellen.md) – A667 braucht einen
+  Bundesliga- und einen Zweitliga-Manager (nicht zwei Bundesliga-Manager), Vorlage FILE44 + zwei „Neuer“ ohne Tabellenpatch;
+  A671-Vorlage nur über ein neues Spiel „nur Weltkugel“ mit Start-Liga Oberliga. Teil 2 wartet auf Entscheidung (Umfang).
 
 ### Spur `abgleich-dosbox-22b` – Auswertung DOSBox-Aufnahme `runde-22` Sitzungen 4, 6, 7 Nr. 4 und A707 (Nachtrag 28.11.2026, A22-D1 = C)
 
