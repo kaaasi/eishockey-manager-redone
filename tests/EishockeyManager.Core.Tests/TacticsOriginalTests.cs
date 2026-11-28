@@ -127,6 +127,6 @@ public class TacticsOriginalTests
     }
 
     // Abnahme (3) „Einsatz verschiebt die Stärke um höchstens ±3“ entfällt (A178/A182, Runde 11): der Einsatz wirkt nur in
-    // der Spielberechnung, siehe TaktikTeil5Tests.Effort_DoesNotShiftMatchStrength.
+    // der Spielberechnung, siehe MinuteQuotaTests.Effort_DoesNotShiftMatchStrength.
 }
 

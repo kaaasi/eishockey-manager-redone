@@ -124,7 +124,7 @@ public class KaufNeuerKaderplatzTests
     private static (int OldThirds, int Salary, int? Demand, int Insurance, (int, int) PenaltiesAfterSign) FromManager(
         int penalties5, int penalties2)
     {
-        var (game, buyer, _, listing) = KaderTransferTeil4Tests.TwoManagers();
+        var (game, buyer, _, listing) = MarketCycleTests.TwoManagers();
         var p = listing.Player;
         (p.Penalties5, p.Penalties2) = (penalties5, penalties2);
         var oldThirds = SalaryThirds(game, buyer, p);

@@ -10,7 +10,7 @@ namespace EishockeyManager.Core.Tests;
 /// (Vereinsfelder 0x2F/0x31, Datei 0x853F) auf 0 und den Wechselmodus der Computervereine (0x2C Bits 0–2, Datei 0x8521); die
 /// Reihen 0x2E/0x30 bleiben aus dem Vorspiel stehen und stehen so auch im Spielstand (Satz far:9657 + 0x3D · Verein). Beleg
 /// DOSBox `runde-19`: KÖLNER EC in FILE50 mit Abwehr 0 / Sturm 2, an Spieltag 2 beginnt Köln mit genau diesen Reihen
-/// (<see cref="AbgleichDosboxLinesTests.File61"/>: Abwehr „000…“, Sturm „222…“ bis Minute 3); FILE61 1/1, FILE63 0/0, der Gegner
+/// (<see cref="ManagerPairingLinesTests.File61"/>: Abwehr „000…“, Sturm „222…“ bis Minute 3); FILE61 1/1, FILE63 0/0, der Gegner
 /// ESV KAUFBEUREN nach Spieltag 3 1/1, alle Vereine ohne Managerspiel 0/0.
 /// </summary>
 public class ReiheBeiSpielbeginnTests
