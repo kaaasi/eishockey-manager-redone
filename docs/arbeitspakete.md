@@ -164,6 +164,43 @@ Erstreviews: Opus 5.5 für `aufraeumen-migration`, `-tot`, `-doppelt`; Sonnet 5.
   vor/nach (Statusverteilung gleich).
 - **Status:** Teile 1–3 fertig (Lauf 28.11.2026, PR siehe Übergabe): Pfadverweise in 176 Dateien aus `src/`, `tests/`, `tools/` nachgezogen (`aufraeumen-verweise.md` entfernt); Themendokus gegen Code geprüft (alte Test- und Methodennamen, entfernte Mitglieder aus #1064/#1067/#1069/#1070, Migrationshinweise); `markerliste.py --write` einmal (keine ID verloren, A1035 neu); #980 P3-1/2, #1024 P3-2 (Nachtrag in `abweichungen-v1.md`), K13-Klassentext, W1 (Doku in `tools/reverse-engineering/README.md`); #980 P3-4 nur Vermerk (keine Dateiänderung). Offen: `tools/pruefen.sh` (kein SDK in der Umgebung, Kommentare/Pfade only). Wartet auf Review.
 
+### Spur `hok-patch-tabellen` – Tabellen und Aufstiegsrunde im Original-Spielstand patchen (Nachtrag 28.11.2026, H1 = D)
+
+- **Ziel:** `emtool hok patch` setzt zusätzlich Ligatabelle und Gruppentabelle der Aufstiegsrunde, damit ein Original-Stand
+  für A667 (doppelter Zwangsabstieg, Bundesliga-Zwangsabsteiger auf Platz 3 und 4 der Aufstiegsrunde) gezielt erzeugt werden
+  kann; damit Vorbereitung von Aufnahme `runde-22` Sitzung 5 (`vorlagen/dosbox-aufnahme.md`). Entscheidung Nutzer 28.11.2026:
+  H1 = D (Optionen im Plan-PR des Nachtrags). Kein Spielkern, kein Remake-Verhalten.
+- **Ausgangslage:** Der Zwangsabstieg selbst braucht nur das Konto (< −666.666,67 DM am 29. April, Datei 0x55F22–0x55F87);
+  `hok patch --manager n konto=…` kann das schon, FILE75 hat zwei Bundesliga-Manager. Die Konstellation des Sonderfalls (Zweitligist
+  wechselt nur den Platz, `SeasonFlow.Zwangsabstieg.cs` `ResolveDoubleMoves`, Review #458 SW-06) hängt von Liga- und
+  Gruppentabelle ab. Blöcke laut `formate/spielstand-original.md`: Tabellensätze `8257` (DGROUP 0x825A, Punkte, Tore, Platz
+  0x8288, Platzfelder 0x828B), Vereinsindex je Liga und Platz `5CCB`, Ergebnisse `0xA0CB`, Gruppentabellen `CD88` (Platzliste),
+  `CD58` (Punkte), `CD28`/`CCF8` (Tore/Gegentore), `CED8` (Gruppenpaarungen), `CDB8` (Gruppentore), `CFFC` (Teilnehmer) –
+  beschrieben, aber nicht im Patcher und nicht belegt, ob em.exe sie beim Laden oder je Spieltag aus den Ergebnissen neu berechnet.
+- **Teile:** 1. **Beleg** (kein Produktcode): je Block in em.exe lesen und nachbilden, wer ihn schreibt und liest (Laden
+  0x5C4CA ff., Tabellenrechnung je Spieltag, Gruppensortierung 0x30C36, Aufstiegsrunde und Austausch 0x55F93–0x5636D), welche
+  Felder zueinander passen müssen (Punkte ↔ Ergebnisse/Gruppentore, Platzliste ↔ Sortierung) und welche Konstellation den
+  Sonderfall von A667 auslöst (Nachbildung über die Bytes von em.exe mit Ausgabe, `zusammenarbeit.md` §5 Punkt 7). Ergebnis in
+  `docs/analyse/hok-tabellen.md` (neu), Skripte `tools/reverse-engineering/hok/*.py` (neu); 2. **Patcher:** neue Felder für
+  `hok patch` (Ligatabelle je Verein: Platz, Punkte, Tore; Aufstiegsrunde: Teilnehmer, Platzliste, Punkte, Tore, gespielte Termine
+  mit passenden Gruppentoren), nur was Teil 1 belegt; Widersprüche zwischen Feldern weist der Patcher ab statt sie zu schreiben;
+  Lesen in `hok dump`; Tests synthetisch und mit Originalständen (Rundreise, Prüfsummen, Gegenprobe mit unverändertem Rest);
+  Felder in `formate/spielstand-original.md` als belegt eintragen; 3. **Stand und Anleitung:** fertiger Befehl für den Stand
+  vor Sitzung 5 (Vorlage FILE75 oder ein Stand mit zwei Bundesliga-Managern, Konten beider Manager, Datum kurz vor dem letzten
+  Termin der Aufstiegsrunde, Tabellen für die Konstellation aus Teil 1) im PR; Sitzung 5 in `vorlagen/dosbox-aufnahme.md`
+  präzisieren (Ablauf, was zu fotografieren ist, Sicherungen FILE84/FILE85). Den Stand legt die Leitstelle per PR im Referenz-Repo
+  ab (Branch `daten/…`), nicht die Spur.
+- **Dateien:** Teil 1 `docs/analyse/hok-tabellen.md`, `tools/reverse-engineering/hok/*.py`; Teil 2/3
+  `src/EishockeyManager.Formats/OriginalSaveGamePatcher.cs`, `OriginalSaveGame.cs` (Konstanten), `src/EishockeyManager.Tools/HokPatch.cs`,
+  `HokDump.cs`, `tests/EishockeyManager.Formats.Tests/**`, betroffene Tool-Tests, `docs/formate/spielstand-original.md`,
+  `docs/vorlagen/dosbox-aufnahme.md` (nur Sitzung 5). **Folge:** Teil 1 sofort (eigene neue Dateien, keine Überschneidung mit
+  `aufraeumen-doku`); Teil 2 und 3 nach Merge von `aufraeumen-doku` (Rebase, Fortsetzung), weil diese `docs/**`/`tools/**` berührt.
+- **Prüfung:** `--schnell` (Erstreview alle drei Läufe); Probe: gepatchter Stand lädt in `hok dump`, Prüfsummen gültig, alle nicht
+  genannten Blöcke bytegleich zur Vorlage; Remake-Import (`OriginalImport`) des Stands zeigt die gepatchten Tabellen. **Merge erst
+  nach der Pflichtprobe des Nutzers** im Original (Stand lädt in DOSBox, Tabellen und Aufstiegsrunde wie gepatcht; wie R15-D5 = D).
+- **Modell:** Claude Opus 5.5 (Disassembly, Dateiformat); Erstreview Opus 5.5.
+- **Status:** nicht gestartet (Go offen).
+
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
 - R8-A01 (Spielstände aus Spurbranches laden nicht): Spurbranches sind keine Ausgabestände.
