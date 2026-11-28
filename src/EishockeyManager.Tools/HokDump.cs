@@ -50,13 +50,22 @@ internal static class HokDump
         foreach (var c in save.Checksums)
             sb.AppendLine($"Prüfsumme bei 0x{c.FileOffset:X5}: gelesen 0x{c.Stored:X2}, berechnet 0x{c.Computed:X2} → {(c.IsValid ? "gültig" : "FALSCH")}");
 
-        var day = I32(save.Block("5A20"), 0);
+        var date = I32(save.Block("5A20"), 0);
         var month = I32(save.Block("5A1C"), 0);
         var year = I32(save.Block("5A18"), 0);
-        sb.AppendLine($"Datum {day:00}.{month + 1:00}.{year}, Spielende {I16(save.Block("5A14"), 0)}, Saisonzähler {I16(save.Block("03BD"), 0)}");
+        sb.AppendLine($"Datum {date:00}.{month + 1:00}.{year}, Spielende {I16(save.Block("5A14"), 0)}, Saisonzähler {I16(save.Block("03BD"), 0)}");
         var setup = save.Block("0118");
         sb.AppendLine($"Regler Level {setup[0]}, Dauer {setup[1]}, Start-Liga {setup[2]}, Start-Stärke {setup[3]}; 5 − Level = {save.Block("0ED8")[0]}");
         sb.AppendLine($"Spielmodus 0xD0B9 = {save.Block("D0B9")[0]}, Manager am Zug {save.Block("A70E")[0]}, Preisindex {I32(save.Block("02BC"), 0)}, Konjunktur {I32(save.Block("02C0"), 0)}");
+
+        for (var league = 0; league < OriginalSaveGame.LeagueCount; league++)
+        {
+            var day = save.NextMatchDay(league);
+            sb.AppendLine($"Platzliste Liga {league} (0x5CCB, nächster Spieltag {day}{(day > OriginalSaveGame.LastSortedMatchDay ? ", nicht mehr sortiert" : "")}): " +
+                          string.Join(" ", save.LeaguePlaces(league)));
+        }
+        sb.AppendLine($"Aufstiegsrunde Teilnehmer (0xCFFC): Gruppe 0 {string.Join(" ", save.PromotionParticipants(0))}, " +
+                      $"Gruppe 1 {string.Join(" ", save.PromotionParticipants(1))}");
 
         var count = save.Block("0386")[0];
         var managers = save.Block("965B");
