@@ -149,7 +149,7 @@ Erstreviews: Opus 5.5 für `aufraeumen-migration`, `-tot`, `-doppelt`; Sonnet 5.
   `transfer-vertrag-kauf-saisonende`) reparieren, wenn der Ablauf nur den Testaufbau braucht, sonst löschen (Begründung je Ablauf).
 - **Dateien:** `tests/EishockeyManager.UI.Tests/**`, `src/EishockeyManager.Tools/Scenarios/**`. **Prüfung:** alle drei Läufe;
   Testliste alt → neu; Bildschirmfotos der umbenannten Abläufe bytegleich; Zeile „Dateiüberschneidung: keine …“.
-- **Status:** nicht gestartet.
+- **Status:** fertig, Review offen (PR #1070; Teile 0–3 in einem Lauf, Klassen nur umbenannt, nicht zusammengelegt).
 
 ### Spur `aufraeumen-doku` – Verweise, Themendokus, Markerlisten (Welle 5, zuletzt)
 

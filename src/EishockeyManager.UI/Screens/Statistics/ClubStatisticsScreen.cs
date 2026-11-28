@@ -34,7 +34,7 @@ namespace EishockeyManager.UI.Screens.Statistics;
 ///   wie bei „Fairplay“ schließt hier ein Klick. Tasten schließen nicht wie im Original (B11 = A), Escape als Komfort.</item>
 /// <item>[ORIGINAL] Über-/Unterzahl: Managerfelder DGROUP 0x97D2 + 2 · k (<see cref="Manager.PowerPlayCounts"/>), gezählt in der
 ///   Minutenrechnung (Tor 0xA939–0xA9A2 und 0xAA2C–0xAAEF, Strafe 0x35A84/0x35B18; <c>docs/spielberechnung.md</c> §18).
-///   Anschluss über die Zeitleiste geprüft (Spur wettbewerbe-spiel, Teil 4, A349: <c>WettbewerbeSpiel4ScreenTests</c>).</item>
+///   Anschluss über die Zeitleiste geprüft (Spur wettbewerbe-spiel, Teil 4, A349: <c>ClubStatisticsPowerplayScreenTests</c>).</item>
 /// </list>
 /// </remarks>
 public sealed class ClubStatisticsScreen : Screen

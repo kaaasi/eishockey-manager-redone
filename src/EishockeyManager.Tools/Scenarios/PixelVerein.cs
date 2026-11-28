@@ -89,6 +89,9 @@ internal static class PixelVerein
         {
             if (guard > 400 || game.Phase is not (Core.SeasonPhase.Running or Core.SeasonPhase.ClubSeasonOver))
                 throw new InvalidOperationException("Kein Zug des Bundestrainers erreicht.");
+            // [APPROX] Ohne Bundestrainer läuft der Zug nie an (wie in bundestrainer-modus4, R14NT-03): ernennen am ersten WM-Tag.
+            if (game.CurrentDay == Core.SeasonCalendar.ClubSeasonEnd + 1 && game.NationalCoach is null)
+                game.AppointNationalCoach(game.Managers[0]);
             d.PlayMatchDay();
         }
         d.Move(1, 239); d.Save("01_menue_eisbaeren_f24_00040");

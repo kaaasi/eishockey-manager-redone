@@ -18,5 +18,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\EishockeyManager.UI\EishockeyManager.UI.csproj" />
+    <ProjectReference Include="..\..\src\EishockeyManager.Tools\EishockeyManager.Tools.csproj" />
   </ItemGroup>
 </Project>

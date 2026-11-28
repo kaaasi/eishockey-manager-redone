@@ -38,7 +38,7 @@ public sealed record StrengthRow(Club Club, int Condition, int Technique, int Fo
 /// <item>[ORIGINAL] Vor dem ersten Spiel: die Werte des Laders 0x2EF1B, der beim Programmstart läuft (Datei 0x439BB vor 0x43A61);
 ///   das Remake zieht sie in <see cref="NewGame.Create"/> (<see cref="MatchEngine.LoadTeamValues(GameState)"/>). DOSBox
 ///   <c>nur-weltkugel/27</c> zeigt vor dem ersten WM-Spiel Form 46 … 54 (Abweichung B29/A700, Probe
-///   <c>StatistikAnzeigeTeil2Tests.Strength_BeforeFirstMatch_ShowsLoadedForm</c>). Nur Aufbauten ohne
+///   <c>StrengthBalanceFaceScreenTests.Strength_BeforeFirstMatch_ShowsLoadedForm</c>). Nur Aufbauten ohne
 ///   <see cref="NewGame.Create"/> zeigen bis zum ersten Bedarf Streuung 0, Form und Tagesform 50
 ///   (<see cref="MatchEngine.TeamValuesOf"/>).</item>
 /// </list>
