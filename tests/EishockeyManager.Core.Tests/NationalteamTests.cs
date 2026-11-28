@@ -1,5 +1,6 @@
 using System.Text.Json.Nodes;
 using EishockeyManager.Core;
+using EishockeyManager.Tests.Support;
 
 namespace EishockeyManager.Core.Tests;
 

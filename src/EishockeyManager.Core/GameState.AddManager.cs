@@ -32,6 +32,9 @@ public sealed partial class GameState
     /// <summary>Wird der Verein schon von einem Manager geführt?</summary>
     public bool IsClubManaged(int clubIndex) => Managers.Any(m => m.ClubIndex == clubIndex);
 
+    /// <summary>Wird der Verein von einem nicht entlassenen Manager geführt (<see cref="ActiveManagers"/>)?</summary>
+    public bool IsClubActivelyManaged(int clubIndex) => ActiveManagers.Any(m => m.ClubIndex == clubIndex);
+
     /// <summary>
     /// Vereine in Satzfolge für die Vereinsauswahl im laufenden Spiel: Bundesliga, 2. Liga, Oberliga (je
     /// <see cref="LeagueSlots"/>), dann die Plätze ohne Liga (<see cref="OutsidePlaces"/>). [ORIGINAL] Die Auswahl zeigt auf Seite p

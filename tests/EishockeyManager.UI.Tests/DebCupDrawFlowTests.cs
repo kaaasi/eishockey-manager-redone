@@ -167,7 +167,7 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// Mehrsaisonprobe (Abnahme 4): vier Saisonwechsel über die Oberfläche, einmal mit Live-Auslosung, einmal ohne. Pokalsieger,
     /// Meister und Abschlusstabellen je Saison sind gleich und gleich den Referenzwerten von <c>main</c> vor dieser Spur
     /// (a09c81e, Auslosung im Spiel noch nicht sichtbar).
-    /// Spur heimspiel-statistik (#136): Der Manager hält seinen Kader (<see cref="KeepSquadHelper"/>), sonst wird er nach
+    /// Spur heimspiel-statistik (#136): Der Manager hält seinen Kader (<see cref="SquadKeeper"/>), sonst wird er nach
     /// „Weniger als neun Spieler“ (200.000 DM je Spiel) in Saison 1995 entlassen und das Spiel endet. 1993 und 1994 bleiben
     /// gleich; ab 1995 spielt sein Verein mit dem verlängerten statt mit leerem Kader, daher neue Werte für 1995 und 1996.
     /// Spur kader-start (#168, em.exe 0x29DA4): Der Kader des Berliner SC bekommt Kondition/Technik random(29, 33)
@@ -190,7 +190,7 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
             for (var guard = 0; game.History.Count < 4 || d.Host.Current is not MainMenuScreen; guard++)
             {
                 Assert.True(guard < 80000, "Vier Saisonwechsel nicht erreicht");
-                KeepSquadHelper.KeepSquads(game, extendExpired: true); // Spur heimspiel-statistik (#136): sonst ab Saison 3 entlassen (R12K-03)
+                SquadKeeper.KeepSquads(game, extendExpired: true); // Spur heimspiel-statistik (#136): sonst ab Saison 3 entlassen (R12K-03)
                 Step(d, live);
             }
             return Summary(game);
@@ -254,7 +254,7 @@ public class DebCupDrawFlowTests(ITestOutputHelper output)
     /// Runde 12, Spur wettbewerbe-spiel Teil 3 (A174): ab 1994 neu – Computervereine spielen ohne Bezug zur Remake-Aufstellung
     /// (0x977F, Vereinsfelder). Mit und ohne Anzeige weiter gleich.
     /// Spur kader-transfer, Runde 12, Teil 1 (U4, U5): ab 1995 neu – Angebote verfallen (0x0767A), Poolplätze enden mit Nachfolger
-    /// (0x2787A); anderer Zufallsverbrauch, der Kader des Managers wird mit KeepSquadHelper auch ohne Angebot verlängert.
+    /// (0x2787A); anderer Zufallsverbrauch, der Kader des Managers wird mit SquadKeeper auch ohne Angebot verlängert.
     /// Integration Runde 12 (+ kader-transfer): Abdruck auf dem integrierten Stand neu ermittelt. Mit und ohne Anzeige weiter gleich.
     /// Runde 13, kader-start Teil 2 (U15-a, L13): ab 1993 neu – Verein 42 tauscht mit Start-Liga Oberliga in die Oberliga
     /// (Datei 0x29CF2, Teamwerte bleiben am Platz, Oberliga-Kader); mit und ohne Anzeige weiter gleich. Teil 3 (R-K5): erneut neu –

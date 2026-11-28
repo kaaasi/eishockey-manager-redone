@@ -38,10 +38,16 @@ public sealed partial class GameState
     ///   zur nächsten Wanderung 0x9D1B im Vereinsplatz (<see cref="RerollNationalRatings"/>, A493, Spur national Teil 3).</item>
     /// </list>
     /// </summary>
-    public (PartValues Defense, PartValues Attack, int DayForm) NationalTeamValues(int nation)
+    public (PartValues Defense, PartValues Attack, int DayForm) NationalTeamValues(int nation) => NationalTeamValuesOf(Clubs[nation]);
+
+    /// <summary>
+    /// Wie <see cref="NationalTeamValues"/> für den Platz <paramref name="team"/> – auch für die Stärketabelle
+    /// (<see cref="StrengthTable"/>, Nationalteam-Zweig).
+    /// </summary>
+    internal (PartValues Defense, PartValues Attack, int DayForm) NationalTeamValuesOf(Club team)
     {
-        var loaded = MatchEngine.TeamValuesOf(Clubs[nation]);
-        var (cd, td, ca, ta) = NationalRatings(nation);
+        var loaded = MatchEngine.TeamValuesOf(team);
+        var (cd, td, ca, ta) = NationalRatings(team.Index);
         return (new PartValues(cd, td, loaded.DefenseForm), new PartValues(ca, ta, loaded.AttackForm), loaded.DayForm);
     }
 

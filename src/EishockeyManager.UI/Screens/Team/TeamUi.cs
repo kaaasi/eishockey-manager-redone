@@ -198,13 +198,6 @@ public static class TeamUi
         _ => "RESERVE",
     };
 
-    public static string TrendText(PlayerTrend trend) => trend switch
-    {
-        PlayerTrend.Falling => "Fallend.",
-        PlayerTrend.Rising => "Steigend.",
-        _ => "Konstant.",
-    };
-
     /// <summary>Verein des aktiven Managers.</summary>
     public static Club OwnClub(ScreenHost host) => host.Game!.Clubs[host.Game.ActiveManager.ClubIndex];
 

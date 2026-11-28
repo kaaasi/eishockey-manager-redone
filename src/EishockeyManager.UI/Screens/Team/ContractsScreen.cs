@@ -1,4 +1,3 @@
-using System.Globalization;
 using EishockeyManager.Core;
 using EishockeyManager.Formats;
 
@@ -361,10 +360,6 @@ public sealed class ContractsScreen : Screen
     /// (KJELLBERG, letzte Zeile), Pixel gleich.
     /// </summary>
     public static string ContractText(Player p) => p.ContractYears == 0 ? NoContractText : p.ContractText;
-
-    /// <summary>„1.500 DM“ (im Dialog mit Tausenderpunkt, in der Liste ohne).</summary>
-    public static string FormatMoney(int amount) =>
-        amount.ToString("#,0", CultureInfo.GetCultureInfo("de-DE")) + " DM";
 
     private string? HoverText(IReadOnlyList<Player> rows)
     {

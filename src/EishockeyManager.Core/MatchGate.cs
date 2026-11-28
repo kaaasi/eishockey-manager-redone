@@ -81,7 +81,7 @@ public sealed partial class GameState
     /// </summary>
     internal void PrepareMatchGate(Club home, Club away, MatchCompetition competition)
     {
-        if (!Managers.Any(m => m.ClubIndex == home.Index || m.ClubIndex == away.Index))
+        if (!IsClubManaged(home.Index) && !IsClubManaged(away.Index))
             return;
         var tableMatchDay = PlayedMatchDays + 1;
         var importance = GateImportance(competition);
@@ -112,7 +112,7 @@ public sealed partial class GameState
     /// </summary>
     internal void PrepareForfeitGate(Club home, Club away, MatchCompetition competition)
     {
-        if (!Managers.Any(m => m.ClubIndex == home.Index || m.ClubIndex == away.Index))
+        if (!IsClubManaged(home.Index) && !IsClubManaged(away.Index))
             return;
         var tableMatchDay = PlayedMatchDays + 1;
         var importance = GateImportance(competition);

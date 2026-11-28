@@ -18,8 +18,6 @@ public sealed record SaveInfoManager(string Name, string Club, string? League);
 /// </remarks>
 public sealed record SaveInfo(int Year, int MatchDay, IReadOnlyList<SaveInfoManager> Managers)
 {
-    private static readonly string[] LeagueNames = ["Bundesliga", "Zweite Liga", "Oberliga"];
-
     /// <summary>Zeile 2: „Jahr 1994, 1.Spieltag“ ([ORIGINAL] Datei 0x5B7ED–0x5B8A0; Texte DGROUP 0x2852, 0x1B2D).</summary>
     public string DateLine => $"Jahr {Year}, {MatchDay}.Spieltag";
 
@@ -52,5 +50,5 @@ public sealed record SaveInfo(int Year, int MatchDay, IReadOnlyList<SaveInfoMana
         return new SaveInfo(SeasonCalendar.Year(game.Day, game.Season), game.PlayedMatchDays + 1, managers);
     }
 
-    private static string LeagueName(int league) => LeagueNames[Math.Clamp(league, 0, LeagueNames.Length - 1)];
+    private static string LeagueName(int league) => SeasonInfo.LeagueName((League)Math.Clamp(league, (int)League.Bundesliga, (int)League.Oberliga));
 }

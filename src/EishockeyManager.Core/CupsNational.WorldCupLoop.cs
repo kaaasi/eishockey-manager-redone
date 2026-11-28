@@ -224,7 +224,7 @@ public sealed partial class GameState
     ///   national Teil 2, vorher als Näherung Untergrenze 50): bis <see cref="MinMarketStrain"/>.</item>
     /// <item>Inhalt für Manager 0 (nicht im Modus 1): Heilung seiner Kaderplätze (Datei 0x07B4E → 0x07C12 mit dem Zähler der Spiele,
     ///   <see cref="PlayerInjuries.IsHealingDay"/>), danach je Platz das Training (Datei 0x07B5E → 0x0659C,
-    ///   <see cref="TrainingRules.Apply"/>, Kosten wie <see cref="TrainOneDay"/>), Tendenz (Datei 0x07B64–0x07BFC, #688),
+    ///   <see cref="TrainingRules.Apply"/>, Kosten wie im Tageslauf), Tendenz (Datei 0x07B64–0x07BFC, #688),
     ///   Aufstellungsautomatik (Datei 0x07C07); gemeinsam mit dem Hauptweg in <see cref="ManagerSquadRun"/>.
     ///   [ORIGINAL] Verträge (Ankündigungen, Verlängerungen, Sperren; Datei 0x073E3–0x07AEF) über <see cref="AnnounceContractEnds"/>
     ///   nur für Manager 0 (Kaderplätze 0x5DC3 + 0xA70E · 0x618, Datei 0x07402), Verfall offener Gebote (Datei 0x07215–0x0726A)

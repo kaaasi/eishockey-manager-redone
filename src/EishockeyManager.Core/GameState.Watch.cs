@@ -111,7 +111,7 @@ public sealed partial class GameState
 
     /// <summary>
     /// Spielstart (Datei 0x298EA/0x29C1C: 0x0AE2B(Verein des Managers, 1, 2) je Manager in Managerfolge). Beim Import eines
-    /// Original-Spielstands ersetzt danach Vereinsfeld 0x34 Bits 6–7 die Markierungen (A834, <c>OriginalImport.Rest.cs</c>).
+    /// Original-Spielstands ersetzt danach Vereinsfeld 0x34 Bits 6–7 die Markierungen (A834, <c>OriginalImport.ManagerAreas.cs</c>).
     /// </summary>
     internal void MarkStartWatches()
     {
@@ -144,7 +144,7 @@ public sealed partial class GameState
         Options.ShowWorldCup = true;
     }
 
-    /// <summary>Sicherung aus dem HOK übernehmen (A834, <c>OriginalImport.Rest.cs</c>); null = keine offen.</summary>
+    /// <summary>Sicherung aus dem HOK übernehmen (A834, <c>OriginalImport.ManagerAreas.cs</c>); null = keine offen.</summary>
     internal void ImportWorldCupOptionBackup(bool? backup) => _worldCupOptionBackup = backup;
 
     /// <summary>Offene Sicherung des Schalters „WM-Spiele“ (DGROUP 0x22C) oder null.</summary>

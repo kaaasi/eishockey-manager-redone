@@ -32,8 +32,8 @@ internal static class HokPatch
             {
                 switch (args[i])
                 {
-                    case "--manager": manager = int.Parse(Next(args, ref i)); break;
-                    case "--id": id = int.Parse(Next(args, ref i)); break;
+                    case "--manager": manager = int.Parse(HokArgs.Next(args, ref i)); break;
+                    case "--id": id = int.Parse(HokArgs.Next(args, ref i)); break;
                     case "--force": force = true; break;
                     default:
                         var eq = args[i].IndexOf('=');
@@ -64,7 +64,4 @@ internal static class HokPatch
             return 1;
         }
     }
-
-    private static string Next(IReadOnlyList<string> args, ref int i) =>
-        ++i < args.Count ? args[i] : throw new ArgumentException($"{args[i - 1]} braucht einen Wert.");
 }

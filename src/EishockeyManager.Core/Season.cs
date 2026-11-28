@@ -169,6 +169,23 @@ public sealed class TableRow
 
     /// <summary>Bilanz der letzten acht Spiele wie im Original.</summary>
     public string Balance => new(Form.TakeLast(8).ToArray());
+
+    /// <summary>
+    /// Schreibt ein Ergebnis fort (Tore, S/U/N, Bilanz) – Liga (<see cref="LeagueTable"/>) und Europapokalgruppen
+    /// (<see cref="CupGroup"/>). Eine Bilanz führt das Original nur für Liga und WM (Code 7/8); die Gruppenansichten zeigen sie
+    /// nicht.
+    /// </summary>
+    internal void AddResult(int goalsFor, int goalsAgainst, bool home)
+    {
+        GoalsFor += goalsFor;
+        GoalsAgainst += goalsAgainst;
+        char c;
+        if (goalsFor > goalsAgainst) { Wins++; c = 'S'; }
+        else if (goalsFor == goalsAgainst) { Draws++; c = 'U'; }
+        else { Losses++; c = 'N'; }
+        // [ORIGINAL] 0x50283 mit DGROUP 0x7CE „sSnNuU“: Heimverein klein (s/u/n), Gast groß (S/U/N).
+        Form.Add(home ? char.ToLowerInvariant(c) : c);
+    }
 }
 
 public static class LeagueTable
@@ -217,12 +234,12 @@ public static class LeagueTable
             {
                 if (!total.TryGetValue(r.Home, out var home) || !total.TryGetValue(r.Away, out var away))
                     continue;
-                Add(home, r.HomeGoals, r.AwayGoals, true);
-                Add(away, r.AwayGoals, r.HomeGoals, false);
+                home.AddResult(r.HomeGoals, r.AwayGoals, true);
+                away.AddResult(r.AwayGoals, r.HomeGoals, false);
                 if (view == TableView.Heim)
-                    Add(shown[r.Home], r.HomeGoals, r.AwayGoals, true);
+                    shown[r.Home].AddResult(r.HomeGoals, r.AwayGoals, true);
                 else if (view == TableView.Auswaerts)
-                    Add(shown[r.Away], r.AwayGoals, r.HomeGoals, false);
+                    shown[r.Away].AddResult(r.AwayGoals, r.HomeGoals, false);
             }
             ExchangeSort(order, (b, a) => Better(total[b], total[a]));
         }
@@ -342,15 +359,4 @@ public static class LeagueTable
                     (order[i], order[j]) = (order[j], order[i]);
     }
 
-    private static void Add(TableRow row, int goalsFor, int goalsAgainst, bool home)
-    {
-        row.GoalsFor += goalsFor;
-        row.GoalsAgainst += goalsAgainst;
-        char c;
-        if (goalsFor > goalsAgainst) { row.Wins++; c = 'S'; }
-        else if (goalsFor == goalsAgainst) { row.Draws++; c = 'U'; }
-        else { row.Losses++; c = 'N'; }
-        // [ORIGINAL] 0x50283 mit DGROUP 0x7CE „sSnNuU“: Heimverein klein (s/u/n), Gast groß (S/U/N).
-        row.Form.Add(home ? char.ToLowerInvariant(c) : c);
-    }
 }

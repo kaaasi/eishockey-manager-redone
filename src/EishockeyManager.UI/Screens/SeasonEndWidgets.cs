@@ -69,14 +69,8 @@ public static class SeasonInfo
     /// „Zweite Liga“, „Oberliga“ – nicht die Tabelle 0x9E0 („Zweiten Liga“) des Vereinsfensters. DOSBox-Bild <c>file16_9</c>
     /// „1. Platz der Zweite Liga“; ebenso das Karriere-Video (<c>FinanceCalibrationTests</c>).
     /// </summary>
-    public static string LeagueGenitive(League league) => league switch
-    {
-        League.Bundesliga => "Bundesliga",
-        League.ZweiteLiga => "Zweite Liga",
-        _ => "Oberliga",
-    };
-
-    /// <summary>Überschriften der Ligen auf dem Saisonende-Bildschirm.</summary>
+    /// <remarks>Dieselben Namen zeigen die Überschriften des Saisonende-Bildschirms, die Historie, die Ligapaarungen und die
+    /// Spielstandsinfo (<c>SaveInfo</c>).</remarks>
     public static string LeagueName(League league) => league switch
     {
         League.Bundesliga => "Bundesliga",

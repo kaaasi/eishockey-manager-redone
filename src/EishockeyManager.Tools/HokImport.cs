@@ -13,8 +13,6 @@ namespace EishockeyManager.Tools;
 /// </summary>
 internal static class HokImport
 {
-    public const int DefaultSeed = 1993;
-
     public static int Run(IReadOnlyList<string> args)
     {
         if (args.Count < 2)
@@ -27,7 +25,7 @@ internal static class HokImport
         if (Path.GetExtension(target).Length == 0)
             target += SaveGame.FileExtension;
         string? gameData = null;
-        var seed = DefaultSeed;
+        var seed = HokArgs.DefaultSeed;
         var force = false;
         try
         {
@@ -35,8 +33,8 @@ internal static class HokImport
             {
                 switch (args[i])
                 {
-                    case "--gamedata": gameData = Next(args, ref i); break;
-                    case "--seed": seed = int.Parse(Next(args, ref i)); break;
+                    case "--gamedata": gameData = HokArgs.Next(args, ref i); break;
+                    case "--seed": seed = int.Parse(HokArgs.Next(args, ref i)); break;
                     case "--force": force = true; break;
                     default: throw new ArgumentException($"Unbekannte Option „{args[i]}“.");
                 }
@@ -70,7 +68,4 @@ internal static class HokImport
             return 1;
         }
     }
-
-    private static string Next(IReadOnlyList<string> args, ref int i) =>
-        ++i < args.Count ? args[i] : throw new ArgumentException($"{args[i - 1]} braucht einen Wert.");
 }

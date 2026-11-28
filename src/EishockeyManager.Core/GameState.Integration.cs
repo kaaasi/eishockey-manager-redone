@@ -40,7 +40,7 @@ public sealed partial class GameState
         // Integration Runde 11: Teamwert der Aufstellung beim Spielstart (Club.ReferenceRating) nach der Neuaufstellung der
         // Managervereine neu schreiben. Das Feld ist Teil des Spielstands, wird aber nicht mehr gelesen (Konzept K3).
         foreach (var club in Clubs)
-            if (Managers.Any(m => m.ClubIndex == club.Index))
+            if (IsClubManaged(club.Index))
                 club.ReferenceRating = TeamStrength.Rating(club.Lineup);
     }
 
@@ -152,7 +152,7 @@ public sealed partial class GameState
 
     /// <summary>
     /// Neue Saison: Kader, Stammverträge, Leihende, Aufstellungen und Markt gemeinsam umstellen.
-    /// Das Training beginnt mit Tag 0 neu (siehe <see cref="CatchUpTraining"/>).
+    /// Das Training beginnt mit Tag 0 neu (Tageslauf <see cref="ManagerSquadRun"/>).
     /// </summary>
     partial void OnNewSeasonTeam()
     {

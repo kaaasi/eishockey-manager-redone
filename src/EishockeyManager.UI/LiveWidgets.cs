@@ -1,3 +1,5 @@
+using EishockeyManager.UI.Screens.Competitions;
+
 namespace EishockeyManager.UI;
 
 /// <summary>
@@ -73,11 +75,11 @@ public static class LiveWidgets
     {
         value = Math.Min(value, max);
         if (max > value)
-            FillInclusive(s, x, y, x + max, y + 1, BarBackground);
+            NationalWidgets.FillInclusive(s, x, y, x + max, y + 1, BarBackground);
         if (value <= 0)
             return;
         for (var k = 0; k < 2; k++)
-            FillInclusive(s, x, y + k, x + value, y + k, BarColors[k]);
+            NationalWidgets.FillInclusive(s, x, y + k, x + value, y + k, BarColors[k]);
     }
 
     /// <summary>
@@ -91,10 +93,10 @@ public static class LiveWidgets
         value = Math.Min(value, max);
         if (value > 0)
             for (var k = 0; k < 2; k++)
-                FillInclusive(s, x + 2 + k, y + max - value - 1, x + 2 + k, y + max, BarColors[k]);
+                NationalWidgets.FillInclusive(s, x + 2 + k, y + max - value - 1, x + 2 + k, y + max, BarColors[k]);
         if (max > value)
             for (var k = 0; k < 2; k++)
-                FillInclusive(s, x + 2 + k, y, x + 2 + k, y + max - value, BarEmpty);
+                NationalWidgets.FillInclusive(s, x + 2 + k, y, x + 2 + k, y + max - value, BarEmpty);
     }
 
     /// <summary>
@@ -106,7 +108,7 @@ public static class LiveWidgets
         if (on)
             s.Blit(assets.Image(DigitsGraphic), LampSource, x + 1, y + 2, transparent: Transparent);
         else
-            FillInclusive(s, x, y + 1, x + 4, y + 5, LampOff);
+            NationalWidgets.FillInclusive(s, x, y + 1, x + 4, y + 5, LampOff);
     }
 
     /// <summary>
@@ -126,7 +128,4 @@ public static class LiveWidgets
             s.Fill(new Rect(x, y, DigitWidth, DigitHeight), DigitCellFill);
         s.Blit(assets.Image(DigitsGraphic), new Rect(digit * DigitWidth, 0, DigitWidth, DigitHeight), x, y, transparent: 0);
     }
-
-    private static void FillInclusive(Surface s, int x1, int y1, int x2, int y2, byte color) =>
-        s.Fill(new Rect(Math.Min(x1, x2), Math.Min(y1, y2), Math.Abs(x2 - x1) + 1, Math.Abs(y2 - y1) + 1), color);
 }

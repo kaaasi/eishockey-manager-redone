@@ -386,6 +386,24 @@ public sealed partial class GameState
         Phase = SeasonPhase.ClubSeasonOver;
     }
 
+    /// <summary>Stellen in <see cref="FinishSeason"/>, an denen <see cref="SeasonEndObserver"/> gerufen wird (nur Tests).</summary>
+    internal enum SeasonEndCheckpoint
+    {
+        /// <summary>Nach der Ewigen Tabelle, vor der großen Wanderung (Datei 0x56448).</summary>
+        Drift,
+        /// <summary>Nach der Wanderung, vor den 40 Würfen der Länder (Datei 0x5644E, 0x35EE3–0x35FC9).</summary>
+        NationMix,
+        /// <summary>Nach den Ländern, vor der Ligamischung (Datei 0x36013 ff.).</summary>
+        LeagueMix,
+    }
+
+    /// <summary>
+    /// Nur Tests (#1019, T03): wird in <see cref="FinishSeason"/> an den Stellen <see cref="SeasonEndCheckpoint"/> gerufen (Stromstand
+    /// und Teamwerte dort). Je Thread, damit parallele Tests sich nicht stören; kein Teil des Spielstands.
+    /// </summary>
+    [ThreadStatic]
+    internal static Action<SeasonEndCheckpoint, GameState>? SeasonEndObserver;
+
     /// <summary>29. April: Titel, Prämien, Ereignisse; Spielende nach der gewählten Dauer.</summary>
     private void FinishSeason()
     {
@@ -418,16 +436,19 @@ public sealed partial class GameState
         // [ORIGINAL] Ewige Tabelle nach dem Austausch (Datei 0x563AF ruft 0x5667A), mit der Liga der nächsten Saison
         // (Spur saisonwechsel Teil 3, S-K4; StatisticsHistory.cs). Ewige Bilanz und „Früher“ hängen nicht am Austausch.
         RecordSeasonStatistics();
+        SeasonEndObserver?.Invoke(SeasonEndCheckpoint.Drift, this);
         // [ORIGINAL] T03/A843/A935 (Spur saison-geld): große Wanderung der Teamwerte nach der Ewigen Tabelle (Datei 0x563AF) und vor
         // der Mischung (Datei 0x56448 vor 0x5644E), in der Satzfolge nach den Tauschen von Auf- und Absteigern
         // (SeasonFlow.LeagueSlots.cs, SeasonEndDriftOrder). Bis Runde 25 im Saisonwechsel nach der Mischung (OnNewSeasonManager).
         DriftSeasonEnd(record);
+        SeasonEndObserver?.Invoke(SeasonEndCheckpoint.NationMix, this);
         // A825 (Spur national Teil 2): [ORIGINAL] 0x35EDD mischt am 29. April zuerst die Länder (Datei 0x5644E, 0x35EE3–0x35FC9: 40 Würfe
         // aus dem gemeinsamen Strom, ohne Modusprüfung; CupsWorld.cs), danach die Ligen (Datei 0x36013 ff.).
         if (WorldCup is { } worldCup)
             worldCup.MixForNextSeason(Random);
         else
             Core.WorldCup.MixThrows(Random);
+        SeasonEndObserver?.Invoke(SeasonEndCheckpoint.LeagueMix, this);
         // [ORIGINAL] Ligamischung am 29. April nach Austausch und Ewiger Tabelle, vor dem Fenster mit den Prämien (Datei 0x5644E vor
         // 0x5645D; Spur saison Teil 3, S-K6-a, SeasonFlow.LeagueSlots.cs), im selben Aufruf 0x35EDD hinter den Ländern. Zieht seit Spur
         // wettbewerbe-regeln Teil 2 (#897, N3 = B) 3 · 55 · 2 Würfe aus dem gemeinsamen Strom (vorher abgeleitete Quelle SlotSeed, die

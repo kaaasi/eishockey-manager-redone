@@ -1,13 +1,15 @@
 using EishockeyManager.Core;
 
-namespace EishockeyManager.UI.Tests;
+namespace EishockeyManager.Tests.Support;
 
 /// <summary>
-/// Testaufbau (spielstaerke-manager-2): Managervereine spielen seit 0x98F8 mit den Werten ihrer Spieler. Tests, die einen
-/// Managerverein mit der Spielstärke seiner Datenbank voraussetzen (Tabellenplatz als Vorbedingung), setzen die
-/// Spielerwerte darauf (wie <c>ManagedSquads</c> in den Core-Tests).
+/// Testaufbau: Managervereine spielen seit 0x98F8 mit den Werten ihrer Spieler. Tests, die einen Managerverein mit der
+/// Spielstärke seiner Datenbank voraussetzen (Tabellenplatz als Vorbedingung), setzen die Spielerwerte darauf.
+/// Nur als Vorbedingung erlaubt, nie als Aussage über die Spielstärke: Im Original hängen die Spielerwerte nur von
+/// Start-Liga und Start-Stärke ab (DGROUP 0x4B42), nicht von der Datenbank (R8W3I-15, docs/spielberechnung.md §14).
+/// Gemeinsam für Core- und UI-Tests (UI: Link-Datei wie <c>GameDataFact.cs</c>).
 /// </summary>
-internal static class ManagedSquadsUi
+internal static class ManagedSquads
 {
     public static void PlayAtDatabaseStrength(GameState game)
     {

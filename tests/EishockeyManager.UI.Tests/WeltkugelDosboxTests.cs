@@ -42,7 +42,7 @@ public class WeltkugelDosboxTests
         Assert.Equal(mode, game.Mode);
         // Integration Runde 8, Welle 3 (R8W3I-01): Vorbedingung „Verein 2, stark“ wie NationalCoachMode4MenuTests
         // (spielstaerke-manager-2, 0x98F8: Managerverein spielt sonst mit den Werten seiner Spieler).
-        ManagedSquadsUi.PlayAtDatabaseStrength(game);
+        ManagedSquads.PlayAtDatabaseStrength(game);
         return game;
     }
 

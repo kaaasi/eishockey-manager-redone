@@ -23,7 +23,7 @@ public class MainMenuBefundeP3Tests
         setup.Managers.Add(new ManagerSetup { Name = "A", Head = 0, ClubIndex = 8 });
         setup.Managers.Add(new ManagerSetup { Name = "B", Head = 1, ClubIndex = 2 });
         var game = NewGame.Create(Formats.ClubDatabase.Parse(data), setup, seed);
-        ManagedSquadsUi.PlayAtTopStrength(game); // Vorbedingung Bundestrainer (#204: Wanderung der Teamwerte)
+        ManagedSquads.PlayAtTopStrength(game); // Vorbedingung Bundestrainer (#204: Wanderung der Teamwerte)
         return game;
     }
 

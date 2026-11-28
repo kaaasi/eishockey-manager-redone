@@ -19,10 +19,8 @@ public static partial class MatchEngine
             var series = round.FirstOrDefault(s => !s.IsDecided && s.Involves(home.Index) && s.Involves(away.Index));
             if (series is null)
                 continue;
-            var played = series.Games.Count;
-            if (round.Any(s => s.Games.Count > played))
-                return false; // eine Paarung dieses Termins ist schon gerechnet
-            return round.Any(s => s != series && !s.IsDecided && s.Games.Count == played);
+            // Grenze 1: ist eine Paarung dieses Termins schon gerechnet, meldet 0x32AA3 keinen Gleichstand mehr.
+            return OpenPairingStillTied(round, series, 1, s => s.IsDecided, s => s.Games.Count);
         }
         return false;
     }

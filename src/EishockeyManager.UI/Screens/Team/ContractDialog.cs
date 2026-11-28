@@ -185,9 +185,9 @@ public sealed class ContractDialog
             s.Text(mini, 76, d.Y + 27 + 8 * i, ":", Colors.White);
 
         DrawValue(s, mini, Field.Years, d.Y + 27, Core.Player.YearsText(Years != 0 ? Years : _baseYears));
-        DrawValue(s, mini, Field.Salary, d.Y + 35, ContractsScreen.FormatMoney(_salaryZero ? 0 : Salary != 0 ? Salary : _baseSalary));
+        DrawValue(s, mini, Field.Salary, d.Y + 35, GameState.FormatMoney(_salaryZero ? 0 : Salary != 0 ? Salary : _baseSalary));
         // [ORIGINAL] 0x4AAD4–0x4AB1C: +0x30 = 0 → „keine“, sonst der Betrag mit „ DM“ (0x38:0x2D8).
-        s.Text(mini, 81, d.Y + 43, Insured ? ContractsScreen.FormatMoney(Insurance) : "keine", Colors.White);
+        s.Text(mini, 81, d.Y + 43, Insured ? GameState.FormatMoney(Insurance) : "keine", Colors.White);
 
         Button(s, assets, AcceptButton, "Mach' ich!", PressedButton == AcceptButton);
         Button(s, assets, CancelButton, "Abbruch", PressedButton == CancelButton);

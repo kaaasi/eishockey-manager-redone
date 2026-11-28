@@ -64,7 +64,7 @@ public sealed partial class GameState
         foreach (var club in Clubs)
         {
             club.RemoveUnavailableFromLineup();
-            if (!Managers.Any(m => m.ClubIndex == club.Index))
+            if (!IsClubManaged(club.Index))
                 club.Lineup.FillGaps(club.Players);
         }
     }

@@ -181,7 +181,7 @@ public sealed partial class GameState
             .ToHashSet(StringComparer.Ordinal);
         var freeNames = new Queue<string>(market.DatabaseNames.Select(n => n.Name).Distinct()
             .Where(n => !inUse.Contains(n) && replacements.All(r => r.Name != n)));
-        foreach (var club in Clubs.Where(c => Managers.All(m => m.ClubIndex != c.Index)))
+        foreach (var club in Clubs.Where(c => !IsClubManaged(c.Index)))
         {
             var removed = club.Players.Where(p => poolNames.Contains(p.Name)).ToList();
             foreach (var p in removed)
