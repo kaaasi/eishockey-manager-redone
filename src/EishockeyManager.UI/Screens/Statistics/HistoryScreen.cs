@@ -75,7 +75,7 @@ public sealed class HistoryScreen : Screen
             LeagueOutcome.PlayoffQuarterFinal => ("Play-Off VIERTELFINALE", (byte)11),
             LeagueOutcome.PlayoffSemiFinal => ("Play-Off HALBFINALE", (byte)11),
             LeagueOutcome.PlayoffFinal => ("Play-Off ENDSPIEL", (byte)11),
-            _ => ($"{h.Rank}. Platz der {LeagueName(h.League)}", (byte)11),
+            _ => ($"{h.Rank}. Platz der {SeasonInfo.LeagueName(h.League)}", (byte)11),
         };
         var deb = h.Deb switch
         {
@@ -91,13 +91,6 @@ public sealed class HistoryScreen : Screen
         };
         return [league, deb, europe];
     }
-
-    private static string LeagueName(League league) => league switch
-    {
-        League.Bundesliga => "Bundesliga",
-        League.ZweiteLiga => "Zweite Liga",
-        _ => "Oberliga",
-    };
 
     public override void Draw(Surface s)
     {

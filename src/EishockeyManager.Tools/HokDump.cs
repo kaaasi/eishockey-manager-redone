@@ -66,12 +66,12 @@ internal static class HokDump
             var r = managers.AsSpan(i * OriginalSaveGame.ManagerRecordLength, OriginalSaveGame.ManagerRecordLength).ToArray();
             var club = r[0x14];
             var clubName = club < 150 ? GameText.Decode(clubs.AsSpan(club * OriginalSaveGame.ClubRecordLength, 0x16)) : "–";
-            var konto = I32(r, 0x97EA - 0x965B);
-            sb.AppendLine($"Manager {i}: „{GameText.Decode(r.AsSpan(0, 0x13))}“, Verein {club} {clubName}, Liga-Stufe {r[0x9746 - 0x965B]}");
-            sb.AppendLine($"  Konto {konto} Drittel = {konto / 3} DM, Eintritt {r[0x973F - 0x965B]} DM");
-            var stadium = 0x9771 - 0x965B;
+            var konto = I32(r, OriginalSaveGame.ManagerAccountField);
+            sb.AppendLine($"Manager {i}: „{GameText.Decode(r.AsSpan(0, 0x13))}“, Verein {club} {clubName}, Liga-Stufe {r[OriginalSaveGame.ManagerCostLeagueField]}");
+            sb.AppendLine($"  Konto {konto} Drittel = {konto / 3} DM, Eintritt {r[OriginalSaveGame.ManagerTicketPriceField]} DM");
+            var stadium = OriginalSaveGame.ManagerStadiumField;
             sb.AppendLine($"  Stadion-Stufen {string.Join(" ", Enumerable.Range(0, 9).Select(n => I16(r, stadium + 2 * n)))}, " +
-                          $"Sitzplätze {I16(r, stadium + 0x1D)}, Stehplätze {I16(r, stadium + 0x21)}");
+                          $"Sitzplätze {I16(r, stadium + OriginalSaveGame.StadiumSeatsField)}, Stehplätze {I16(r, stadium + OriginalSaveGame.StadiumStandingField)}");
         }
 
         for (var record = 0; record <= 4; record++)

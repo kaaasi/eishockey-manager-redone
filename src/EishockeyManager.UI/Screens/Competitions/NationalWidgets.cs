@@ -28,9 +28,12 @@ public static class NationalWidgets
         s.VLine(x2, y1, y2 - y1 + 1, color);
     }
 
-    /// <summary>Fläche (em.exe 0x902:0x800), Koordinaten einschließlich.</summary>
+    /// <summary>
+    /// Fläche (em.exe 0x902:0x800), Koordinaten einschließlich; vertauschte Ecken werden geordnet (Balken der Live-Anzeige,
+    /// <see cref="LiveWidgets"/>).
+    /// </summary>
     public static void FillInclusive(Surface s, int x1, int y1, int x2, int y2, byte color) =>
-        s.Fill(new Rect(x1, y1, x2 - x1 + 1, y2 - y1 + 1), color);
+        s.Fill(new Rect(Math.Min(x1, x2), Math.Min(y1, y2), Math.Abs(x2 - x1) + 1, Math.Abs(y2 - y1) + 1), color);
 
     /// <summary>Linker Rand des Mannschaftsfelds für Seite 0 (Heim) bzw. 1 (Gast).</summary>
     public static int PanelX(int side) => 31 + 134 * side;

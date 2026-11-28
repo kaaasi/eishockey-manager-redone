@@ -52,7 +52,7 @@ public sealed partial class GameState
             rec[F(0x13)] = (byte)manager.Head; // [ORIGINAL] Kopie des Kopfs 0x178 + m (an allen Ständen gleich)
             w.Block("0178")[m] = (byte)manager.Head; // [ORIGINAL] Kopf, den das Hauptmenü zeigt (Review 2026-11-10 B3)
             rec[F(0x14)] = (byte)slotOf[manager.ClubIndex];
-            rec[F(0xE4)] = OriginalExport.Byte(f.Stadium.TicketPrice);
+            rec[F(OriginalSaveGame.ManagerTicketPriceField)] = OriginalExport.Byte(f.Stadium.TicketPrice);
             rec[F(0xE5)] = 16;
             rec[F(0xE6)] = (byte)DebCupRoundOf(manager.ClubIndex);
             rec[F(0xE9)] = (byte)(oneSeasonOneManager ? 1 : 30);
@@ -75,7 +75,7 @@ public sealed partial class GameState
             for (var i = 0; i < Stadium.FeatureCount; i++)
             {
                 var feature = (StadiumFeature)i;
-                rec[F(0x116 + 2 * i)] = OriginalExport.Byte(stadium.Level(feature));
+                rec[F(OriginalSaveGame.ManagerStadiumField + 2 * i)] = OriginalExport.Byte(stadium.Level(feature));
                 rec[F(0x117 + 2 * i)] = OriginalExport.Byte(stadium.TargetLevel(feature));
             }
             for (var p = 0; p < Stadium.ProjectCount; p++)
@@ -85,15 +85,15 @@ public sealed partial class GameState
                     Stadium.StandingProject => stadium.WeeksLeft(StadiumProject.Stehplaetze, default),
                     _ => stadium.WeeksLeft(StadiumProject.Feature, (StadiumFeature)p),
                 });
-            OriginalExport.Write16(rec, F(0x133), stadium.Seats);
+            OriginalExport.Write16(rec, F(OriginalSaveGame.ManagerStadiumField + OriginalSaveGame.StadiumSeatsField), stadium.Seats);
             OriginalExport.Write16(rec, F(0x135), stadium.SeatsTarget);
-            OriginalExport.Write16(rec, F(0x137), stadium.Standing);
+            OriginalExport.Write16(rec, F(OriginalSaveGame.ManagerStadiumField + OriginalSaveGame.StadiumStandingField), stadium.Standing);
             OriginalExport.Write16(rec, F(0x139), stadium.StandingTarget);
 
             OriginalExport.Write16(rec, F(0x173), f.SponsorRating);
             for (var k = 0; k < manager.PowerPlayCounts.Length; k++)
                 OriginalExport.Write16(rec, F(0x177 + 2 * k), manager.PowerPlayCounts[k]);
-            OriginalExport.Write32(rec, F(0x18F), OriginalExport.Thirds(manager.Money));
+            OriginalExport.Write32(rec, F(OriginalSaveGame.ManagerAccountField), OriginalExport.Thirds(manager.Money));
 
             // Darlehen +0x19B + 4 · i (i = 0–3 Manager, 4 Bank), negativ = Schuld, Drittel-DM.
             var bank = OriginalExport.Thirds(f.Bank.Balance);

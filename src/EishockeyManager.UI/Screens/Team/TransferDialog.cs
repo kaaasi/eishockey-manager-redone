@@ -226,13 +226,13 @@ public sealed class TransferDialog
                 // [APPROX] Das Original zeigt nur die Marke; das Remake schreibt den Vorgabebetrag davor.
                 s.Text(a.Flow, b.X + 9, b.Y + 19, "Ihr Angebot:", Colors.White);
                 var field = AmountField;
-                var x = s.Text(mini, field.X, field.Y + 2, _editing ? _edit : TransferScreen.Money(Amount), Colors.White);
+                var x = s.Text(mini, field.X, field.Y + 2, _editing ? _edit : GameState.FormatMoney(Amount), Colors.White);
                 s.Fill(new Rect(x + 1, field.Y + 1, 3, 6), 1);
                 break;
             case DialogKind.Sale:
                 s.TextCentered(mini, cx, b.Y + 18, $"{Player!.Name}, {Player.Age} Jahre alt", Colors.White);
                 s.Text(mini, b.X + 6, b.Y + 27, "Ablöse:", Colors.White);
-                s.Text(mini, b.X + 84, b.Y + 27, TransferScreen.Money(Price), Colors.White);
+                s.Text(mini, b.X + 84, b.Y + 27, GameState.FormatMoney(Price), Colors.White);
                 s.TextCentered(mini, cx, b.Y + 39, Listing is null ? "Auf den Transfermarkt ?" : "Steht auf dem Transfermarkt.", Colors.White);
                 break;
         }
@@ -261,9 +261,9 @@ public sealed class TransferDialog
         s.HLine(6, 0x2B, 0xA3 - 6 + 1, Colors.White); // [ORIGINAL] Datei 0x4917B–0x4919A: Linie (6 | 0x2B)–(0xA3 | 0x2B), Farbe 7
         var buyer = Kind == DialogKind.Bid ? Bid!.Buyer : Offer!.Buyer;
         s.Text(mini, 7, 0x34 - 4, "ANGEBOT von " + buyer.Name + " :", Colors.White);
-        s.TextCentered(mini, (4 + 0xA6) / 2, 0x3C - 4, TransferScreen.Money(Price), Colors.White);
+        s.TextCentered(mini, (4 + 0xA6) / 2, 0x3C - 4, GameState.FormatMoney(Price), Colors.White);
         s.Text(mini, 7, 0x44 - 4, "ABLÖSESUMME :", Colors.White);
-        var fee = Kind == DialogKind.Bid ? TransferScreen.Money(TransferMarket.TransferFee(Bid!)) : "keine";
+        var fee = Kind == DialogKind.Bid ? GameState.FormatMoney(TransferMarket.TransferFee(Bid!)) : "keine";
         s.TextCentered(mini, (4 + 0xA6) / 2, 0x4C - 4, fee, Colors.White);
         ContractDialog.Button(s, a, CancelButton, CancelText, PressedButton == CancelButton);
         ContractDialog.Button(s, a, ConfirmButton, ConfirmText, PressedButton == ConfirmButton);
@@ -289,10 +289,10 @@ public sealed class TransferDialog
     {
         string[] lines = Kind switch
         {
-            DialogKind.Talent => ["Möchten Sie, daß Ihr 'Spion'", "für Sie auf Talentsuche geht?", "Preis: " + TransferScreen.Money(Price)],
-            DialogKind.Subsidy => ["Nehmen Sie einen Sponsor-", "zuschuß von", TransferScreen.Money(Price) + " an ?"],
-            DialogKind.Seller => [$"Nehmen Sie das Angebot ({TransferScreen.Money(Price)})", $"für {Player!.Name} an ?"],
-            _ => ["Nehmen Sie das Angebot", $"({TransferScreen.Money(Price)}) für", Player!.Name + " an ?"],
+            DialogKind.Talent => ["Möchten Sie, daß Ihr 'Spion'", "für Sie auf Talentsuche geht?", "Preis: " + GameState.FormatMoney(Price)],
+            DialogKind.Subsidy => ["Nehmen Sie einen Sponsor-", "zuschuß von", GameState.FormatMoney(Price) + " an ?"],
+            DialogKind.Seller => [$"Nehmen Sie das Angebot ({GameState.FormatMoney(Price)})", $"für {Player!.Name} an ?"],
+            _ => ["Nehmen Sie das Angebot", $"({GameState.FormatMoney(Price)}) für", Player!.Name + " an ?"],
         };
         return new OriginalDialog(OriginalDialogKind.Question, title, lines[0], lines[1], lines.Length > 2 ? lines[2] : "",
             ConfirmText, CancelText);

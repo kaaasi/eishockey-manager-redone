@@ -77,7 +77,7 @@ public static class OriginalSavePatcher
         var header = template[..OriginalSaveGame.PlainLength].ToArray();
         var rec = save.Block("965B");
         var recStart = manager * OriginalSaveGame.ManagerRecordLength;
-        void Rec16(int dgroup, int value) => BitConverter.GetBytes((short)value).CopyTo(rec, recStart + dgroup - 0x965B);
+        void Rec16(int field, int value) => BitConverter.GetBytes((short)value).CopyTo(rec, recStart + field);
 
         foreach (var (rawName, value) in list)
         {
@@ -86,11 +86,11 @@ public static class OriginalSavePatcher
                 case "konto":
                 {
                     var dm = Int(rawName, value, -(int.MaxValue / 3), int.MaxValue / 3);
-                    BitConverter.GetBytes(dm * 3).CopyTo(rec, recStart + 0x97EA - 0x965B);
+                    BitConverter.GetBytes(dm * 3).CopyTo(rec, recStart + OriginalSaveGame.ManagerAccountField);
                     break;
                 }
                 case "eintritt":
-                    rec[recStart + 0x973F - 0x965B] = (byte)Int(rawName, value, 1, 99);
+                    rec[recStart + OriginalSaveGame.ManagerTicketPriceField] = (byte)Int(rawName, value, 1, 99);
                     break;
                 case "stadion":
                 {
@@ -98,14 +98,14 @@ public static class OriginalSavePatcher
                     if (parts.Length != 9)
                         throw new ArgumentException("Feld „stadion“ braucht neun Stufen, durch Komma getrennt.");
                     for (var n = 0; n < 9; n++)
-                        Rec16(0x9771 + 2 * n, Int("stadion", parts[n], 0, 9));
+                        Rec16(OriginalSaveGame.ManagerStadiumField + 2 * n, Int("stadion", parts[n], 0, 9));
                     break;
                 }
                 case "sitz":
-                    Rec16(0x9771 + 0x1D, Int(rawName, value, 0, short.MaxValue));
+                    Rec16(OriginalSaveGame.ManagerStadiumField + OriginalSaveGame.StadiumSeatsField, Int(rawName, value, 0, short.MaxValue));
                     break;
                 case "steh":
-                    Rec16(0x9771 + 0x21, Int(rawName, value, 0, short.MaxValue));
+                    Rec16(OriginalSaveGame.ManagerStadiumField + OriginalSaveGame.StadiumStandingField, Int(rawName, value, 0, short.MaxValue));
                     break;
                 case "datum":
                 {

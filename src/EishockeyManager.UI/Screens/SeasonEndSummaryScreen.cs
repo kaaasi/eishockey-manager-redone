@@ -107,7 +107,7 @@ public sealed class SeasonEndSummaryScreen : Screen
     /// (<c>file46_2</c> „10.“ pixelgleich, <c>file16_9</c>, <c>file13_15</c>, <c>file23_1</c>: Mitte der Zeile 11,5–15,5 Pixel rechts von 160).
     /// </summary>
     public static string PlaceText(ManagerSeasonResult result) =>
-        $"{Competitions.CompetitionWidgets.Number(result.Rank, PlaceWidth)}. Platz der {SeasonInfo.LeagueGenitive(result.League)}";
+        $"{Competitions.CompetitionWidgets.Number(result.Rank, PlaceWidth)}. Platz der {SeasonInfo.LeagueName(result.League)}";
 
     private static Rect Cell(int column, int row) => new(column * IconWidth, row * IconHeight, IconWidth, IconHeight);
 

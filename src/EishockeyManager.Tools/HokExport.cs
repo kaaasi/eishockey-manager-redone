@@ -18,8 +18,6 @@ namespace EishockeyManager.Tools;
 /// </summary>
 internal static class HokExport
 {
-    public const int DefaultSeed = 1993;
-
     private const string Usage =
         "Aufruf: emtool hok export <spielstand> <ziel.hok> [--gamedata ordner] [--force]\n" +
         "        emtool hok export --neu <name> <vereinsindex> <ziel.hok> [--spieltage n] [--kopf n] [--ems datei] [--gamedata ordner] [--seed n] [--force]";
@@ -31,7 +29,7 @@ internal static class HokExport
             string? gameData = null, ems = null, newName = null;
             int? newClub = null;
             var head = 0;
-            var seed = DefaultSeed;
+            var seed = HokArgs.DefaultSeed;
             var matchDays = 0;
             var force = false;
             var positional = new List<string>();
@@ -39,15 +37,15 @@ internal static class HokExport
             {
                 switch (args[i])
                 {
-                    case "--gamedata": gameData = Next(args, ref i); break;
-                    case "--seed": seed = int.Parse(Next(args, ref i)); break;
+                    case "--gamedata": gameData = HokArgs.Next(args, ref i); break;
+                    case "--seed": seed = int.Parse(HokArgs.Next(args, ref i)); break;
                     case "--force": force = true; break;
-                    case "--spieltage": matchDays = int.Parse(Next(args, ref i)); break;
-                    case "--ems": ems = Next(args, ref i); break;
-                    case "--kopf": head = int.Parse(Next(args, ref i)); break;
+                    case "--spieltage": matchDays = int.Parse(HokArgs.Next(args, ref i)); break;
+                    case "--ems": ems = HokArgs.Next(args, ref i); break;
+                    case "--kopf": head = int.Parse(HokArgs.Next(args, ref i)); break;
                     case "--neu":
-                        newName = Next(args, ref i);
-                        newClub = int.Parse(Next(args, ref i));
+                        newName = HokArgs.Next(args, ref i);
+                        newClub = int.Parse(HokArgs.Next(args, ref i));
                         break;
                     default:
                         if (args[i].StartsWith("--", StringComparison.Ordinal))
@@ -112,7 +110,4 @@ internal static class HokExport
             return 1;
         }
     }
-
-    private static string Next(IReadOnlyList<string> args, ref int i) =>
-        ++i < args.Count ? args[i] : throw new ArgumentException($"{args[i - 1]} braucht einen Wert.");
 }

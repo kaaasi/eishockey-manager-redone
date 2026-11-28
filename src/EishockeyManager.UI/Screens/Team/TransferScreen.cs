@@ -1,4 +1,3 @@
-using System.Globalization;
 using EishockeyManager.Core;
 using EishockeyManager.Formats;
 
@@ -434,8 +433,8 @@ public sealed class TransferScreen : Screen
             s.TextRight(mini, 274, y, p.Technique.ToString(), c);
             s.TextRight(mini, 286, y, p.Form.ToString(), c);
             s.TextRight(mini, 313, y, p.Age + " J.", c);
-            s.Text(mini, ListLeft, y + 6, Money(l.Price) + " (K)", TeamUi.DimColor);
-            s.TextRight(mini, 315, y + 6, Money(l.LoanFee) + " (L)", TeamUi.DimColor);
+            s.Text(mini, ListLeft, y + 6, GameState.FormatMoney(l.Price) + " (K)", TeamUi.DimColor);
+            s.TextRight(mini, 315, y + 6, GameState.FormatMoney(l.LoanFee) + " (L)", TeamUi.DimColor);
             EntryLine(s, y + 12, _repaintedLines.Contains(y + 12));
         }
         for (var i = 0; i < listings.Count; i++)
@@ -523,12 +522,12 @@ public sealed class TransferScreen : Screen
             {
                 // [ORIGINAL] „Saldo:“ und Betrag (6 | 9 | 18) = Index 240, `file40_04` (vorher Index 29; Review R14N-02).
                 s.Text(Assets.Mini, x, 225, label, SaldoColor);
-                s.Text(Assets.Mini, x, 232, Money(value), SaldoColor);
+                s.Text(Assets.Mini, x, 232, GameState.FormatMoney(value), SaldoColor);
             }
             else
             {
                 TeamUi.Label(s, Assets, x, 225, label, Colors.White, TeamUi.DialogShadow);
-                s.Text(Assets.Mini, x + 5, 232, Money(value), Colors.White);
+                s.Text(Assets.Mini, x + 5, 232, GameState.FormatMoney(value), Colors.White);
             }
         }
         // [ORIGINAL] em.exe Datei 0x46704: Knopf „Talent“ nur bei Zähler 0 (keine laufende Suche).
@@ -611,9 +610,6 @@ public sealed class TransferScreen : Screen
     private readonly HashSet<int> _repaintedLines = [];
     private TransferListing[] _drawnListings = [];
     private int _lastHoverEntry = -1;
-
-    /// <summary>„231.000 DM“.</summary>
-    public static string Money(long amount) => amount.ToString("#,0", CultureInfo.GetCultureInfo("de-DE")) + " DM";
 }
 
 /// <summary>Anmeldung im Hauptmenü.</summary>

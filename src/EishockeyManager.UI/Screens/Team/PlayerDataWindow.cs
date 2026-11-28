@@ -75,9 +75,6 @@ public static class PlayerDataWindow
     /// <summary>Beschriftung der Torzeile: bei Torhütern „GTore:“ (Gegentore), sonst „Tore:“. [ORIGINAL] 0x041AC, 0x45D–0x47B.</summary>
     public static string GoalsLabel(Player p) => p.Role == Formats.PlayerRole.Goalkeeper ? "GTore:" : "Tore:";
 
-    /// <summary>Zahl in der Tore-/Spiele-Zeile eines Torhüters bzw. Feldspielers (Liga). Torhüter: Gegentore.</summary>
-    public static int LeagueGoals(Player p) => p.Role == Formats.PlayerRole.Goalkeeper ? p.GoalsAgainst : p.Goals;
-
     /// <summary>
     /// Text der Zeile „Tore:“/„Spiele:“ je Spalte: <c>Zahl( n)</c>. [ORIGINAL] A367, em.exe Datei 0x4651–0x469B (Tore: Byte +0x03 + i,
     /// in Klammern Wort +0x22 + 2 i) und 0x4753/0x4793 (Spiele: +0x06 + i, +0x1C + 2 i); die Zahlenfunktion schreibt für 0 „-“. Spalte
@@ -104,7 +101,7 @@ public static class PlayerDataWindow
     public static long PurchasePrice(Player p) => p.PurchasePrice;
 
     /// <summary>Geldbetrag in DM; 0 wird als „-“ gezeigt. [ORIGINAL] 0x041AC, 0x861–0x889 (Zahl 0 = „-“, sonst „ DM“ angehängt).</summary>
-    public static string Money(long amount) => amount > 0 ? TransferScreen.Money(amount) : "-";
+    public static string Money(long amount) => amount > 0 ? GameState.FormatMoney(amount) : "-";
 
     /// <summary>
     /// Inhalt der sechs Datenfelder. Reihenfolge wie <see cref="DataHeads"/>. [ORIGINAL] 0x041AC, Adressen 0x684–0x947:

@@ -73,6 +73,24 @@ public sealed class OriginalSaveGame
     /// <summary>Größe eines Manager-Datensatzes im Block 0x965B. [ORIGINAL] Multiplikator 0x1AF (Datei 0x5B528).</summary>
     public const int ManagerRecordLength = 0x1AF;
 
+    /// <summary>Konto im Manager-Datensatz (DGROUP 0x97EA − 0x965B), Drittel-DM, 32 Bit.</summary>
+    public const int ManagerAccountField = 0x18F;
+
+    /// <summary>Eintrittspreis im Manager-Datensatz (DGROUP 0x973F − 0x965B), DM, 1 Byte.</summary>
+    public const int ManagerTicketPriceField = 0xE4;
+
+    /// <summary>Liga-Stufe der Kosten im Manager-Datensatz (DGROUP 0x9746 − 0x965B), 1 Byte.</summary>
+    public const int ManagerCostLeagueField = 0xEB;
+
+    /// <summary>Beginn des Stadions im Manager-Datensatz (DGROUP 0x9771 − 0x965B): Stufe/Ziel je Bereich, 2 Byte je Bereich.</summary>
+    public const int ManagerStadiumField = 0x116;
+
+    /// <summary>Sitzplätze relativ zu <see cref="ManagerStadiumField"/>, 16 Bit.</summary>
+    public const int StadiumSeatsField = 0x1D;
+
+    /// <summary>Stehplätze relativ zu <see cref="ManagerStadiumField"/>, 16 Bit.</summary>
+    public const int StadiumStandingField = 0x21;
+
     /// <summary>Größe eines Vereinsdatensatzes im Block hinter 0x9657. [ORIGINAL] Multiplikator 0x3D.</summary>
     public const int ClubRecordLength = 0x3D;
 

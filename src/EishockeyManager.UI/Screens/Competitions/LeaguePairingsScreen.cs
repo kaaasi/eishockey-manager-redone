@@ -99,19 +99,12 @@ public sealed class LeaguePairingsScreen : Screen
     /// 0x51049, 0x052CF) sind nicht bis in alle Unteraufrufe verfolgt.
     /// </summary>
     public static string LiveHeader(League league, int day, bool previousWasPlayed, int minute) =>
-        LeagueName(league) + "   " + CompetitionWidgets.Number(day, previousWasPlayed ? 2 : 1) + ".Spieltag  " + "  "
+        SeasonInfo.LeagueName(league) + "   " + CompetitionWidgets.Number(day, previousWasPlayed ? 2 : 1) + ".Spieltag  " + "  "
         + CompetitionWidgets.Number(minute, 1) + ".MINUTE";
 
     private int Count => Host.Game is { } g && g.Schedules.TryGetValue(League, out var days) ? days.Count : 0;
 
     public string MiddleLabel => League == League.Bundesliga ? "Play-Off" : "Aufstieg";
-
-    public static string LeagueName(League league) => league switch
-    {
-        League.Bundesliga => "Bundesliga",
-        League.ZweiteLiga => "Zweite Liga",
-        _ => "Oberliga",
-    };
 
     /// <summary>Ob der angezeigte Tag schon gespielt ist.</summary>
     public bool IsPlayed => Host.Game is { } g && Day <= g.PlayedMatchDays;
@@ -120,7 +113,7 @@ public sealed class LeaguePairingsScreen : Screen
     public string Header(bool previousWasPlayed)
     {
         var date = Host.Game is { } g && Day <= g.MatchDayDates.Count ? SeasonCalendar.LayoutDate(g.MatchDayDates[Day - 1]) : default;
-        return LeagueName(League) + "   " + CompetitionWidgets.Number(Day, previousWasPlayed ? 2 : 1)
+        return SeasonInfo.LeagueName(League) + "   " + CompetitionWidgets.Number(Day, previousWasPlayed ? 2 : 1)
             + ".Spieltag  " + date.Day + "." + date.Month + ".";
     }
 
