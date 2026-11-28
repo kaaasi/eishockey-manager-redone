@@ -209,7 +209,7 @@ Dazu 8 D-Themen mit 26 IDs (Abschnitt 4).
 | S03 | Torszene: Wiederholung, Bildtakt, Speicher | A439, A470, A471, A473, A474 | E 4, K 1 | Die Wiederholung zeigt dieselbe Szene, Tasten zählen nur während der Szene, 18,2 Bilder/s auf 60 Hz verteilt. | ja | M | bleibt | Neu Würfeln der Wiederholung erst mit bitgenauem Zufallsmodus; Takt und Speichermangel sind Plattformersatz. | |
 | S04 | Paarungsseiten im Spiel: Minute, Zwischenstände, Penalty-Anzeige | A292, A436, F068, F076 | K 4 | Während laufender Spiele fehlen „n.Minute“, Zwischenstände und die Farbstreifen des Penaltyschießens. | ja | M | **ändern** | Sichtbar fehlende Anzeigen des Originals; Quellen in em.exe bekannt (0x3183C, 0x35CBE). | |
 | S05 | Live-Bildschirm: Reporter und Tasten | A448, A449, A453, A456, A457, A475 | E 2, K 4 | Die Leertaste ist nicht angeschlossen; Reihenfolge der Reportermeldungen in der Minute, Reporterbild und Zuschauerzeile sind genähert. | ja | S | bleibt | Enter/Escape nach Nutzerentscheidung 31.10.2026 (#205), Strahlrücklauf Plattformersatz; A456 nennt den Schützen schon (Code), offen ist nur die Reihenfolge in der Minute; übrige nur Pixel. | |
-| S06 | Aufstellung im Spiel: Rechtsklick ohne Reihe | A678 | K 1 | Beim Rechtsklick ohne Reihe folgen Art-Prüfung und Plätze dem Linksklick, ohne eigenen Beleg. | nein | S | bleibt | Remake meldet wie das Original nichts (`ClickPlayerInMatch`); angenommen ist nur, dass Art-Prüfung und Plätze dem Linksklick folgen. | |
+| S06 | Aufstellung im Spiel: Rechtsklick ohne Reihe | A678 | K 1 | Beim Rechtsklick ohne Reihe folgen Art-Prüfung und Plätze dem Linksklick, ohne eigenen Beleg. | nein | S | bleibt | Remake meldet wie das Original nichts (`ClickPlayerInMatch`); angenommen ist nur, dass Art-Prüfung und Plätze dem Linksklick folgen. **Runde 27 (`abgleich-dosbox-22b`):** widerlegt – im Spiel stellt der Rechtsklick Verteidiger ins freie Tor und Torhüter in die Abwehr; A678 jetzt V, Issue #1086. | |
 | S07 | Einsätze zählen am Spielende | A874, A898 | K 2 | Das Remake zählt Spiele beim Spielende statt beim Aufstellen im Spiel. | ja | S | bleibt | Spalte SP zeigt das Spiel erst nach dem Spiel; Endstand gleich. | |
 | S08 | Strafen ohne Spieler und Strafbank-Abfrage | A444, A880, A907, A964 | K 4 | Strafen ohne wählbaren Spieler zählen nur in den Strafminuten; die Nationalaufstellung fragt die Strafbank nicht ab. | nein | S | bleibt | Nur interne Zähler; nach dem Spiel sitzt niemand auf der Strafbank. | |
 | S09 | Zusehen und Torhüter draußen | A833, A942 | K 2 | Vereinsfeld 0x16 als IsManaged; Reihe nach „Torhüter draußen“ erst beim nächsten Spiel. | nein | S | bleibt | Gleichwertig für das Spiel; nur der Zeitpunkt des Schreibens weicht ab. | |
@@ -356,14 +356,14 @@ Diese Einträge sind nur mit einer DOSBox-Aufnahme oder einem Video zu belegen (
 
 | Nr | Thema | IDs | Offen |
 |---|---|---|---|
-| D01 | Modus „nur Weltkugel“ | A408, A411, A671 | Kader von Satz 0 ohne Verträge/Training, Poolplätze im Export, Konto 400.000 DM beim Oberliga-Tausch. |
+| D01 | Modus „nur Weltkugel“ | A408, A411, A671 | Kader von Satz 0 ohne Verträge/Training, Poolplätze im Export, Konto 400.000 DM beim Oberliga-Tausch. **Runde 27 (`abgleich-dosbox-22b`):** A408, A411 V (Issues #1084, #1085), A671 bleibt D. |
 | D02 | Saisonwechsel: Absteiger und Rückkehr gelisteter Spieler | A667, A706 | Absteiger bei doppeltem Platz und Rückkehr bei 29 Spielern sind nicht an einem Stand geprüft. |
-| D03 | Poolverteilung und Pool-Plätze | A707, A713, A945, A949 | Gruppen nach Liga statt Indexbereich, Grundstärken von Nationalspielern, Neuanlage bei Alter. |
-| D04 | Leihe, Bank und Darlehen zwischen Managern | A402, A613, A629 | Leihende, Sparbuch und Darlehen zwischen Managern nur nach Code bzw. an einem Stand. |
-| D05 | Laden: KAPUTT.HOK und Sperren | A599, A625 | Verhalten nach „Der kleine Mogelguru“ unbekannt; Sperren im HOK nicht gefunden. |
-| D06 | Talente und Spieler der Computervereine | A128, A131, A132, A427, A630 | Alter, Werte, verstecktes Talent und Namen der Computervereins-Talente ohne belegtes Gegenstück. |
-| D07 | Transfer: Meldung „unfair“ und verworfenes Gebot | A117, A259 | Grenze der Meldung nur aus dem Video, Umgang mit nicht ausführbarem Gebot offen. |
-| D08 | Live-Spiel: Reihenzahl, Pokalweg, Penalty, Verletzungsmerker, Zählfeld | A095, A896, A910, A912, A918 | Fälle, deren Wirkung nur ein DOSBox-Lauf zeigt (Sitzung 7 in `vorlagen/dosbox-aufnahme.md`). |
+| D03 | Poolverteilung und Pool-Plätze | A707, A713, A945, A949 | Gruppen nach Liga statt Indexbereich, Grundstärken von Nationalspielern, Neuanlage bei Alter. **Runde 27 (`abgleich-dosbox-22b`):** A707 X (Nachbildung 0x4981E). |
+| D04 | Leihe, Bank und Darlehen zwischen Managern | A402, A613, A629 | Leihende, Sparbuch und Darlehen zwischen Managern nur nach Code bzw. an einem Stand. **Runde 27 (`abgleich-dosbox-22b`):** A402 K, A613 X (FILE76, Runde 23); A629 bleibt D (Leihende). |
+| D05 | Laden: KAPUTT.HOK und Sperren | A599, A625 | Verhalten nach „Der kleine Mogelguru“ unbekannt; Sperren im HOK nicht gefunden. **Runde 27 (`abgleich-dosbox-22b`):** A599 E (Vorschlag: Original hängt in einer Endlosschleife, Entscheidung Nutzer offen). |
+| D06 | Talente und Spieler der Computervereine | A128, A131, A132, A427, A630 | Alter, Werte, verstecktes Talent und Namen der Computervereins-Talente ohne belegtes Gegenstück. **Runde 27 (`abgleich-dosbox-22b`):** A427 K (FILE75, Runde 23). |
+| D07 | Transfer: Meldung „unfair“ und verworfenes Gebot | A117, A259 | Grenze der Meldung nur aus dem Video, Umgang mit nicht ausführbarem Gebot offen. **Runde 27 (`abgleich-dosbox-22b`):** A117 K, A259 K – erledigt. |
+| D08 | Live-Spiel: Reihenzahl, Pokalweg, Penalty, Verletzungsmerker, Zählfeld | A095, A896, A910, A912, A918 | Fälle, deren Wirkung nur ein DOSBox-Lauf zeigt (Sitzung 7 in `vorlagen/dosbox-aufnahme.md`). **Runde 27 (`abgleich-dosbox-22b`):** A918 K (FILE80/FILE81); A910 schon X. |
 
 ## 5. Probe
 

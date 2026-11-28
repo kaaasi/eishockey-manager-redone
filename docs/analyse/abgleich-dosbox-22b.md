@@ -432,3 +432,18 @@ Gleiche Formel, gleiche Felder (Sturm 0x19/0x1B), gleiche Begrenzung; die Lände
   mit geändertem Status).
 - Alle Skripte laufen mit `~/referenz/original/gamedata/em.exe` (Pfad im Klon klein geschrieben) bzw. den Ständen unter
   `~/referenz/original/spielstaende/` mit Rückgabe 0.
+
+## Teil 2 – Klassen und Vorlage
+
+- `restliste-v1-klassen.csv`: Teil-1-IDs wie oben (A408, A411, A678 V; A918, A259 K; A899, A707 X; A599 E als Vorschlag; A786 Beleg
+  ergänzt) und die in Runde 23 ausgewerteten, noch als D geführten IDs aus Sitzung 1: A057, A065, A613, A614 X; A117, A402, A427 K;
+  A629 bleibt D (Leihende), Beleg um den erledigten Export-Teil ergänzt. Dazu #1078 P3-1: alte Doku-Pfade bei A754, A002, F018
+  auf `docs/archiv/analyse/…`.
+- Einmal `markerliste.py --write` (Ausnahme A22-D1 = C), danach ohne `--write` Rückgabe 0: V 3, D 15 (vorher 25), E 274, K 194,
+  X 2, unklassifiziert 0. Abschnitte „Klasse V nach Themen“ und „DOSBox-Sammelliste“ in `restliste-v1.md` nachgezogen; in
+  `abweichungen-v1.md` nur die Zeilen S06, D01, D03–D08 ergänzt (Anhang unverändert).
+- `vorlagen/dosbox-aufnahme.md`: Sitzung 3 Nr. 3 (A259) und Sitzung 4 Nr. 2 (A707) gestrichen, Sitzung 7 Nr. 5 (A910) entfällt,
+  Fotos zu S04 in Sitzung 2 Nr. 3; Sitzungen 4, 6 und 7 Nr. 4 als aufgenommen markiert, Sitzung 7 Nr. 6 Teil 1 (A918) als erledigt.
+  Sitzung 5 und Sitzung 7 Nr. 6 Teil 2 unverändert (`hok-patch-tabellen`).
+- #1078 P3-2 (`inventur.md:342` Testname) und P3-3 (`transfer.md` Migrationsdatei mit Herkunftshinweis) behoben.
+- `funktionskarte.py --csv` nach Teil 2: Statusverteilung wie vorher (keine Funktion geändert).

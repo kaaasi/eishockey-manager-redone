@@ -226,21 +226,29 @@ Sitzungen sind unabhängig und einzeln aufnehmbar; Reihenfolge nach Lust.
 3. **Zusatz Runde 26 (R26-D3 = B, Live-Spieltag; vor Nr. 1 aus FILE76 aufnehmen):** einen Ligaspieltag ansehen, an dem beide Manager eine
    eigene Paarung haben (nicht gegeneinander), möglichst als Video (Verschränkung der Paarungen je Minute, Reihenfolge der
    Tormeldungen: S01, A450, A909, A954). Einmal mit Darstellung 1, einmal mit Darstellung 2 „Dauer-Eisfeld“ (S02, A472). Einmal
-   die Leertaste drücken und die Spielmodus-Optionen fotografieren (S05, Datei 0x2CD1C).
+   die Leertaste drücken und die Spielmodus-Optionen fotografieren (S05, Datei 0x2CD1C). Während des Spiels die Paarungsseite mit
+   „n.Minute“ und Zwischenständen fotografieren; kommt an diesem oder einem späteren Spieltag (Pokal, Play-off) ein
+   Penaltyschießen, die Penalty-Anzeige mit den drei Farbstreifen fotografieren (S04: A292, A436, F068, F076; aus Sitzung 7 Nr. 5
+   verschoben, `abgleich-dosbox-22b`).
 
 ### Sitzung 3 – Spiel und Sperre
 
 1. Managerpaarung mit vierter Reihe und Reihenmodus 2 bzw. 3 spielen, Reihenwechsel im Live-Spiel fotografieren (A095).
 2. Nach einer Matchstrafe (gesperrter Spieler; tritt zufällig auf, ggf. mehrere Spieltage spielen oder Stand per `hok-patch`
    von der Leitstelle) im Hauptmenü sichern als **FILE79** (A625).
-3. Optional (A259, im Original evtl. nicht erreichbar): Gebot eines Computervereins offen lassen, bis dessen Kader voll ist, dann
-   annehmen; Meldung fotografieren.
+
+(Nr. 3 A259 entfällt: im Original nicht herstellbar, Computervereine führen keinen Kader; Nachbildung in
+`analyse/abgleich-dosbox-22b.md`.)
 
 ### Sitzung 4 – Modus „nur Weltkugel“, Start FILE18
 
+**Aufgenommen 26.11.2026 (FILE80/FILE81), ausgewertet in `analyse/abgleich-dosbox-22b.md` (A408, A411, A918).**
+
 1. FILE18 laden, über einen Trainingstag bzw. einen Vertragsablauf spielen, davor/danach sichern als **FILE80/FILE81** (A408;
    A411 nur, wenn der Pool vor dem Sichern belegt ist – im Transfermarkt prüfen, P3-2).
-2. Aus FILE81 weiter (P3-1): einen Listenwechsel mit einem Poolspieler eines Nationalteams abwarten, davor/danach sichern als **FILE82/FILE83** (A707).
+
+(Nr. 2 A707 entfällt: im Modus „nur Weltkugel“ gibt es für den Bundestrainer keinen Transfermarkt; die Nachbildung über em.exe
+reicht, A707 ist X – `analyse/abgleich-dosbox-22b.md`.)
 
 ### Sitzung 5 – Doppelter Zwangsabstieg (A667)
 
@@ -248,6 +256,8 @@ Sitzungen sind unabhängig und einzeln aufnehmbar; Reihenfolge nach Lust.
    Wunsch per `hok-patch` ab); vor und nach dem Saisonwechsel sichern als **FILE84/FILE85**, Ligatabellen fotografieren.
 
 ### Sitzung 6 – KAPUTT.HOK (A599)
+
+**Aufgenommen 26.11.2026 (Bilder `kaputt_1/2`), ausgewertet in `analyse/abgleich-dosbox-22b.md`.**
 
 1. `KAPUTT.HOK` laden, alles nach dem Bildschirm „Der kleine Mogelguru“ fotografieren (bis zum Hauptmenü bzw. Programmende).
 
@@ -260,10 +270,9 @@ Was je ID abzulesen ist: Feld „Beleg“ in `restliste-v1-klassen.csv`. Nummern
 2. Spieltag mit Pokalspiel bei „zusehen“ eines Managers; davor/danach sichern als **FILE86/FILE87** (A896).
 3. Verletzung während der Live-Anzeige abwarten (ggf. mehrere Spieltage), direkt danach sichern als **FILE88** (A912).
 4. Reihe 1 ohne Torhüter, einen Feldspieler ins Tor stellen, Spiel spielen; Spielerstatistik des Feldspielers vor/nach
-   fotografieren, danach sichern als **FILE89** (A899).
-5. Penaltyschießen im Live-Spiel (Pokal oder Play-off) ansehen, jeden Schuss fotografieren (A910). **Zusatz Runde 26
-   (R26-D3 = B):** während des Spiels die Paarungsseite mit „n.Minute“ und Zwischenständen fotografieren, dazu die Penalty-Anzeige
-   mit den drei Farbstreifen (S04: A292, A436, F068, F076).
+   fotografieren, danach sichern als **FILE89** (A899). **Aufgenommen 28.11.2026 (FILE89/FILE90), ausgewertet in
+   `analyse/abgleich-dosbox-22b.md`.**
+5. (entfällt: A910 ist X; die Fotos zu S04 stehen jetzt in Sitzung 2 Nr. 3.)
 6. Modus „nur Weltkugel“ (Sitzung 4, FILE18): Freundschaftsspiel des Bundestrainers, davor/danach sichern als **FILE90/FILE91**
-   (A918). Stand mit Managerverein auf den letzten Oberligaplätzen kurz vor dem Saisonende (Leitstelle legt ihn auf Wunsch per
+   (A918; erledigt mit FILE80/FILE81, ausgewertet in `analyse/abgleich-dosbox-22b.md`). Stand mit Managerverein auf den letzten Oberligaplätzen kurz vor dem Saisonende (Leitstelle legt ihn auf Wunsch per
    `hok-patch` ab); vor/nach dem Wechsel sichern als **FILE92/FILE93**, Konto fotografieren (A671).
