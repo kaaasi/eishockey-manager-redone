@@ -129,7 +129,7 @@ Erstreviews: Opus 5.5 für `aufraeumen-migration`, `-tot`, `-doppelt`; Sonnet 5.
   nach Inhalt umbenennen bzw. aufteilen (z. B. `.Finance.cs`, `.Season.cs`), Verhalten unverändert.
 - **Dateien:** Core (ohne `SaveGame*`), UI (`Widgets.cs` minimal), Tools, Formats; aus `tests/` nur U7/U8-Dateien, Testprojekte,
   betroffene Tests. **Prüfung:** alle drei Läufe, Zustandsabdruck, Bildschirmfotos bytegleich, Markerprobe.
-- **Status:** in Arbeit (Claude Code, Base `270bd1e`).
+- **Status:** fertig, Review offen (PR #1067; Teile 0–5 in einem Lauf, K1 liegen gelassen, Begründung im PR).
 
 ### Spur `aufraeumen-tests-core` – Core-Tests nach Thema (Welle 4, parallel zu `aufraeumen-tests-ui`)
 
