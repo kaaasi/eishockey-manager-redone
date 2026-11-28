@@ -249,10 +249,13 @@ public class OriginalSavePatcherTests
         Assert.Throws<ArgumentException>(() => OriginalSavePatcher.Patch(drawn, [C("ligaplaetze", "0:0,1,2,3,4,5,6,7,8,9,11,10")]));
         Assert.Throws<ArgumentException>(() => OriginalSavePatcher.Patch(drawn, [C("ligaplaetze", "2:25,24,26,27,28,29,30,31,32,33,34,35")]));
         Assert.Throws<ArgumentException>(() => OriginalSavePatcher.Patch(drawn, [C("ligaplaetze", "1:12,13,14,15,16,17,18,19,20,21,23,22")]));
-        // Play-offs: Platz 1 gegen 8 bleibt, nur wenn die Paare bleiben
+        // Play-offs gesetzt: Plätze 1–8 bleiben (auch Tausch innerhalb eines Paars, er ändert die Setzung), 9 und 10 frei
         Assert.Throws<ArgumentException>(() => OriginalSavePatcher.Patch(drawn, [C("ligaplaetze", "0:0,1,2,3,4,5,6,8,7,9,10,11")]));
-        var swapped = OriginalSaveGame.Read(OriginalSavePatcher.Patch(drawn, [C("ligaplaetze", "0:7,1,2,3,4,5,6,0,8,9,10,11")]));
-        Assert.Equal(7, swapped.LeaguePlaces(0)[0]);
+        Assert.Throws<ArgumentException>(() => OriginalSavePatcher.Patch(drawn, [C("ligaplaetze", "0:7,1,2,3,4,5,6,0,8,9,10,11")]));
+        var swapped = OriginalSaveGame.Read(OriginalSavePatcher.Patch(drawn, [C("ligaplaetze", "0:0,1,2,3,4,5,6,7,9,8,10,11")]));
+        Assert.Equal(9, swapped.LeaguePlaces(0)[8]);
+        var noPlayoffs = LeagueTemplate(day: 45);
+        Assert.Equal(7, OriginalSaveGame.Read(OriginalSavePatcher.Patch(noPlayoffs, [C("ligaplaetze", "0:7,1,2,3,4,5,6,0,8,9,10,11")])).LeaguePlaces(0)[0]);
         // Oberliga Platz 3–12 frei (A671: Managersatz auf Platz 12)
         var low = OriginalSaveGame.Read(OriginalSavePatcher.Patch(drawn, [C("ligaplaetze", "2:24,25,35,34,33,32,31,30,29,28,27,26")]));
         Assert.Equal(26, low.LeaguePlaces(2)[11]);
@@ -360,7 +363,7 @@ public class OriginalSavePatcherTests
 
     /// <summary>
     /// Vorlage A667 (hok-tabellen.md): FILE44 nach der Saison, Aufstiegsrunde und Play-offs ausgelost. Start-Liga 2. Liga geht
-    /// (Dauer 3); die Plätze 2 und 3 der Bundesliga lassen sich tauschen, Platz 11/12 (Aufstiegsrunde) nicht.
+    /// (Dauer 3); die Plätze 9 und 10 der Bundesliga lassen sich tauschen, 1–8 (Play-offs) und 11/12 (Aufstiegsrunde) nicht.
     /// </summary>
     [GameDataFact]
     public void Original_File44_StartligaAndPromotionRoundGuard()
@@ -376,11 +379,14 @@ public class OriginalSavePatcherTests
 
         var bl = save.LeaguePlaces(0).ToArray();
         var outside = (int[])bl.Clone();
-        (outside[0], outside[7]) = (outside[7], outside[0]); // Paar 1–8 bleibt
+        (outside[8], outside[9]) = (outside[9], outside[8]); // Platz 9 und 10: weder Play-offs noch Aufstiegsrunde
         Assert.Equal(outside, OriginalSaveGame.Read(OriginalSavePatcher.Patch(bytes, [C("ligaplaetze", "0:" + string.Join(",", outside))])).LeaguePlaces(0));
         var inside = (int[])bl.Clone();
         (inside[10], inside[11]) = (inside[11], inside[10]);
         Assert.Throws<ArgumentException>(() => OriginalSavePatcher.Patch(bytes, [C("ligaplaetze", "0:" + string.Join(",", inside))]));
+        var seeded = (int[])bl.Clone();
+        (seeded[0], seeded[7]) = (seeded[7], seeded[0]);
+        Assert.Throws<ArgumentException>(() => OriginalSavePatcher.Patch(bytes, [C("ligaplaetze", "0:" + string.Join(",", seeded))]));
     }
 
     /// <summary>Vorlage A671: im Modus „nur Weltkugel“ (FILE18) sind alle Sortierschlüssel gleich, jede Oberligafolge bleibt stehen.</summary>

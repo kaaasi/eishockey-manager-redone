@@ -244,8 +244,8 @@ mit Begründung:
    20 zufällig) gleich 0x50B45 aus den Bytes. Bei vollem Gleichstand (Modus „nur Weltkugel“, FILE18) ist jede Folge Fixpunkt;
 3. danach, wenn die Aufstiegsrunde ausgelost ist (`0xCFFC` + 4 · Gruppe nicht alle 0): Teilnehmer = Plätze 11, 12 oben und
    1, 2 unten, in dieser Folge (FILE22, FILE44);
-4. Bundesliga danach, wenn die Play-offs gesetzt sind (`0x5D3B` = `5CFB` + 0x40 nicht alle 0): Viertelfinalpaare = Platz i
-   gegen 9 − i (Setzung `0x319AC`, Seite offen wie im Import; FILE22, FILE44).
+4. Bundesliga danach, wenn die Play-offs gesetzt sind (`0x5D3B` = `5CFB` + 0x40 nicht alle 0): Plätze 1–8 unverändert
+   (Setzung `0x319AC`: Platz 2i = Platz i, 2i + 1 = Platz 7 − i; FILE22, FILE44; der Import prüft die Paare in Setzfolge).
 
 `[APPROX]` Regeln 3 und 4 sind Vorsicht des Patchers: Nach dem 44. Spieltag, aber vor Auslosung oder Setzung könnten die
 Blöcke noch Werte der Vorsaison halten (FILE23, FILE44A tragen sie über den Saisonwechsel); solche Stände weist der Patcher ab.

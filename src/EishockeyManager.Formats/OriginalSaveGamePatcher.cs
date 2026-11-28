@@ -199,8 +199,8 @@ public static class OriginalSavePatcher
     ///   (Datei 0x44EFD; <see cref="SortLeague"/>);</item>
     /// <item>danach, wenn die Aufstiegsrunde ausgelost ist (Teilnehmer DGROUP 0xCFFC + 4 · Gruppe nicht alle 0): Teilnehmer =
     ///   Plätze 11, 12 der oberen und 1, 2 der unteren Liga in dieser Reihenfolge (Auslosung 0x30427; FILE22, FILE44);</item>
-    /// <item>Bundesliga danach, wenn die Play-offs gesetzt sind (DGROUP 0x5D3B nicht alle 0): Viertelfinalpaare = Platz i gegen
-    ///   9 − i (Setzung 0x319AC; FILE22, FILE44).</item>
+    /// <item>Bundesliga danach, wenn die Play-offs gesetzt sind (DGROUP 0x5D3B nicht alle 0): Plätze 1–8 unverändert (Setzung
+    ///   0x319AC aus 0x5CCB; FILE22, FILE44; der Import prüft die Paare in Setzfolge).</item>
     /// </list>
     /// [APPROX] Regeln 3 und 4 sind eine Vorsicht des Patchers: Nach dem 44. Spieltag, aber vor Auslosung bzw. Setzung könnten
     /// 0xCFFC und 0x5D3B noch Werte der Vorsaison halten (FILE23, FILE44A tragen sie nach dem Saisonwechsel weiter); einen solchen
@@ -242,19 +242,12 @@ public static class OriginalSavePatcher
                                                 $"die neue Liste ergäbe {string.Join(",", expected.ToArray())} (Plätze 11, 12 oben, 1, 2 unten).");
             }
         }
-        // Play-off-Viertelfinale DGROUP 0x5D3B (= 5CFB + 0x40): Setzung 0x319AC–0x319D4 paart Platz i mit Platz 8 − i der
-        // Bundesliga (Seite je Paarung offen, wie der Import in OriginalImport.Playoffs.cs).
+        // Play-off-Plätze DGROUP 0x5D3B (= 5CFB + 0x40): Setzung 0x319AC–0x319D4 schreibt Platz 2i = Platz i, 2i + 1 = Platz 7 − i
+        // der Bundesliga (Seite in der laufenden Serie getauscht, 0x31505). Sind sie gesetzt, bleiben die Plätze 1–8 unverändert.
         var playoffs = save.Block("5CFB")[0x40..0x48];
-        if (league == 0 && matchDay > OriginalSaveGame.LastSortedMatchDay && playoffs.Any(b => b != 0))
-        {
-            static string Pairs(IEnumerable<(int, int)> pairs) =>
-                string.Join(" ", pairs.Select(p => (Math.Min(p.Item1, p.Item2), Math.Max(p.Item1, p.Item2))).Order().Select(p => $"{p.Item1}-{p.Item2}"));
-            var seeded = Pairs(Enumerable.Range(0, 4).Select(i => ((int)playoffs[2 * i], (int)playoffs[2 * i + 1])));
-            var wanted = Pairs(Enumerable.Range(0, 4).Select(i => ((int)next[i], (int)next[7 - i])));
-            if (seeded != wanted)
-                throw new ArgumentException($"Feld „ligaplaetze“: Das Play-off-Viertelfinale (0x5D3B) paart {seeded}, die neue Liste ergäbe {wanted} " +
-                                            "(Platz i gegen Platz 9 − i).");
-        }
+        if (league == 0 && matchDay > OriginalSaveGame.LastSortedMatchDay && playoffs.Any(b => b != 0) &&
+            !next.AsSpan(0, 8).SequenceEqual(block.AsSpan(0, 8)))
+            throw new ArgumentException("Feld „ligaplaetze“: Die Play-offs sind gesetzt (0x5D3B); die Plätze 1–8 der Bundesliga müssen bleiben.");
         next.CopyTo(block, 0);
     }
 
