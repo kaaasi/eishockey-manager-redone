@@ -170,7 +170,7 @@ Erstreviews: Opus 5.5 für `aufraeumen-migration`, `-tot`, `-doppelt`; Sonnet 5.
   für A667 (doppelter Zwangsabstieg, Bundesliga-Zwangsabsteiger auf Platz 3 und 4 der Aufstiegsrunde) gezielt erzeugt werden
   kann; damit Vorbereitung von Aufnahme `runde-22` Sitzung 5 (`vorlagen/dosbox-aufnahme.md`). Entscheidung Nutzer 28.11.2026:
   H1 = D (Optionen im Plan-PR des Nachtrags). Kein Spielkern, kein Remake-Verhalten.
-- **Ausgangslage:** Der Zwangsabstieg selbst braucht nur das Konto (< −666.666,67 DM am 29. April, Datei 0x55F22–0x55F87);
+- **Ausgangslage:** Der Zwangsabstieg selbst braucht nur das Konto (< −666.666,67 DM am 29. April, Datei 0x55F17–0x55F87);
   `hok patch --manager n konto=…` kann das schon, FILE75 hat zwei Bundesliga-Manager. Die Konstellation des Sonderfalls (Zweitligist
   wechselt nur den Platz, `SeasonFlow.Zwangsabstieg.cs` `ResolveDoubleMoves`, Review #458 SW-06) hängt von Liga- und
   Gruppentabelle ab. Blöcke laut `formate/spielstand-original.md`: Tabellensätze `8257` (DGROUP 0x825A, Punkte, Tore, Platz
@@ -180,26 +180,56 @@ Erstreviews: Opus 5.5 für `aufraeumen-migration`, `-tot`, `-doppelt`; Sonnet 5.
 - **Teile:** 1. **Beleg** (kein Produktcode): je Block in em.exe lesen und nachbilden, wer ihn schreibt und liest (Laden
   0x5C4CA ff., Tabellenrechnung je Spieltag, Gruppensortierung 0x30C36, Aufstiegsrunde und Austausch 0x55F93–0x5636D), welche
   Felder zueinander passen müssen (Punkte ↔ Ergebnisse/Gruppentore, Platzliste ↔ Sortierung) und welche Konstellation den
-  Sonderfall von A667 auslöst (Nachbildung über die Bytes von em.exe mit Ausgabe, `zusammenarbeit.md` §5 Punkt 7). Ergebnis in
+  Sonderfall von A667 auslöst, **welche Vorlage** sich eignet (ein vorhandener Stand um den 13.–29. April mit belegter
+  Aufstiegsrunde und zwei Bundesliga-Managern, sonst Erzeugung über einen Spielverlauf; FILE75 ist ein Spielstart ohne Ergebnisse)
+  und welche weiteren Blöcke als Pflicht der Konsistenz gelten (Ergebnisse `A0CB`, Spieltagszähler `07A9`, Meister/Status `D0E6`,
+  Statusbits 0x28) (Nachbildung über die Bytes von em.exe mit Ausgabe, `zusammenarbeit.md` §5 Punkt 7). Ergebnis in
   `docs/analyse/hok-tabellen.md` (neu), Skripte `tools/reverse-engineering/hok/*.py` (neu); 2. **Patcher:** neue Felder für
   `hok patch` (Ligatabelle je Verein: Platz, Punkte, Tore; Aufstiegsrunde: Teilnehmer, Platzliste, Punkte, Tore, gespielte Termine
   mit passenden Gruppentoren), nur was Teil 1 belegt; Widersprüche zwischen Feldern weist der Patcher ab statt sie zu schreiben;
   Lesen in `hok dump`; Tests synthetisch und mit Originalständen (Rundreise, Prüfsummen, Gegenprobe mit unverändertem Rest);
   Felder in `formate/spielstand-original.md` als belegt eintragen; 3. **Stand und Anleitung:** fertiger Befehl für den Stand
-  vor Sitzung 5 (Vorlage FILE75 oder ein Stand mit zwei Bundesliga-Managern, Konten beider Manager, Datum kurz vor dem letzten
+  vor Sitzung 5 (Vorlage aus Teil 1, Konten beider Manager, Datum kurz vor dem letzten
   Termin der Aufstiegsrunde, Tabellen für die Konstellation aus Teil 1) im PR; Sitzung 5 in `vorlagen/dosbox-aufnahme.md`
-  präzisieren (Ablauf, was zu fotografieren ist, Sicherungen FILE84/FILE85). Den Stand legt die Leitstelle per PR im Referenz-Repo
+  präzisieren (Ablauf, was zu fotografieren ist, Sicherungen FILE84/FILE85); zweiter Stand für A671 (Sitzung 7 Nr. 6 Teil 2: Modus „nur Weltkugel“,
+  Managerverein auf den letzten Oberligaplätzen kurz vor Saisonende, FILE92/FILE93), wenn Teil 1 die Felder dafür belegt. Den Stand legt die Leitstelle per PR im Referenz-Repo
   ab (Branch `daten/…`), nicht die Spur.
 - **Dateien:** Teil 1 `docs/analyse/hok-tabellen.md`, `tools/reverse-engineering/hok/*.py`; Teil 2/3
   `src/EishockeyManager.Formats/OriginalSaveGamePatcher.cs`, `OriginalSaveGame.cs` (Konstanten), `src/EishockeyManager.Tools/HokPatch.cs`,
   `HokDump.cs`, `tests/EishockeyManager.Formats.Tests/**`, betroffene Tool-Tests, `docs/formate/spielstand-original.md`,
-  `docs/vorlagen/dosbox-aufnahme.md` (nur Sitzung 5). **Folge:** Teil 1 sofort (eigene neue Dateien, keine Überschneidung mit
-  `aufraeumen-doku`); Teil 2 und 3 nach Merge von `aufraeumen-doku` (Rebase, Fortsetzung), weil diese `docs/**`/`tools/**` berührt.
+  `docs/vorlagen/dosbox-aufnahme.md` (nur Sitzung 5). **Folge:** alle Teile erst nach Merge von `aufraeumen-doku` (Review #1074 P2-2:
+  neue Analysedateien mit em.exe-Adressen ändern sonst die Statusverteilung von `funktionskarte.py` mitten in deren Abnahme);
+  Teil 1 vermerkt `funktionskarte.py <em.exe> --csv` vor/nach im PR.
 - **Prüfung:** `--schnell` (Erstreview alle drei Läufe); Probe: gepatchter Stand lädt in `hok dump`, Prüfsummen gültig, alle nicht
   genannten Blöcke bytegleich zur Vorlage; Remake-Import (`OriginalImport`) des Stands zeigt die gepatchten Tabellen. **Merge erst
   nach der Pflichtprobe des Nutzers** im Original (Stand lädt in DOSBox, Tabellen und Aufstiegsrunde wie gepatcht; wie R15-D5 = D).
 - **Modell:** Claude Opus 5.5 (Disassembly, Dateiformat); Erstreview Opus 5.5.
 - **Status:** nicht gestartet (Go Nutzer 28.11.2026, Start nach Merge des Nachtrags).
+
+### Spur `abgleich-dosbox-22b` – Auswertung DOSBox-Aufnahme `runde-22` Sitzungen 4, 6, 7 Nr. 4 und A707 (Nachtrag 28.11.2026, A22-D1 = C)
+
+- **Ziel:** Die vom Nutzer am 28.11.2026 abgeschlossenen Aufnahmen gegen die Restliste auswerten (Beleg je ID in
+  `analyse/restliste-v1.md`) und die Klassenliste nachziehen. Entscheidung Nutzer 28.11.2026: A22-D1 = C (zweiteilig, Abweichungen
+  nur als Issues für Runde 28, Aufräumen bleibt verhaltensneutral). Stände und Bilder: Referenz-Repo `original/spielstaende/`
+  (README-Abschnitte „Runde 22, Sitzung …“), Referenz-PR #41 und #42.
+- **Teile:** 1. **Bericht** (kein Produktcode, keine Klassenliste): FILE80/FILE81 (A408, A411, A918), FILE89/FILE90 (A899, Bezug
+  #939), Bilder KAPUTT.HOK (A599), Bilder A707 (ohne Stand) gegen Remake (Import, Bildschirmfotos, Tests) und em.exe; dazu ohne
+  Aufnahme: A259 (Annahmezweig Datei 0x46E04–0x46FCF lesen und nachbilden) und A707 (Grundstärken neuer Marktspieler mit
+  Länderwerten, Nachbildung über die Bytes von em.exe; Aufnahme mit Verein und Bundestrainer nur, wenn das nicht reicht). Je ID
+  Ergebnis X/K/E/V/D mit Beleg (`zusammenarbeit.md` §5 Punkt 7); V als Issue (`befund`, Runde 28). Ergebnis in
+  `docs/analyse/abgleich-dosbox-22b.md` (neu), Skripte `tools/reverse-engineering/abgleich/*.py` (neu); 2. **Klassen und Vorlage:**
+  `analyse/restliste-v1-klassen.csv` für die IDs aus Teil 1 und die in Runde 23 ausgewerteten, aber noch als D geführten IDs aus
+  Sitzung 1 (A057, A065, A117, A402, A427, A613, A614, A629-Export; Bericht `archiv/analyse/abgleich-dosbox-22.md`); einmal
+  `markerliste.py --write`; `vorlagen/dosbox-aufnahme.md`: Sitzung 3 Nr. 3 (A259) und Sitzung 7 Nr. 5 (A910, schon X) streichen,
+  die Fotos zu S04 (Paarungsseite „n.Minute“, Penalty-Anzeige) in den Live-Zusatz von Sitzung 2 verschieben, A707 nach Teil 1.
+- **Dateien:** Teil 1 nur die neuen Dateien; Teil 2 `docs/analyse/restliste-v1*`, `docs/analyse/abweichungen-v1.md` (nur
+  betroffene Zeilen), `docs/vorlagen/dosbox-aufnahme.md` (außer Sitzung 5, die gehört `hok-patch-tabellen`). **Folge:** Teil 1 nach
+  Merge von `aufraeumen-doku` (Funktionskarte, wie `hok-patch-tabellen`), parallel zu `hok-patch-tabellen` Teil 1 (verschiedene neue
+  Dateien); Teil 2 nach Teil 1 als Fortsetzung, vor `hok-patch-tabellen` Teil 3 (beide ändern `dosbox-aufnahme.md`).
+- **Prüfung:** Nur Doku/Python: `markerliste.py` nach `--write` mit Rückgabe 0, `funktionskarte.py <em.exe> --csv` vor/nach im PR,
+  Skripte laufen mit `~/referenz/original/gamedata/EM.EXE`; `tools/pruefen.sh` entfällt.
+- **Modell:** Claude Opus 5.5 (Bildvergleich, em.exe); Erstreview Sonnet 5.5.
+- **Status:** nicht gestartet (Go offen).
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
