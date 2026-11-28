@@ -199,7 +199,7 @@ Erstreviews: Opus 5.5 für `aufraeumen-migration`, `-tot`, `-doppelt`; Sonnet 5.
   genannten Blöcke bytegleich zur Vorlage; Remake-Import (`OriginalImport`) des Stands zeigt die gepatchten Tabellen. **Merge erst
   nach der Pflichtprobe des Nutzers** im Original (Stand lädt in DOSBox, Tabellen und Aufstiegsrunde wie gepatcht; wie R15-D5 = D).
 - **Modell:** Claude Opus 5.5 (Disassembly, Dateiformat); Erstreview Opus 5.5.
-- **Status:** nicht gestartet (Go offen).
+- **Status:** nicht gestartet (Go Nutzer 28.11.2026, Start nach Merge des Nachtrags).
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 
