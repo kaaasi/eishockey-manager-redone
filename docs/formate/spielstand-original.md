@@ -329,7 +329,7 @@ FILE05, FILE24–FILE26 – Sitzung 3 –, zum Vergleich FILE06/FILE07 und die S
 | Kaderplatz `+0x02` | eingespielte Reihe (A093): vor jedem Spiel je Platz random(0, 4), bei 0 = `+0x15` & 0x7F (em.exe Datei `0x548A8`–`0x548E7`); Leser Technik − 10 bei Level 4/5 (Datei `0x09A65`–`0x09A8A`); neuer Platz 0, Kauf vom Manager kopiert ihn (`0x478C4`); beim Saisonwechsel **nicht** zurückgesetzt | FILE16A→FILE22 (0→2), FILE22→FILE23 unverändert; Stand `a093` FILE71/72 alle 0, FILE73/74 fünf bzw. drei Plätze gleich der Reihe |
 | Pool `+0x1C` | Ligaspiele der Saison (gleich Kaderplatz `+0x06`), Saisonwechsel → 0 | FILE22→FILE23, 16 von 16 → 0 |
 | DGROUP `0x375 + 2 · m` | „automatisch aufstellen“ liegt in HOK `0x00844` | FILE05 01, FILE06 00, FILE24 00 (Byte `0x376` = 01), FILE25 01 |
-| Anzeige „Nr.“ | = Kaderplatz + 1, keine Rückennummer: Beim Verkauf rücken die folgenden Plätze auf, beim Kauf wird der Spieler nach Spielerart einsortiert (vor dem ersten leeren Platz oder dem ersten Platz größerer Art; ein Stürmer kommt damit hinten an) | FILE05 → FILE07 (Kauf eines Stürmers) und FILE26 (Verkauf), em.exe Datei `0x42D55`–`0x42DA1` mit memmove ab `0x42DC3` (Kauf, R13GN-01/#622), `0x425B6` (Verkauf); Remake `KaderStartRunde13Teil4Tests` (PR #599), `KaufEinsortierenTests` (PR #623) |
+| Anzeige „Nr.“ | = Kaderplatz + 1, keine Rückennummer: Beim Verkauf rücken die folgenden Plätze auf, beim Kauf wird der Spieler nach Spielerart einsortiert (vor dem ersten leeren Platz oder dem ersten Platz größerer Art; ein Stürmer kommt damit hinten an) | FILE05 → FILE07 (Kauf eines Stürmers) und FILE26 (Verkauf), em.exe Datei `0x42D55`–`0x42DA1` mit memmove ab `0x42DC3` (Kauf, R13GN-01/#622), `0x425B6` (Verkauf); Remake `SquadSlotOrderTests` (PR #599), `KaufEinsortierenTests` (PR #623) |
 | HOK `0x08EED` / `0x08EF7` | DGROUP `0xA776` (Teilnehmerliste Europapokal, deutsche Teilnehmer; die Mischung 0x35EDD führt Meister und Titelverteidiger über 0x36146 mit) bzw. DGROUP `0xA763` | FILE22 → FILE23: Kölner EC Satz 4 → 8, Liste = 8 (PR #579, 0x346D5 nach L8) |
 
 ## Managerkader im Spielerpool (Spur `pool`, Runde 16, #743)
@@ -418,6 +418,8 @@ Spiel dieses Modus setzt den Kader nicht in den Pool (`SeatManagerSquads`); für
 (`AddUnseatedSquadPlayers`: Platz gleichen Namens beim eigenen Verein, sonst erster freier Ligaplatz seiner Art).
 
 ## Feldkarte Remake-Spielstand (Schema 65) ↔ HOK
+
+> Hinweis (Runde 27, A1 = B): Die Migrationen `SaveGame.Migration*.cs`, die in den Schema-Vermerken unten genannt sind, wurden entfernt; nur Schema 65 ist ladbar. Die Vermerke bleiben als Herkunft der Felder.
 
 Spur `hok-import`, Teil 1 (Runde 14, E14-1 C). Jedes Feld des Remake-Spielstands (`SaveGame.SchemaDescription()`, ohne die
 Hilfsfelder von Tupeln) steht hier genau einmal; der Test `OriginalImportFieldMapTests` prüft das gegen das Schema und wird
@@ -510,7 +512,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `GameState._vacantNationalTactics` | A | `far:9657+0x26`, `A6FB+5`, `CAE9` (+0x30 · 5) | ohne Bundestrainer: Modi und Werte des Satzes 5, Anzeige „AUTOM.“ aus dem Vereinssatz des Landes (+0x26–0x2B, +0x35–0x3A) |
 | `GameState._worldCupRankings` | U | – | leer |
 | `GameState._worldCupLastPenaltyCoachDay` | N | – | 0: Merker des Remakes, ob die letzte Strafe eines WM-Tags das Land des Bundestrainers traf (DGROUP 0xA70E nach den Spielen, Datei 0x35AB8; A498, Schema 57) |
-| `GameState._worldCupOptionBackup` | A | `021D+15` | DGROUP 0x22C: Sicherung des Schalters „WM-Spiele“ während der WM des Bundestrainers (Spur `zusehen` Teil 2, Schema 52; Datei 0x5541F/0x5575A). Import (Spur `zusehen-rest`, A834, `OriginalImport.Rest.cs`): mit Amt des Bundestrainers der Wert, sonst null (Sicherung im Remake nur während des Amts); Export unverändert nicht geschrieben |
+| `GameState._worldCupOptionBackup` | A | `021D+15` | DGROUP 0x22C: Sicherung des Schalters „WM-Spiele“ während der WM des Bundestrainers (Spur `zusehen` Teil 2, Schema 52; Datei 0x5541F/0x5575A). Import (Spur `zusehen-rest`, A834, `OriginalImport.ManagerAreas.cs`): mit Amt des Bundestrainers der Wert, sonst null (Sicherung im Remake nur während des Amts); Export unverändert nicht geschrieben |
 
 ### GameSetup, GameOptions, ManagerSetup
 
@@ -666,7 +668,7 @@ der Import setzt eine Vorgabe `[APPROX]` und die Stelle bleibt ein offener Punkt
 | `Club.ReferenceRating` | N | – | neu aus der Auto-Aufstellung |
 | `Club.SeriesCurrent` | B | `AB7B+0xA00` | DGROUP 0xB57B + 0x15 · Satz (64 Sätze) |
 | `Club.Strength` | A | `far:9657` | Datenbankstärke `kb\23` |
-| `Club.WatchMode` | A | `far:9657+0x34` Bits 6–7 | Markierung zum Zusehen (Spur `zusehen`, Schema 52; Schreiber 0x0AE2B). Import je Satzplatz (Spur `zusehen-rest`, A834, `OriginalImport.Rest.cs`); der Export schreibt weiter Bit 7 nur für die Managervereine (`OriginalExport.League.cs`) |
+| `Club.WatchMode` | A | `far:9657+0x34` Bits 6–7 | Markierung zum Zusehen (Spur `zusehen`, Schema 52; Schreiber 0x0AE2B). Import je Satzplatz (Spur `zusehen-rest`, A834, `OriginalImport.ManagerAreas.cs`); der Export schreibt weiter Bit 7 nur für die Managervereine (`OriginalExport.League.cs`) |
 | `Club.Tactics` | B | `A6FB`, `A707`, `A701`, `CAE9` | Zeilen `Tactics` (Managervereine); sonst Automatik |
 | `Club.TeamValues` | B | `far:9657+0x17` | Zeilen `ClubTeamValues` |
 | `Club._autoLineup` | B | `0375+0` | 0x375 + 2 · m (aktuell); 0x376 + 2 · m sichert den Wert über die Spiele des Tages (re-runde-14.md, Taktik 375h) |
@@ -938,7 +940,7 @@ sich aus der Tabelle, geprüft).
 
 ### Restfelder (Teil 4a)
 
-`OriginalImport.Rest.cs` (Aufruf am Ende von Schritt 3), Tests `OriginalImportRestTests`. Je Manager:
+`OriginalImport.ManagerAreas.cs`, `.Finance.cs`, `.Tactics.cs`, `.Records.cs` (`ApplyOriginalRest`, Aufruf am Ende von Schritt 3), Tests `OriginalImportAreasTests`. Je Manager:
 
 | Bereich | HOK | Import | Beleg |
 |---|---|---|---|
@@ -1092,7 +1094,7 @@ liegt bei den genannten Spuren.
 ### Stand Integration Runde 14 (Schema 43) und Fixlauf #676
 
 - Neu seit der Karte (Schema 40/41): `GameOptions.ManagerDayMinuteLoop` (nur Remake, Import `false`) und „automatisch aufstellen“
-  des Bundestrainers (`0375`, 0x37F/0x380; der Import übernimmt 0x380, Test `OriginalImportRunde14Tests`).
+  des Bundestrainers (`0375`, 0x37F/0x380; der Import übernimmt 0x380, Test `OriginalImportNationalFieldsTests`).
 - Review R14HI-01 bis R14HI-04 (09.11.2026): Play-offs und Aufstiegsrunden (Teil 4d), laufende Ausbauten (`965B+0x117`, `+0x128`),
   Zuschauerstatistik, Freundschaftsspiele, Tendenzwert `5DC3+0x0E`, Ankündigung `5DC3+0x18`, Bundestrainer-Amt aus dem Vereinssatz
   des Landes, Taktikanzeige des Nationalteams, Titelträger `0387`/`0388` nach dem Endspiel; `OriginalImportFieldMapTests` prüft

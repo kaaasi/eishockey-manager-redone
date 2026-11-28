@@ -4,7 +4,7 @@ namespace EishockeyManager.Core.Tests;
 
 /// <summary>
 /// Spur saisonwechsel, Teil 1 (S-K1, S-K2, A162, A197, #166): Oberliga-Austausch wie em.exe Datei 0x56238–0x5636D,
-/// belegt durch den DOSBox-Lauf FILE12–FILE14 (docs/analyse/re-saisonwechsel.md, „Auswertung DOSBox-Beleg“).
+/// belegt durch den DOSBox-Lauf FILE12–FILE14 (docs/archiv/analyse/re-saisonwechsel.md, „Auswertung DOSBox-Beleg“).
 /// </summary>
 public class SaisonwechselOberligaTests
 {

@@ -7,7 +7,7 @@ namespace EishockeyManager.Core.Tests;
 
 /// <summary>
 /// #730 (Spur abgleich-dosbox, Teil 1): Reihenwahl der Managerpaarung ohne Mausklick gegen die DOSBox-Aufnahme `runde-17`
-/// (FILE02 → FILE50, 1. Spieltag KÖLNER EC – SC PREUSSEN BERLIN). Bericht: <c>docs/analyse/abgleich-dosbox.md</c> §1.
+/// (FILE02 → FILE50, 1. Spieltag KÖLNER EC – SC PREUSSEN BERLIN). Bericht: <c>docs/archiv/analyse/abgleich-dosbox.md</c> §1.
 /// Runde 19 (Spur abgleich-dosbox-19, Teil 1): dazu Spieltag 2 (FILE50 → FILE61, EC RATINGEN – KÖLNER EC) und Spieltag 3
 /// (FILE61 → FILE63, KÖLNER EC – ESV KAUFBEUREN) aus der Aufnahme `runde-19`, Bericht dort §4.
 /// </summary>

@@ -3,7 +3,7 @@ using EishockeyManager.Core;
 namespace EishockeyManager.Core.Tests;
 
 /// <summary>
-/// Spur livespiel-kern, Teil A3 (L6): Eingriff in die laufende Managerpaarung als Befehle (<c>docs/analyse/re-livespiel.md</c>
+/// Spur livespiel-kern, Teil A3 (L6): Eingriff in die laufende Managerpaarung als Befehle (<c>docs/archiv/analyse/re-livespiel.md</c>
 /// §10). Vor dem Teil rot: es gab keine Befehle (<c>MatchIntervention</c> fehlte, Build-Fehler).
 /// </summary>
 public sealed class LivespielKernInterventionTests

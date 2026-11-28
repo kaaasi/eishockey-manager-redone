@@ -88,7 +88,7 @@ public static class PlayerInjuries
     public static void RefillLineup(Club club) => club.RefillLineup();
 
     /// <summary>
-    /// Aufstellung eines Managervereins nach seinem Spiel (Taktik-Befund DGROUP 375h, Runde 14, <c>docs/analyse/re-runde-14.md</c>).
+    /// Aufstellung eines Managervereins nach seinem Spiel (Taktik-Befund DGROUP 375h, Runde 14, <c>docs/archiv/analyse/re-runde-14.md</c>).
     /// [ORIGINAL] Vor den Spielen des Tages sichert der Tageslauf die Einstellung „automatisch aufstellen“ und schaltet sie
     /// ab (Datei 0x54FCE–0x54FE8: 0x376 + 2 · m := 0x375 + 2 · m, 0x375 + 2 · m := 0, für alle Manager und den Bundestrainer
     /// mit Verein, vor den Spieltagen 0x35EA4/0x35E4C). Die Verletzung im Spiel (Szene 0x53C57, Ereignis 4 → 0x5411E:

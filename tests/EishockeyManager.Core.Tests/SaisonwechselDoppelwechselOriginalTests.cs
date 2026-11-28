@@ -5,7 +5,7 @@ namespace EishockeyManager.Core.Tests;
 
 /// <summary>
 /// Spur saisonwechsel, Teil 5 (Gesamtreview #474, Bereich 2, D3): Doppelwechsel im Original, DOSBox-Lauf FILE16 → FILE16A → FILE17
-/// (Referenz-Repo `original/spielstaende/`, Bilder `file16_…`, `file17_…`; docs/analyse/re-saisonwechsel.md, „Auswertung D3“).
+/// (Referenz-Repo `original/spielstaende/`, Bilder `file16_…`, `file17_…`; docs/archiv/analyse/re-saisonwechsel.md, „Auswertung D3“).
 /// SV BAYREUTH (Managerverein, 2. Liga, Konto am 29. April unter −666.666,67 DM) wird Erster der 2. Liga und Zweiter der
 /// Aufstiegsrunde Bundesliga/2. Liga (`file16_6`: 1. Düsseldorfer EG, 2. SV Bayreuth, 3. EV Landshut, 4. ECD Sauerland).
 /// Die Regeln des Remakes (<see cref="GameState.InsertForcedRelegation"/>, <see cref="GameState.RelegationExchange"/>,

@@ -6,7 +6,7 @@ namespace EishockeyManager.UI.Tests;
 
 /// <summary>
 /// Runde 12, Spur <c>ui-meldungen</c> Teil 1: E3 (Entscheidung Nutzer 03.11.2026, C) – das Meldungsfenster schließt wie im Original
-/// nur per Linksklick (em.exe Datei 0x4C246 wertet nur Mausereignis 1 aus, <c>docs/analyse/re-meldungen.md</c> §C); UM-3 Rest –
+/// nur per Linksklick (em.exe Datei 0x4C246 wertet nur Mausereignis 1 aus, <c>docs/archiv/analyse/re-meldungen.md</c> §C); UM-3 Rest –
 /// Meldungen mit mehr als vier Zeilen erscheinen im Fenster des Originals statt im früheren Rahmen.
 /// Gegenbeispiele (vorher): Enter, Escape, Texteingabe und rechte Maustaste schlossen die Meldung; fünf Zeilen zeigten den alten
 /// orangefarbenen Rahmen.

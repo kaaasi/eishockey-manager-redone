@@ -7,7 +7,7 @@ namespace EishockeyManager.UI.Tests;
 
 /// <summary>
 /// Spur ui-meldungen, Teil 2: Infofile (M-K5, em.exe 0x432EC) und Tabellenkurve (M-K6, 0x445E0), Regeln in
-/// <c>docs/analyse/re-meldungen.md</c> §D und §E. Pixel an <c>folge06_00000</c> (35 Spieltage) und <c>oberflaeche_0842</c>
+/// <c>docs/archiv/analyse/re-meldungen.md</c> §D und §E. Pixel an <c>folge06_00000</c> (35 Spieltage) und <c>oberflaeche_0842</c>
 /// (vor dem ersten Spieltag) geprüft.
 /// </summary>
 public class InfoFileAndRankCurveTests

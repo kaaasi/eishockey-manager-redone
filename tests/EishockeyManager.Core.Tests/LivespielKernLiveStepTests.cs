@@ -4,7 +4,7 @@ namespace EishockeyManager.Core.Tests;
 
 /// <summary>
 /// Spur livespiel-kern, Teil A5 (R18-E1 = A): Minutenschritt im Kern (<c>MatchEngine.LiveStep.cs</c>,
-/// <c>docs/analyse/re-livespiel.md</c> §13 A5). Vor dem Teil rot: es gab keinen Minutenschritt (<c>LiveMatchDay</c> fehlte,
+/// <c>docs/archiv/analyse/re-livespiel.md</c> §13 A5). Vor dem Teil rot: es gab keinen Minutenschritt (<c>LiveMatchDay</c> fehlte,
 /// Build-Fehler).
 /// </summary>
 public sealed class LivespielKernLiveStepTests

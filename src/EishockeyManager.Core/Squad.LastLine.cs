@@ -8,7 +8,7 @@ public sealed partial class Player
     /// einem neuen Kaderplatz. Steht der Spieler in der Aufstellung, gilt deren Platz (<see cref="Club.SlotLine"/>), dieses Feld nicht.
     /// [ORIGINAL] Datei 0x426BC schreibt +0x15 nur für ausgewählte Spieler (Reihe = Block + 1, Bit 0x80 Sturm; Ersatz 0, Datei
     /// 0x42744–0x42777, 0x427FD–0x42816); nicht Ausgewählte behalten ihr altes +0x15 (Beleg <c>k07_automatik.py</c>,
-    /// <c>docs/analyse/re-abweichungen.md</c> K07). Die Verletzung (Datei 0x5C50) löscht nur +0x0A. Das Leeren eines Platzes von Hand
+    /// <c>docs/archiv/analyse/re-abweichungen.md</c> K07). Die Verletzung (Datei 0x5C50) löscht nur +0x0A. Das Leeren eines Platzes von Hand
     /// schreibt +0x15 = 0 (Datei 0x40B69–0x40C98, Beleg <c>k07_sechster.py</c> a/b). Ein neuer Kaderplatz beginnt mit 0 (memset
     /// Datei 0x42E3A; der Kauf von einem Manager übernimmt +0x15 nicht, Datei 0x4787D–0x478CB).
     /// </summary>

@@ -165,7 +165,7 @@ public class AudioMixerTests
     /// <summary>
     /// B01 (A002): Das Original spielt die Titelmusik einmal und bleibt dann still – ein Start über Treiberfunktion 6
     /// (Datei 0x431CB, einziger Aufruf Datei 0x4391F), der Treiber stoppt am Meta-Ereignis FF 2F (Datei 0x15DB0 → 0x15F08),
-    /// kein Neustart (docs/analyse/re-vor-dosbox.md, A002). Der Mixer meldet weiter „läuft“, damit die Musikregel das Lied
+    /// kein Neustart (docs/archiv/analyse/re-vor-dosbox.md, A002). Der Mixer meldet weiter „läuft“, damit die Musikregel das Lied
     /// im Titelbildschirm nicht neu startet (das Statusbyte DGROUP 0x59E6 liest das Original nirgends).
     /// </summary>
     [Fact]

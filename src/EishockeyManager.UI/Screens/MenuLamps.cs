@@ -40,7 +40,7 @@ public static class MenuLamps
         var red = new bool[Count];
         if (game.NationalCoachMenu)
         {
-            // [ORIGINAL] B18/A331: Mit leerem WM-Kader ist Lampe 0 rot, 2–5 grün (Datei 0x42C4B; docs/analyse/re-abweichungen.md
+            // [ORIGINAL] B18/A331: Mit leerem WM-Kader ist Lampe 0 rot, 2–5 grün (Datei 0x42C4B; docs/archiv/analyse/re-abweichungen.md
             // B18). Ein Menü des Bundestrainers vor der Ernennung gibt es im Original nicht (Datei 0x5557F–0x55587); dort gilt
             // hier dasselbe wie beim leeren Kader.
             red[0] = game.NationalCoach is not { } coach || !Complete(coach.Formation);
@@ -65,7 +65,7 @@ public static class MenuLamps
     /// [ORIGINAL] Datei 0x42AC9–0x42B6C: je Kaderplatz (0x5DC3 + 0x618 · Manager + 0x34 · Platz, Anzahl 0x120:0x66(Manager, 0))
     /// Pooleintrag far DGROUP 0x8253 + 0x21 · Kaderplatz +0x0F, Feld +0x1E ≠ 0 → rot; Datei 0x42B73–0x42BD2: je Marktplatz
     /// (DGROUP 0x7623 + 0x34 · Platz, Anzahl 0x120:0x66(4, 0)) mit Pool +0x1A = Manager ebenso. Pool +0x1E ist die Nummer + 1 des
-    /// Nachrichtensatzes, der den Spieler nennt (gesetzt in 0x4B2F6, gelöscht in 0x4B270; <c>docs/analyse/re-rest.md</c> H).
+    /// Nachrichtensatzes, der den Spieler nennt (gesetzt in 0x4B2F6, gelöscht in 0x4B270; <c>docs/archiv/analyse/re-rest.md</c> H).
     /// Das Remake liest die Nachrichten aller Manager, ohne Finanzdaten anzulegen (Öffnen ändert nichts).
     /// </summary>
     public static bool OpenMessage(GameState game, Manager manager, Club club)

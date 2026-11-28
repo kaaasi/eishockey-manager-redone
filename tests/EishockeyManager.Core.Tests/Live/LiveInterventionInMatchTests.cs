@@ -4,7 +4,7 @@ using EishockeyManager.Formats;
 namespace EishockeyManager.Core.Tests;
 
 /// <summary>
-/// Spur livespiel-ui-2, B3 (Fortsetzung 1): Aufstellung im Spiel (Kennwert DGROUP 0x2D6 + Manager, <c>docs/analyse/re-livespiel.md</c>
+/// Spur livespiel-ui-2, B3 (Fortsetzung 1): Aufstellung im Spiel (Kennwert DGROUP 0x2D6 + Manager, <c>docs/archiv/analyse/re-livespiel.md</c>
 /// §15) und Übernahme in den Spielkader. Vor dem Teil rot: <see cref="Club.ClickPlayerInMatch"/>,
 /// <see cref="Club.ClearLineupSlotInMatch"/> und <see cref="LiveLineup"/> fehlten (Build-Fehler); mit den Regeln ohne Spiel
 /// (<see cref="Club.ClickPlayer"/>) verliert ein herausgenommener Spieler „eingesetzt“ und der 23. wird abgewiesen.

@@ -11,7 +11,7 @@ namespace EishockeyManager.UI.Tests;
 /// #874 (Runde 20, Spur pruefung-karte Teil 3; Gesamtreview Runde 19, PR #873): Eintragung und Darstellung der Bestenliste am
 /// Spielende im Modus „nur Weltkugel“. Vorlage DOSBox `runde-17` FILE54 (Dauer „eine Saison“, Manager „Spieler“, Deutschland
 /// Vierter der WM): Bild <c>file54_4</c> zeigt als einzigen Eintrag auf Platz 1 „Spieler – DEUTSCHLAND – 5“ ohne Titelspalte,
-/// danach „Das wars…“ (<c>file54_5</c>; <c>docs/analyse/abgleich-dosbox.md</c> §3.3).
+/// danach „Das wars…“ (<c>file54_5</c>; <c>docs/archiv/analyse/abgleich-dosbox.md</c> §3.3).
 /// [ORIGINAL] Spielende Datei 0x5642E (Bestenliste eintragen und zeigen, dann 0x56438 „Das wars…“), Schlüssel 30000 (DGROUP
 /// 0x256 = 0x7530), Datei <c>h.30000</c> (Datei 0x5D617), Punkte Σ 9 − Platz (Datei 0x5D59B–0x5D607, <see cref="HighscoreRules.WorldOnlyScore"/>).
 /// </summary>

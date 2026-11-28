@@ -21,7 +21,7 @@ statt Force-Push in Läufen, 8.3-Namen für Spielstände, R15-E3 und bitgenauer 
 
 ## Runde 15 – Abgleich mit dem Original, Export `*.HOK`, Restpunkte (Plan 10.11.2026, Go 10.11.2026)
 
-Runde 14 abgeschlossen am 10.11.2026: [archiv/runde-14.md](archiv/runde-14.md). Grundlage: Vormerkungen des Nutzers vom
+Runde 14 abgeschlossen am 10.11.2026: [archiv/runde-14.md](runde-14.md). Grundlage: Vormerkungen des Nutzers vom
 10.11.2026 (Effizienz), R14-D2 = B (Export `*.HOK` in Runde 15), offene Issues #620 (Rest), #698, #699, #703, #712, #716,
 Restlücke A134. #639 (Ablage Aufnahme `runde-13`) ist mit Runde 14 ausgewertet und geschlossen.
 

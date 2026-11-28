@@ -1,7 +1,7 @@
 namespace EishockeyManager.Core;
 
 /// <summary>
-/// Spur saison, Teil 3 (S-K6-c, docs/analyse/re-runde-13.md): Fair-Play-Prämie des Saisonendes über die Liga der nächsten
+/// Spur saison, Teil 3 (S-K6-c, docs/archiv/analyse/re-runde-13.md): Fair-Play-Prämie des Saisonendes über die Liga der nächsten
 /// Saison in deren gemischter Satzfolge.
 /// </summary>
 /// <remarks>

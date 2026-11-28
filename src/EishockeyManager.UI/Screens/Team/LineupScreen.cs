@@ -255,7 +255,7 @@ public sealed class LineupScreen : Screen
 
     /// <summary>
     /// Meldungen (Texte aus em.exe); „Schon 22 Mann / im Team !“ aus DGROUP 0x11D5. [ORIGINAL] Die Aufstellung ruft für alle Fälle die
-    /// Kurzmeldung 0x0C0B8 – ohne Knopf, schließt von selbst. E2 (Spur kader-transfer Teil 4, docs/analyse/re-runde-12.md):
+    /// Kurzmeldung 0x0C0B8 – ohne Knopf, schließt von selbst. E2 (Spur kader-transfer Teil 4, docs/archiv/analyse/re-runde-12.md):
     /// Ein Gesperrter oder Verletzter aus der Kaderliste ergibt „Spieler ist“ / „Gesperrt.“ bzw. „Verletzt.“ (Datei 0x40E01–0x40E27,
     /// Zeile 2 aus DGROUP 0xB88/0xB84, gemeinsamer Aufruf 0x40EB9); Zeile 1 ist fester Text, kein Name. „noch gesperrt !“ gehört zum
     /// Klick auf den Platz (siehe <see cref="ClickLines"/>, Datei 0x40B55). „Keine Reihe / ausgewählt !“ (DGROUP 0x1221),

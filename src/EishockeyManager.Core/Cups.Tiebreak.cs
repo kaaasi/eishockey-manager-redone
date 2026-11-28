@@ -11,7 +11,7 @@ namespace EishockeyManager.Core;
 /// <item>[ORIGINAL] Schneller Weg, Gleichstand (WM-Endrunde, C07/A925): 0x32AA3 markiert Zeile 3 vor dem Zusatzwurf (Datei
 ///   0x376E1 → 0x32C8E–0x32D84, Heim + 30), dann Heim = h + random(0, 2) + 30, Gast = g + random(0, 2), bis ungleich (Datei
 ///   0x376F0–0x377A3, zweite Marke 0x3775D) – Endstand mit zwei Marken (Lesart re-abweichungen C07).</item>
-/// <item>[ORIGINAL] Schneller Weg im DEB-Pokal (#925 (b), Spur re-reste Teil 2, <c>docs/analyse/re-reste-23.md</c> §1):
+/// <item>[ORIGINAL] Schneller Weg im DEB-Pokal (#925 (b), Spur re-reste Teil 2, <c>docs/archiv/analyse/re-reste-23.md</c> §1):
 ///   0x32AA3 markiert die Zeile 0 vor dem Wurf (0x32AF4, Heimbyte + 30 bei 0x32B9D), 0x3775D setzt die zweite Marke – genau
 ///   ein Wurf, Endstand h + x : g + y mit zwei Marken; bleibt es gleich (x = y), zählt die Wertung 0x34C76
 ///   (<c>cmp al,[bx+0x5c4c]; jnc</c>: Heim ≥ Gast → Sieg Platz 2k = Heimverein) das Spiel für den Heimverein. Beleg FILE44

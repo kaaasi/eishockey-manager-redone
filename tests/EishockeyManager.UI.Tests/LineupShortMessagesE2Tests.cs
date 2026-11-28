@@ -7,7 +7,7 @@ using EishockeyManager.UI.Testing;
 namespace EishockeyManager.UI.Tests;
 
 /// <summary>
-/// Spur kader-transfer Teil 4 (E2, docs/analyse/re-runde-12.md): Kurzmeldungen der Aufstellung wie in em.exe
+/// Spur kader-transfer Teil 4 (E2, docs/archiv/analyse/re-runde-12.md): Kurzmeldungen der Aufstellung wie in em.exe
 /// Datei 0x40B37–0x40B55 (Klick auf den Platz) und 0x40E01–0x40EB9 (Klick auf die Kaderliste).
 /// </summary>
 public class LineupShortMessagesE2Tests

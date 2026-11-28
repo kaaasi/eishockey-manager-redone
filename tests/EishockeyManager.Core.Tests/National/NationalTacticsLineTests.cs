@@ -4,7 +4,7 @@ namespace EishockeyManager.Core.Tests;
 
 /// <summary>
 /// Spur nationalteam-2 (Runde 8, Welle 3): Restbefunde der Nationalteam-Taktik aus dem Integrationsreview Runde 8
-/// (`docs/reviews/2026-10-31-integration-runde-8.md`, R8-B03 und R8-B04).
+/// (`docs/archiv/reviews/runde-8/2026-10-31-integration-runde-8.md`, R8-B03 und R8-B04).
 /// </summary>
 public class NationalTacticsLineTests
 {

@@ -5,7 +5,7 @@ namespace EishockeyManager.Core.Tests;
 
 /// <summary>
 /// Spur aufstellung (Runde 25), Teil 2 K07: „automatisch aufstellen“ je Manager (A936) und Kaderplatz +0x15 außerhalb der Aufstellung
-/// (A939). Belege <c>docs/analyse/re-abweichungen.md</c> K07 (<c>k07_automatik.py</c>, <c>k07_sechster.py</c>).
+/// (A939). Belege <c>docs/archiv/analyse/re-abweichungen.md</c> K07 (<c>k07_automatik.py</c>, <c>k07_sechster.py</c>).
 /// </summary>
 public class AutoLineupPerManagerTests
 {

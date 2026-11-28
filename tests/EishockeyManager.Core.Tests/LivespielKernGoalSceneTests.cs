@@ -5,7 +5,7 @@ namespace EishockeyManager.Core.Tests;
 
 /// <summary>
 /// Spur livespiel-kern, Teil A4 (L4/L7-Kern, R18-D3 = A): Zufall der Anzeige im Spielkern – Szenenwahl 0x575C3 und
-/// Strafgrund 0x52520 (<c>docs/analyse/re-livespiel.md</c> §5, §11). Vor dem Teil rot: der Kern zog diese Züge nicht
+/// Strafgrund 0x52520 (<c>docs/archiv/analyse/re-livespiel.md</c> §5, §11). Vor dem Teil rot: der Kern zog diese Züge nicht
 /// (<c>GoalSceneSelection</c> fehlte, Build-Fehler; ein Spiel mit Darstellung ≠ 0 lief zugleich wie ohne Anzeige).
 /// </summary>
 public sealed class LivespielKernGoalSceneTests

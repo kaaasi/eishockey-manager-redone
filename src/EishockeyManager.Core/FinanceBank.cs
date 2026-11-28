@@ -183,7 +183,7 @@ public sealed partial class GameState
 
     /// <summary>
     /// Geld von einem Mitmanager holen: zuerst die eigene Forderung an ihn einziehen, den Rest leihen – im lokalen Spiel
-    /// sofort und ohne seine Zustimmung (Entscheidung Nutzer E2, docs/analyse/re-geld.md). Liefert den bewegten Betrag.
+    /// sofort und ohne seine Zustimmung (Entscheidung Nutzer E2, docs/archiv/analyse/re-geld.md). Liefert den bewegten Betrag.
     /// [ORIGINAL] em.exe Datei 0x59269–0x5932B (links): Konto += v, Konto des anderen −= v (darf negativ werden),
     /// eigenes Darlehensfeld −= v, seines += v; der Mitmanager wird nicht gefragt.
     /// </summary>

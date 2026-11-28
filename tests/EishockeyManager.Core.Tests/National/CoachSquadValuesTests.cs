@@ -4,7 +4,7 @@ namespace EishockeyManager.Core.Tests;
 
 /// <summary>
 /// Spur nationalteam, Runde 13, Teil 1: Kader und Werte des Bundestrainers nach der DOSBox-Aufnahme `runde-12`
-/// (<c>docs/analyse/re-runde-13.md</c>, Sitzung 1: A009, A010, A023, A085).
+/// (<c>docs/archiv/analyse/re-runde-13.md</c>, Sitzung 1: A009, A010, A023, A085).
 /// </summary>
 public class CoachSquadValuesTests
 {

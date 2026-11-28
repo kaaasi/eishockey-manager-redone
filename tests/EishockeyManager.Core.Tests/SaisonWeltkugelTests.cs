@@ -3,7 +3,7 @@ using EishockeyManager.Core;
 namespace EishockeyManager.Core.Tests;
 
 /// <summary>
-/// Spur saison, Teil 4 (A058, A163; docs/analyse/re-runde-13.md, DOSBox-Spielstände FILE20 → FILE21): Saisonwechsel im Modus
+/// Spur saison, Teil 4 (A058, A163; docs/archiv/analyse/re-runde-13.md, DOSBox-Spielstände FILE20 → FILE21): Saisonwechsel im Modus
 /// „nur Weltkugel“. Die große Wanderung der Teamwerte (Datei 0x56448 → 0x9D1B Modus 10) und der Oberliga-Austausch
 /// (Datei 0x56238–0x56284) laufen wie in den anderen Modi; Auf- und Abstieg zwischen den Ligen gibt es ohne Spiele nicht.
 /// </summary>

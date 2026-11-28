@@ -4,7 +4,7 @@ using EishockeyManager.Formats;
 namespace EishockeyManager.Core.Tests;
 
 /// <summary>
-/// Fix R13GN-01 (#622, Review <c>docs/reviews/2026-11-05-runde-13-gesamt-nachpruefung.md</c>): ein neuer Kaderplatz wird nach
+/// Fix R13GN-01 (#622, Review <c>docs/archiv/reviews/runde-13/2026-11-05-runde-13-gesamt-nachpruefung.md</c>): ein neuer Kaderplatz wird nach
 /// Spielerart einsortiert, nicht hinten angehängt. [ORIGINAL] em.exe Datei 0x42D55–0x42DA1: ab Platz 0 der erste leere Platz
 /// oder der erste, dessen Art (Datei 0x04180: 0 Torhüter, 1 Verteidiger, 2 Stürmer) größer als die des Neuen ist; ab dort
 /// rückt die Folge per memmove nach hinten (Datei 0x42DC3 ff.). Vorher: immer hinten an (Platz 25, Nr. 26 bei 25 Spielern).

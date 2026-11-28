@@ -13,7 +13,7 @@ public sealed record GoalSceneRequest(GoalScene Scene, bool Goal, int Side, int 
     GoalSceneHeader Header, bool Continuous = false);
 
 /// <summary>
-/// Abspieler der Torszene 0x567C8 als Bildschirm (Spur torszenen, Teil C2; <c>docs/analyse/re-livespiel.md</c> §6, §11, §16).
+/// Abspieler der Torszene 0x567C8 als Bildschirm (Spur torszenen, Teil C2; <c>docs/archiv/analyse/re-livespiel.md</c> §6, §11, §16).
 /// <list type="bullet">
 /// <item>[ORIGINAL] Modus (Datei 0x56804–0x56813, 0x56ABC, 0x56E14, 0x56E37): 0 = Einzelszene (Bilder laden, Palette, Szene,
 ///   Pause 6, Bilder freigeben, Live-Bildschirm neu); 1 = Dauer-Eisfeld aufbauen (laden, Kopfzeile, Eis; Rückgabe 1);

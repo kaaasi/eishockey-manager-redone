@@ -5,7 +5,7 @@ using EishockeyManager.UI.Screens.Live;
 namespace EishockeyManager.UI.Tests;
 
 /// <summary>
-/// Spur torszenen, Teil C2: Abspieler 0x567C8 (<c>docs/analyse/re-livespiel.md</c> §16). Vor dem Teil rot: es gab keinen
+/// Spur torszenen, Teil C2: Abspieler 0x567C8 (<c>docs/archiv/analyse/re-livespiel.md</c> §16). Vor dem Teil rot: es gab keinen
 /// Abspieler (<c>GoalSceneAnimation</c>, <c>GoalSceneGraphics</c>, <c>GoalSceneScreen</c> fehlten, Build-Fehler).
 /// Vorlage: Video <c>eisbaeren_f01_01150</c> = Szene <c>7.at</c>/<c>7.av</c> nach 33 Bildern (Kamera (112 | 528)).
 /// </summary>

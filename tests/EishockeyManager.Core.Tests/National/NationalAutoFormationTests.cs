@@ -4,7 +4,7 @@ using EishockeyManager.Formats;
 namespace EishockeyManager.Core.Tests;
 
 /// <summary>
-/// Spur wettbewerbe-spiel, Runde 12, Teil 4 (U8, A013; <c>docs/analyse/re-nachtrag.md</c> §3.4): Die Auto-Aufstellung des
+/// Spur wettbewerbe-spiel, Runde 12, Teil 4 (U8, A013; <c>docs/archiv/analyse/re-nachtrag.md</c> §3.4): Die Auto-Aufstellung des
 /// Nationalteams („A“) folgt derselben Regel wie beim Verein. [ORIGINAL] Satz 5 ruft Datei 0x426BC/0x42838 wie ein Verein
 /// (Einstellung DGROUP 0x37F; Aufrufe Datei 0x3B4C6, 0x54D84). Befund vorher (Base 270d4a0): <see cref="NationalCoach.AutoFormation"/>
 /// stellte nach dem Spielwert mit Energie auf (<see cref="Lineup.AutoFill"/>) und setzte den Rest nach Kondition + Technik +

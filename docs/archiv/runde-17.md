@@ -25,7 +25,7 @@ Leitstelle); wo der Force-Push im geplanten Lauf abgelehnt wurde, Merge-Commit n
 
 ## Runde 17 – Restlücken außerhalb des Live-Spiels (Plan 12.11.2026, Go 12.11.2026)
 
-Runde 16 abgeschlossen am 12.11.2026: [archiv/runde-16.md](archiv/runde-16.md). Grundlage: offene Issues #730, #773 (P2/P3,
+Runde 16 abgeschlossen am 12.11.2026: [archiv/runde-16.md](runde-16.md). Grundlage: offene Issues #730, #773 (P2/P3,
 DOSBox nötig), #784, #785 (Testlücken), Inventur `analyse/inventur.md` (offene `[APPROX]` der Gruppen a/c/d mit Prio P2) und
 Funktionskarte `re-abdeckung.md`: Spielcode zu 91 % umgesetzt; fehlende Funktionen gehören bis auf F107 (R-K7) alle zum
 Live-Spiel (L1–L8, `archiv/analyse/re-livespiel.md`). Diese Runde schließt die übrigen P2-Lücken, damit danach das Live-Spiel und die

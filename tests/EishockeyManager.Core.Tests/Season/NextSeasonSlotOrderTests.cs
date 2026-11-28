@@ -3,7 +3,7 @@ using EishockeyManager.Core;
 namespace EishockeyManager.Core.Tests;
 
 /// <summary>
-/// Spur saison, Teil 3 (S-K6-Rest, docs/analyse/re-runde-13.md; Entscheidung Leitstelle L5): Die Satzfolge der nächsten Saison
+/// Spur saison, Teil 3 (S-K6-Rest, docs/archiv/analyse/re-runde-13.md; Entscheidung Leitstelle L5): Die Satzfolge der nächsten Saison
 /// entsteht am 29. April vor dem Fenster „Saisonende“ (em.exe Datei 0x5644E vor 0x5645D) und wird gespeichert (Schema 38);
 /// die Fair-Play-Prämie wertet die Liga der nächsten Saison in dieser Folge (Datei 0x2A1E0 über DGROUP 0x9746, Datei 0x56409).
 /// </summary>

@@ -5,7 +5,7 @@ using EishockeyManager.UI.Screens.Team;
 namespace EishockeyManager.UI.Screens.Live;
 
 /// <summary>
-/// Eingriff im Spiel über Kopf/Logo (Spur livespiel-ui-2, B3; <c>docs/analyse/re-livespiel.md</c> §4, §10, §15): Datei 0x5434C
+/// Eingriff im Spiel über Kopf/Logo (Spur livespiel-ui-2, B3; <c>docs/archiv/analyse/re-livespiel.md</c> §4, §10, §15): Datei 0x5434C
 /// mit der Schleife 0x48E28 – Aufstellung bzw. Taktik mit Kennwert „im Spiel“, Wechsel über den Knopf unten rechts, bis einer
 /// der beiden Bildschirme verlassen wird; danach zurück in den Live-Bildschirm.
 /// </summary>

@@ -2,7 +2,7 @@ namespace EishockeyManager.Core.Tests;
 
 /// <summary>
 /// Spur <c>kader-start</c>, Runde 13, Teil 2: Regler der Spielvorbereitung (U15-b) und Start-Liga für alle Manager (L1).
-/// Belege: <c>docs/analyse/re-runde-13.md</c>, Abschnitt U15-b; em.exe Datei 0x2890A–0x2891C.
+/// Belege: <c>docs/archiv/analyse/re-runde-13.md</c>, Abschnitt U15-b; em.exe Datei 0x2890A–0x2891C.
 /// </summary>
 public class StartLeagueDurationTests
 {

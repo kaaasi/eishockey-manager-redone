@@ -83,7 +83,7 @@ public sealed class SponsorContract
     public required int[] Boards { get; init; }
 
     /// <summary>
-    /// Monatsbetrag – bei Banden je Feld. [ORIGINAL] F06/A888 (Datei 0x2BAD4–0x2BB80, docs/analyse/re-abweichungen.md F06): Jede
+    /// Monatsbetrag – bei Banden je Feld. [ORIGINAL] F06/A888 (Datei 0x2BAD4–0x2BB80, docs/archiv/analyse/re-abweichungen.md F06): Jede
     /// Bande ist ein eigener Satz mit dem Betrag des Angebots; ein Vertrag über n Banden bringt n · Betrag.
     /// </summary>
     public required long MonthlyAmount { get; init; }
@@ -322,7 +322,7 @@ public sealed partial class GameState
     /// <summary>
     /// Nimmt ein Angebot für eine Werbefläche an. Liefert den Vertrag oder null, wenn die Fläche belegt oder gesperrt ist bzw.
     /// nicht genug Bandenfelder frei sind.
-    /// [ORIGINAL] F06/A888 (docs/analyse/re-abweichungen.md F06): Bei Banden prüft das Original nur die Zahl der freien oder kündbaren
+    /// [ORIGINAL] F06/A888 (docs/archiv/analyse/re-abweichungen.md F06): Bei Banden prüft das Original nur die Zahl der freien oder kündbaren
     /// Felder 0 … 6 (Knopf „annehmen“ Datei 0x2BF86–0x2BFD2, Zählung 0x2BEAF–0x2BEFD), nicht das angeklickte Feld (Klick Datei
     /// 0x2BA9D–0x2BAD1), und kopiert das Angebot je Bande in das erste freie oder kündbare Feld ab Feld 0 (Datei 0x2BAD9, Suche
     /// 0x2BADE–0x2BB6D) – ohne Rücksicht auf das angeklickte Feld.

@@ -33,7 +33,7 @@ public class TieShootoutScoreTests
     /// <summary>
     /// Regressionstest (vorher rot): Nach dem Penaltyschießen steht der Endstand (Gleichstand + Tore). [ORIGINAL] Minutenweg
     /// 0x39789/0x397B3: Gleichstand + Penaltytore 2 … 5, ungleich, eine Marke. Schneller Weg 0x37761: Heim = h + random(0, 2) + 30,
-    /// Gast = g + random(0, 2) – seit Spur re-reste Teil 2 (#925 (b), <c>docs/analyse/re-reste-23.md</c> §1) genau ein Wurf mit zwei
+    /// Gast = g + random(0, 2) – seit Spur re-reste Teil 2 (#925 (b), <c>docs/archiv/analyse/re-reste-23.md</c> §1) genau ein Wurf mit zwei
     /// Marken (0x32B9D, 0x3775D); ein stehender Gleichstand zählt für den Heimverein (0x34C76). Vorher verlangte der Test auch dort
     /// „bis ungleich“ und eine Marke (Rückschaltprobe: alter Code → rot, Marke 1 statt 2). Fixlauf RR-01 (Review #965, R15-E2 = C):
     /// eine ungleiche Paarung mit offener Paarung dahinter bekommt den Zusatzwurf mit einer Marke (0x32B23/0x32B3F → 0x376F0,

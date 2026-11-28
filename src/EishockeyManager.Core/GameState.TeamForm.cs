@@ -1,7 +1,7 @@
 namespace EishockeyManager.Core;
 
 /// <summary>
-/// Bilanzzeichen je Team (Spur statistik-anzeige, B29/A361; <c>docs/analyse/re-abweichungen.md</c> B15 und B29).
+/// Bilanzzeichen je Team (Spur statistik-anzeige, B29/A361; <c>docs/archiv/analyse/re-abweichungen.md</c> B15 und B29).
 /// </summary>
 /// <remarks>
 /// <list type="bullet">

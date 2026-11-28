@@ -5,7 +5,7 @@ using EishockeyManager.Tests.Support;
 namespace EishockeyManager.Core.Tests;
 
 /// <summary>
-/// Nachprüfung #691 (<c>docs/reviews/2026-11-09-tagestakt-hauptweg-sommerpause.md</c>), Leitstelle Runde 14: Regressionstests zu
+/// Nachprüfung #691 (<c>docs/archiv/reviews/runde-14/2026-11-09-tagestakt-hauptweg-sommerpause.md</c>), Leitstelle Runde 14: Regressionstests zu
 /// R688S-01 bis R688S-03.
 /// </summary>
 /// <remarks>

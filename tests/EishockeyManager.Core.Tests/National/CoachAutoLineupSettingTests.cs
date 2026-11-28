@@ -3,7 +3,7 @@ namespace EishockeyManager.Core.Tests;
 
 /// <summary>
 /// Spur nationalteam, Runde 14, Teil 3: A009 – Einstellung „automatisch aufstellen“ des Bundestrainers (DGROUP 0x37F aktuell,
-/// 0x380 gesichert; <c>docs/analyse/re-runde-14.md</c> Sitzung 5, L8). Vor dem Fix rot: Das Remake kannte die Einstellung nicht,
+/// 0x380 gesichert; <c>docs/archiv/analyse/re-runde-14.md</c> Sitzung 5, L8). Vor dem Fix rot: Das Remake kannte die Einstellung nicht,
 /// setzte bei leerer Formation seine eigene Automatik ein und schrieb dann keine Länderwerte.
 /// </summary>
 public class CoachAutoLineupSettingTests

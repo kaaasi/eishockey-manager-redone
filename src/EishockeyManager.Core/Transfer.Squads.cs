@@ -53,7 +53,7 @@ public static class SquadRules
 
     /// <summary>
     /// Laufbahnende ohne Managerkader im Saisonende. [ORIGINAL] Datei 0x2787A–0x279DA (Saisonende 0x26F20, Pool-Schleife 1–199):
-    /// Alter &gt; random(37, 42) (<c>docs/analyse/re-nachtrag.md</c>, Abschnitt 1). Gilt für Computerspieler und Vertragslose;
+    /// Alter &gt; random(37, 42) (<c>docs/archiv/analyse/re-nachtrag.md</c>, Abschnitt 1). Gilt für Computerspieler und Vertragslose;
     /// der Managerkader folgt der Ruhestandsmeldung (<see cref="RetirementRoll"/>).
     /// </summary>
     public static bool CareerEnds(int age, Random random) => age > TransferRules.Random16(random, CareerEndMin, CareerEndMax);
@@ -62,7 +62,7 @@ public static class SquadRules
     /// Wurf je Takt „kündigt an, daß er seinen Vertrag nicht mehr verlängern wird“ (Kaderplatz +0x18 Bit 0x80). [ORIGINAL]
     /// Tagesablauf 0x07169, Datei 0x0754D–0x0760F, je Platz des Managers am Zug und Tag: c = 100 − 15 bei einem Torhüter
     /// (Rollenwert Pool +0x18 = 0); Technik − Kondition &gt; 0 → c − (Technik − Kondition) / 2; v = Alter · c / 10; wahr bei
-    /// random(350, 450) &lt; v. Feldspieler unter 36 nie, Torhüter unter 42 nie (<c>docs/analyse/re-nachtrag.md</c>, Abschnitt 1).
+    /// random(350, 450) &lt; v. Feldspieler unter 36 nie, Torhüter unter 42 nie (<c>docs/archiv/analyse/re-nachtrag.md</c>, Abschnitt 1).
     /// Der Wurf fällt immer; die Bedingungen (kein Bit 0x80, kein offenes Verlängerungsangebot +0x18 ≥ 100) prüft der Aufrufer.
     /// </summary>
     public static bool RetirementRoll(Player p, Random random)

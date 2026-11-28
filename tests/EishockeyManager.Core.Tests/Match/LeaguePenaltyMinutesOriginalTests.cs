@@ -10,7 +10,7 @@ namespace EishockeyManager.Core.Tests;
 /// <see cref="OriginalMinutes.Penalty"/> (lrandom(0, 12) = 0 oder lrandom(0, 110 − Einsatz 0x26) = 0, 5 Minuten mit 1/16 auf
 /// Platz 0, Ligazähler nur bei Wettbewerb 7, Datei 0x35967–0x35986); Einsatz der Computervereine im Spiel ohne Manager ist der
 /// Grundwert 40/60 aus 0x8365 (einzige Schreiber von 0x26 im Spiel: 0x8479, 0x9523 nur Managerpaarung, 0x38EFE Mausweg).
-/// Abgleich (Bericht <c>docs/analyse/belastung-staerke.md</c> §8): FILE05 → FILE24 (4. Spieltag) Original +441, Remake
+/// Abgleich (Bericht <c>docs/archiv/analyse/belastung-staerke.md</c> §8): FILE05 → FILE24 (4. Spieltag) Original +441, Remake
 /// 390–497 (Mittel 445, Saaten 1–8); FILE16A → FILE22 Original +430, Remake 399–467 (Mittel 437). Nur FILE02 → FILE03
 /// (1.–3. Spieltag, Original 1447, Remake 1218–1377) liegt darüber – Zufall bzw. Zufallsquelle (lrandom, <c>[APPROX]</c>).
 /// </summary>

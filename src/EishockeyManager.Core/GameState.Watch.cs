@@ -13,7 +13,7 @@ namespace EishockeyManager.Core;
 /// <item>[ORIGINAL] Der Lader 0x2EF1B setzt die Bits beim Laden der Datenbank auf 0 (Datei 0x2EFA8): ein neuer
 ///   <see cref="Club"/> beginnt mit Modus 0.</item>
 /// <item>[ORIGINAL] Die Markierung gehört zum Vereinssatz (wie Name und Logo) und wandert beim Platztausch 0x36169 mit dem Verein
-///   (<c>docs/analyse/re-runde-13.md</c> „Platztausch“); im Remake hängt sie am <see cref="Club"/>-Objekt, nicht an den
+///   (<c>docs/archiv/analyse/re-runde-13.md</c> „Platztausch“); im Remake hängt sie am <see cref="Club"/>-Objekt, nicht an den
 ///   Platzfeldern (<c>Club.SwapPlaceFields</c>).</item>
 /// <item>[ORIGINAL] Aufrufer von 0x0AE2B: Spielstart und neuer Manager 0x28165 je Manager (Verein, 1, 2) (Datei 0x298EA,
 ///   0x29C1C; <see cref="MarkStartWatches"/>, <see cref="AddManager"/>), Ernennung zum Bundestrainer (Deutschland, 1, 2) (Datei

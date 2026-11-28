@@ -5,7 +5,7 @@ using Xunit;
 namespace EishockeyManager.Core.Tests;
 
 /// <summary>
-/// #826 (Bericht <c>docs/analyse/abgleich-dosbox.md</c> §3.3): Punkte der Bestenliste im Spielmodus „nur Weltkugel“.
+/// #826 (Bericht <c>docs/archiv/analyse/abgleich-dosbox.md</c> §3.3): Punkte der Bestenliste im Spielmodus „nur Weltkugel“.
 /// [ORIGINAL] em.exe Datei 0x5D59B–0x5D607: Bei DGROUP 0xD0B9 = 1 summiert die Eintragsfunktion 0x5D4C2 über die
 /// Platzierungsfolge des Landes DGROUP 0x828B + 0x50 · Land (bis zur ersten 0) je Byte 9 − Byte, mindestens 1. Die Folge
 /// trägt die Plätze 1 … 8 und für alle anderen WM-Teilnehmer 11 (Datei 0x31266–0x31291), also −2 je WM ab Platz 9.

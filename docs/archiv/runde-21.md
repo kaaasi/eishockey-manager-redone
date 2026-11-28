@@ -33,8 +33,8 @@ vom Nutzer bzw. neu angelegt fortgesetzt.
 
 ## Aktuelle Runde: Runde 21 – Umsetzung Restliste: Lader, Zufallsstrom, HOK-Werte, Finanzübersicht, Zusehen, RE vor DOSBox (Plan 16.11.2026, Go 16.11.2026)
 
-Runde 20 abgeschlossen am 16.11.2026: [archiv/runde-20.md](archiv/runde-20.md). Grundlage: Restliste
-[analyse/restliste-v1.md](analyse/restliste-v1.md) (V 85, D 45; Entscheidungen N1–N6, „Vorschlag Zuschnitt Runde 21 ff.“), #882,
+Runde 20 abgeschlossen am 16.11.2026: [archiv/runde-20.md](runde-20.md). Grundlage: Restliste
+[analyse/restliste-v1.md](../analyse/restliste-v1.md) (V 85, D 45; Entscheidungen N1–N6, „Vorschlag Zuschnitt Runde 21 ff.“), #882,
 DOSBox-Aufnahme `a093` (#888, Referenz-PR kaaasi/eishockey-manager-referenz#40 gemergt). **Ziel der Runde:** die V-Themen mit
 gemeinsamer Ursache im Spielkern (Lader beim Programmstart, gemeinsamer Zufallsstrom, Teamwert) und die kleinen, unabhängigen
 V-Themen (HOK-Werte, Finanzübersicht, Zusehen) umsetzen; die 22 D „RE zuerst“ und A093 als V/X/K einordnen. Übrige V-Themen

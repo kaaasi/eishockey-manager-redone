@@ -247,12 +247,12 @@ public static class NewGame
     /// Datei 0x29CF2 <c>0x36169(v, r, 0x80)</c> (gemeinsame Umsetzung <see cref="StartLeaguePlace"/>, K13): Name, Logo, Manager und Spieler wandern, die Teamwerte bleiben am Platz.
     /// Der Verdrängte übernimmt Platz und Liga des Managervereins (auch „ohne Liga“). Bei Start-Liga Bundesliga wird
     /// immer gezogen, r = v ist möglich. Belege FILE27/FILE28 (Köln fest, Start-Liga 2. Liga: Weißwasser bzw. Hannover in
-    /// der Bundesliga mit Kölns Teamwerten), FILE15 (Bayreuth bleibt in der 2. Liga); <c>docs/analyse/re-runde-13.md</c>, U15-a.
+    /// der Bundesliga mit Kölns Teamwerten), FILE15 (Bayreuth bleibt in der 2. Liga); <c>docs/archiv/analyse/re-runde-13.md</c>, U15-a.
     /// Der Zufallsplatz r ist ein Satzplatz der Startmischung (<paramref name="places"/>, R-K5): gezogen wird der Platz, nicht der
     /// Vereinsindex; nach dem Tausch stehen v und r auf den Plätzen des anderen.
     /// [ORIGINAL] Europapokal-Zeile 1 beim Spielstart: Die Tabelle DGROUP 0x5CFB ist noch leer (Startwert 0, DGROUP 0x5CF4 = 0
     /// → 64 Einträge 0), gefüllt wird sie erst nach der Spielvorbereitung (0x341AB über Datei 0x43A8C). Der Filter trifft
-    /// also genau **Platz 0**, nicht den Deutschen Meister (U15-c, <c>docs/analyse/re-runde-14.md</c>; FILE01/09/10: kein
+    /// also genau **Platz 0**, nicht den Deutschen Meister (U15-c, <c>docs/archiv/analyse/re-runde-14.md</c>; FILE01/09/10: kein
     /// Managerverein auf Platz 0). Spur zufallsstrom (A558, N3 = B): Der Wurf kommt aus dem gemeinsamen Strom
     /// <see cref="GameState.Random"/> an der Stelle des Originals – in der Managerschleife nach dem Pool (Datei 0x29C91).
     /// </summary>
@@ -282,7 +282,7 @@ public static class NewGame
     /// Spielende DGROUP 0x5A14 = 1994 und DGROUP 0x386 = 1 Manager → Managerfeld DGROUP 0x9744 + 0x1AF · m = 1, dann Zufallsplatz r
     /// der Bundesliga, bis 0x45CD0(r, 1) ≠ 0, und Tausch 0x36169(v, r, 0x80). Beim Spielstart ist die Europapokal-Tabelle leer,
     /// der Filter trifft nur Platz 0: Der Managerverein landet immer auf Platz 0 (FILE29: ESV KAUFBEUREN auf Platz 0,
-    /// HOK 0x00F70 = 1; <c>docs/analyse/re-runde-14.md</c>, U15-c). Spur zufallsstrom (N3 = B): Die Würfe der Schleife kommen aus dem
+    /// HOK 0x00F70 = 1; <c>docs/archiv/analyse/re-runde-14.md</c>, U15-c). Spur zufallsstrom (N3 = B): Die Würfe der Schleife kommen aus dem
     /// gemeinsamen Strom, bis Platz 0 fällt. Das Feld 0x9744 führt <see cref="Manager.OneSeasonFlag"/> (A847; Wirkung außer im Highscore nicht
     /// gelesen, <see cref="HighscoreRules"/>). [APPROX] Der Platztausch greift im Remake nur, wenn der Verein in der Bundesliga steht.
     /// </summary>
@@ -311,7 +311,7 @@ public static class NewGame
     /// übernimmt sie als Satzfolge der Ligen (<see cref="GameState.LeagueSlots"/>).
     /// [ORIGINAL] em.exe Datei 0x43A17 (Aufruf 0x35EDD) vor Datei 0x43A61 (Spielvorbereitung 0x28165), danach keine weitere
     /// Mischung bis zum Hauptmenü (Datei 0x43A66–0x43B40); Belege <c>oberflaeche_0128/_0133/_0136</c>, FILE01/10/27/28
-    /// (<c>docs/analyse/re-runde-13.md</c>, R-K5); Tauschschleife Datei 0x35FD2–0x3613F.
+    /// (<c>docs/archiv/analyse/re-runde-13.md</c>, R-K5); Tauschschleife Datei 0x35FD2–0x3613F.
     /// [APPROX] Zufallsquelle: Das Original zieht nach srand(time) (Datei 0x439F5) aus dem gemeinsamen Zufall; das Remake
     /// leitet die Mischung aus dem Spielstart-Seed ab, ohne <see cref="GameState.Random"/> weiterzuschalten. Dieselbe Saat
     /// gibt in der Spielvorbereitung und beim Spielstart dieselbe Folge (der Bildschirm würfelt nichts).

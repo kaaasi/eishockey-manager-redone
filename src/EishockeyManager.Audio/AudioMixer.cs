@@ -39,7 +39,7 @@ public sealed class AudioMixer : IGameAudio
         {
             // [ORIGINAL] Ein Durchlauf, dann Stille: ein Start über Treiberfunktion 6 (Datei 0x431CB, einziger Aufruf
             // Datei 0x4391F), der Treiber stoppt am Meta-Ereignis FF 2F (Datei 0x15DB0 → 0x15F08), kein Neustart; das
-            // Statusbyte DGROUP 0x59E6 liest das Spiel nicht (docs/analyse/re-vor-dosbox.md, A002). „Läuft“ bleibt bis
+            // Statusbyte DGROUP 0x59E6 liest das Spiel nicht (docs/archiv/analyse/re-vor-dosbox.md, A002). „Läuft“ bleibt bis
             // StopMusic gesetzt, damit die Musikregel das Lied im Titelbildschirm nicht neu startet.
             _music = new CmfPlayer(music, bank.SampleRate, loop: false);
         }

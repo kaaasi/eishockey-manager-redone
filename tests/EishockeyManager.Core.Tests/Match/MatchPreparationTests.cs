@@ -10,7 +10,7 @@ namespace EishockeyManager.Core.Tests;
 /// die doppelten Stärken 0x368B1(Verein, 1, 0, 0, neu) beider Vereine; Datei 0x8400–0x8411 |Differenz| &lt; 25 → Grundwert 60,
 /// sonst 40; Datei 0x8473–0x847D Vereinsfeld 0x26 = 0x2D = Grundwert (ohne Zuschlag „Unentschieden“); die Angriffsbits 0x2C
 /// (4–6) schreibt 0x8365 nicht (Datei 0x8481–0x84BD), sie bleiben aus dem letzten Managerspiel stehen. Beleg FILE03 (Vereinsfelder
-/// der Computervereine, <c>docs/analyse/belastung-staerke/clubs.py</c>): (40, 40, 0) × 23, (60, 60, 0) × 9, (0, 0, 0) × 16, die
+/// der Computervereine, <c>docs/archiv/analyse/belastung-staerke/clubs.py</c>): (40, 40, 0) × 23, (60, 60, 0) × 9, (0, 0, 0) × 16, die
 /// drei Kölner Gegner mit Angriff 5/4/6.
 /// </summary>
 public class MatchPreparationTests(ITestOutputHelper output)

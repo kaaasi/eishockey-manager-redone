@@ -7,7 +7,7 @@ using EishockeyManager.UI.Testing;
 namespace EishockeyManager.UI.Tests;
 
 /// <summary>
-/// #862 (Review <c>docs/reviews/2026-11-15-torszenen.md</c> P3-1, P3-2): Kopfzeile der Torszene über die ersten zwei
+/// #862 (Review <c>docs/archiv/reviews/runde-19/2026-11-15-torszenen.md</c> P3-1, P3-2): Kopfzeile der Torszene über die ersten zwei
 /// Spieltage. Am ersten Spieltag gibt es weder ein Heimspiel mit Zuschauern ≥ 1000 noch zwei Chancen derselben Minute nach
 /// einem Tor; deshalb blieben die Mutationen „Tausenderpunkt an“ (<c>GoalSceneCall.Spectators</c>) und „Spielstand innerhalb
 /// der Minute nicht fortschreiben“ (<c>LiveMatchScreen</c>) in <see cref="GoalSceneCallTests"/> grün.

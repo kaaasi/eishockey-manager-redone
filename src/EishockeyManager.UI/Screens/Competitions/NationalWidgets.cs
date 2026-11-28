@@ -72,7 +72,7 @@ public static class NationalWidgets
     /// <summary>
     /// Wert einer Reihe (siehe <see cref="TeamPanel"/>). [ORIGINAL] B17 (A285, A419, A961; Aufräumkonzept K9): 0x977F wie in
     /// Datei 0x3B65C, (Kondition + Technik) / 2 der Rückgabe (Datei 0x3B664–0x3B691) – <see cref="GameState.NationalPanelLineValue"/>,
-    /// Beleg `b17_reihenwerte_national.py` (300 von 300 gleich, docs/analyse/re-abweichungen.md B17). Länder ohne
+    /// Beleg `b17_reihenwerte_national.py` (300 von 300 gleich, docs/archiv/analyse/re-abweichungen.md B17). Länder ohne
     /// Bundestrainer: Teamwerte + 4 − 4 · Reihe, je auf 0 … 100 begrenzt; Land des Bundestrainers: Spielerweg 0x98F8 über
     /// <see cref="MatchEngine.ManagedLineValues"/> (A494). Keine eigene Grenze bei 99: 0x977F liefert höchstens 100, die
     /// Zahlenausgabe zeigt dann drei Stellen. Vorher (K + T) / 2 der Länderwerte bzw. der Aufstellung, auf 0–99 begrenzt.

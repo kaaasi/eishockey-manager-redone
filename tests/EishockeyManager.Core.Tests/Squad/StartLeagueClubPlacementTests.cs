@@ -7,7 +7,7 @@ namespace EishockeyManager.Core.Tests;
 /// Spur <c>kader-start</c>, Runde 13, Teil 2, U15-a (D7 = D, L13 = A): Der fest gewählte Verein kommt beim Spielstart in die
 /// Start-Liga, bei Bedarf per Platztausch; die Teamwerte (Remake: <see cref="Club.Strength"/>) bleiben am Platz.
 /// [ORIGINAL] em.exe Datei 0x29C3B–0x29CF2; Belege FILE27/FILE28 (Köln fest, Start-Liga 2. Liga), FILE15 (Bayreuth bleibt),
-/// <c>docs/analyse/re-runde-13.md</c>, Abschnitt U15-a. Vorher blieb ein fester Verein in seiner Liga, ein Verein ohne Liga
+/// <c>docs/archiv/analyse/re-runde-13.md</c>, Abschnitt U15-a. Vorher blieb ein fester Verein in seiner Liga, ein Verein ohne Liga
 /// rückte in die Oberliga (<c>[APPROX]</c> A112).
 /// </summary>
 public class StartLeagueClubPlacementTests

@@ -3,7 +3,7 @@ using EishockeyManager.Core;
 namespace EishockeyManager.Core.Tests;
 
 /// <summary>
-/// Spur livespiel-kern, Teil A2 (L5): Ablaufmodell der Live-Anzeige (<c>docs/analyse/re-livespiel.md</c> §1, §10, §13).
+/// Spur livespiel-kern, Teil A2 (L5): Ablaufmodell der Live-Anzeige (<c>docs/archiv/analyse/re-livespiel.md</c> §1, §10, §13).
 /// Vor dem Teil rot: es gab kein Ablaufmodell (<c>LiveClock</c> fehlte, Build-Fehler).
 /// </summary>
 public sealed class LivespielKernClockTests

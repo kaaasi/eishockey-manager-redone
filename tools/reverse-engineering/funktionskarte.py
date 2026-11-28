@@ -427,7 +427,7 @@ DGROUP_WORDS = re.compile(r"(Liste|Tabellen?|Paarungen|Runde|Termin|Struktur|[Mm
                           r"Managerwert|Flag|Variable|Zustand)\s*`?$")
 # DGROUP values that a comment calls "Datei" by mistake (checked against the bytes of em.exe)
 DGROUP_MISLABELLED: dict[int, str] = {}
-# offsets in the decrypted savegame are written "HOK 0x…" (docs/formate/spielstand-original.md, docs/analyse/re-runde-13.md)
+# offsets in the decrypted savegame are written "HOK 0x…" (docs/formate/spielstand-original.md, docs/archiv/analyse/re-runde-13.md)
 HOK_PREFIX = re.compile(r"\bHOK\s*`?$")
 SENTENCE_CUT = re.compile(r"\.\s|;|\n\s*(?:///?|\*)?\s*\n|\[(?:ORIGINAL|APPROX)\]|\|")
 DGROUP_CTX = re.compile(r"(DGROUP|Feld|Spielerfeld|Vereinsfeld|Manager-Feld|Index|Globale|Zähler|Byte|Wort)\s*$")

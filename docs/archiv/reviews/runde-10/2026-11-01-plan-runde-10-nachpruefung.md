@@ -42,7 +42,7 @@ R10PN-01, kein Merge-Hindernis). CI am Head grün, `tools/pruefen.sh` (alle drei
 ### R10PN-01 (P3) – Weiterer defekter relativer Link im Archiv
 
 [`docs/archiv/runde-9.md` L31](https://github.com/kaaasi/eishockey-manager-redone/blob/d6810bcc52315dbafa6f7ab3c3e5d6ebc107258c/docs/archiv/runde-9.md#L31):
-`[vorlagen/spur-start.md](vorlagen/spur-start.md)` zeigt aus `docs/archiv/` auf `docs/archiv/vorlagen/spur-start.md` (fehlt).
+`[vorlagen/spur-start.md](../../../vorlagen/spur-start.md)` zeigt aus `docs/archiv/` auf `docs/archiv/vorlagen/spur-start.md` (fehlt).
 Schon am alten Head vorhanden, in #367 übersehen. Gegenbeispiel: alle relativen Links in `docs/arbeitspakete.md` und
 `docs/archiv/runde-{8,9}.md` gegen das Dateisystem auflösen – einziger Fehltreffer ist dieser. Vorschlag:
 `../vorlagen/spur-start.md`. Dasselbe Muster `](archiv/…)` steht außerhalb des PR noch in `runde-4.md` L14 und `runde-5.md`

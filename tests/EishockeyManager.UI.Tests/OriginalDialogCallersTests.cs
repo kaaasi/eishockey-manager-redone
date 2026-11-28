@@ -11,7 +11,7 @@ namespace EishockeyManager.UI.Tests;
 
 /// <summary>
 /// Integration Runde 11 (ui-meldungen): Aufrufer in fremden Dateien auf die Bausteine <see cref="OriginalDialog"/> (Datei 0x4C246)
-/// und <see cref="ShortMessage"/> (Datei 0x0C0B8) umgestellt – Lage nach <c>docs/analyse/re-meldungen.md</c> §B/§C (Symbolfelder
+/// und <see cref="ShortMessage"/> (Datei 0x0C0B8) umgestellt – Lage nach <c>docs/archiv/analyse/re-meldungen.md</c> §B/§C (Symbolfelder
 /// bei x 83/212, y 112; Fenster ab 75 | 107; Knöpfe 94/164 | 166). Gegenbeispiele (vorher): „?“-Felder bei 82/84 | 110–111 mit
 /// Lichtkante, eigene Rahmen, Meldungen mit Klick zu schließen.
 /// </summary>

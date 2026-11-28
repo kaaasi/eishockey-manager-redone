@@ -80,7 +80,7 @@ public static partial class FinanceRules
 
     /// <summary>
     /// [ORIGINAL] Höchstbetrag des Bankkredits: em.exe Datei 0x596C2–0x59A12 (Höchstwert links „holen/leihen“ =
-    /// 6.000.000 Drittel-DM minus Schuld bei der Bank), also 2 Mio. DM (docs/analyse/re-geld.md, „Betragsbalken“).
+    /// 6.000.000 Drittel-DM minus Schuld bei der Bank), also 2 Mio. DM (docs/archiv/analyse/re-geld.md, „Betragsbalken“).
     /// </summary>
     public const long CreditLimit = 2_000_000;
 

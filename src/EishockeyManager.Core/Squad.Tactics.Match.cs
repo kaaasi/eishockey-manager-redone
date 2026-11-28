@@ -9,7 +9,7 @@ namespace EishockeyManager.Core;
 /// Kondition / 100) / 4) und schreibt danach 0x26 neu; die Angriffsbits schreibt sie nicht (Datei 0x8481–0x84BD) – die
 /// schreiben nur 0x939A (gerade Minuten der Managerpaarung, Datei 0x9506) und das Live-Spiel 0x38D96. Ein Computerverein
 /// spielt deshalb ohne Manager mit dem Angriff aus seinem letzten Managerspiel (FILE03: die drei Kölner Gegner 5/4/6, alle
-/// anderen 0; <c>docs/analyse/belastung-staerke.md</c> §5). Beim Spielstart stehen beide Felder auf 0 (FILE02).
+/// anderen 0; <c>docs/archiv/analyse/belastung-staerke.md</c> §5). Beim Spielstart stehen beide Felder auf 0 (FILE02).
 /// </remarks>
 public sealed partial class Tactics
 {

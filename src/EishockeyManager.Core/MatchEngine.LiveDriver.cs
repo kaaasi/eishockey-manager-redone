@@ -12,7 +12,7 @@ public interface ILiveMatchDriver
 }
 
 /// <summary>
-/// Anschluss des Minutenschritts an den Spieltagsablauf (Spur livespiel-ui-2, B2; <c>docs/analyse/re-livespiel.md</c> §15).
+/// Anschluss des Minutenschritts an den Spieltagsablauf (Spur livespiel-ui-2, B2; <c>docs/archiv/analyse/re-livespiel.md</c> §15).
 /// <list type="bullet">
 /// <item>Ist ein <see cref="ILiveMatchDriver"/> eingesetzt (<see cref="UseLiveDriver"/>, je Thread), läuft jede Paarung mit
 ///   Anzeigereihe (Managerpaarung, <see cref="LiveScoreboard"/>) in <see cref="PlayWithEvents"/> über

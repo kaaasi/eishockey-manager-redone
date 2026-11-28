@@ -5,7 +5,7 @@ using EishockeyManager.UI.Screens.Competitions;
 namespace EishockeyManager.UI.Screens.Live;
 
 /// <summary>
-/// Live-Bildschirm (Spur livespiel-ui-2, B2; L2/L4/L5; <c>docs/analyse/re-livespiel.md</c> §1, §4, §5, §15): Aufbau 0x5353C,
+/// Live-Bildschirm (Spur livespiel-ui-2, B2; L2/L4/L5; <c>docs/archiv/analyse/re-livespiel.md</c> §1, §4, §5, §15): Aufbau 0x5353C,
 /// Anzeigetafel 0x52BD6 je Reihe, Spieluhr 0x51E90, Lampe und Reporter 0x52520. Der Bildschirm treibt die Minuten nur über
 /// den Minutenschritt des Spielkerns (<see cref="LiveSession.Step"/> → <see cref="LiveMatchDay.Step"/>); Zeit vergeht damit
 /// innerhalb von <see cref="GameState.Continue"/>, das auf dem Thread der Sitzung wartet.

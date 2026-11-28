@@ -132,7 +132,7 @@ public sealed class LiveMatch
 
 /// <summary>
 /// Minutenschritt im Spielkern (Spur livespiel-kern, Teil A5; Entscheidung Nutzer R18-E1 = A, 13.11.2026;
-/// <c>docs/analyse/re-livespiel.md</c> §13 A5). Damit Eingriffe aus dem Live-Bildschirm (Spur livespiel-ui-2, B2/B3) während
+/// <c>docs/archiv/analyse/re-livespiel.md</c> §13 A5). Damit Eingriffe aus dem Live-Bildschirm (Spur livespiel-ui-2, B2/B3) während
 /// des Spiels wirken, rechnet der Kern die Paarungen eines Spieltags Minute für Minute auf Befehl.
 /// <list type="number">
 /// <item><see cref="Begin"/>: [ORIGINAL] 0x36B5D bereitet erst alle Paarungen vor (Spielabrechnung 0x544C0 je Paarung, Datei

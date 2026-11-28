@@ -57,7 +57,7 @@ in `Club.Players` (`[APPROX]`).
 Umsetzung: `Core/Transfer.Purchase.cs` (`TransferMarket.Bid`/`Sign`, `TransferPurchase`), `Core/Transfer.SeasonEnd.cs`
 (`StartNextSeasonWithRenewals`, `NegotiateRenewal`, `CancelRenewal`, `ResolveRenewals`), gemeinsamer Kern
 `Contracts.NegotiateTerms`; Dialog `UI/Screens/Team/ContractDialog.cs` (Verträge, Kauf, Saisonende); Tests
-`TransferVertraegeKomplettTests`, `TransferVertraegeKomplettScreenTests`.
+`PurchaseNegotiationTests`, `NegotiationWindowAfterPurchaseScreenTests`.
 
 | Regel | Fundstelle | Inhalt |
 |---|---|---|
@@ -85,7 +85,7 @@ Liste hinter dem Fenster am Saisonende = Bildschirm „Verträge“ (Original 0x
 
 Umsetzung: `Core/Transfer.ComputerClub.cs` (`ComputerClubTransferRules`, `GameState.StrengthenBuyer`,
 `GameState.AcceptSponsorSubsidy`; `TransferMarket.Bid`/`Sign` mit `out SponsorSubsidyOffer?`); Frage in `UI/Screens/Team/TransferDialog.cs` (`DialogKind.Subsidy`);
-Tests `KaderTransferTeil3Tests`, `KaderTransferTeil3ScreenTests`. Kein neues Spielstandsfeld.
+Tests `ComputerClubTransferEffectsTests`, `TransferLoanSponsorScreenTests`. Kein neues Spielstandsfeld.
 
 | Regel | Fundstelle | Inhalt |
 |---|---|---|
@@ -108,8 +108,8 @@ Computervereins auf (das Original kennt dort nur Teamwerte).
 
 Umsetzung: `Core/Player.Contract.cs` (`Player.InsurancePremium`, `Player.InsuranceLocked`, `Contracts.InsuranceOffer`,
 `CanChangeInsurance`, `ApplyInsurance`), `Core/Transfer.Insurance.cs` (`GameState.PayInsurance`), Dialog
-`UI/Screens/Team/ContractDialog.cs`; Migration 17 → 18 (vorläufig); Tests `TransferVertraegeKomplettTeil2Tests`,
-`TransferVertraegeKomplettTeil2ScreenTests`.
+`UI/Screens/Team/ContractDialog.cs`; Migration 17 → 18 (vorläufig); Tests `InsuranceNegotiationLockTests`,
+`NegotiationInsuranceFieldScreenTests`.
 
 | Regel | Fundstelle | Inhalt |
 |---|---|---|
@@ -133,7 +133,7 @@ Verhandlung nach dem Kauf, wird der neue Platz verworfen und mit ihm der Abschlu
 
 Umsetzung: `Contracts.ValueSalary` und `Contracts.PurchaseYears` (`Core/Player.Contract.cs`), `GameState.ApplyStartSalaries`
 (`Core/Transfer.StartSalary.cs`, Anschluss in `GameState.InitializeManagerSystems`), Kauf in `TransferMarket.Bid`; Tests
-`TransferVertraegeKomplettTeil2bTests` (Goldtest aus FILE01, FILE09, FILE10 und FILE07).
+`StartAndTransferSalaryTests` (Goldtest aus FILE01, FILE09, FILE10 und FILE07).
 
 | Regel | Fundstelle | Inhalt |
 |---|---|---|
@@ -154,8 +154,8 @@ Forderung des Remakes (`Contracts.Demand`).
 
 Umsetzung: `Core/Transfer.Unsolicited.cs` (`UnsolicitedOfferRules`, `GameState.RollUnsolicitedOffers`, `OpenUnsolicitedOffer`,
 `AcceptUnsolicitedOffer`), Feld `Player.UnsolicitedOffer` (Schema 19, vorläufig), Anschluss täglich in `AnnounceContractEnds`;
-Angebotsfenster `TransferDialog.ForUnsolicited` im Bildschirm „Transfer“; Tests `TransferVertraegeKomplettTeil3Tests`,
-`TransferVertraegeKomplettTeil3ScreenTests`.
+Angebotsfenster `TransferDialog.ForUnsolicited` im Bildschirm „Transfer“; Tests `UnsolicitedOfferTests`,
+`TransferOwnPlayerOfferScreenTests`.
 
 | Regel | Fundstelle | Inhalt |
 |---|---|---|
@@ -185,9 +185,9 @@ Rest gut (0x49332–0x49371, danach 0x4748A). Der Listenwechsel 0x494EF zieht au
 
 Entscheidungen Nutzer 01.11.2026 (PR #308). Umsetzung: `Core/Transfer.Pool.cs` (`TransferPoolRules`, `PoolSlot`,
 `TransferMarket.BuildPool`, `StartPoolSeason`, `ChangeList`), `Core/Transfer.cs` (`TransferListing.FromPool`, `TransferFee`,
-`AdvanceDay`, `Initialize`, `StartSeason`), Angebotsfenster für Gebote `UI/Screens/Team/TransferDialog.cs`; Schema 20
-(vorläufig, `Core/SaveGame.Migration.TransferVertraegeKomplett5.cs`); Tests `TransferVertraegeKomplettTeil5Tests`,
-`TransferVertraegeKomplettTeil5ScreenTests`.
+`Initialize`, `StartSeason`; der Tag läuft über die Zeitleiste, `CatchUpManagerDay` in `Core/Transfer.Listed.cs`), Angebotsfenster für Gebote `UI/Screens/Team/TransferDialog.cs`; Schema 20
+(vorläufig, `Core/SaveGame.Migration.TransferVertraegeKomplett5.cs`); Tests `MarketPoolTests`,
+`TransferOwnPlayerBidScreenTests`.
 
 | Regel | Fundstelle | Inhalt |
 |---|---|---|
@@ -258,7 +258,7 @@ Felder des Kaderplatzes (0x34 Byte, DGROUP 0x5DC3 + 0x618 · Manager) für das S
 | Verletzungsart +0x17, Namen der 28 Arten (Zeigertabelle DGROUP 0xA00) | 0x05B1A, 0x41A69–0x41A86 | `Player.InjuryKind`, `InjuryKinds.Names` |
 | Hinweiszeile „Verletzt.(Art)“: DGROUP 0xB84 + 0x50BE „(“ + Name + 0x50C0 „)“, ohne Leerzeichen | 0x41A2F–0x41AA4 | `PlayerHintLine.Status` |
 | Sperre: Strafe setzt +0x0A = 0, +0x09 \| 1, **+0x0D = Strafcode & 7** (2 bzw. 5 Minuten); je Spielminute −1 (0x5488C, 0x5490C); Ende der Strafe +0x09 &amp; ~1, +0x0D = 0 (0x35795); nach dem Spiel löscht 0x551D4–0x551E0 Bit 0 bei +0x0D ≠ 0 | 0x35C02–0x35C0C | nicht umgesetzt (siehe unten) |
-| Beleg Spielstände | FILE01/09/10: +0x2C = Wert(Preis) aller Managerplätze; FILE07 DAFFNER 400.000 DM; alle 13 Stände ohne Sperre, keiner mit Verletzung | `KaderTransferTeil2Tests` |
+| Beleg Spielstände | FILE01/09/10: +0x2C = Wert(Preis) aller Managerplätze; FILE07 DAFFNER 400.000 DM; alle 13 Stände ohne Sperre, keiner mit Verletzung | `PurchasePriceInjuryKindTests` |
 
 `[APPROX]` und Anschlüsse:
 
@@ -276,8 +276,8 @@ Felder des Kaderplatzes (0x34 Byte, DGROUP 0x5DC3 + 0x618 · Manager) für das S
 
 ## Belegt und umgesetzt (Spur `kader-transfer`, Teil 4: Transfermarkt-Takt)
 
-Umsetzung: `TransferMarket.CatchUp`/`AdvanceDay` (`Core/Transfer.cs`), `GameState.TransferAccount` (`Core/Transfer.AccountBar.cs`),
-Kontoleiste `TransferScreen.DrawAccountBar`; Tests `KaderTransferTeil4Tests`. Kein neues Spielstandsfeld.
+Umsetzung: `TransferMarket.CatchUpManagerDay` (`Core/Transfer.Listed.cs`, Tageslauf), `GameState.TransferAccount` (`Core/Transfer.AccountBar.cs`),
+Kontoleiste `TransferScreen.DrawAccountBar`; Tests `MarketCycleTests`. Kein neues Spielstandsfeld.
 
 | Regel | Fundstelle em.exe | Umsetzung |
 |---|---|---|
@@ -290,7 +290,7 @@ Kontoleiste `TransferScreen.DrawAccountBar`; Tests `KaderTransferTeil4Tests`. Ke
 Angebot statt beim Anklicken (0x47347); Bieter mit der Stärke des Spielers wie bei den unaufgeforderten Angeboten; Saldo je
 Partner wie bei `TotalDebts` (Kredite zwischen zwei Managern verrechnet, Bank Sparbuch minus Kredit); Lage der Leiste unverändert.
 
-**Rest von Teil 4** (A258, F113, A209; Tests `KaderTransferTeil4Tests`, `KaderTransferTeil4ScreenTests`, Schema 24
+**Rest von Teil 4** (A258, F113, A209; Tests `MarketCycleTests`, `TransferOfferToSellerScreenTests`, Schema 24
 `SaveGame.Migration.KaderTransfer4.cs`):
 
 | Regel | Fundstelle em.exe | Umsetzung |
@@ -500,9 +500,9 @@ Eintrag markiert – obere Zeile der Linie (y − 4 und y + 12) dunkelrot, gemes
 mit der Linie unter der Kopfzeile, `oberflaeche_1102` bei LAPORTE). Das Remake zeichnete hellrot (Index 17) eine Zeile über dem
 Namen, die untere Linie überschrieb die Trennlinie. Farbe Index 201 (65 | 0 | 0) `[APPROX]`: aus der Unschärfe geschätzt
 (Mischung mit dem Hintergrund passt besser als 16 oder 253). Die gemeinsame Zeilenmarkierung `TeamUi.HoverRow` (Kader- und
-Vertragslisten) ist nicht geändert. Test: `TransferVertraegeKomplettTeil4ScreenTests`.
+Vertragslisten) ist nicht geändert. Test: `TransferListHoverSeparatorPixelTests`.
 
-Testlücken aus Teil 4 (`TransferVertraegeKomplettTeil4Tests`): „unfair“ der Verhandlung bei negativen Eingaben ohne Sperre und
+Testlücken aus Teil 4 (`NegotiationEdgeCaseTests`): „unfair“ der Verhandlung bei negativen Eingaben ohne Sperre und
 ohne Zufallszug (R8W3I-10), Umkehrung des Gegenbeispiels nach dem Saisonende auf Level 3 und 5 (R8W3I-16), Zugfolge der
 Werbebewertung mit einem Spieler mit Angebot (SW-01). Jeder Test wurde gegen die passende Mutation rot geprüft.
 
@@ -526,7 +526,7 @@ Werbebewertung mit einem Spieler mit Angebot (SW-01). Jeder Test wurde gegen die
   spielt und sein Platz ≤ 35 ist; sonst tauscht er mit einem Zufallsplatz der Start-Liga (nie der Verein eines früheren
   Managers, nie Platz 0: Der Europapokal-Filter 0x45CD0(r, 1) sieht beim Spielstart eine leere Tabelle, Runde 14). Die Teamwerte (`Club.Strength`) bleiben am Platz, der Verdrängte übernimmt Liga
   bzw. „ohne Liga“ des Managervereins; ein Verein ohne Liga landet direkt in der Start-Liga (A112 „rückt in die Oberliga“
-  entfällt). Belege FILE27/FILE28/FILE15 (`docs/archiv/analyse/re-runde-13.md`), Tests `KaderStartStartLigaTests`. Die Sperre „eine
+  entfällt). Belege FILE27/FILE28/FILE15 (`docs/archiv/analyse/re-runde-13.md`), Tests `StartLeagueClubPlacementTests`. Die Sperre „eine
   Saison“ nur mit Bundesliga prüft `GameSetup.Step` (Datei 0x2890E–0x2891C). `[APPROX]`: Zufallsquelle `GameState.Random`;
   gezogen wird in Indexfolge, solange die Satzfolge erst nach der Vergabe entsteht (R-K5, Teil 3). U15-c umgesetzt (Runde 14, `kader-start` Teil 2, L2 aufgehoben): Ein Manager und eine Saison → der Managerverein
   tauscht auf Platz 0 der Bundesliga (Datei 0x29CFA–0x29D9C, FILE29; `NewGame.OneSeasonSingleManager`); das Managerfeld
@@ -535,7 +535,7 @@ Werbebewertung mit einem Spieler mit Angebot (SW-01). Jeder Test wurde gegen die
 ## Probe-Rückfallweg (WS-05, Runde 12)
 
 `TestSquadKeeper.KeepPlayable` meldet jetzt per `KeepReport`, wie viele Vertragslose gekauft (`Bought`), wie viele Spieler
-ohne Kauf umgesetzt (`Moved`, Rückfallweg) wurden und ob die Transferliste leer war (`MarketEmpty`). `KaderTransferWs05Tests`
+ohne Kauf umgesetzt (`Moved`, Rückfallweg) wurden und ob die Transferliste leer war (`MarketEmpty`). `SquadKeeperReportTests`
 sichern ab, dass der Rückfallweg nur bei leerem Markt greift, und geben je Saison die Zahlen aus. **Befund:** In vier
 Saisonwechseln (Seeds 3/21 synthetisch, 3/5 mit Originaldaten, passiv und aktiv) wurde der Rückfallweg nie benutzt
 (gekauft 0, umgesetzt 0, Markt-leer 0): Die Kader des Managers bleiben dank Vertragsverlängerungen ≥ 18; ob zu Saisonbeginn

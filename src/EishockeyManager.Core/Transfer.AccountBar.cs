@@ -10,7 +10,7 @@ public readonly record struct TransferAccountBar(long Money, long Debts, long As
 public sealed partial class GameState
 {
     /// <summary>
-    /// Kontoleiste der Transferliste. [ORIGINAL] Datei 0x463CC (Aufrufer nur 0x465F1, <c>docs/analyse/re-geld.md</c>):
+    /// Kontoleiste der Transferliste. [ORIGINAL] Datei 0x463CC (Aufrufer nur 0x465F1, <c>docs/archiv/analyse/re-geld.md</c>):
     /// Kontostand; Schulden = 0x57768 (Modus 0) Σ der eigenen negativen Darlehen bei Managern und Bank
     /// (<see cref="TotalDebts"/>); Anlagen = Σ Stückzahl · Kurs (<see cref="DepotValue"/>) + Σ der positiven Salden gegenüber
     /// jedem anderen Manager und der Bank (Forderungen samt Sparbuch); Saldo = Konto + Anlagen − Schulden.

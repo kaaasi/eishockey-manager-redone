@@ -525,7 +525,7 @@ public sealed partial class GameState
 
     /// <summary>
     /// Tagesabschluss: „beleidigte“ Baufirmen je Projekt mit random(0, 10) = 0 wieder frei (im Mittel nach 11 Tagen).
-    /// [ORIGINAL] Datei 0x3ED19–0x3ED48 (A512, Beleg docs/analyse/re-abweichungen.md F08, f08_baufirma.py): random(0, 10) für
+    /// [ORIGINAL] Datei 0x3ED19–0x3ED48 (A512, Beleg docs/archiv/analyse/re-abweichungen.md F08, f08_baufirma.py): random(0, 10) für
     /// alle 11 Projekte des Managers in Projektfolge, auch ohne gesetzten Merker; bei 0 wird der Merker DGROUP 0xCC09 +
     /// 11 · Manager + Projekt gelöscht.
     /// </summary>

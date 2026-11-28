@@ -7,6 +7,7 @@ und schreiben nur Adressen, Größen und kurze Textauszüge.
 |---|---|---|
 | `funktionskarte.py` | Funktionskarte aller Basissegmente und Overlays mit Abdeckungsstatus (umgesetzt/genähert/dokumentiert/unbekannt) aus den Fundstellen in `src/` und `docs/`; erneuert den erzeugten Block in `docs/re-abdeckung.md` | `python3 tools/reverse-engineering/funktionskarte.py ~/referenz/original/gamedata/em.exe --write` (ohne `--write`: Ausgabe auf stdout; `--csv <datei>` außerhalb des Repos: alle Funktionen) |
 | `markerliste.py` | Alle `[APPROX]`-Zeilen in `src/` mit stabiler ID (Schlüssel Datei + Wortlaut) und Einordnung aus `docs/analyse/restliste-v1-klassen.csv`; erneuert den erzeugten Block in `docs/analyse/restliste-v1.md`, Rückgabe 1 bei unklassifizierten Stellen (Spur `inventur-v1`) | `python3 tools/reverse-engineering/markerliste.py --write` (ohne `--write`: stdout; `--abweichungen`: Abweichungsliste vor v1.0) |
+| `../markerbericht.py` | Zählt `[APPROX]` und `[ORIGINAL]` je Projekt und Datei für die Zusammenfassung der CI (`.github/workflows/build.yml`); vergibt keine IDs und braucht weder Restliste noch Originaldaten. Bleibt neben `markerliste.py` bestehen (Aufräumen W1/A5): die CI-Zählung ist billig und unabhängig, `markerliste.py` klassifiziert. |
 | `disasm.py` | Annotiertes Disassembly eines Bereichs (Funktionsköpfe mit Status und Aufrufern, aufgelöste Fern-/Nahaufrufe, Sprungziele, DGROUP-Texte) oder mit `--xref` alle Leser und Schreiber eines DGROUP-Bereichs im Spielcode | `python3 tools/reverse-engineering/disasm.py ~/referenz/original/gamedata/em.exe 0x51E90 0x57480 --cache <scratch>/an.pickle > <scratch>/ov130.asm`; `… --xref 0xA839 0xA846 [--imm]` (Ausgaben nie ins Repo) |
 
 Voraussetzung: Python 3, `ndisasm` (Paket `nasm`). Für Einzelstellen weiterhin `ndisasm -b16 -e <offset> -o <offset> em.exe`
@@ -29,7 +30,7 @@ erkannt, zählt als *Fundstelle* aber nur über die Stub-Schreibweise, z. B. „
 PR #381); erkannt werden auch „Stub-Selektor“ sowie die Wörter „Funktionsoffset“, „Stub-Offset“, „Einsprung“ und „Offset“.
 Eine Adresse mit direkt folgendem Doppelpunkt („Datei 0x3688F: …“) zählt als Adresse, solange kein Hexwert folgt
 (sonst `Segment:Offset`). `docs/analyse/inventur.md` und `docs/re-abdeckung.md` zählt die Karte nicht als Fundstelle.
-Offsets im entschlüsselten Spielstand schreibt die Doku als `HOK 0x…` (Beispiel `docs/analyse/re-runde-13.md`); die Karte zählt eine Adresse mit
+Offsets im entschlüsselten Spielstand schreibt die Doku als `HOK 0x…` (Beispiel `docs/archiv/analyse/re-runde-13.md`); die Karte zählt eine Adresse mit
 direkt vorangehendem `HOK` nie als em.exe-Fundstelle (Runde 13, #567, R13RD-01). Ohne das Präfix würde jede Hexzahl einer
 Spielstand-Auswertung als Dateioffset in `em.exe` gelten.
 Das Präfix gilt nur für die Adresse direkt dahinter: **je Adresse ein `HOK`** (`HOK 0x08EED` / `HOK 0x08EF7`, nicht

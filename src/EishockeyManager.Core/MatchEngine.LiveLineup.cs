@@ -2,7 +2,7 @@ namespace EishockeyManager.Core;
 
 /// <summary>
 /// Übernahme einer im Spiel geänderten Aufstellung in die Minutenrechnung (Eingriff über Kopf/Logo, Spur livespiel-ui-2 B3;
-/// <c>docs/analyse/re-livespiel.md</c> §15). Im Original schreiben Aufstellung und Minutenrechnung dieselben Kaderplätze
+/// <c>docs/archiv/analyse/re-livespiel.md</c> §15). Im Original schreiben Aufstellung und Minutenrechnung dieselben Kaderplätze
 /// (DGROUP 0x5DC3 + 0x618 · Manager + 0x34 · Platz); das Remake führt sie getrennt (<see cref="Club.Lineup"/> und
 /// <see cref="LiveSquad"/>) und gleicht nach dem Eingriff ab.
 /// <list type="bullet">

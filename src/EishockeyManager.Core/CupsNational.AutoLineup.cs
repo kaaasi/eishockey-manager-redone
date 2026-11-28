@@ -2,7 +2,7 @@ namespace EishockeyManager.Core;
 
 /// <summary>
 /// Einstellung „automatisch aufstellen“ des Bundestrainers (A009, Spur nationalteam Runde 14 Teil 3, L8; Auswertung
-/// <c>docs/analyse/re-runde-14.md</c>, Sitzung 5, Review #649).
+/// <c>docs/archiv/analyse/re-runde-14.md</c>, Sitzung 5, Review #649).
 /// </summary>
 /// <remarks>
 /// [ORIGINAL] Satz 5 hat dieselbe Einstellung wie ein Verein: aktuell DGROUP 0x37F (= 0x375 + 2 · 5), gesichert DGROUP 0x380

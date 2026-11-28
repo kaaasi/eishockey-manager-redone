@@ -11,7 +11,7 @@ public readonly record struct ShortMessageText(string Line1, string Line2)
 
 /// <summary>
 /// Bausteine der Kurzmeldungen, deren Aufrufer im Remake in fremden Bildschirmen sitzen (Spur ui-meldungen, Teil 3, UM-4;
-/// Aufrufer von Datei 0x0C0B8 nach <c>docs/analyse/re-runde-12.md</c> „UM-4“). Anschluss an die Aufrufer in der Integration
+/// Aufrufer von Datei 0x0C0B8 nach <c>docs/archiv/analyse/re-runde-12.md</c> „UM-4“). Anschluss an die Aufrufer in der Integration
 /// (Liste im PR); die Aufrufer zeigen sie mit <c>TeamUi.MessageBox.ShowShort(text.Line1, text.Line2)</c> oder
 /// <see cref="ShortMessageText.Create"/>. Alle: ohne Knopf und ohne Eingabe, 75 Takte (Zeile 1 beginnt nie mit „Auto-“).
 /// </summary>

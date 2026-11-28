@@ -84,7 +84,7 @@ public enum ScoreSituation
 ///   schreibt erst vor dem ersten Spiel (FILE31: Kaufbeuren 60/0/25/20/30/0 und 0/4/5/6/7/4, eigene Werte weiter 0). Die
 ///   Anzeige „AUTOM.“ zeigt bis dahin 0, danach die Zeile des letzten Spiels (<see cref="RecordAutoLine"/>, aufgerufen je
 ///   Spiel aus <see cref="MatchEngine.LiveTeamOf"/>); SEMI zeigt die eigenen Werte, anfangs 0 (<c>file33_15</c>).
-///   <c>docs/analyse/re-runde-14.md</c>, A180. [APPROX] Spielstände vor Runde 14 behalten Startwert und Anzeige der
+///   <c>docs/archiv/analyse/re-runde-14.md</c>, A180. [APPROX] Spielstände vor Runde 14 behalten Startwert und Anzeige der
 ///   ausgeglichenen Zeile (<see cref="KeepsLastAutoLine"/> = false, keine Migration). Ob das Umschalten eines Modus die
 ///   Vereinsfelder löscht (FILE33 Köln), ist nicht gelesen.</item>
 /// <item>[ORIGINAL] Nationalteam (#192, <see cref="National"/>): kein Startwert. Die Automatik 0x8365 schreibt

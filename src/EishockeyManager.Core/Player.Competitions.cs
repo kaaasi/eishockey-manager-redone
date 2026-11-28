@@ -1,7 +1,7 @@
 namespace EishockeyManager.Core;
 
 /// <summary>
-/// Wettbewerb der Spielerzähler (A135, Runde 14, <c>docs/analyse/re-runde-14.md</c>). [ORIGINAL] Index DGROUP 0xD0BF: 0 setzen
+/// Wettbewerb der Spielerzähler (A135, Runde 14, <c>docs/archiv/analyse/re-runde-14.md</c>). [ORIGINAL] Index DGROUP 0xD0BF: 0 setzen
 /// die Liga-Spieltage (Datei 0x35EBA), die Play-offs und Aufstiegsrunden (Datei 0x30EA6, 0x31A1E), 1 der DEB-Pokal (Datei
 /// 0x35E72), 2 der Europapokal (Datei 0x313C5). Die Spielabrechnung 0x544C0 wählt das Feld nach ihrem Argument (1 = Pokal,
 /// 8 = Europapokal, sonst Liga; Datei 0x5494C–0x5499E).

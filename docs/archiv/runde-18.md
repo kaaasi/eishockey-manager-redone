@@ -30,7 +30,7 @@ R18-E5 = A (Platztausch in Runde 19). Leitstelle nach Prozess: Rebase-Fixlauf `l
 
 ## Aktuelle Runde: Runde 18 – Live-Spiel und Auswertung DOSBox `runde-17` (Plan 13.11.2026, Go 13.11.2026)
 
-Runde 17 abgeschlossen am 13.11.2026: [archiv/runde-17.md](archiv/runde-17.md). Grundlage: Umsetzungsplan Live-Spiel L1–L8 in
+Runde 17 abgeschlossen am 13.11.2026: [archiv/runde-17.md](runde-17.md). Grundlage: Umsetzungsplan Live-Spiel L1–L8 in
 [archiv/analyse/re-livespiel.md](analyse/re-livespiel.md) §12 (Spuren A/B/C), DOSBox-Aufnahme `runde-17` (Referenz-Repo #29–#34) für
 #730 und #773, offene P3 #803, #804, #805. Ziel: Live-Spiel ohne Torszenen spielbar (L1–L6, L8), offene Abgleich-Issues belegt
 geschlossen oder mit Beleg zurückgestellt. **Entscheidungen Nutzer 13.11.2026** (Optionen im Plan-PR #809): R18-D1 = A

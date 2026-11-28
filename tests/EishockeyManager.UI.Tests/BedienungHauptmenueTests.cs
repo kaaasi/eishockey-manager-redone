@@ -7,7 +7,7 @@ using EishockeyManager.UI.Testing;
 namespace EishockeyManager.UI.Tests;
 
 /// <summary>
-/// Spur bedienung Teil 2: B12 (A296) und B18 (A297, A301) nach docs/analyse/re-abweichungen.md (Hauptmenü Datei 0x44E22,
+/// Spur bedienung Teil 2: B12 (A296) und B18 (A297, A301) nach docs/archiv/analyse/re-abweichungen.md (Hauptmenü Datei 0x44E22,
 /// Schleife 0x4535B–0x4592F). Vorher rot: Rechtsklick wählte ab, Logo und Kacheln nur links, Klick auf den Kopf wählte ab,
 /// Markierung als gelbe Unterkante.
 /// </summary>

@@ -4,7 +4,7 @@ namespace EishockeyManager.Core.Tests;
 
 /// <summary>
 /// Spur saisonwechsel, Teil 6 (D5 = A, Entscheidung Nutzer 03.11.2026): Saisonende-Fenster und Startordnung beim Doppelwechsel wie
-/// im Original. Aufbau wie der DOSBox-Lauf FILE16 → FILE17 (docs/analyse/re-saisonwechsel.md, „Auswertung D3“): SV Bayreuth
+/// im Original. Aufbau wie der DOSBox-Lauf FILE16 → FILE17 (docs/archiv/analyse/re-saisonwechsel.md, „Auswertung D3“): SV Bayreuth
 /// (Managerverein, 2. Liga, Zwangsabstieg) wird Zweiter der Aufstiegsrunde Bundesliga/2. Liga und steigt auf, EV Landshut
 /// (Bundesliga, Platz 3) geht in die Oberliga; Gruppe 2. Liga/Oberliga: SC Riessersee, ESC Wolfsburg, EV Landsberg, SC Memmingen.
 /// Beleg `file16_8_saisonende`: Spalte „Zweite Liga“ rot SC Riessersee; `file17_3`: Riessersee auf Platz 1 (Platz von Bayreuth),

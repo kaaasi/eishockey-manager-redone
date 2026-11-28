@@ -6,7 +6,7 @@ namespace EishockeyManager.UI.Screens;
 /// </summary>
 /// <remarks>
 /// <list type="bullet">
-/// <item>[ORIGINAL] em.exe Datei 0x445E0 (Aufbau in <c>docs/analyse/re-meldungen.md</c> §E), Aufruf der Infoleiste Datei
+/// <item>[ORIGINAL] em.exe Datei 0x445E0 (Aufbau in <c>docs/archiv/analyse/re-meldungen.md</c> §E), Aufruf der Infoleiste Datei
 ///   0x445A6 mit Ursprung x = 3, Grundwert y = −2. Achsen: senkrecht (X + 2 | Y + 48)–(X + 2 | Y + 71) Farbe 6, waagrecht
 ///   (X + 3 | Y + 72)–(X + 98 | Y + 72) Farbe 8; sie stehen auch vor dem ersten Spieltag (Video 14:00 vermessen, Bild
 ///   <c>oberflaeche_0842</c>: senkrecht ab y 46, waagrecht y 70).</item>

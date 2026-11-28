@@ -622,7 +622,7 @@ public static partial class OriginalMinutes
     ///   leer seit dem letzten Termin), also bei der ersten gerechneten Paarung eines Termins – dann wird bis ungleich gewürfelt
     ///   und die Zusatztore zählen zum Ergebnis (Wertung 0x315E9 nach Abzug der Marke).</item>
     /// </list>
-    /// DEB-Pokal (<paramref name="debCup"/>, Spur re-reste Teil 2, <c>docs/analyse/re-reste-23.md</c> §1): [ORIGINAL] 0x32AA3
+    /// DEB-Pokal (<paramref name="debCup"/>, Spur re-reste Teil 2, <c>docs/archiv/analyse/re-reste-23.md</c> §1): [ORIGINAL] 0x32AA3
     /// markiert auch die Zeile 0 (0x32AF4 <c>cmp byte [bp+0x6],0x1</c>; Gleichstand → Heimbyte + 30, Datei 0x32B9D–0x32BAA), der
     /// Vergleich 0x37748 ist also auch hier nie gleich – genau ein Wurf, der Gleichstand bleibt bei x = y stehen; die Wertung
     /// 0x34C76 (<c>cmp al,[bx+0x5c4c]; jnc</c>) zählt Heim ≥ Gast für den Heimverein (<see cref="CupMatch.FromReport"/>).

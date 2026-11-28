@@ -42,7 +42,7 @@ Berührungen außerhalb der eigenen Grenzen im PR begründen. `GameState.Integra
   synthetisch / Originaldaten / übersprungen (`.github/scripts/testbericht.py`), `ScreenDriver.PlayMatchDay()` wirft
   `TimeoutException`, Kacheltest trennt Platzhalter und echte Bildschirme (Liste `MenuEntryTests.DocumentedPlaceholders`)
 - [x] PR 2 – Passive Bildschirme und Tagesablauf (R2-02, PR offen): alle `CatchUp…`-Aufrufe aus den Bildschirmen entfernt,
-  Tagesablauf in [tagesablauf.md](tagesablauf.md), Abnahmetests `PassiveScreenTests` (Zustandsabdruck, Zwillingsspiel).
+  Tagesablauf in [tagesablauf.md](../tagesablauf.md), Abnahmetests `PassiveScreenTests` (Zustandsabdruck, Zwillingsspiel).
   **Neuer Folgebefund R2-02b** (Spur `wirtschaft`): erstes Öffnen von „Werbung“ verbraucht den Finanz-Zufall –
   strenger Test liegt sichtbar übersprungen bereit
 - [ ] PR 3 – Werkzeugversionen festschreiben (A09)
@@ -97,7 +97,7 @@ Hinweis für Runde 3 (Kalibrierung): Mit #19 und #21 steigt der Kontostand eines
 | A01 drei Stärkewerte je Verein | #22 | offen, wartet auf Review |
 | Levelgrenze: Level 0–5, Regler begrenzt statt Umlauf (DGROUP 0x11C, 0x4B3E) | siehe PR „Setup-Level“ | offen, wartet auf Review |
 
-Neue Befunde aus dem Disassembly (Details in [reverse-engineering.md](reverse-engineering.md#spiel-level)):
+Neue Befunde aus dem Disassembly (Details in [reverse-engineering.md](../reverse-engineering.md#spiel-level)):
 Kadergröße der Manager-Vereine hängt im Original an der **Start-Liga**, nicht am Level; Level, Start-Liga und
 Start-Stärke sind im Original **globale** Setup-Werte (Remake: je Manager); Regel „eine Saison nur mit Start-Liga 0“
 ist noch nicht übernommen.
@@ -245,7 +245,7 @@ Ergebnis und Integration siehe Abschnitt „Integration Runde 1“ weiter unten.
 
 ## Paket `saison` – Saisonablauf über mehrere Jahre
 
-Branch: `paket/saison` · Status: **Runde 1 gemergt** (PRs #6, #8, #10). Details und offene `[APPROX]`-Punkte: [saison.md](saison.md).
+Branch: `paket/saison` · Status: **Runde 1 gemergt** (PRs #6, #8, #10). Details und offene `[APPROX]`-Punkte: [saison.md](../saison.md).
 Für `wettbewerbe`: DEB-Pokal, Europapokal und WM über `ISeasonCompetition` in `GameState.Competitions` anmelden.
 
 - Hauptrunde → Playoffs → Relegation (laut Video: die zwei Ersten der Oberliga und die zwei Letzten der 2. Liga spielen

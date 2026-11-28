@@ -356,7 +356,7 @@ public static partial class OriginalMinutes
     /// </list>
     /// </summary>
     /// <remarks>
-    /// #730 im Bereich (Runde 19, <c>docs/analyse/abgleich-dosbox.md</c> §4.2, §4.5): Der DOSBox-Lauf FILE02 → FILE63 lag mit den
+    /// #730 im Bereich (Runde 19, <c>docs/archiv/analyse/abgleich-dosbox.md</c> §4.2, §4.5): Der DOSBox-Lauf FILE02 → FILE63 lag mit den
     /// Treffern „Belastung + 1“ unter dieser Regel (139 gegen 182 ± 12); fünf weitere Läufe von Spieltag 2 aus FILE50 (FILE66–70)
     /// liegen im Mittel bei 58,4 Treffern gegen 60,9 ± 6,7 im Remake (FILE61 dieses Laufs: 49) – Zufall eines Laufs, keine
     /// kleinere Rate (<c>AbgleichDosboxStrainHitsTests</c>). Gelesene Stellen wie hier (Datei 0x8B31–0x8C82, 0x8DF8,
@@ -418,7 +418,7 @@ public static partial class OriginalMinutes
                 }
                 // [ORIGINAL] Datei 0x8C53–0x8C82: lrandom(0, 4 + (Kondition > Technik)) = 0 → Belastung (+0x13) + 1, Byte (A184),
                 // auch beim Nationalteam (A551, Spur national Teil 1): dort der Kaderplatz in Satz 5 (eigener Platz seit Teil 3, A412).
-                // #938 P3-3 nicht belegt (Spur re-reste, docs/analyse/re-reste-23.md §2): Zug, Bedingung und Byte-Zähler stimmen mit
+                // #938 P3-3 nicht belegt (Spur re-reste, docs/archiv/analyse/re-reste-23.md §2): Zug, Bedingung und Byte-Zähler stimmen mit
                 // 0x8C53–0x8C82 überein; die Messung FILE19 → FILE20 (JOORIS 76 nach fünf WM-Spielen) erklärt die Rücksetzung aller
                 // belegten Plätze des Satzes 5 auf 70 beim Aufbau von „WM Vorbereitung“ (0x3BB20–0x3BB5A, A883 Klasse E).
                 if (OriginalMatch.Rnd(random, 0, 4 + (p.Player.Condition > p.Player.Technique ? 1 : 0)) == 0)
@@ -537,7 +537,7 @@ public static partial class OriginalMinutes
     /// </list>
     /// [ORIGINAL] Beleg DOSBox `runde-17` und `runde-19` (FILE02 → FILE50 → FILE61 → FILE63, Spieltage 1–3 im Live-Spiel ohne
     /// Mausklick, Anzeigetafel je Minute): Eisminuten je Reihe, Wechsel und getrennte Abwehr-/Sturmreihen beider Vereine liegen in
-    /// der Verteilung des Remakes (<c>AbgleichDosboxLinesTests</c>, <c>docs/analyse/abgleich-dosbox.md</c> §1, §4.1); Sturm 1 und
+    /// der Verteilung des Remakes (<c>AbgleichDosboxLinesTests</c>, <c>docs/archiv/analyse/abgleich-dosbox.md</c> §1, §4.1); Sturm 1 und
     /// Sturm 3 spielen im Original gleich lang – die Ungleichverteilung aus FILE02→03 (#730) wiederholt sich nicht.
     /// [ORIGINAL] Bei Spielbeginn stehen die Reihen aus dem Vorspiel (Vereinsfelder 0x2E/0x30, von 0x84D7 nicht zurückgesetzt,
     /// Datei 0x84EB–0x857D; <see cref="Tactics.MatchDefenseLine"/>, #872), die Minuten auf dem Eis bei 0: im Modus 1/2 wechselt die

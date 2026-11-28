@@ -1,7 +1,7 @@
 namespace EishockeyManager.UI.Screens.ManagerArea;
 
 /// <summary>
-/// Rechenregeln des Betragsbalkens im Bildschirm Finanzen (em.exe Datei 0x58409, Ov 0x138; docs/analyse/re-geld.md,
+/// Rechenregeln des Betragsbalkens im Bildschirm Finanzen (em.exe Datei 0x58409, Ov 0x138; docs/archiv/analyse/re-geld.md,
 /// „Datei 0x58409 – Betragsbalken“). Das Original rechnet Geld in Drittel-DM; die Methoden nehmen und liefern ganze DM
 /// bzw. Stück und rechnen intern in Dritteln, damit Rundung und Grenzen genau wie im Original fallen.
 /// </summary>

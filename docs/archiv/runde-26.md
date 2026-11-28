@@ -23,13 +23,13 @@ Darstellung 2 im Live-Spieltag, Datei 0x2D349).
 
 ## Aktuelle Runde (archiviert): Runde 26 – Live-Spieltag und Tagesabschluss je Manager (Plan 25.11.2026, Go 25.11.2026)
 
-Runde 25 abgeschlossen am 25.11.2026: [archiv/runde-25.md](archiv/runde-25.md). Stand: Restliste
-[analyse/restliste-v1.md](analyse/restliste-v1.md) **V = 0**, D 26, E 319, K 190; `main` `c59f7d5`, Schema 65. Abweichungsliste
-[analyse/abweichungen-v1.md](analyse/abweichungen-v1.md) Abschnitt 0: alle Themen außer Live umgesetzt bzw. geklärt.
+Runde 25 abgeschlossen am 25.11.2026: [archiv/runde-25.md](runde-25.md). Stand: Restliste
+[analyse/restliste-v1.md](../analyse/restliste-v1.md) **V = 0**, D 26, E 319, K 190; `main` `c59f7d5`, Schema 65. Abweichungsliste
+[analyse/abweichungen-v1.md](../analyse/abweichungen-v1.md) Abschnitt 0: alle Themen außer Live umgesetzt bzw. geklärt.
 **Ziel der Runde:** Die Live-Themen S01, S04, S05, S02 der Abweichungsliste (R25-D1 = D, R25-D2 = A) und #1018 (SG-01 = A,
 Nutzer 25.11.2026) sind „wie im Original“ umgesetzt oder mit Beleg als „keine Abweichung“ geklärt. **Nicht in dieser Runde:**
 Aufräumen #936 (mit #978, #980, #1019, #1024 Rest P3-2), D-Themen (DOSBox nach Lust), Abschlussprüfung. **Danach:** Aufräumen #936
-nach [analyse/aufraeumen-v1.md](analyse/aufraeumen-v1.md) (A1–A6), dann Abschlussprüfung.
+nach [analyse/aufraeumen-v1.md](../analyse/aufraeumen-v1.md) (A1–A6), dann Abschlussprüfung.
 **Entscheidungen Nutzer 25.11.2026** (Optionen im Plan-PR #1030): R26-D1 = B (`torszene-dauer` Teil 1 nur Beleg parallel,
 Umsetzung nach Merge von `live-verschraenkt`), R26-D2 = A (frühere Entscheidungen A449, A453, A541/A542, A442/A547 bleiben),
 R26-D3 = B (DOSBox nach Lust, keine eigene Aufnahme `runde-26`: Zusätze in `runde-22` Sitzung 2 und Sitzung 7 Nr. 5,

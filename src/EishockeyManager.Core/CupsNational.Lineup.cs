@@ -72,7 +72,7 @@ public enum LineupResult
 ///   einen Reservisten mit Linksklick heraus (DOSBox `file19_08`: Linksklick auf den Reservisten RYAN → „Kein Platz mehr !“).</item>
 /// <item>[ORIGINAL] In der Liste steht die Platznummer (Zeile 1–29) nur bei eingesetzten Spielern, sonst bleiben NR und
 ///   STATUS leer (Video `bundestrainer_00056`: 22 nummerierte Spieler, „Eingesetzt: 22“).</item>
-/// <item>[ORIGINAL] Auswahl nach Reihe, nicht nach Platz (A010, Spur nationalteam Runde 13, <c>docs/analyse/re-runde-13.md</c>):
+/// <item>[ORIGINAL] Auswahl nach Reihe, nicht nach Platz (A010, Spur nationalteam Runde 13, <c>docs/archiv/analyse/re-runde-13.md</c>):
 ///   Klick auf einen Block wählt die Reihe (Datei 0x40890–0x40943), ein Klick auf einen Spieler der Kaderliste setzt ihn auf
 ///   den ersten freien Platz seiner Art in dieser Reihe; ist keiner frei, kommt „Kein / Platz mehr !“ und nichts ändert sich
 ///   (Datei 0x41287–0x414C6; DOSBox `file19_08`). Verdrängt wird niemand. Ein Klick auf einen Aufgestellten nimmt ihn heraus
@@ -320,7 +320,7 @@ public sealed partial class NationalCoach
     /// <summary>
     /// Auto-Aufstellung („A“). [ORIGINAL] Dieselbe Regel wie beim Verein: Satz 5 ruft Datei 0x426BC/0x42838
     /// (<see cref="AutoLineupRule.Apply"/>; Einstellung DGROUP 0x37F, Aufrufe Datei 0x3B4C6 und im Tageslauf 0x54D84,
-    /// <c>docs/analyse/re-nachtrag.md</c> §3.4): alle verlieren „eingesetzt“, dann Torhüter, Abwehr und Sturm nach
+    /// <c>docs/archiv/analyse/re-nachtrag.md</c> §3.4): alle verlieren „eingesetzt“, dann Torhüter, Abwehr und Sturm nach
     /// (Kondition + Technik + Form) / 3, Ersatz reihum bis 22. Kaderplätze in der Reihenfolge der Liste (<see cref="Rows"/>,
     /// nach Art sortiert wie Datei 0x42D46). Spur wettbewerbe-spiel, Runde 12, Teil 4 (U8); vorher Spielwert mit Energie
     /// (<see cref="Core.Lineup.AutoFill"/>) und Rest nach Kondition + Technik + Form.

@@ -10,7 +10,7 @@ namespace EishockeyManager.Core.Tests;
 public class SquadLossLoanReturnTests
 {
     /// <summary>
-    /// #780 (R765N-01, <c>docs/reviews/2026-11-11-pool-nachpruefung.md</c>): Export eines neuen Spiels im Modus „nur Weltkugel“.
+    /// #780 (R765N-01, <c>docs/archiv/reviews/runde-16/2026-11-11-pool-nachpruefung.md</c>): Export eines neuen Spiels im Modus „nur Weltkugel“.
     /// Dort steht der Kader von Satz 0 nicht im Pool (<see cref="TransferMarket.SeatManagerSquads"/>), der Export vergibt ihm über
     /// <c>AddUnseatedSquadPlayers</c> ([APPROX], <c>OriginalExport.Squads.cs</c>) die Plätze wie im Original FILE01 (Torhüter 2–3,
     /// Verteidiger 22–31, Stürmer 98–110, Besitzer 0). Vorher rot mit der Mutation <c>if (missing.Count &gt; 0)</c> →
@@ -50,7 +50,7 @@ public class SquadLossLoanReturnTests
     }
 
     /// <summary>
-    /// #778 (R766-P3-3, <c>docs/reviews/2026-11-11-abgleich-rest.md</c>): Der Kaderverlust ohne <c>extendExpired</c> ist kein
+    /// #778 (R766-P3-3, <c>docs/archiv/reviews/runde-16/2026-11-11-abgleich-rest.md</c>): Der Kaderverlust ohne <c>extendExpired</c> ist kein
     /// Fehler. Es gehen nur Spieler, deren Vertrag am Saisonende ausläuft: Verlängert wird im Lauf
     /// der Saison nur, wer sich meldet ([ORIGINAL] Datei 0x076FA–0x07951, je Takt random(0, Grenze) = 0 und random(0, 3) = 0); die
     /// übrigen kommen in die Verhandlung am Saisonende (Datei 0x27B64/0x27D05), die <see cref="GameState.StartNextSeason"/> ohne
@@ -93,7 +93,7 @@ public class SquadLossLoanReturnTests
     }
 
     /// <summary>
-    /// #776 (R765-02, <c>docs/reviews/2026-11-11-pool.md</c>): Leihe Manager → Manager mit einem Leihjahr. [ORIGINAL] Saisonende
+    /// #776 (R765-02, <c>docs/archiv/reviews/runde-16/2026-11-11-pool.md</c>): Leihe Manager → Manager mit einem Leihjahr. [ORIGINAL] Saisonende
     /// 0x26F20: Laufzeit +0x0B heruntergezählt (Datei 0x27500), dann bei Besitzer &lt; 4 Kopie des Leih-Kaderplatzes (0x34 Byte,
     /// 0x48:0x2BD4, Datei 0x27597–0x275D2) in den Kader des Stammmanagers – also mit Laufzeit 0; danach die Verhandlungen über alle
     /// Kaderplätze (Schleife ab Datei 0x27B64). Der Spieler steht deshalb wieder beim Stammverein, Verhandlung offen, Poolplatz

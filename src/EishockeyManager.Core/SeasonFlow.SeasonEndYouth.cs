@@ -2,7 +2,7 @@ namespace EishockeyManager.Core;
 
 /// <summary>
 /// Spur kader-rest Teil 3 (Runde 17): Jugend am Saisonende im Fenster „Saisonende“ mit Ereignissymbol 9.
-/// <para>[ORIGINAL] Am 29. April läuft der Saisonwechsel Datei 0x54C9F ab Datei 0x55743 (<c>docs/analyse/re-saisonwechsel.md</c>
+/// <para>[ORIGINAL] Am 29. April läuft der Saisonwechsel Datei 0x54C9F ab Datei 0x55743 (<c>docs/archiv/analyse/re-saisonwechsel.md</c>
 /// Abschnitt 1): je Manager zuerst der Saisonwechsel der Jugendteams (0x3A13B, Datei 0x55889, Schritt 3), später das Fenster
 /// „Saisonende“ 0x26F20 (Datei 0x5645D). Dessen Managerschleife zieht nach den Einzelprämien die Jugend (Datei 0x2728C–0x27320)
 /// und setzt je Neuzugang das Symbol 9 an die nächste freie Stelle (Datei 0x27302–0x2730F); erst danach folgen in derselben

@@ -3,7 +3,7 @@ using EishockeyManager.Formats;
 namespace EishockeyManager.Core.Tests;
 
 /// <summary>
-/// Spur <c>kader-transfer</c>, Runde 12, Teil 1 (U4, U5 aus <c>docs/analyse/re-nachtrag.md</c>, Abschnitt 1): Verfall offener
+/// Spur <c>kader-transfer</c>, Runde 12, Teil 1 (U4, U5 aus <c>docs/archiv/analyse/re-nachtrag.md</c>, Abschnitt 1): Verfall offener
 /// Angebote (Tagesablauf 0x07169, Datei 0x07626 und 0x0767A) und Laufbahnende der Computerspieler im Saisonende (0x2787A).
 /// Vorher rot: Angebote verfielen nie (Verlängerungsangebot, Angebot eines Vereins, Gebot am Markt); Computerspieler hörten
 /// nach der eigenen Kader-KI-Tabelle (33–37) auf und ersetzt wurden sie nur durch Vertragslose oder 17–19-jährige Talente.

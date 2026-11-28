@@ -25,7 +25,7 @@ public sealed class MainMenuScreen : Screen
     /// „Sie können nicht mehr weiterspielen.“ (DGROUP 0x176, 0x454F5) – letzteres gehört zur Sicher-/Ladesperre
     /// des Originals, die nach Entscheidung des Nutzers nicht übernommen wird (<c>docs/formate/spielstand-original.md</c>).
     /// [ORIGINAL] Linke und rechte Maustaste (DGROUP 0x5A16 = 1 oder 3) wirken gleich (B12, Datei 0x45483–0x4551E;
-    /// docs/analyse/re-abweichungen.md B12).
+    /// docs/archiv/analyse/re-abweichungen.md B12).
     /// </summary>
     public static readonly Rect ContinueLogo = new(275, 34, 38, 38);
 
@@ -35,7 +35,7 @@ public sealed class MainMenuScreen : Screen
     /// („Manager am Zug“, Datei 0x4B68C) auf – dieselbe Nachrichtenleiste wie beim Kennzeichen „neue Nachricht“
     /// (0x4527C), danach geht die Schleife mit der Logo-Prüfung weiter.
     /// [ORIGINAL] Die gewählte Kachel bleibt (B18/A297): Die Leiste liegt über den kleinen Kacheln, ein Klick auf einen Eintrag
-    /// öffnet danach weiter dessen Bildschirm; linke und rechte Taste gleich (docs/analyse/re-abweichungen.md B12, B18).
+    /// öffnet danach weiter dessen Bildschirm; linke und rechte Taste gleich (docs/archiv/analyse/re-abweichungen.md B12, B18).
     /// </summary>
     public static readonly Rect ManagerHead = new(233, 34, 39, 38);
 
@@ -348,7 +348,7 @@ public sealed class MainMenuScreen : Screen
         {
             // [ORIGINAL] B18/A302: Die Tabellenkurve 0x445E0 zeichnet nichts, sobald einer der beiden ein Land ist (Index ≥ DGROUP
             // 0x6AD); die Infoleiste übergibt beim Bundestrainer das Land 52 → leeres Feld, auch ohne Achsen
-            // (docs/analyse/re-abweichungen.md B18, b18_hauptmenue_aufbau.py).
+            // (docs/archiv/analyse/re-abweichungen.md B18, b18_hauptmenue_aufbau.py).
         }
         else if (game.PlayedMatchDays == 0)
         {

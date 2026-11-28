@@ -5,7 +5,7 @@ using EishockeyManager.Tests.Support;
 namespace EishockeyManager.Core.Tests;
 
 /// <summary>
-/// Review #688 (<c>docs/reviews/2026-11-09-tagestakt-hauptweg.md</c>), Leitstelle Runde 14: Regressionstests zu R688-02 bis -07.
+/// Review #688 (<c>docs/archiv/reviews/runde-14/2026-11-09-tagestakt-hauptweg.md</c>), Leitstelle Runde 14: Regressionstests zu R688-02 bis -07.
 /// </summary>
 /// <remarks>
 /// [ORIGINAL] Selbst nachgelesen (<c>tools/reverse-engineering/disasm.py gamedata/em.exe …</c>): Hauptweg Datei 0x55204–0x552D3

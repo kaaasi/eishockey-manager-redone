@@ -2,7 +2,7 @@ namespace EishockeyManager.Core.Tests;
 
 /// <summary>
 /// Spur pruefung-karte Teil 2 (Runde 18): gesammelte P3 #824 (lrandom an einer Stelle) und #829 (weitere aufeinanderfolgende
-/// lrandom-Züge, <c>docs/analyse/abgleich-dosbox.md</c> §2.5).
+/// lrandom-Züge, <c>docs/archiv/analyse/abgleich-dosbox.md</c> §2.5).
 /// </summary>
 public class LRandomChainTests
 {

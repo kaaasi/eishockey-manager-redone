@@ -9,7 +9,7 @@ namespace EishockeyManager.UI.Screens;
 /// <remarks>
 /// <list type="bullet">
 /// <item>[APPROX] Entlassung: Wortlaut und Gestaltung sind nicht aus dem Original belegt (A341, Entlassungstext offen).</item>
-/// <item>[ORIGINAL] Spielende em.exe Datei 0x51F3D (<c>docs/analyse/re-livespiel.md</c> „Spielende“, L8): ganzer Bildschirm
+/// <item>[ORIGINAL] Spielende em.exe Datei 0x51F3D (<c>docs/archiv/analyse/re-livespiel.md</c> „Spielende“, L8): ganzer Bildschirm
 ///   (0 | 0)–(319 | 239) Farbe 0, Schrift 1, „Das wars...“ zentriert in x 8 … 319 auf Grundlinie 100 in Farbe 7 und
 ///   „Carpe diem !“ auf Grundlinie 140 in Farbe 30, beide ohne Schatten (Schattenfarbe 0xFF); einblenden (0x0C5CE), auf einen
 ///   Mausklick warten (0x38:0x118).</item>

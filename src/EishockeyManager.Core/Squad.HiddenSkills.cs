@@ -2,7 +2,7 @@ namespace EishockeyManager.Core;
 
 /// <summary>
 /// Kaderplatz +0x19: unteres Halbbyte = Unterzahl (<see cref="Player.HiddenSkill1"/>), oberes = Überzahl
-/// (<see cref="Player.HiddenSkill2"/>), je 0 … 15. Analyse: docs/analyse/re-nachtrag.md, Abschnitt 6 (A185, A186).
+/// (<see cref="Player.HiddenSkill2"/>), je 0 … 15. Analyse: docs/archiv/analyse/re-nachtrag.md, Abschnitt 6 (A185, A186).
 /// </summary>
 /// <remarks>
 /// [ORIGINAL] Schreiber: Spielstart Managerkader Datei 0x299F4 und Managerkader-Neuanlage in Datei 0x5AF50 (Datei 0x5B239,

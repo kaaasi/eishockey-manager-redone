@@ -7,7 +7,7 @@ using EishockeyManager.UI.Testing;
 namespace EishockeyManager.UI.Tests;
 
 /// <summary>
-/// Spur ui-meldungen Teil 2 (UM-2): Vereinsfenster, Vereinszweig von em.exe Datei 0x4D385 (<c>docs/analyse/re-runde-12.md</c>
+/// Spur ui-meldungen Teil 2 (UM-2): Vereinsfenster, Vereinszweig von em.exe Datei 0x4D385 (<c>docs/archiv/analyse/re-runde-12.md</c>
 /// „UM-2“). Vorher gab es im Remake kein Vereinsfenster: Ein Klick auf den Vereins- oder Gegnernamen der Infoleiste tat nichts.
 /// </summary>
 public class VereinsfensterTests

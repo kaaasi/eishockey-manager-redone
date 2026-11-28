@@ -7,7 +7,7 @@ namespace EishockeyManager.UI.Tests;
 
 /// <summary>
 /// Spur statistik-anzeige, Teil 1 (Runde 25): B25 Meisterfoto aus den Einzelteilen von kb\16 (A343) und B28 Balken der Historie
-/// (A356, A805, A806) nach <c>docs/analyse/re-abweichungen.md</c> B28.
+/// (A356, A805, A806) nach <c>docs/archiv/analyse/re-abweichungen.md</c> B28.
 /// </summary>
 public class ChampionPhotoHistoryBarsTests
 {

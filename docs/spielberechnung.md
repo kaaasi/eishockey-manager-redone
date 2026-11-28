@@ -83,7 +83,7 @@ sonst:  (Code 1 oder Drittelende > 60): beide + 1
 T = 2, 2, 2, 2, 2, 2, 3 × 9, 4 × 5 (Index 0 … 19); besser(x, y) = (random(0, 1) ≠ 0 und x > y) ? x : y.
 Der Heimvorteil steckt im Zweig d ≤ 0: Bei gleicher Stärke 4,5 : 2,5 im schnellen Weg.
 
-**Schneller Weg (0x3731F–0x377A3, nur Pokale ohne Manager und ohne Anzeige; `OriginalMinutes.FastCupResult`):**
+**Schneller Weg (0x3731F–0x377A3, nur Pokale ohne Manager und ohne Anzeige; `OriginalMinutes.FastCupResultWithTie`):**
 s = `0x368B1(…, 1, 0, 0, 1)` + 6 für Vereine (Index < 0x40), k = min(4, |s_H/3 − s_G/3|) (0x374AF, `0x120:0x61`).
 Endstand (h, g) aus `0x9F5C(h, g, 0, 60)`. Glättung (lrandom): ohne WM mit 1/4 – sonst bei stärkerem Gast mit 2/3 –
 h −= lrandom(0, h); dann mit 1/4 – sonst bei stärkerem Gast mit 1/2 – g += lrandom(0, 4). In der WM (`[0x12B]`) nur der
@@ -206,7 +206,7 @@ Managerpaarung werden die Werte aus den eingesetzten Spielern der Reihe gebildet
 | Managervereine: Reihenwerte aus Spielern 0x98F8, Managerwert 0x952C/0x974B, Energie 0x84D7/0x87F7, Reihenwechsel 0x8EF2/0x91FF/0x80CB, Taktik 0x939A, Strafspieler 0x378C5 | `[ORIGINAL]` (§13), Kaderreihenfolge und Feldspieler je Teil `[APPROX]` | `MatchEngine.Managed.cs` |
 | Managervereine: Torschütze 0x541D9/0x386D1, Verletzungen 0x38B8F/0x05B1A, Heilung 0x7C12 | `[ORIGINAL]` (§17), Neuzählung 0x38A36 und Versicherung 0x07089 offen | `MatchEngine.Injuries.cs`, `CreditPlayers` |
 | Taktik im Spiel 0x939A (Manager, gerade Minuten) / 0x80CB (Computer, ungerade, nur Managerpaarungen) | Takt `[ORIGINAL]`, Werte `[APPROX]` über `Tactics.Effective*` | `LiveTeam.Tactics` |
-| Schneller Weg der Pokale mit Glättung 0x3731F | `[ORIGINAL]` | `OriginalMinutes.FastCupResult` |
+| Schneller Weg der Pokale mit Glättung 0x3731F | `[ORIGINAL]` | `OriginalMinutes.FastCupResultWithTie` |
 | Lader der Teamwerte 0x2EF1B (Streuung, Form, Tagesform), Tagesform nach Ligaspielen 0x4F527 | `[ORIGINAL]`, Zeitpunkt des Ziehens `[APPROX]` (Abschnitt 12) | `MatchEngine.LoadTeamValues`, `UpdateDayForm`, `Club.TeamValues` |
 | Verletzungen im Spiel | umgesetzt (§17) | `OriginalMinutes.Injuries`, `PlayerInjuries` |
 | Anschluss an Spieltage, Zähler je Saison, Mehrsaisonprobe | erledigt (Teil 3), Sollwerte auf dem Branch | `MatchEngine.PlayWithEvents`, Abschnitt 11 |
@@ -259,7 +259,7 @@ Minutenschleife über den Bundestrainer; A008/A110, `docs/reverse-engineering.md
 
 Das Nationalteam des Bundestrainers (`RatedNation`, ohne eigenen Kader) zählt in Freundschafts- und WM-Spielen über
 die Aufstellung des Bundestrainers (`NationalCoach.Lineup()`) wie ein Managerverein: Spiele, Tore/Vorlagen, Strafen,
-Gegentore und Minuten des Torhüters (Review-Befund R7-03, #201; Test `IntegrationRunde7NationalCountersTests`).
+Gegentore und Minuten des Torhüters (Review-Befund R7-03, #201; Test `NationalCountersTests`).
 
 **Ablauf je Spiel**
 
@@ -325,7 +325,7 @@ und Modus 1 („nur Weltkugel“); Zähler je Saison gefüllt und konsistent (Vo
 nach jedem Wechsel 0. Alle bisherigen Referenzwerte neu (Begründung je Test im Kommentar): `RngTwinProbeTests` (6),
 `GameModeTests.Mode4_ReferenceValues_Unchanged`, `DebCupDrawFlowTests` (Referenz; mit/ohne Anzeige weiter gleich).
 Zufallsabhängige Testaufbauten angepasst: `EuropeanCupTests` (Gegnerstärke 95 statt 90), `SeasonPaymentTests` (bis 40
-Seeds), `LifecycleRegressionTests.R204` (Seed 2: Markt nicht voll), `WaveBReviewRegressionTests.PR3501` (Spielerzahl
+Seeds), `LifecycleRegressionTests.R204` (Seed 2: Markt nicht voll), `LoanReturnInvalidBidTests.PR3501` (Spielerzahl
 darf durch Nachbesetzung steigen).
 
 ## 12. Teamwerte des Laders und Meisterverteilung (Spur spielstaerke-manager, #204)
@@ -457,7 +457,7 @@ Startwerte hängen nur von Start-Liga und Start-Stärke ab (DGROUP 0x4B42, Datei
 „Startwerte der Kaderspieler“), nicht von der Datenbankstärke. Wer Düsseldorf (92) mit „Mittelfeld“ übernimmt, bekommt einen
 Bundesliga-Mittelfeldkader (81 ± 2) und landet im Mittelfeld – so ist es im Original angelegt. `PlayAtDatabaseStrength`
 setzt dagegen alle Spieler auf die Datenbankstärke; das gibt es im Original nicht und ist nur ein Testaufbau für Abläufe,
-die einen starken Managerverein als Vorbedingung brauchen. Probe (`SpielberechnungKomplett1Tests`, Originaldaten,
+die einen starken Managerverein als Vorbedingung brauchen. Probe (`ManagerClubStrengthTests`, Originaldaten,
 Seeds 1–12, Hauptrunde, passiver Manager), mittlerer Platz / Tordifferenz:
 
 | Verein (Datenbank) | Oberes Drittel (87) | Mittelfeld (81) | Abstiegskampf (70) |
@@ -545,7 +545,7 @@ Computerverein < 0x40 geht): Mittel a = (Kondition + Technik eines Teils) / 2 (d
 Aufrufers), d = clamp((Spielerstärke − a + 10) / 3, 1, 10), Teil random(0, 1), Kondition und Technik dieses Teils
 + random(d − 1, d + 1). **Umgesetzt in Runde 11** (Spur `kader-transfer` Teil 3, PR #434; `Core/Transfer.ComputerClub.cs`
 `ComputerClubTransferRules.StrengthenBuyer`, Anschlüsse in `AcceptUnsolicitedOffer` – Aufruf 0x46FB3, nur Verein < 0x40 –
-und `TransferMarket.Accept` – Aufruf 0x47483; Tests `KaderTransferTeil3Tests`): Verkäufe des Managers an Computervereine
+und `TransferMarket.Accept` – Aufruf 0x47483; Tests `ComputerClubTransferEffectsTests`): Verkäufe des Managers an Computervereine
 stärken den Käufer. `[APPROX]` Das Mittel a liest das Original über das nicht gesetzte Register `si` (Mauszeile des
 Transferbildschirms, beliebige Bytes); das Remake nimmt (Kondition + Technik beider Teile) / 4, ohne Zufallszug. Ohne
 gezogene Teamwerte (vor dem ersten Spiel) keine Wirkung.
@@ -574,7 +574,7 @@ halten. Diagnostisch aus dem Review (Integration Runde 9, 6 Seeds × 2 Saisons):
 
 ## 16. Strafen in der Managerpaarung (Spur spielberechnung-komplett, Teil 2; R8W3I-03 bis -06)
 
-Geprüft an `em.exe` (`ndisasm -b 16`), Tests `SpielberechnungKomplett2Tests`.
+Geprüft an `em.exe` (`ndisasm -b 16`), Tests `ManagerPairingPenaltyTests`.
 
 - **R8W3I-03, Zahl der Züge 0x378C5.** Der Zähler [bp-0xb] beginnt bei 0; 0x378ED springt vor dem ersten Zug zur Prüfung
   0x37A2A (`mov al,[bp-0xb]; inc byte [bp-0xb]; cmp al,0x96; jnc`), erst dann folgt der Zug 0x378FC. Also höchstens
@@ -610,7 +610,7 @@ Geprüft an `em.exe` (`ndisasm -b 16`), Tests `SpielberechnungKomplett2Tests`.
 
 ## 17. Verletzungen im Spiel und Torschütze (Spur spielberechnung-komplett, Teil 3)
 
-Geprüft an `em.exe` (`ndisasm -b 16`), umgesetzt in `Core/MatchEngine.Injuries.cs`, Tests `SpielberechnungKomplett3Tests`.
+Geprüft an `em.exe` (`ndisasm -b 16`), umgesetzt in `Core/MatchEngine.Injuries.cs`, Tests `MatchInjuryTests`.
 
 **Verletzungen 0x38B8F** (Stub 0x149D:0x93; gerufen je Minute der Liga 0x37F06 bzw. der Pokale 0x38304 vor den
 Torchancen, wenn einer der beiden Vereine Vereinsfeld 0x16 ≠ 0 hat; Argumente (…, Heim, Gast, 0, 1)):
@@ -663,7 +663,7 @@ höchstens 2) · (72 − 17v) + Tore (+0x03) · 46 + 700 im Sturm; Treffer bei r
 Feldspieler der Plätze 0 … n − 1.
 
 **Remake:** `OriginalMinutes.Injuries` (vor den Torchancen jeder Managerpaarung), `PlayerInjuries.Inflict/Heal`,
-`GameState.HealInjuries` (Tageslauf), `OriginalMinutes.ScoringPlayers/ScorerIndex` (nach jedem Abschluss der
+`PlayerInjuries.Heal` im Tageslauf (`GameState.DailyRun.cs`), `OriginalMinutes.ScoringPlayers/ScorerIndex` (nach jedem Abschluss der
 Managerpaarung); Schütze und Vorlage stehen im Torereignis, `CreditLineup` zählt sie (statt 0x5028 nach dem Spiel).
 `[APPROX]`: Tore aller Wettbewerbe in `Player.Goals` (Gewicht +0x03 = Saisontore samt Spiel), Vorlagenschleife mit Grenze
 1000, Nationalteam zieht aus dem Kader des Bundestrainers (`LiveTeam.PenaltySquad`, §16).
@@ -671,7 +671,7 @@ Managerpaarung); Schütze und Vorlage stehen im Torereignis, `CreditLineup` zäh
 ## 18. Über-/Unterzahl-Zähler und Länderwerte im Stärkevergleich (Spur spielberechnung-komplett, Teil 4)
 
 Geprüft an `em.exe` (`ndisasm -b 16`), umgesetzt in `Core/MatchEngine.PowerPlay.cs` und `Core/StatisticsStrength.cs`,
-Tests `SpielberechnungKomplett4Tests`. Regeln, Zustand, Saisonwechsel und Anzeige der Zähler: Spur statistiken-verein
+Tests `PowerPlayCountersTests`. Regeln, Zustand, Saisonwechsel und Anzeige der Zähler: Spur statistiken-verein
 (`Core/StatisticsClub.cs`, `PowerPlay`).
 
 **Zähler** (Managerfelder DGROUP 0x97D2 + 2 · k, Satz 0x94AC + 0x1AF · Vereinsfeld 0x16 = Manager + 1):
@@ -702,7 +702,7 @@ statt dem Stand des letzten Tageslaufs; ohne eigene Aufstellung bleiben die Län
 
 ## 19. Penaltyschießen nach der Verlängerung 0x3901B (Spur spielberechnung-komplett, Teil 5)
 
-Geprüft an `em.exe` (`ndisasm -b 16`), umgesetzt in `Core/MatchEngine.Shootout.cs`, Tests `SpielberechnungKomplett5Tests`.
+Geprüft an `em.exe` (`ndisasm -b 16`), umgesetzt in `Core/MatchEngine.Shootout.cs`, Tests `PenaltyShootoutTests`.
 
 - **Aufruf:** 0x3901B ist Stub 0xF0:0x9D (Stubsegment 0x149D, Overlay 0xF0 ab Datei 0x35540 + 0x3ADB). 0x32AA3 geht die
   Paarungen der Zeilen DGROUP 0x5C4B (32 Byte je Zeile, Heim-/Gastbyte, Vereine 0x5CFB/0x5CFC) durch: Zeile 1 markiert
@@ -723,7 +723,7 @@ Geprüft an `em.exe` (`ndisasm -b 16`), umgesetzt in `Core/MatchEngine.Shootout.
 - **Zeilen 0x5C4B (A077, Runde 17):** 0x32AA3 läuft nur mit dem K.-o.-Merker von 0x36B5D (Argument 3, Datei 0x371F0); Maske 1 =
   Zeile 0 DEB-Pokal (Datei 0x5504A), Maske 4/0xC = Zeile 2 Play-offs (0x31A28/0x31A3C; Zeile 3 der Aufstiegsrunde in Maske 0xC
   übersprungen, 0x32D13), Maske 8 = Zeile 3 WM-Endrunde (0x3101C). Europapokal, WM-Gruppe und Freundschaftsspiel rufen ohne
-  K.-o.-Merker – `[ORIGINAL]` wie `knockOut` im Remake (`WettbewerbeRestTests`).
+  K.-o.-Merker – `[ORIGINAL]` wie `knockOut` im Remake (`FriendlyMatchRulesTests`).
 - **Endstand und Marken (Runde 11, Spur wettbewerbe-spiel Teil 1):** 0x39088 nimmt die Marke ab (Heimbyte − 30), 0x39789
   setzt sie wieder – Endstand Gleichstand + Treffer mit **einer** Marke. Ein Tor in der Verlängerung schreibt 0x38402 Heim + 30
   auf den Stand; im Video stehen danach **zwei** Punkte (`eisbaeren_f44_01330` „4: 3..“ neben „4: 3.“). Die Anzeige 0x32E23 zieht
@@ -735,7 +735,7 @@ Geprüft an `em.exe` (`ndisasm -b 16`), umgesetzt in `Core/MatchEngine.Shootout.
 ## 20. Stärke der Nationalteams (Runde 11, Spur wettbewerbe-spiel Teil 3; Inventur P2 Nr. 2)
 
 Geprüft an `em.exe` (`ndisasm -b 16`); umgesetzt in `Core/CupsNational.Strength.cs` und `Core/MatchEngine.National.cs`,
-Tests `WettbewerbeSpiel3Tests`.
+Tests `NationStrengthTests`.
 
 - **Keine eigene Formel.** Nationalteams sind Vereinsplätze 52–63; 0x368B1 (Stärke) und 0x977F (Reihenwerte) lesen ihre
   Vereinsfelder wie bei jedem Verein. Der Lader (Datei 0x2F0CC–0x2F120) überschreibt für die Plätze [0x6AD] … [0x6AD] + 11
@@ -765,7 +765,7 @@ Tests `WettbewerbeSpiel3Tests`.
 
 ## 21. Teamwerte in der Stärketabelle 0x51206 (Runde 11, Spur wettbewerbe-spiel Teil 4; Inventur P1 Nr. 5, P2 Nr. 16)
 
-Geprüft an `em.exe` (`ndisasm -b 16`), umgesetzt in `Core/StatisticsStrength.cs`, Tests `WettbewerbeSpiel4Tests`.
+Geprüft an `em.exe` (`ndisasm -b 16`), umgesetzt in `Core/StatisticsStrength.cs`, Tests `StrengthTableFieldsTests`.
 
 - **Gelesen** werden je Teil k = 0 (Abwehr), 1 (Sturm) nur Vereinsfelder: Kondition 0x18 + k (Datei 0x5149A), Technik
   0x1A + k (0x514BD), Form 0x1C + k (0x514E3), Vereinszeiger DGROUP 0x9657 mit Faktor 0x3D; der Trendbalken liest
@@ -782,12 +782,12 @@ Geprüft an `em.exe` (`ndisasm -b 16`), umgesetzt in `Core/StatisticsStrength.cs
   Monatseinnahme (`FinanceMonthly.TeamValueSum`, 0x3E657) las sie schon. Kein Zufallszug mehr oder weniger; Meister und
   Zufallszustände bleiben gleich, nur die Konten ändern sich (Abdrücke `GameModeTests.Mode4Reference`, `RngTwinProbeTests`).
 - **Über-/Unterzahl in der Vereinsstatistik (A349):** Der Anschluss der Zähler aus §18 an „Statistiken → Verein“ war
-  schon vorhanden (`Manager.PowerPlayCounts`); geprüft über die Zeitleiste (`WettbewerbeSpiel4ScreenTests`), der
+  schon vorhanden (`Manager.PowerPlayCounts`); geprüft über die Zeitleiste (`ClubStatisticsPowerplayScreenTests`), der
   veraltete `[APPROX]`-Kommentar in `ClubStatisticsScreen` ist ersetzt.
 
 ## 22. Taktik und Feldspieler (Runde 11, Spur wettbewerbe-spiel Teil 5; Inventur P2 Nr. 1, G6)
 
-Geprüft an `em.exe` (`tools/reverse-engineering/disasm.py`), Tests `TaktikTeil5Tests`.
+Geprüft an `em.exe` (`tools/reverse-engineering/disasm.py`), Tests `MinuteQuotaTests`.
 
 - **Minuten-Vorgabe (A177, G6):** je Teil zusammen höchstens 20 Minuten (Pfeilgrenze Datei 0x4889F–0x488CE, 0x489C3:
   Feld < 20 − übrige Reihen). Beim Verlassen des Taktikbildschirms rechnet 0x48E62 (Datei 0x48EEA–0x4901D) um:
@@ -821,7 +821,7 @@ Geprüft an `em.exe` (`tools/reverse-engineering/disasm.py`), Tests `TaktikTeil5
 
 ## 23. Automatische Aufstellung 0x426BC/0x42838 (Runde 11, Spur wettbewerbe-spiel Teil 8; A068, A165, A169)
 
-Regel nach `docs/archiv/analyse/re-nachtrag.md` §3 (Review #446), Remake `Core/Squad.AutoLineup.cs`, Tests `AutoLineupTeil8Tests`.
+Regel nach `docs/archiv/analyse/re-nachtrag.md` §3 (Review #446), Remake `Core/Squad.AutoLineup.cs`, Tests `AutoLineupSelectionTests`.
 
 - **Einstellung „automatisch aufstellen“** (DGROUP 0x375 + 2 · Manager, Startwert 1): `Club.AutoLineupEnabled`
   (`[APPROX]` je Verein statt je Manager; Schema 23 → 24). Ein Eingriff in der Aufstellung (Platz setzen/leeren,

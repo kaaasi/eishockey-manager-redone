@@ -4,7 +4,7 @@ using EishockeyManager.Formats;
 namespace EishockeyManager.Core.Tests;
 
 /// <summary>
-/// Spur <c>kader-start</c>, Runde 13, Teil 4: Kaderbefunde aus <c>docs/analyse/re-runde-13.md</c>, Sitzung 2 und 3.
+/// Spur <c>kader-start</c>, Runde 13, Teil 4: Kaderbefunde aus <c>docs/archiv/analyse/re-runde-13.md</c>, Sitzung 2 und 3.
 /// <list type="bullet">
 /// <item>A091: Nr. = Kaderplatz + 1; Verkauf rückt auf, Kauf nach Spielerart einsortiert (R13GN-01, Stürmer hinten); Auto-Aufstellung und Spiel in Kaderplatzfolge
 ///   (vorher kleinste freie Rückennummer und Folge Rolle/Nummer).</item>

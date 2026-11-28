@@ -2,7 +2,7 @@ using EishockeyManager.Core;
 
 namespace EishockeyManager.Core.Tests;
 
-/// <summary>Befunde R3A-02 (#61) und R3A-03 (#62) aus docs/reviews/2026-10-28-integration-runde-3a.md.</summary>
+/// <summary>Befunde R3A-02 (#61) und R3A-03 (#62) aus docs/archiv/reviews/runde-3/2026-10-28-integration-runde-3a.md.</summary>
 public class DebCupHomeRightTests
 {
     /// <summary>

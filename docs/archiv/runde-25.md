@@ -22,14 +22,14 @@ Nutzer 25.11.2026: SG-01 = A (#1018 als eigene Spur in Runde 26). Wunsch 24.11.2
 
 ## Aktuelle Runde (archiviert): Runde 25 – Abweichungen vor v1.0 umsetzen (Plan 24.11.2026, Go 24.11.2026)
 
-Runde 24 abgeschlossen am 24.11.2026: [archiv/runde-24.md](archiv/runde-24.md). Stand: Restliste
-[analyse/restliste-v1.md](analyse/restliste-v1.md) **V = 0, X = 0**, D 26, K 224, E 323; `main` `1daa223`, Schema 63.
-**Ziel der Runde:** Die Abweichungen nach [analyse/abweichungen-v1.md](analyse/abweichungen-v1.md) **Abschnitt 0** sind „wie im
+Runde 24 abgeschlossen am 24.11.2026: [archiv/runde-24.md](runde-24.md). Stand: Restliste
+[analyse/restliste-v1.md](../analyse/restliste-v1.md) **V = 0, X = 0**, D 26, K 224, E 323; `main` `1daa223`, Schema 63.
+**Ziel der Runde:** Die Abweichungen nach [analyse/abweichungen-v1.md](../analyse/abweichungen-v1.md) **Abschnitt 0** sind „wie im
 Original“ umgesetzt oder mit Beleg als „keine Abweichung“ geklärt: die 15 Themen aus Abschnitt 1, dazu B31, B11, K07, S05, S07,
 T03, S01; Prüfungen B16, F06, F08; aus dem Aufräumkonzept (`aufraeumen-v1.md` §1.5) die Befunde **Aufräumkonzept K2, K9 (= B17),
-K11, K13**. Klassen je Thema: [analyse/abweichungen-bewertung-claude.md](analyse/abweichungen-bewertung-claude.md). **Nicht in
+K11, K13**. Klassen je Thema: [analyse/abweichungen-bewertung-claude.md](../analyse/abweichungen-bewertung-claude.md). **Nicht in
 dieser Runde:** Live-Themen S01, S04, S05, S02 (Runde 26, R25-D1 = D); die Themen K04, K11, K13, L11, L12, C02, C08 der
-Abweichungsliste (gehen ins Aufräumen #936); D-Themen (DOSBox nach Lust). **Danach:** Runde 26 Live-Spieltag (Vormerkung unten), Aufräumen #936 nach [analyse/aufraeumen-v1.md](analyse/aufraeumen-v1.md) (A1–A6, mit #978, #980), dann
+Abweichungsliste (gehen ins Aufräumen #936); D-Themen (DOSBox nach Lust). **Danach:** Runde 26 Live-Spieltag (Vormerkung unten), Aufräumen #936 nach [analyse/aufraeumen-v1.md](../analyse/aufraeumen-v1.md) (A1–A6, mit #978, #980), dann
 Abschlussprüfung.
 **Entscheidungen Nutzer 24.11.2026** (Optionen im Plan-PR #996): R25-D1 = D (Zuschnitt nach Bereich, Live erst in Runde 26),
 R25-D2 = A (S01 in Runde 26 als eine Spur: Nachbildung, Umbau, dann S04/S05; S02 danach), R25-D3 = B (gemeinsame RE-Spur

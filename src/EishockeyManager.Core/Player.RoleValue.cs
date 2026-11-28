@@ -16,7 +16,7 @@ public sealed partial class Player
     /// <see cref="TransferPoolRules.RollRoleValue"/>) und danach nie geändert – der Wert gehört dem Poolplatz (ein neuer Spieler
     /// des Platzes übernimmt ihn, <see cref="PoolSlot.Player"/>). Leser: Torschützen und Vorlagen Datei 0x5077–0x52CB
     /// (<see cref="MatchEngine.CreditSkaters"/>) und der Export (Pool +0x18). Beleg <c>k11_rollenwert.py</c>,
-    /// <c>docs/analyse/re-abweichungen.md</c> K11.
+    /// <c>docs/archiv/analyse/re-abweichungen.md</c> K11.
     /// [APPROX] Spieler, die nie auf einem Poolplatz standen (Kader der Computervereine des Remakes, Talente), und Spielstände vor
     /// Schema 65 haben keinen gewürfelten Wert: dann gilt die Mitte der Spanne (<see cref="DefaultRoleValue"/>), ohne Zufall –
     /// das Original führt diese Spieler nicht, ein Wurf verschöbe den gemeinsamen Strom.

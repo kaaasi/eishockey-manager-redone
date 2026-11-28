@@ -78,7 +78,7 @@ public sealed partial class GameState
     /// (<see cref="Club.TeamValues"/>), den der Saisonwechsel wie bei allen Plätzen neu würfelt (DOSBox FILE20 → FILE21:
     /// 0x18–0x1B bleiben, 0x1C/0x1D neu; Review R13RD-04).
     /// <list type="bullet">
-    /// <item>[ORIGINAL] Aufrufe (A009, Spur nationalteam Runde 13, <c>docs/analyse/re-runde-13.md</c>): Verlassen der Aufstellung
+    /// <item>[ORIGINAL] Aufrufe (A009, Spur nationalteam Runde 13, <c>docs/archiv/analyse/re-runde-13.md</c>): Verlassen der Aufstellung
     ///   (Datei 0x41506–0x4151A, <see cref="OnNationalLineupLeft"/>), Tageslauf (Datei 0x54F9C–0x54FBF) und nach dem Menü des
     ///   Bundestrainers an WM-Tagen (Datei 0x555D6). Nicht nach einem Freundschaftsspiel.</item>
     /// <item>[ORIGINAL] Modus 4 nach der Ernennung (WM-Schleife Datei 0x55570–0x55740, R14NT-01): nur an Tagen mit Ereignis nach

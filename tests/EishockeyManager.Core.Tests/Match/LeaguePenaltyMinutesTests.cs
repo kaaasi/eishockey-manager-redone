@@ -7,7 +7,7 @@ namespace EishockeyManager.Core.Tests;
 
 /// <summary>
 /// #773 (Spur abgleich-dosbox, Teil 2): Einsatz (Vereinsfeld 0x26) und Liga-Strafminuten nach dem ersten Spieltag eines neuen
-/// Spiels, DOSBox-Aufnahme `runde-17` FILE52 → FILE53 (ES WEIßWASSER, Bundesliga). Bericht: <c>docs/analyse/abgleich-dosbox.md</c> §2.
+/// Spiels, DOSBox-Aufnahme `runde-17` FILE52 → FILE53 (ES WEIßWASSER, Bundesliga). Bericht: <c>docs/archiv/analyse/abgleich-dosbox.md</c> §2.
 /// </summary>
 public class LeaguePenaltyMinutesTests(ITestOutputHelper output)
 {
@@ -94,7 +94,7 @@ public class LeaguePenaltyMinutesTests(ITestOutputHelper output)
     [GameDataFact]
     public void File02To03_LeaguePenaltyMinutes_WithinRemakeSpread()
     {
-        const int original = 1447; // [ORIGINAL] FILE03, Summe LeaguePenaltyMinutes (docs/analyse/belastung-staerke.md §8)
+        const int original = 1447; // [ORIGINAL] FILE03, Summe LeaguePenaltyMinutes (docs/archiv/analyse/belastung-staerke.md §8)
         var database = ClubDatabase.Load(TestGameData.Load());
         var sums = new List<int>();
         for (var seed = 1; seed <= 12; seed++)

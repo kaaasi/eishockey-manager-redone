@@ -7,7 +7,7 @@ namespace EishockeyManager.Core.Tests;
 /// <summary>
 /// Spur abgleich-original, Teil 2: Remake gegen die Spielstandpaare des Originals (<c>emtool abgleich</c>, R15-D2 = A). Je Paar ein
 /// Fall; bekannte Abweichungen stehen als Pfadmuster mit Issue-Nummer in <see cref="Expected"/>. Jede neue Abweichung macht den
-/// Fall rot, ebenso ein Muster, das nicht mehr trifft (behoben → Eintrag entfernen). Bericht: <c>docs/analyse/abgleich-original.md</c>.
+/// Fall rot, ebenso ein Muster, das nicht mehr trifft (behoben → Eintrag entfernen). Bericht: <c>docs/archiv/analyse/abgleich-original.md</c>.
 /// </summary>
 /// <remarks>
 /// Paare ohne Eingriff: FILE02→03, FILE02→50 und FILE02→51 (DOSBox `runde-17`, FILE51 mit Torwartwechsel im Spiel), FILE50→61→63
@@ -217,7 +217,7 @@ public class OriginalPairsTests
             // DOSBox `runde-19` (#730, Spur abgleich-dosbox-19 Teil 1): Spieltag 2 (FILE50→61, Auswärtsspiel EC RATINGEN) und 3
             // (FILE61→63, Heimspiel ESV KAUFBEUREN) desselben Laufs ohne Mausklick. Nur der Sägezahn weicht ab (MENDE 123→127 im
             // Original, im Remake bei 3 von 6 Saaten über 127 → 50; SIKORA, BRANDL je einmal); Reihen je Minute:
-            // ManagerPairingLinesTests, Treffer je Spiel: docs/analyse/abgleich-dosbox.md §4.
+            // ManagerPairingLinesTests, Treffer je Spiel: docs/archiv/analyse/abgleich-dosbox.md §4.
             ["FILE50→FILE61"] = [StrainSawtooth("5 KÖLNER EC")],
             ["FILE61→FILE63"] = [StrainSawtooth("5 KÖLNER EC")],
             // DOSBox `runde-19` Sitzung 4 (#730, Fortsetzung 1, R19-E4 = A): Spieltag 2 aus FILE50 in fünf weiteren Läufen ohne
@@ -275,7 +275,7 @@ public class OriginalPairsTests
     public void Pair_OtherSeed_SameExpectedList(string a, string b, int seed) => AssertExpected(Compare(a, b, seed));
 
     /// <summary>
-    /// #730 (Review R17 P3-1, <c>docs/reviews/2026-11-12-pruefung-karte-r17.md</c>): Seit #784 weichen HOCK (FILE02→03, Original 50)
+    /// #730 (Review R17 P3-1, <c>docs/archiv/reviews/runde-17/2026-11-12-pruefung-karte-r17.md</c>): Seit #784 weichen HOCK (FILE02→03, Original 50)
     /// und KUHNEKATH (FILE13→14, Original 96) nicht mehr bei allen sechs Prüfsaaten ab und stehen deshalb in
     /// <see cref="Expected"/> nur im Sägezahn (optional). Pflicht bleibt der Bereich über die Saaten: bei mindestens
     /// <paramref name="minSeeds"/> der sechs Saaten (1993, 4711, 1, 2, 3, 77) liegt die Abweichung im Remake-Bereich. Ein weiteres

@@ -23,7 +23,7 @@ public enum SaveLoadMode
 /// Diskettenzugriff ! Vorgang abgebrochen.“ (0x3EB0), „löschen ?“, „Mach schon!“, „Lieber nicht.“.
 /// </para>
 /// <para>
-/// <b>Bedienung [ORIGINAL]</b> (em.exe 0x5DBE5, Spur hok-import Teil 5, A338/A339, <c>docs/analyse/re-runde-14.md</c> Sitzung 6):
+/// <b>Bedienung [ORIGINAL]</b> (em.exe 0x5DBE5, Spur hok-import Teil 5, A338/A339, <c>docs/archiv/analyse/re-runde-14.md</c> Sitzung 6):
 /// Linksklick auf eine Datei übernimmt den Namen, bei gleichem Namen führt er aus. Blättern (mehr als 48 Einträge) nur über das
 /// Pfeilpaar <see cref="ArrowPair"/> (150 | 169)/(174 | 169), Halten = 1 (Wirkung beim Loslassen), Schritt 48, an den Enden ohne
 /// Wirkung (Datei 0x5E3B5, 0x5E386–0x5E42B); es gibt <b>kein „SEITE:“</b> (DGROUP 0xBC0 liest em.exe nirgends), kein Mausrad und
@@ -534,7 +534,7 @@ public sealed class SaveLoadScreen : Screen
     /// <summary>
     /// Bricht einen Text auf Zeilen um, die in das Meldungsfenster passen. [ORIGINAL] Die Breite 158 px ist die Linie unten
     /// des Fensters 0x4C246 (80 … 237 = 158 Pixel, <see cref="OriginalDialog"/>, Datei 0x4C246). [APPROX] Der Umbruch selbst: das
-    /// Original bricht nicht um, seine Meldungen sind feste DGROUP-Zeilen (<c>docs/analyse/re-meldungen.md</c> §C: „Meldungen
+    /// Original bricht nicht um, seine Meldungen sind feste DGROUP-Zeilen (<c>docs/archiv/analyse/re-meldungen.md</c> §C: „Meldungen
     /// mit mehr als vier Zeilen (nur Remake …)“); nur die Fehlertexte mit Dateiname und Fehlertext des Remakes brauchen ihn.
     /// Mehr als diese Breite ist nicht zu belegen. Vorher 200 px, damit reichten Fehlertexte über den Rahmen (Restlücke #483).
     /// </summary>

@@ -4,7 +4,7 @@ using EishockeyManager.Tests.Support;
 namespace EishockeyManager.Formats.Tests;
 
 /// <summary>
-/// Spur torszenen, Teil C1: Figuren und Eisfläche der Torszene (<c>docs/analyse/re-livespiel.md</c> §16). Vor dem Teil rot:
+/// Spur torszenen, Teil C1: Figuren und Eisfläche der Torszene (<c>docs/archiv/analyse/re-livespiel.md</c> §16). Vor dem Teil rot:
 /// es gab weder Figurzuordnung noch Eisfläche (<c>GoalSceneFigures</c>, <c>GoalSceneRink</c> fehlten, Build-Fehler).
 /// </summary>
 public sealed class GoalSceneRinkTests

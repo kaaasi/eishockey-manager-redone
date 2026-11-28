@@ -4,7 +4,7 @@ using EishockeyManager.Formats;
 namespace EishockeyManager.Core.Tests;
 
 /// <summary>
-/// Spur wettbewerbe-spiel, Teil 7: Kaderplatz +0x19 (A185, A186), docs/analyse/re-nachtrag.md Abschnitt 6.
+/// Spur wettbewerbe-spiel, Teil 7: Kaderplatz +0x19 (A185, A186), docs/archiv/analyse/re-nachtrag.md Abschnitt 6.
 /// Rot vor Teil 7: alle Spieler hatten 7/7 (Vorgabe in <c>Squad.Training.cs</c>).
 /// </summary>
 public class HiddenSkillsTests

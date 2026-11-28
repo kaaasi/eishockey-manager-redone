@@ -188,7 +188,7 @@ public sealed partial class NationalCoach
     /// <summary>
     /// Bonus auf die drei Werte jedes Kaderspielers (Datei 0x3C18C): ein Wert bekommt eins weniger – bei x &gt; 2 der
     /// erste, sonst der zweite; höchstens 99. [ORIGINAL] Spielerfelder 0x10–0x12 = Kondition, Technik, Form (A023, Spur
-    /// nationalteam Runde 13, <c>docs/analyse/re-runde-13.md</c>): „Spieler in WM-Kader“ zeigt in KO/TE/FO der Reihe nach
+    /// nationalteam Runde 13, <c>docs/archiv/analyse/re-runde-13.md</c>): „Spieler in WM-Kader“ zeigt in KO/TE/FO der Reihe nach
     /// +0x10/+0x11/+0x12 (DOSBox `file18_01`: KÜNAST 79/81/53, MERK 84/81/50 = FILE18, Satz 5, Platz 2/1). Nach einem
     /// Freundschaftsspiel mit x &gt; 2 FILE18 → FILE19 alle Kaderplätze +1/+2/+2; ZERWESZ und SCHINKO bleiben bei
     /// +0x10 = 99.

@@ -3,7 +3,7 @@ using EishockeyManager.Core;
 namespace EishockeyManager.Core.Tests;
 
 /// <summary>
-/// Spur re-reste (Runde 23, Teil 2): #925 (b) im DEB-Pokal. Lesung und ausführbare Belege in <c>docs/analyse/re-reste-23.md</c> §1.
+/// Spur re-reste (Runde 23, Teil 2): #925 (b) im DEB-Pokal. Lesung und ausführbare Belege in <c>docs/archiv/analyse/re-reste-23.md</c> §1.
 /// </summary>
 public class DebCupFastPathTests
 {

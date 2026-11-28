@@ -218,7 +218,7 @@ public sealed class GameSetup
     /// <summary>
     /// Managerzeile, auf die ein Klick in Zeile <paramref name="row"/> wirkt. [ORIGINAL] A056, em.exe Datei 0x28AA9–0x28ADB:
     /// Zeile = (y − 0x26) / 0x33, höchstens 3; bei Spielmodus „nur Weltkugel“ (Knopfbits <c>[bp−0x57]</c> = 2) immer 0.
-    /// Bilder <c>file29_1</c>/<c>file29_2</c> (Aufnahme runde-13, <c>docs/analyse/re-runde-14.md</c>).
+    /// Bilder <c>file29_1</c>/<c>file29_2</c> (Aufnahme runde-13, <c>docs/archiv/analyse/re-runde-14.md</c>).
     /// </summary>
     public int ManagerRowFor(int row) => Mode == GameMode.WorldOnly ? 0 : Math.Clamp(row, 0, MaxManagers - 1);
 
@@ -240,7 +240,7 @@ public sealed class GameSetup
     /// zurückgenommen – ohne Meldung, ohne Ersatz-Umstellen (Sprung über das Neuzeichnen nach Datei 0x2899D). Die Prüfung
     /// läuft vor der Begrenzung (Datei 0x28925–0x28944, <see cref="SetupSliders.Step"/>) und nach jedem der vier Regler.
     /// Folge: Mit „eine Saison“ bleibt die Start-Liga auf Bundesliga stehen, mit 2. Liga oder Oberliga bleibt die Dauer
-    /// auf „drei Saisons“. Belege <c>file28_3</c>–<c>file28_5</c> (<c>docs/analyse/re-runde-13.md</c>, U15-b).
+    /// auf „drei Saisons“. Belege <c>file28_3</c>–<c>file28_5</c> (<c>docs/archiv/analyse/re-runde-13.md</c>, U15-b).
     /// [ORIGINAL] Alle vier Regler sind ein Wert für alle Manager (DGROUP 0x118–0x11B, derselbe Befehl Datei 0x2890A für jeden
     /// Regler; A054, A518): Der Schritt gilt unabhängig vom gewählten Manager für alle, auch ohne Manager.
     /// <paramref name="manager"/> bleibt für die Aufrufer der Spielvorbereitung und wird nicht ausgewertet.
