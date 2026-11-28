@@ -5,8 +5,8 @@ Aus `docs/arbeitspakete.md` ausgelagert am 24.11.2026. Inhalt unverändert bis a
 der Spuren geben den Stand vor dem jeweiligen Merge wieder. Nur bei Bedarf lesen. Relative Links beziehen sich auf `docs/`.
 
 **Ergebnis:** Plan #983 (Plan-Review #985), Prozess-PR #984 (#986, Nachprüfung #989: Erfahrungen Runde 23). Beide Spuren
-gemergt: `abweichungsliste` (#987, #991 Nein P2, Fixlauf, Delta-Prüfung) → [analyse/abweichungen-v1.md](analyse/abweichungen-v1.md);
-`aufraeum-konzept` (#988, #990 Nein P2, Fixlauf, Delta-Prüfung) → [analyse/aufraeumen-v1.md](analyse/aufraeumen-v1.md).
+gemergt: `abweichungsliste` (#987, #991 Nein P2, Fixlauf, Delta-Prüfung) → [analyse/abweichungen-v1.md](../analyse/abweichungen-v1.md);
+`aufraeum-konzept` (#988, #990 Nein P2, Fixlauf, Delta-Prüfung) → [analyse/aufraeumen-v1.md](../analyse/aufraeumen-v1.md).
 Zusatz auf Wunsch des Nutzers: Bewertung der Abweichungsliste durch ChatGPT (#992, GPT-6.2 Astra), Gemini 4 Hydrogen und die
 Leitstelle (`analyse/abweichungen-bewertung-*.md`, #993). Kein Gesamtreview (nur Doku).
 
@@ -20,8 +20,8 @@ Abweichungsliste – 15 Themen „ändern“, zusätzlich B31 = A, B11 = A, K07,
 
 ## Aktuelle Runde (archiviert): Runde 24 – Abweichungsliste vor v1.0, P3-Rest, Konzept Aufräumen (Plan 23.11.2026, Go 23.11.2026)
 
-Runde 23 abgeschlossen am 23.11.2026: [archiv/runde-23.md](archiv/runde-23.md). Stand: Restliste
-[analyse/restliste-v1.md](analyse/restliste-v1.md) **V = 0, X = 0**, D 26, K 224, E 323. Offen: P3 #978, #980; #936; Vormerkungen
+Runde 23 abgeschlossen am 23.11.2026: [archiv/runde-23.md](runde-23.md). Stand: Restliste
+[analyse/restliste-v1.md](../analyse/restliste-v1.md) **V = 0, X = 0**, D 26, K 224, E 323. Offen: P3 #978, #980; #936; Vormerkungen
 unten. Keine neue DOSBox-Sitzung von `runde-22` aufgenommen (Referenz-Repo `main` `7412a50`), D 26 bleibt bis zur Aufnahme.
 **Ziel der Runde:** Der Nutzer bekommt die Abweichungsliste (R20-D3-Zusatz) in einer Form, in der er je Thema „bleibt“ oder
 „ändern“ entscheiden kann; für #936 liegt ein Konzept mit den Nutzerentscheidungen vor. Umsetzung der

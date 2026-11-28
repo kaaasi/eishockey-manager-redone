@@ -5,7 +5,7 @@ using Xunit.Abstractions;
 namespace EishockeyManager.Core.Tests;
 
 /// <summary>
-/// Spur hok-import, Review R14HI-01 (PR #670, <c>docs/reviews/2026-11-09-integration-hok-import-r14.md</c>): Play-offs und
+/// Spur hok-import, Review R14HI-01 (PR #670, <c>docs/archiv/reviews/runde-14/2026-11-09-integration-hok-import-r14.md</c>): Play-offs und
 /// Aufstiegsrunden kommen aus dem HOK (DGROUP 0x5D3B, 0xCCA3, 0xCCA4, 0xCCB2 bzw. 0xCFF4, 0xCED8, 0xCDB8, 0xCD88, 0xCD58) statt aus
 /// dem Nachspielen. Gegenbeispiele des Reviews: FILE44 (Platzliste 3 2 0 1), FILE44 → Saisonwechsel = Ligen wie FILE46,
 /// FILE22 → Saisonwechsel = FILE23.

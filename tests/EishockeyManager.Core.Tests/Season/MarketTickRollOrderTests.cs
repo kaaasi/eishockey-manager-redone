@@ -4,7 +4,7 @@ using EishockeyManager.Formats;
 namespace EishockeyManager.Core.Tests;
 
 /// <summary>
-/// Spur saison-geld, Teil 1 (T03: A661, A829, A843, A935; Beleg docs/analyse/re-abweichungen.md T03): Zeitpunkt und Reihenfolge
+/// Spur saison-geld, Teil 1 (T03: A661, A829, A843, A935; Beleg docs/archiv/analyse/re-abweichungen.md T03): Zeitpunkt und Reihenfolge
 /// der Würfe im Markt-Takt und am Saisonwechsel wie em.exe. Vor der Spur rot: Gebotsverfall nur je Gebot, Oberliga-Zug am
 /// 13. April, große Wanderung erst in <see cref="GameState.StartNextSeason"/> nach der Mischung.
 /// </summary>

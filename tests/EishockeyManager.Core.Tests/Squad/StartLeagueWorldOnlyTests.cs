@@ -4,7 +4,7 @@ namespace EishockeyManager.Core.Tests;
 
 /// <summary>
 /// Spur <c>kader-start</c>, Runde 14, Teil 2: Spielstart aus der DOSBox-Aufnahme <c>runde-13</c>
-/// (<c>docs/analyse/re-runde-14.md</c>): A056 (nur Weltkugel), U15-c (eine Saison, ein Manager) mit dem Europapokal-Filter
+/// (<c>docs/archiv/analyse/re-runde-14.md</c>): A056 (nur Weltkugel), U15-c (eine Saison, ein Manager) mit dem Europapokal-Filter
 /// „Platz 0“ in U15-a.
 /// </summary>
 public class StartLeagueWorldOnlyTests

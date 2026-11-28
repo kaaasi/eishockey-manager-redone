@@ -515,7 +515,7 @@ public sealed partial class Club
     /// Einstellung ein und sofort neu aufstellen (Datei 0x426BC, <see cref="AutoLineupRule"/>); die Kurzform für Spielaufbau, Skripte
     /// und Tests. [ORIGINAL] A681 (Teil-V A673): Der Weg des Originals ist der Taktikbildschirm, es gibt keine Taste „A“ in der
     /// Aufstellung – Knopf 0 schaltet um (<see cref="SetAutoLineup"/>), beim Verlassen folgt die Neuaufstellung
-    /// (<see cref="CloseTactics"/>; Datei 0x47CA0, 0x48E62 Schritt 5, <c>docs/analyse/re-geld.md</c>).
+    /// (<see cref="CloseTactics"/>; Datei 0x47CA0, 0x48E62 Schritt 5, <c>docs/archiv/analyse/re-geld.md</c>).
     /// </summary>
     public void AutoLineup()
     {

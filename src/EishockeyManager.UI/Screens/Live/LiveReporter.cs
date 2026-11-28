@@ -18,7 +18,7 @@ public enum ReporterEvent
 public readonly record struct ReporterLine(bool Large, string Text, int X1, int X2, int Baseline, byte Color, byte? Shadow);
 
 /// <summary>
-/// Reporter der Live-Anzeige (Spur livespiel-ui-2, B2; L4; <c>docs/analyse/re-livespiel.md</c> §5 und §15): Meldung
+/// Reporter der Live-Anzeige (Spur livespiel-ui-2, B2; L4; <c>docs/archiv/analyse/re-livespiel.md</c> §5 und §15): Meldung
 /// 0x52520 mit Mundfolge 0x5224E, Zeile sprechen 0x52430, Mundbewegung 0x52382 und Zwinkern 0x522EC als Bildfolge. Jede
 /// Meldung ist ein Ablauf von Bildern (<see cref="Message"/>); der Bildschirm zeichnet nach jedem Bild <see cref="Lines"/>,
 /// <see cref="Mouth"/> und <see cref="EyesClosed"/>.

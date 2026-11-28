@@ -4,7 +4,7 @@ namespace EishockeyManager.Core.Tests;
 
 /// <summary>
 /// Spur ui-meldungen, Teil 4 (E4 = B, Entscheidung Nutzer 03.11.2026): was das Hauptmenü des Originals beim Aufbau ändert, als
-/// Ereignis im Spielkern (<see cref="GameState.OnMainMenu"/>, Hauptmenü Datei 0x44E22, Prüfung <c>docs/analyse/re-runde-12.md</c> E4).
+/// Ereignis im Spielkern (<see cref="GameState.OnMainMenu"/>, Hauptmenü Datei 0x44E22, Prüfung <c>docs/archiv/analyse/re-runde-12.md</c> E4).
 /// </summary>
 public class MainMenuEventTests
 {

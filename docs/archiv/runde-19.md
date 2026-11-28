@@ -28,7 +28,7 @@ Review, Prüfung im Gesamtreview.
 
 ## Aktuelle Runde: Runde 19 – Torszenen, neuer Manager, Belastung (Plan 14.11.2026, Go offen)
 
-Runde 18 abgeschlossen am 14.11.2026: [archiv/runde-18.md](archiv/runde-18.md). Grundlage: Spur C `torszenen` nach
+Runde 18 abgeschlossen am 14.11.2026: [archiv/runde-18.md](runde-18.md). Grundlage: Spur C `torszenen` nach
 [archiv/analyse/re-livespiel.md](analyse/re-livespiel.md) §12 (L7-Anzeige; Kern-Zug 0x575C3 und Leser `tore\` aus `livespiel-kern` A4
 vorhanden, §11 Format, §6 Anzeigeteil), offene Issues #847 (P2), #826 (P3), #730 (P2, Rest). Ziel: Live-Spiel vollständig (L1–L8),
 #847, #826 und #730 belegt geschlossen. **Entscheidungen Nutzer 14.11.2026** (Optionen im Plan-PR #851): R19-D1 = A (eine Spur

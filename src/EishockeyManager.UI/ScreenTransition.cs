@@ -10,7 +10,7 @@ namespace EishockeyManager.UI;
 /// <list type="bullet">
 /// <item>[ORIGINAL] Mit Seitenwechsel (DGROUP 0x22A ≠ 0, gesetzt beim Spielstart Datei 0x439C0, gelöscht beim Laden eines
 ///   Spielstands Datei 0x5687A): „aus“ zeigt die Seite VRAM 0x9600, in die beim ersten Mal kb\22 kopiert wurde; gezeichnet wird
-///   weiter auf Seite 0; „ein“ zeigt Seite 0 mit der ausstehenden Palette (<c>docs/analyse/re-meldungen.md</c> §0x0C5CE).</item>
+///   weiter auf Seite 0; „ein“ zeigt Seite 0 mit der ausstehenden Palette (<c>docs/archiv/analyse/re-meldungen.md</c> §0x0C5CE).</item>
 /// <item>[ORIGINAL] Ohne Seitenwechsel: „aus“ schaltet das Bild ab (<c>INT 10h</c> AX 0x1201, Datei 0x10505), „ein“ wieder an
 ///   (AX 0x1200, Datei 0x1050D) – der Spieler sieht ein schwarzes Bild.</item>
 /// <item>[APPROX] Dauer: Im Original so lange, wie der Aufbau des neuen Bildschirms dauert (nicht messbar aus den Videos mit

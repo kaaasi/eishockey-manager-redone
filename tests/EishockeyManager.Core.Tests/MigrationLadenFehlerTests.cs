@@ -4,7 +4,7 @@ using EishockeyManager.Core;
 namespace EishockeyManager.Core.Tests;
 
 /// <summary>
-/// Befund R25-G1 (Issue #1026, <c>docs/reviews/2026-11-25-gesamtreview-runde-25.md</c>): Eine Datei mit falsch typisiertem
+/// Befund R25-G1 (Issue #1026, <c>docs/archiv/reviews/runde-25/2026-11-25-gesamtreview-runde-25.md</c>): Eine Datei mit falsch typisiertem
 /// Feld darf beim Laden keine Ausnahme werfen, sondern muss das Fehlerergebnis liefern (wie fremde Dateien oder neuere
 /// Versionen). Ursprünglich für die Migrationen 63 → 64 und 64 → 65; seit Runde 27 (aufraeumen-migration, R27-D2 = B) gibt es
 /// keine Migrationen mehr: Die Proben laufen mit Schema 65 durch den Reader, die Probe mit Schema 64 endet in der Versionsmeldung.

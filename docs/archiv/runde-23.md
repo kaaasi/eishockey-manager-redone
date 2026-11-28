@@ -23,8 +23,8 @@ Integrationsfolge nach Fertigstellung (`abgleich-dosbox-22` vor `re-reste`).
 
 ## Aktuelle Runde: Runde 23 – letzte V, Test-Infrastruktur, DOSBox `runde-22` Sitzung 1 (Plan 23.11.2026, Go 23.11.2026)
 
-Runde 22 abgeschlossen am 22.11.2026: [archiv/runde-22.md](archiv/runde-22.md). Grundlage: Restliste
-[analyse/restliste-v1.md](analyse/restliste-v1.md) (V 5: A937/A875 → #939, A873, A913, A951 → #948; D 30), Issues #939, #948, #951
+Runde 22 abgeschlossen am 22.11.2026: [archiv/runde-22.md](runde-22.md). Grundlage: Restliste
+[analyse/restliste-v1.md](../analyse/restliste-v1.md) (V 5: A937/A875 → #939, A873, A913, A951 → #948; D 30), Issues #939, #948, #951
 (nur noch die `pruefen.sh`-Punkte; die Markerliste-Punkte hat `marker-x` #952 erledigt), #954, #925, Reste #938/#930, DOSBox-Aufnahme
 `runde-22` Sitzung 1 (Referenz-PR kaaasi/eishockey-manager-referenz#41: FILE75, FILE76, 20 Bilder; A427, A065, A057, A402, A613,
 A614, A629, A117). **Ziel der Runde:** V = 0 nach dem Generatorlauf, `pruefen.sh`-Punkte erledigt, Sitzung 1 ausgewertet. Danach

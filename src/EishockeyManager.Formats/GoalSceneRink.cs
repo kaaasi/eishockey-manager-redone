@@ -3,7 +3,7 @@ using System.Buffers.Binary;
 namespace EishockeyManager.Formats;
 
 /// <summary>
-/// Eisfläche der Torszene (Spur torszenen, Teil C1; <c>docs/analyse/re-livespiel.md</c> §16): Kachelkarte der Halle aus
+/// Eisfläche der Torszene (Spur torszenen, Teil C1; <c>docs/archiv/analyse/re-livespiel.md</c> §16): Kachelkarte der Halle aus
 /// <c>kb\236</c> bzw. <c>kb\242 … 245</c> mit den Kacheln aus <c>kb\231</c>/<c>kb\232</c>, dazu Kamera und Sichtfenster.
 /// <para>[ORIGINAL] Grafiksegment 0BBF (Fernaufrufe <c>48h:…</c>, Datei 0xD9F0 + Offset):</para>
 /// <list type="bullet">

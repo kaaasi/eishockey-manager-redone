@@ -8,7 +8,7 @@ lesen. Relative Links beziehen sich auf `docs/`.
 **Ergebnis:** Spuren `pruefung-karte` (#880, Erstreview #881 Ja) und `inventur-v1` (#883, Erstreview #884 Nein → Fixlauf,
 Delta-Prüfung der Leitstelle) gemergt; Plan #878 (Plan-Review #879). Geschlossen: #871, #872 (Reihen auf dem Eis bleiben aus dem
 Vorspiel stehen, Datei 0x84D7, Felder 0x2E/0x30, Schema 51), #874. Neu: belegte Restliste bis v1.0
-([analyse/restliste-v1.md](analyse/restliste-v1.md), Einordnung `analyse/restliste-v1-klassen.csv`, Generator
+([analyse/restliste-v1.md](../analyse/restliste-v1.md), Einordnung `analyse/restliste-v1-klassen.csv`, Generator
 `tools/reverse-engineering/markerliste.py`): 689 Einträge, **V 85, D 45, E 295, K 182, X 82**, Zuschnitt Runde 21 ff.,
 DOSBox-Sammelliste, Umfang der Abschlussprüfung, Abweichungsliste vor v1.0 (`markerliste.py --abweichungen`). Gesamtreview
 (#885, ChatGPT/Codex) **Ja** für `a509f5c`: keine neuen Befunde.
@@ -28,7 +28,7 @@ versehentlichem Schließen beim Plan-Merge wieder geöffnet; Fixlauf #883 nur P2
 
 ## Aktuelle Runde: Runde 20 – Restliste bis v1.0, P3 aus Runde 19 (Plan 15.11.2026, Go 15.11.2026)
 
-Runde 19 abgeschlossen am 15.11.2026: [archiv/runde-19.md](archiv/runde-19.md). Live-Spiel vollständig (L1–L8); offen nur
+Runde 19 abgeschlossen am 15.11.2026: [archiv/runde-19.md](runde-19.md). Live-Spiel vollständig (L1–L8); offen nur
 #871, #872, #874 (P3/Testlücke) und A093. **Lage:** Die Inventur (`analyse/inventur.md`, Runde 10) ist der einzige Überblick
 über die Annahmen, aber nicht mehr verlässlich: seit Runde 10 von 382 auf **616 `[APPROX]` in 215 Dateien** gewachsen
 (Stand `482d2db`), Nachträge nur angehängt („Stand Runde n“), Prio-Spalte veraltet (z. B. A033, A041, A162 als P1 geführt,

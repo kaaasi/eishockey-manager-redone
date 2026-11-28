@@ -13,7 +13,7 @@ namespace EishockeyManager.UI.Screens;
 ///   auf Kachel 7 (Datei 0x45551–0x45559).</item>
 /// <item>[ORIGINAL] Text und Knöpfe wie im Bild des Nutzers (DOSBox, 31.10.2026, Kommentar in #205).</item>
 /// <item>[ORIGINAL] Lage, Rahmen, Symbolfelder, Linien und Knöpfe: Baustein <see cref="OriginalDialog"/> (Datei 0x4C246, Aufbau
-///   in <c>docs/analyse/re-meldungen.md</c> §C); für diese Frage gibt es kein Videobild, die Lage gilt wie bei der Frage der
+///   in <c>docs/archiv/analyse/re-meldungen.md</c> §C); für diese Frage gibt es kein Videobild, die Lage gilt wie bei der Frage der
 ///   DEB-Pokal-Auslosung (Video 3:46). Das Nutzerbild zeigt die „?“-Felder gelb, hier sind sie wie dort gezeichnet.</item>
 /// <item>[APPROX] Escape und rechte Maustaste wie „Kein Gedanke“ als Komfort des Remakes: Das Original wertet nur die linke
 ///   Maustaste aus (0x4C246, A334; bleibt nach B11 = A, Nutzer 24.11.2026). Keine Taste beendet das Programm.</item>

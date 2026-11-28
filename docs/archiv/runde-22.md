@@ -30,8 +30,8 @@ Abschlussprüfung; Läufe vom 18.–22.11. warteten auf die Leitstelle (Ende ohn
 
 ## Aktuelle Runde: Runde 22 – Restliste Klasse V: Kaderplatz, Nationalteam, Kader, Transfer, Wettbewerbe, Einzelpunkte (Plan 17.11.2026, Go 17.11.2026)
 
-Runde 21 abgeschlossen am 17.11.2026: [archiv/runde-21.md](archiv/runde-21.md). Grundlage: Restliste
-[analyse/restliste-v1.md](analyse/restliste-v1.md) (V 67, D 21; „Klasse V nach Themen“, „Zuschnitt Runde 21 ff.“), neue V aus
+Runde 21 abgeschlossen am 17.11.2026: [archiv/runde-21.md](runde-21.md). Grundlage: Restliste
+[analyse/restliste-v1.md](../analyse/restliste-v1.md) (V 67, D 21; „Klasse V nach Themen“, „Zuschnitt Runde 21 ff.“), neue V aus
 [archiv/analyse/re-vor-dosbox.md](analyse/re-vor-dosbox.md), Issues #896, #897, #899, #908, #912, #914. **Ziel der Runde:** alle 67 V
 umsetzen (Zuordnung je ID unten, vollständig geprüft), dazu die neuen Befunde aus #897/#908; X auf `[ORIGINAL]` (`marker-x`), danach
 Generatorlauf. Danach bleiben bis zur Abschlussprüfung nur D (DOSBox, R22-D4) und die Abweichungsliste an den Nutzer.

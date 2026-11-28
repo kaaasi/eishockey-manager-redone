@@ -99,7 +99,7 @@ public sealed partial class GameState
     /// nur Manager 0, Wurf nur auf seine Plätze). [ORIGINAL] Spur zufallsstrom (A521, N3 = B): Das Lösen der Sperre nach
     /// abgelehntem Gebot steht hier, im Lauf von Manager 0 direkt nach dem Verfall je Markt-Platz, und zieht random(0, 2) nur für
     /// gesperrte Plätze aus dem gemeinsamen Strom <see cref="Random"/> (Datei 0x071CC–0x07202, Aufruf 0x071EC). [ORIGINAL] T03/A829
-    /// (Spur saison-geld; docs/analyse/re-abweichungen.md T03): Verfall, Sperre und Gebotsverfall stehen je Markt-Platz in einer
+    /// (Spur saison-geld; docs/archiv/analyse/re-abweichungen.md T03): Verfall, Sperre und Gebotsverfall stehen je Markt-Platz in einer
     /// Schleife (Datei 0x0719F–0x0727C, nur Manager 0, Datei 0x0718F); <c>random(0, 3)</c> (Datei 0x07215) fällt für jeden Platz,
     /// erst danach prüft das Original das offene Gebot (Datei 0x07227–0x07247) und löscht es bei 0. Bis Runde 25 erst Verfall und
     /// Sperren aller Plätze, dann ein Wurf je Gebot. Danach je Manager Heilung und Angebotswurf seiner Plätze (zweite Schleife ab
@@ -401,7 +401,7 @@ public sealed partial class GameState
     /// nach dem Tageswechsel 0x55204): Nach dem Laden läuft dieser Tageswechsel erneut (Datei 0x54D41 → 0x55073 → 0x55204, Zähler
     /// 218 = 15. April, Bild <c>file46_1</c>), die WM-Schleife steht dann einen Tag später und schließt zuletzt den 30. April ab.
     /// Der HOK-Import spielt diese Eigenheit des Ladens nach (Entscheidung Nutzer 09.11.2026, C; <c>GameState.LoadQuirk.cs</c>).
-    /// [ORIGINAL] A526 (docs/analyse/re-abweichungen.md F08, f08_sommerpause.py): je Kalendertag (0x367B1) und je Manager verschränkt
+    /// [ORIGINAL] A526 (docs/archiv/analyse/re-abweichungen.md F08, f08_sommerpause.py): je Kalendertag (0x367B1) und je Manager verschränkt
     /// Bau, Tagesabschluss und Heilung, dann der nächste Manager; die Bücher führen die Beträge in der neuen Saison (Datei 0x56476
     /// zählt die Saison vor der Schleife weiter, 3 → 4 vor der ersten Buchung). [APPROX] Die Börse rechnet wie im Hauptweg einmal
     /// je Tag nach dem letzten Manager (Entscheidung #188).

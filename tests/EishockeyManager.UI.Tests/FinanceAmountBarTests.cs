@@ -8,7 +8,7 @@ namespace EishockeyManager.UI.Tests;
 
 /// <summary>
 /// Spur geld, Teil 5 (G4; A312, A315, A316, F158): Betragsbalken em.exe Datei 0x58409 und Bedienung im Aufrufer Datei
-/// 0x58A57 (docs/analyse/re-geld.md, „Datei 0x58409 – Betragsbalken“).
+/// 0x58A57 (docs/archiv/analyse/re-geld.md, „Datei 0x58409 – Betragsbalken“).
 /// </summary>
 public class FinanceAmountBarTests
 {

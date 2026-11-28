@@ -147,7 +147,7 @@ Eingetragen wird nur aus der Ergebniseintragung em.exe 0x50283, und zwar für je
   Bundestrainer und Länderspiele hatten einen eigenen Schreibweg (#344).
 - Nur die Begegnungstabelle: Tabellenfelder, Serien und Tagesform schreibt 0x50283 weiter nur bei Code 7/8 (Datei 0x5030D).
   Pokal-, Play-off- und Aufstiegsrundenspiele (Code 6 bzw. 1, Datei 0x35E7C, 0x31AB7) ändern die Serien also nicht; das
-  Remake ruft `CountSeries` entsprechend nur aus Liga und WM-Gruppe (R11A-01, Runde 12, `WettbewerbeSpiel12Tests`).
+  Remake ruft `CountSeries` entsprechend nur aus Liga und WM-Gruppe (R11A-01, Runde 12, `SeriesSkaterRecountTests`).
 - `[APPROX]` Play-offs im Remake bei Gleichstand mit getrenntem Sieger (`Playoffs.cs`, Spur saisonwechsel): eingetragen wird
   dann der Gleichstand; im Original der Endstand nach Penaltyschießen.
 
@@ -366,7 +366,7 @@ Maße wie oben; „Wertefelder“ = die 12 Felder Einsatz/Angriff): ganz 00058 r
 
 Beleg: DOSBox `nur-weltkugel/26` (Modus 1 nach „auto“, vor dem ersten WM-Spiel: Einsatz/Angriff „AUTOM.“, alle Werte 0)
 und em.exe 0x8365 (`docs/dosbox-befunde.md`). Umsetzung `Core/Squad.Tactics.cs` (`Tactics.National`, `RecordAutoLine`,
-`Shown*`) und `Core/CupsNational.Tactics.cs`; Tests `NationalteamTests`.
+`Shown*`) und `Core/CupsNational.Tactics.cs`; Tests `NationalTacticsStartTests`.
 
 | Regel | Beleg |
 |---|---|
@@ -388,7 +388,7 @@ Bildschirmfotos: Ablauf `nationalteam-taktik` (`Tools/Scenarios/Nationalteam.cs`
 
 Belege: DOSBox `nur-weltkugel/06`, `17`, `20`, `21`, `24`; Videos `bundestrainer_00437`, `eisbaeren_f07_03843`;
 Disassembly (Fundstellen im Code und in `docs/reverse-engineering.md`, Abschnitt „Nationalteam, Welle 3“). Tests
-`Nationalteam2Tests` (Core und UI), Bildschirmfotos `cup-paarungen`, `wm-statistik` (`Tools/Scenarios/Nationalteam.cs`).
+`NationalTacticsLineTests` (Core), `NationalTeamWorldOnlyScreenTests` (UI), Bildschirmfotos `cup-paarungen`, `wm-statistik` (`Tools/Scenarios/Nationalteam.cs`).
 
 | Regel | Beleg |
 |---|---|
@@ -397,8 +397,8 @@ Disassembly (Fundstellen im Code und in `docs/reverse-engineering.md`, Abschnitt
 | `[ORIGINAL]` Tabellen → Tabelle WM = Seiten 11/12 des Seitenwählers (Gruppentabelle 0x2F5B6): nur der Knopf „Gruppe 2“/„Gruppe 1“ bei (237 \| 211), 57 × 12 (nur aus dem Menü), kein Knopf „Endrunde“ – die Endrundenspiele nur über Paarungen → WM; ein Linksklick außerhalb der Zeilen und des Knopfs bewirkt nichts, zurück mit Rechtsklick (A293, A294, Runde 13; `[APPROX]` Escape als Komfort) | Datei 0x2F625–0x2F690, 0x2FA2D–0x2FADC, 0x3AC84, Sprungtabelle 0x3ACCB |
 | `[ORIGINAL]` Europapokal: 0x2FC2F liest nur die WM-Tabellen (DGROUP 0xCED8/0xCDB8, 2 × 6 × 6 Byte); „Paarungen → Europapokal“ bleibt 0x31CD5 (`EuropeanCupScreen`, unverändert) | Datei 0x3004B, 0x30115 |
 | `[ORIGINAL]` WM-Statistik 0x3ADE1 (`WorldCupStatisticsScreen`): Punkte je Land Σ (9 − Platz) über die Plätze 1 … 8 aller WMs, Rangfolge per Tauschsortierung der WM-Reihenfolge (Gleichstand: WM-Reihenfolge, DOSBox 17); je WM eine Spalte mit der Flagge auf dem Platz; unten alle zwölf Länder in WM-Reihenfolge; kleine Flaggen kb\12 in Datenbankreihenfolge | Datei 0x3AE7C–0x3B3FF; DOSBox 17; Video `eisbaeren_f07_03843` (22/21/18/14/13/8/7/4 P. nach drei WMs) |
-| `[ORIGINAL]` WM-Geschichte: Das Original führt je Land die Platzierungen ab Feld 0x34 des Satzes DGROUP 0x8257 + 0x50 · Verein; Schreibstelle nach den Platzierungsspielen: Folge voll (16) → alle zwölf rücken nach vorn, die älteste WM entfällt; neues Byte 11 für alle, dann Plätze 1 … 8 aus den vier Platzierungsspielen. Das Remake hält je WM die Abschlussreihenfolge (`GameState.WorldCupRankings`, höchstens 16, die jüngsten; Spur `wettbewerbe-komplett` Teil 2, `WettbewerbeNationalteamTests`) | Datei 0x311CF–0x31351, 0x3B22F–0x3B245 |
-| `[ORIGINAL]` Klick auf eine Flagge (WM-Tabelle, Paarungsansicht, WM-Statistik) öffnet das Gegner-Fenster 0x128:0x2A mit Seite „Gesamt“ (`TeamInfoWindow`): Stärke, Bilanz der WM-Gruppenspiele, Bilanzzeichen, Serien, Rekorde (Höchster Sieg … Kassierte Tore) und die letzten zehn Ergebnisse gegen Deutschland (WM, Endrunde, Freundschaftsspiele); Spur `wettbewerbe-komplett` Teil 2, `GegnerFensterTests` | Datei 0x4D385, 0x2FA37, 0x302AA, 0x3B4AE |
+| `[ORIGINAL]` WM-Geschichte: Das Original führt je Land die Platzierungen ab Feld 0x34 des Satzes DGROUP 0x8257 + 0x50 · Verein; Schreibstelle nach den Platzierungsspielen: Folge voll (16) → alle zwölf rücken nach vorn, die älteste WM entfällt; neues Byte 11 für alle, dann Plätze 1 … 8 aus den vier Platzierungsspielen. Das Remake hält je WM die Abschlussreihenfolge (`GameState.WorldCupRankings`, höchstens 16, die jüngsten; Spur `wettbewerbe-komplett` Teil 2, `WorldCupPlacementsTests`) | Datei 0x311CF–0x31351, 0x3B22F–0x3B245 |
+| `[ORIGINAL]` Klick auf eine Flagge (WM-Tabelle, Paarungsansicht, WM-Statistik) öffnet das Gegner-Fenster 0x128:0x2A mit Seite „Gesamt“ (`TeamInfoWindow`): Stärke, Bilanz der WM-Gruppenspiele, Bilanzzeichen, Serien, Rekorde (Höchster Sieg … Kassierte Tore) und die letzten zehn Ergebnisse gegen Deutschland (WM, Endrunde, Freundschaftsspiele); Spur `wettbewerbe-komplett` Teil 2, `NationOpponentWindowTests`, `OpponentWindowWorldCupTests` | Datei 0x4D385, 0x2FA37, 0x302AA, 0x3B4AE |
 | `[APPROX]` Gegner-Fenster: dritter Knopf (Einschätzung des Gegners) fehlt, das Gesicht neben der Flagge bleibt gelb, „Tore / Spiel“ als Tore · 10 / Spiele; die Zeile „Historische Ergebnisse“ steht immer (Original: nur bei Wettbewerbscode 0, also nicht nach Freundschaftsspielen desselben Tages). Vereinsfenster aus der Infoleiste: `ClubInfoWindow` (Runde 12, UM-2; „Spielplan“ ohne Wirkung, Rekorde der Vereine noch nicht eingetragen); aus „Stärken“ nicht angeschlossen | Datei 0x4D4EE, 0x4DD81 |
 | `[ORIGINAL]` R8-B04: Ohne Bundestrainer schreibt die Spielvorbereitung die Anzeige „AUTOM.“ unabhängig von den Modi (Vereinsfeld 0x16 Deutschlands = 0; Ernennung setzt 6) | Datei 0x842B, 0x5540E, 0x55494, 0x55752 |
 | `[ORIGINAL]` Hinweiszeile der Nationalaufstellung = Hinweiszeile 0x41683 der Vereinsaufstellung (Aufruf 0x40845; R8W3-06) | Datei 0x40364, 0x40845 |
@@ -580,7 +580,7 @@ Abschnitt [Pixelvergleich Runde 6](#pixelvergleich-runde-6-spur-pixel-wettbewerb
 Verlängerungsmarke (zwei Punkte).
 
 **Pixelvergleich (Spur `ui-rest`, Runde 17)** – Verfahren wie unten (Runde 6), Mauszeiger maskiert; Abläufe `pixel-playoff`,
-`pixel-aufstieg` (`Tools/Scenarios/UiRestVideo.cs`):
+`pixel-aufstieg` (`Tools/Scenarios/PlayoffAufstiegVideo.cs`):
 
 | Bildschirm | Vorlage | Abweichung / > 40 | pegelbereinigt |
 |---|---|---|---|

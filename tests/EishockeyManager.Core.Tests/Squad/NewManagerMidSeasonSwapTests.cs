@@ -9,7 +9,7 @@ namespace EishockeyManager.Core.Tests;
 /// #847 Gegenprobe (Spur abgleich-dosbox-19, Teil 3): Neuer Manager mitten in der Saison gegen die DOSBox-Aufnahme `runde-19`
 /// Sitzung 3. FILE64 (20.09.1993, ein Manager „Joerg“ mit KÖLNER EC) → „Neuer“: „Spieler2“ mit EC HANNOVER (vorher 2. Liga),
 /// Start-Liga Bundesliga → FILE65 (zwei Manager). Laut Bildern <c>file65_1/2</c> → <c>file65_5/6</c> tauschte Hannover mit
-/// EISBÄREN BERLIN (Bundesliga Platz 12 ↔ 2. Liga Platz 3). Bericht: <c>docs/analyse/abgleich-dosbox.md</c> §6.
+/// EISBÄREN BERLIN (Bundesliga Platz 12 ↔ 2. Liga Platz 3). Bericht: <c>docs/archiv/analyse/abgleich-dosbox.md</c> §6.
 /// </summary>
 public class NewManagerMidSeasonSwapTests(ITestOutputHelper output)
 {

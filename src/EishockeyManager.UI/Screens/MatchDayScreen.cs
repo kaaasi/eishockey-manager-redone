@@ -35,7 +35,7 @@ public sealed class MatchDayScreen : Screen
     /// sie fest auf 1/3 s (20 Bilder bei 60 Hz, ≈ 6 BIOS-Takte), ein Spieltag damit ≈ 20 s. Messwert DOSBox `runde-19`
     /// (Sitzung 2, DOSBox 0.74-3, `cycles=fixed 3000`, FILE05, Spieltag ohne Pause von Minute 1 bis 60 handgestoppt): 15,9 s
     /// bei Geschwindigkeit 70 (acht Pinguine), 20 s mit der Lampe „Schnelldurchlauf“ (ebenfalls 70), also 0,27–0,33 s je Minute
-    /// (<c>docs/analyse/abgleich-dosbox.md</c> §5). Im Original hängt der Wert von der Rechenleistung (Zyklen) ab; 1/3 s
+    /// (<c>docs/archiv/analyse/abgleich-dosbox.md</c> §5). Im Original hängt der Wert von der Rechenleistung (Zyklen) ab; 1/3 s
     /// entspricht der gemessenen Obergrenze. Klick, Enter oder Esc überspringen.
     /// </summary>
     public const int FramesPerMinute = 20;
@@ -268,7 +268,7 @@ public sealed class MatchDayScreen : Screen
     public const byte ProgressFill = 3;
 
     /// <summary>
-    /// „Spiele laufen“ ohne Live-Anzeige (em.exe Datei 0x37B82–0x37C5C, <c>docs/analyse/re-livespiel.md</c> §1 Schritt 2): Text,
+    /// „Spiele laufen“ ohne Live-Anzeige (em.exe Datei 0x37B82–0x37C5C, <c>docs/archiv/analyse/re-livespiel.md</c> §1 Schritt 2): Text,
     /// Kasten (3 | 183)–(123 | 218) und die Spieluhr 0x51E90 mit Stil 1 (Datei 0x37C44–0x37C56: Stil 1 ohne Anzeige); am
     /// Minutenende zeichnet 0x52BD6 ohne Anzeige nur die Uhr neu (§1 Schritt 5).
     /// </summary>

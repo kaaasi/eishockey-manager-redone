@@ -3,7 +3,7 @@ using EishockeyManager.Formats;
 namespace EishockeyManager.Core;
 
 /// <summary>
-/// Automatische Aufstellung des Originals (A068, A165, A169; <c>docs/analyse/re-nachtrag.md</c> §3, Review #446).
+/// Automatische Aufstellung des Originals (A068, A165, A169; <c>docs/archiv/analyse/re-nachtrag.md</c> §3, Review #446).
 /// </summary>
 /// <remarks>
 /// <list type="bullet">

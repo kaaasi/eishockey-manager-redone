@@ -261,9 +261,9 @@ dem Hauptmenü zusammen mit 0x31CD5).
 
 **Umsetzung:** `EuropeanCupScreen` (`ShownGames`, `ShowsResult`, `ShowsDate`, `Cell`, `Standings`, Ansicht mit `GroupLive`),
 `PromotionRoundPage.Of(game, group, live)`, `LivePageScreens` (Fall Aufstiegsrunde und Europapokal, zweite Aufstiegsgruppe in
-`For`, Ansicht der Europapokalseite). Tests `LiveSeitenRestTests` (Regeln aus der Nachbildung, Aufstiegstag mit beiden Gruppen,
+`For`, Ansicht der Europapokalseite). Tests `LiveSeitenAufstiegEuropapokalTests` (Regeln aus der Nachbildung, Aufstiegstag mit beiden Gruppen,
 Gruppe mit laufendem Termin, Endrunde ab Termin 7, Europapokal-Termin im Live-Spiel) und `PixelWettbewerbeTests` (PW-04).
-Bildschirmfotos: Ablauf `live-aufstieg-europapokal` (`Tools/Scenarios/LiveSeitenRest.cs`), Vergleich mit `eisbaeren_f51_03346` und
+Bildschirmfotos: Ablauf `live-aufstieg-europapokal` (`Tools/Scenarios/LiveSeitenAufstiegEuropapokal.cs`), Vergleich mit `eisbaeren_f51_03346` und
 `eisbaeren_f58_01323` (Fenster nach Verschiebung um (−0,25 | +0,5) und Unschärfe: mittlere Abweichung 7,3 bzw. 8,0 Graustufen,
 5 bzw. 0 Pixel über 60).
 

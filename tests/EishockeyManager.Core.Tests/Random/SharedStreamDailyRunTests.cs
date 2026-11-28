@@ -34,7 +34,7 @@ public class SharedStreamDailyRunTests
         var day = game.CurrentDay;
         // Spur saison-geld (T03/A829, R15-E2 = C): Ohne Sperre, ohne Gebote und ohne eigene Markt-Plätze zieht der Markt-Teil je
         // Platz random(0, 3) (Datei 0x07215, vor der Prüfung des Gebots Datei 0x07227); bis Runde 25 hier „zieht nichts“ (widerlegt,
-        // docs/analyse/re-abweichungen.md T03). Die Probe rechnet den Verfallswurf je Platz mit.
+        // docs/archiv/analyse/re-abweichungen.md T03). Die Probe rechnet den Verfallswurf je Platz mit.
         var plain = Copy(game.Random);
         foreach (var _ in twin.TransferMarket.Listings)
             TransferRules.Random16(plain, 0, 3);

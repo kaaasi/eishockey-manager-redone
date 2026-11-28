@@ -6,7 +6,7 @@ namespace EishockeyManager.Core.Tests;
 
 /// <summary>
 /// Spur saison-geld Teil 3 (Runde 25): Aufräumkonzept K11 (Rollenwert Pool +0x18 als ein Feld für Export und Torwürfe) und K13
-/// (eine Platzwahl für Spielstart und Hinzufügen, Datei 0x29C3B–0x29CF7). Belege: docs/analyse/re-abweichungen.md K11/K13,
+/// (eine Platzwahl für Spielstart und Hinzufügen, Datei 0x29C3B–0x29CF7). Belege: docs/archiv/analyse/re-abweichungen.md K11/K13,
 /// <c>k11_rollenwert.py</c>, <c>k13_platzwahl.py</c>. K11-Tests gegen den Stand 3910fd6 rot (Export 30/70, Torwürfe 33/83 fest).
 /// </summary>
 public class RoleValuePoolTests

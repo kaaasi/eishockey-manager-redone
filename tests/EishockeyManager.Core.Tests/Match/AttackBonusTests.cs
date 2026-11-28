@@ -3,7 +3,7 @@ using EishockeyManager.Core;
 namespace EishockeyManager.Core.Tests;
 
 /// <summary>
-/// Review-Befunde der Integration Runde 7 (<c>docs/reviews/2026-10-30-integration-runde-7.md</c>), unabhängig von den
+/// Review-Befunde der Integration Runde 7 (<c>docs/archiv/reviews/runde-7/2026-10-30-integration-runde-7.md</c>), unabhängig von den
 /// Konstanten des Produktcodes.
 /// </summary>
 public class AttackBonusTests

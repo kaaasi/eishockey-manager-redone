@@ -6,7 +6,7 @@ namespace EishockeyManager.UI.Tests;
 
 /// <summary>
 /// Spur ui-meldungen, Teil 1 (M-K1, M-K2, Inventur Nr. 9): Meldungs- und Fragefenster em.exe Datei 0x4C246 und
-/// Kurzmeldung Datei 0x0C0B8 (<c>docs/analyse/re-meldungen.md</c> §B, §C). Pixelwerte am Video 3:46 vermessen
+/// Kurzmeldung Datei 0x0C0B8 (<c>docs/archiv/analyse/re-meldungen.md</c> §B, §C). Pixelwerte am Video 3:46 vermessen
 /// (<c>oberflaeche_0346</c>, Frage der DEB-Pokal-Auslosung); die Lage ist dort für alle Elemente auf 0 | 0 genau.
 /// </summary>
 public class OriginalDialogTests

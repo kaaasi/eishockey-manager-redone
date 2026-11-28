@@ -15,7 +15,7 @@ public readonly record struct GoalSceneObject(byte Unused, byte Figure, int X, i
 public sealed record GoalSceneFrame(byte Camera, byte Puck, byte Unused, byte Sound, IReadOnlyList<(byte Figure, byte Move)> Objects);
 
 /// <summary>
-/// Torszene <c>tore\*</c> (Spur livespiel-kern, Teil A4; <c>docs/analyse/re-livespiel.md</c> §11, <c>dateiformate.md</c>).
+/// Torszene <c>tore\*</c> (Spur livespiel-kern, Teil A4; <c>docs/archiv/analyse/re-livespiel.md</c> §11, <c>dateiformate.md</c>).
 /// [ORIGINAL] Gelesen aus dem Szenenstart <c>48h:5250h</c> und dem Bildschritt <c>48h:5316h</c>, Abspieler Datei 0x56CDA–0x56DC3:
 /// alle Wörter Big-Endian; +0x00 „TOR!“ (nicht geprüft), +0x04/+0x06 Kamera, +0x08/+0x0A Puck, ab +0x0C zwölf Objekte zu 6 Byte
 /// (Byte 0, Figur, x, y), ab +0x54 Bilder zu 28 Byte bis zum Wort 0xAAAA.
@@ -151,7 +151,7 @@ public readonly record struct GoalSceneCounts(int Normal, int Penalty, int SixSk
 public readonly record struct GoalSceneFigureSource(int Graphic, int Index, int Size);
 
 /// <summary>
-/// Figuren der Torszene (Spur torszenen, Teil C1; <c>docs/analyse/re-livespiel.md</c> §16).
+/// Figuren der Torszene (Spur torszenen, Teil C1; <c>docs/archiv/analyse/re-livespiel.md</c> §16).
 /// [ORIGINAL] Zeichnen eines Objekts <c>48h:4FE7h</c> = Datei 0x129D7–0x12AA8 (Grafiksegment 0BBF): Figur 0/1 → 5 × 5 Pixel aus
 /// dem Code-Segment (<c>cs:0x54</c> bzw. <c>cs:0x6D</c>, Zeilenlänge 5); Figur 2 … 41 → Zeiger <c>cs:0x44</c>, 42 … 81 →
 /// <c>cs:0x48</c>, 82 … 93 → <c>cs:0x4C</c>, je Bild 1 024 Byte (Index · 0x400, Zeilenlänge 0x20); Figur ≥ 94 zeichnet nichts.

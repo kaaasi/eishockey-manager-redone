@@ -3,7 +3,7 @@ using EishockeyManager.Formats;
 
 namespace EishockeyManager.Core.Tests;
 
-/// <summary>Befunde PR35-01 und PR35-02 aus docs/reviews/2026-10-26-pr35-review.md.</summary>
+/// <summary>Befunde PR35-01 und PR35-02 aus docs/archiv/reviews/runden-1-2/2026-10-26-pr35-review.md.</summary>
 public class LoanReturnInvalidBidTests
 {
     /// <summary>

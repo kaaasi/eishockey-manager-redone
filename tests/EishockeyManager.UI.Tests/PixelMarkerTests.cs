@@ -10,7 +10,7 @@ namespace EishockeyManager.UI.Tests;
 
 /// <summary>
 /// Spur pixel-marker Teil 1: R-K2 (Datei 0x4CCB4), R-K3 (0x35D5D), R-K4 (0x2A6A2), R-K5 (0x28030).
-/// Vorlage ist die Disassembly von em.exe (<c>docs/analyse/re-rest.md</c>), nicht das Videobild.
+/// Vorlage ist die Disassembly von em.exe (<c>docs/archiv/analyse/re-rest.md</c>), nicht das Videobild.
 /// </summary>
 public class PixelMarkerTests
 {

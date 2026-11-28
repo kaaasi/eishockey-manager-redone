@@ -413,7 +413,7 @@ public class NationalValuesDayOrderTests
     /// <summary>
     /// #595 (R13RD-04): [ORIGINAL] DOSBox FILE20 → FILE21 (Saisonwechsel): Felder 0x18–0x1B Deutschlands bleiben, die Form
     /// 0x1C/0x1D wird wie bei allen Plätzen neu gewürfelt (große Wanderung 0x56448, Modus 10). Ablauf aus dem Review
-    /// (docs/reviews/2026-11-04-integration-nationalteam-r13.md, Abschnitt 3): „nur Weltkugel“, nur ein Stürmer 88/96/57 →
+    /// (docs/archiv/reviews/runde-13/2026-11-04-integration-nationalteam-r13.md, Abschnitt 3): „nur Weltkugel“, nur ein Stürmer 88/96/57 →
     /// (0, 0, 9, 10); nach <c>StartNextSeason</c> weiter (0, 0, 9, 10), Form 45 … 55. Der erste Tag nach der neuen Ernennung
     /// (Kader leer) schreibt nichts ([APPROX] in <c>UpdateNationalTeamValues</c>).
     /// </summary>

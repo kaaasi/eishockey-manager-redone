@@ -249,6 +249,107 @@ Dazu 8 D-Themen mit 26 IDs (Abschnitt 4).
 | C11 | Spielrechnung: Feldspielerzahl zu Beginn | A548 | K 1 | Die Feldspielerzahl beginnt bei 2 und 3 statt beim Stand der letzten Neuzählung. | nein | S | bleibt | Leser vor der ersten Neuzählung nicht gefunden. | |
 | C12 | Spielvorbereitung: Erweiterungen | A055, A172, A480, A557 | E 4 | Zufallswahl nach Start-Stärke, Schalter DEB-Pokal, Pflicht von Kopf und Verein für neue Manager, Start-Liga je Manager. | ja | S | bleibt | Remake-Erweiterung (Zufallswahl des Vereins, Testschalter); A480 Fehler des Originals (R21-E1 = A). | |
 
+### Nachtrag: Klasse-E/K-Marker ohne Thema (#1024 P3-2)
+
+Marker, die nach dem Stand `e0b0ea5` (Runde 25–27) neu hinzukamen und in keinem Thema oben stehen. Stand: `markerliste.py` nach Runde 27 (Aufräumen, A6 = A). Kein Vorschlag „ändern“; die Klasse gilt wie in der Restliste, Entscheidung wie dort (E = bewusst, K = kosmetisch). Die Vollliste im Anhang bleibt auf `e0b0ea5`.
+
+**Bedienung/Pixel**
+
+| ID | Klasse | Thema | Abweichung |
+|---|---|---|---|
+| A974 | K | Nationalaufstellung: Reihenwerte für das Land des Bundestrainers | Die Reihenwerte der Anzeige rechnet das Remake für das Land des Bundestrainers über +0x15 wie das Spiel; den Spielerweg 0x98F8 hat die Anzeige nicht eigens nachgebildet. |
+| A975 | K | Bilanzzeichen der Vereine: Ableitung aus den Ligaergebnissen | Das Remake führt die Zeichen nicht als Teamsatz, sondern leitet sie aus den Ligaergebnissen der Saison ab (dieselbe Menge wie Code 7); der Zeitpunkt des Leerens ist nicht nachgebildet. |
+| A994 | K | Vereinsfenster: Leeren des Teamsatzes | Wann das Original den Teamsatz leert, ist nicht nachgebildet; das Remake nimmt die Ergebnisse der laufenden Saison. |
+| A995 | E | Spielplanfenster: Esc schließt | Esc schließt wie der Rechtsklick (Komfort des Remakes). |
+| A997 | E | Pokal-Paarungen: Rechtsklick und Esc | Rechtsklick und Esc kehren ins Menü zurück; gedrückte Pfeile werden nicht gezeigt. |
+| A998 | K | DEB-Pokalspiele: Seite 2 statt Seite 0/1 | Das Fenster zeigt Seite 2 (Gesamt) statt Seite 0/1 wie die Play-off-Spiele; eine Taste führt als Komfort zurück. |
+| A1001 | E | WM-Bildschirm: Escape | Escape führt als Komfort des Remakes zurück. |
+| A1002 | E | Hauptmenü: Escape wählt ab | Escape wählt als Komfort des Remakes ab. |
+| A1003 | E | Vereinsstatistik: Klick schließt, Escape | Das Original kehrt nach dem Zeichnen ins Menü zurück; im Remake schließt ein Klick, Tasten nicht, Escape als Komfort. |
+| A1004 | E | Fairplay: Escape schließt | Escape schließt als Komfort des Remakes (Tasten schließen nicht). |
+| A1005 | E | Bestenliste: Escape | Escape führt als Komfort des Remakes zurück (Tasten schließen nicht). |
+| A1006 | K | Historie: Europacup-Stufen | Stufe Gruppe 1, Endrunde 2 sind aus dem Code erschlossen. |
+| A1007 | K | Historie: DEB-Pokal „nicht im Wettbewerb“ | Kein Balken; das Original füllte 90 Pixel über die Achse hinaus (Nachbildung y1 = −14); im Spiel nicht beobachtet. |
+| A1008 | E | Spielerstatistik: rechte Maustaste | Die rechte Maustaste schließt als Komfort des Remakes. |
+| A1009 | K | Taktik im Spiel: Satz schreiben | Im Spiel führt das Remake Einsatz und Angriff in LiveTeam, das Spielende schreibt 0x26 neu; das Original schreibt denselben Satz beim Verlassen. |
+| A1020 | K | Ligapaarungen: Mindestbreite der Zahlen | Für die erste Seite gilt Breite 1; die Tabellen vor den Seiten der Minute 60 (0x50B45, 0x51049, 0x052CF) sind nicht bis in alle Unteraufrufe verfolgt. |
+| A1021 | K | Aufstiegsrunde im Spiel: Knöpfe „Liga“ | Die Knöpfe „Liga“ öffnen die Ligapaarungen ohne Minute; das Original ruft Seite 7 mit der Minute. |
+| A1032 | E | Penalty-Bildschirm: Escape | Escape führt als Komfort des Remakes zurück (das Original wartet auf einen Mausklick, 38h:118h, 0x0B908). |
+
+**Finanzen**
+
+| ID | Klasse | Thema | Abweichung |
+|---|---|---|---|
+| A1011 | K | Stadionschäden: Zahlenausgabe | Die Mindestbreite DGROUP 0x374 der Zahlenausgabe (fehlende Stellen als „%“) hängt im Original vom zuletzt gezeichneten Bildschirm ab; das Remake druckt die Zahl ohne Auffüllen. |
+| A1012 | K | Stadionschäden: Plätze unter 100 | Das Original zieht im 16-Bit-Wort ab und läuft unter 100 Plätzen über; das Remake hält bei 0. |
+
+**Kader/Transfer**
+
+| ID | Klasse | Thema | Abweichung |
+|---|---|---|---|
+| A976 | K | Platztausch beim Hinzufügen: alle Sätze ausgeschlossen | Das Original zöge endlos; das Remake gibt null zurück. Mit 12 Sätzen je Liga und höchstens vier Managern nicht erreichbar. |
+| A981 | K | Rollenwert: Spieler ohne Poolplatz | Spieler ohne Poolplatz (Computerkader, Talente) und Stände vor Schema 65 haben keinen gewürfelten Rollenwert; es gilt die Mitte der Spanne ohne Zufall (ein Wurf verschöbe den gemeinsamen Strom). |
+| A982 | K | Rollenwert: Mitte der Spanne | Torhüter 0, Verteidiger 33, Stürmer 83 für Spieler ohne Poolplatz. |
+| A989 | K | Aufstellungsgitter: siebter Feldspieler | Zeigt das Gitter den sechsten in einer Sturmzelle, öffnet das Original den Platz erneut und stellt einen siebten Feldspieler ein; das Remake meldet „Kein Platz mehr !“. |
+| A990 | K | Nationalaufstellung: Ableitung statt Gitter | Die Nationalaufstellung (außerhalb der Dateigrenze von `aufstellung`) nutzt weiter die Ableitung; verschieden nur, wenn in Reihe 1 nach dem Öffnen ein Stürmer herausgenommen wird. |
+| A991 | E | Computervereine: Aufstellung nach Spielwert | Das Original führt für Computervereine keine Kaderplätze; das Remake ergänzt die Aufstellung nach Spielwert. |
+| A992 | K | Von Hand eingesetzter Spieler mit alter Reihe | Setzt man einen Spieler mit +0x15 von Hand ein, zählt ihn das Original in seiner alten Reihe mit (Datei 0x54918); im Remake bleibt er Ersatz. |
+
+**Laden/Speichern**
+
+| ID | Klasse | Thema | Abweichung |
+|---|---|---|---|
+| A996 | K | Wettbewerbscode nach dem Laden | Nach dem Laden gilt Code 0; das Original behält das globale Byte. |
+| A999 | K | Europapokal-Seiten: Stand nach dem Laden | Nach dem Laden beginnt die Seite mit dem Startwert; das Original behält das globale Byte. |
+
+**Live-Spiel**
+
+| ID | Klasse | Thema | Abweichung |
+|---|---|---|---|
+| A979 | K | Abrechnung anderer Länderspiele im Liga-Feld | Freundschaftsspiele (Code 0xD) rechnet das Remake am Spielende im Liga-Feld ab (CreditLineup). |
+| A980 | K | Strafbank: Zustand nach Spielende | Was nach dem Spiel mit +0x0D/Bit 0 eines bei Spielende noch Bestraften geschieht (Abzug 0x5490C, Löschen 0x551D4–0x551E0), bildet das Remake nicht ab; nach dem Spiel ist niemand auf der Strafbank. |
+| A1000 | K | K.-o.-Seite der WM: Anzeige im Spielablauf | Die Anzeige im Spielablauf („60.Minute“) gibt es noch nicht; eine Taste führt als Komfort zurück. |
+| A1013 | E | Darstellung 2: Rückfall bei zu wenig Speicher | Das Original fällt bei zu wenig Speicher (Abspieler Modus 1 gibt 0 zurück) auf den Live-Bildschirm zurück; das Remake baut Darstellung 2 immer auf. |
+| A1014 | K | Darstellung 2: fehlende Szenen-Dateien | Der Spielkern prüft nicht, ob die Szenen-Dateien (tore\\) vorhanden sind; ohne sie läuft er wie mit Dauer-Eisfeld. |
+| A1015 | E | Minutenweg je Tag oder je Paarung | Das Original entscheidet den Weg je Tag (Merker 0x36FEA), das Remake je Paarung. |
+| A1016 | K | Pokaltermine: Meldung ohne Reihe | An Pokalterminen rechnet das Remake die Paarungen nacheinander und legt die Meldung markierter Paarungen ohne Reihe vorsorglich in der Reihenliste ab; angezeigt wird sie nur mit Reihe. |
+| A1017 | K | Penaltyschießen: getrennte Penaltytore | Das Remake führt die Penaltytore getrennt (ShootoutGoals), der Spielstand bleibt der Gleichstand. |
+| A1018 | E | Penaltyschießen: Torschütze 0x541D9 | Der Torschütze 0x541D9 zieht im Original nach dem Penaltyschuss weiter; das Remake zieht dort nichts. |
+| A1022 | K | Torszene: mehr als vier zugesehene Paarungen | Das Remake nimmt die letzte Paarung mit Anzeigereihe (höchstens vier); mehr zugesehene Paarungen verhindert im Original die Grenze in 0xAE2B. |
+| A1023 | K | Schneller Pokalweg: Tormeldung | Paarungen des schnellen Pokalwegs rechnet das Remake nach der Minutenschleife; ihre Tore meldet der Live-Bildschirm nicht. |
+| A1024 | K | Live-Bildschirm: Tafel nach Neuaufbau | Die Tafel zeigt in Minute n den Stand von n − 1 weiter; das Original zeichnet nach dem Neuaufbau 0x5353C bis zum Ende von Minute n + 1 keine Tafel. |
+| A1025 | K | Darstellung 2 ohne Szenen-Dateien: Anzeige | Ohne Szenen-Dateien (tore\\) zeigt das Remake den Live-Bildschirm wie bei Darstellung 1; das Original kennt nur den Rückfall bei zu wenig Speicher. |
+| A1026 | K | Darstellung 2 ohne Szenen-Dateien: Kern | Der Spielkern prüft nur die Option: ohne tore\\ zieht er trotz Reporter und Eingriffsmenü keinen Strafgrund und setzt „Manager am Zug“ wie ohne Live-Anzeige; das Original setzt beim gescheiterten Aufbau 0x5A56 = 1. |
+| A1028 | K | Eingriffsmenü: Mausabfrage je Bild | Das Remake fragt die Maus je Bild zwischen zwei Minuten ab, das Original je Managerpaarung unmittelbar vor deren Rechnung; die Wirkung ist gleich (0x38D96 zieht keinen Zufall), nur die schon sichtbaren Meldungen der Minute unterscheiden sich. |
+| A1029 | K | Seiten im Spiel: Merker 0x5A55 | DGROUP 0x5A55 = 1 nur mit Anzeige und Darstellung 2 (Datei 0x37112, 0x37227); ob die Torszene 0x567C8 dabei abbricht (Datei 0x37168), bleibt unberücksichtigt. |
+| A1030 | K | Penalty-Bildschirm: Darstellung 1/2 | Der Penalty-Bildschirm mit Darstellung 1/2 (eigenes Eis, T7) ist im Live-Bildschirm-Aufbau 0x5353C (Grafiklader 0xC17D setzt 0x374 = 1, Datei 0x0C1A1) nicht verfolgt. |
+| A1033 | K | Penaltyschießen Darstellung 1/2 ohne tore\\: Aufbau | Ohne tore\\ nimmt das Remake bei Darstellung 1/2 den Weg von Darstellung 0 (nur Pause 80 je Schuss); das Original baut 0x5353C(1, 0) und spielt je Schuss Pause 30, Abspieler 0x567C8 Modus 0, Pause 20. |
+| A1034 | K | Penaltyschießen Darstellung 1/2 ohne tore\\: Pausen | wie A1033 (Kommentar an der Stelle des Ablaufs) |
+
+**Tages-/Saisonwechsel**
+
+| ID | Klasse | Thema | Abweichung |
+|---|---|---|---|
+| A978 | E | Börse einmal je Tag nach dem letzten Manager | Die Börse rechnet im Hauptweg einmal je Tag nach dem letzten Manager. |
+| A986 | E | Ligamischung am 29. April: lrandom nicht nachgebaut | Die Folge von lrandom ist nicht genau nachgebaut (N3 = B). |
+| A987 | K | Spielstand vom Bildschirm „Saisonende“ vor Runde 25 | Ein vor Runde 25 gesicherter Stand vom Bildschirm „Saisonende“ verliert für diesen einen Saisonwechsel die Wanderung. |
+| A988 | K | Oberliga-Zug in alten Ständen | Spielstände aus der Zeit zwischen 13. und 29. April vor Runde 25 haben schon gezogen; dann nicht erneut. |
+
+**Werkzeuge**
+
+| ID | Klasse | Thema | Abweichung |
+|---|---|---|---|
+| A1035 | E | Bildschirmfoto-Ablauf Verein und Bundestrainer | Der Ablauf ernennt den Manager am ersten WM-Tag zum Bundestrainer, weil sonst kein Zug des Bundestrainers anläuft. |
+
+**Wettbewerbe**
+
+| ID | Klasse | Thema | Abweichung |
+|---|---|---|---|
+| A977 | E | Neuer Manager ohne Vereinswahl: kein Tausch | Ein zufällig zugeteilter Verein tauscht nicht in die Start-Liga (wie beim Spielstart); die Zufallszuteilung ist eine Erweiterung des Remakes. |
+| A983 | K | Play-off-Marken: eine Marke des schnellen Wegs | Die eine Marke des schnellen Wegs (Zusatzwurf der ersten offenen Paarung) bildet das Remake nicht nach. |
+| A1010 | K | Europapokal: zwei Gruppen eines Termins | Das Remake ruft die Gruppen eines Termins je Gruppe auf, das Original rechnet sie in einer Schleife. |
+| A1019 | K | Aufstiegsrunde: zwei Gruppen eines Termins | Das Remake rechnet die Aufstiegsrunde getrennt von den Play-off-Paarungen des Termins, das Original in einer Schleife (Maske 0xC). |
+
 ## 4. Klasse D – wartet auf DOSBox
 
 Diese Einträge sind nur mit einer DOSBox-Aufnahme oder einem Video zu belegen (Vormerkung „DOSBox-Aufnahme `runde-22` Sitzungen 2–6 und 7“, [vorlagen/dosbox-aufnahme.md](../vorlagen/dosbox-aufnahme.md)). Kein Vorschlag vor der Aufnahme; danach ordnet die Auswertung sie als „wie im Original“ (kein Eintrag mehr) oder als neues Thema hier ein.

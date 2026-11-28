@@ -4,7 +4,7 @@ using EishockeyManager.Tests.Support;
 namespace EishockeyManager.Core.Tests;
 
 /// <summary>
-/// #859 (Review <c>docs/reviews/2026-11-14-neuer-manager.md</c> P3-1): Der Zufallsplatz eines neuen Managers schließt die
+/// #859 (Review <c>docs/archiv/reviews/runde-19/2026-11-14-neuer-manager.md</c> P3-1): Der Zufallsplatz eines neuen Managers schließt die
 /// deutschen Europapokal-Teilnehmer aus ([ORIGINAL] Datei 0x29CCC, 0x45CD0(r, 1): Zeile 1 der Tabelle DGROUP 0x5CFB). In
 /// <see cref="NeuerManagerTests"/> führt Manager 0 den Verein 2, der zugleich einziger deutscher Teilnehmer ist – dort fällt der
 /// Ausschluss mit dem Managerausschluss zusammen. Hier führt Manager 0 Verein 5; Verein 2 (Deutscher Meister zu Spielbeginn,

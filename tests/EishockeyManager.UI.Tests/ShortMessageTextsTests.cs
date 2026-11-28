@@ -5,7 +5,7 @@ namespace EishockeyManager.UI.Tests;
 
 /// <summary>
 /// Spur ui-meldungen Teil 3 (UM-4): Bausteine der Kurzmeldungen 0x0C0B8, deren Aufrufer in fremden Bildschirmen sitzen
-/// (<c>docs/analyse/re-runde-12.md</c> „UM-4“). Vorher gab es die Texte im Remake nicht als Kurzmeldung.
+/// (<c>docs/archiv/analyse/re-runde-12.md</c> „UM-4“). Vorher gab es die Texte im Remake nicht als Kurzmeldung.
 /// </summary>
 public class ShortMessageTextsTests
 {

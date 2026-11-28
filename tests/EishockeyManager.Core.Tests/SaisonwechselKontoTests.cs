@@ -3,7 +3,7 @@ using EishockeyManager.Core;
 namespace EishockeyManager.Core.Tests;
 
 /// <summary>
-/// Spur saisonwechsel, Teil 3 (E5/S-K1): Konto am 29. April. [ORIGINAL] Datei 0x5629D–0x562DE (docs/analyse/re-runde-12.md,
+/// Spur saisonwechsel, Teil 3 (E5/S-K1): Konto am 29. April. [ORIGINAL] Datei 0x5629D–0x562DE (docs/archiv/analyse/re-runde-12.md,
 /// „E5“): genau drei Bedingungen – Verein unter den letzten zwei der Oberliga (Gruppe 2, Datei 0x562C6), Verein eines
 /// Managers (+0x16 ≠ 0), kein Zwangsabstieg (Bit 0x04). Keine Kontoprüfung: hohes Guthaben wird auf 400.000 DM gekürzt,
 /// Schulden werden gehoben; Bundesliga und 2. Liga nie.

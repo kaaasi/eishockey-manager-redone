@@ -6,7 +6,7 @@ using EishockeyManager.UI.Screens.Competitions;
 namespace EishockeyManager.UI.Screens.Live;
 
 /// <summary>
-/// Anzeigeteil der Torszene 0x53C57 (Spur torszenen, Teil C3; Datei 0x53DCA–0x5406A, <c>docs/analyse/re-livespiel.md</c> §16):
+/// Anzeigeteil der Torszene 0x53C57 (Spur torszenen, Teil C3; Datei 0x53DCA–0x5406A, <c>docs/archiv/analyse/re-livespiel.md</c> §16):
 /// ruft für eine Chance (Art 0/1) den Abspieler <see cref="GoalSceneScreen"/> mit der Szene, die der Spielkern gewählt hat
 /// (<see cref="LiveScoreboardRow.Scenes"/>, R18-D3 = A). Reine Anzeige: kein Zug, kein Spielwert (<c>AGENTS.md</c> §4).
 /// <list type="bullet">

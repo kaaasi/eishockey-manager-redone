@@ -8,7 +8,7 @@ namespace EishockeyManager.Core.Tests;
 /// <summary>
 /// #730 (Spur abgleich-dosbox-19, Teil 1, Fortsetzung 1; R19-E4 = A): Belastungstreffer des Managervereins an Spieltag 2 gegen
 /// fünf unabhängige Läufe des Originals. DOSBox `runde-19` Sitzung 4: FILE50 fünfmal geladen, Spieltag 2 (EC RATINGEN – KÖLNER
-/// EC) ohne Mausklick gespielt, gesichert als FILE66 … FILE70. Bericht: <c>docs/analyse/abgleich-dosbox.md</c> §4.5.
+/// EC) ohne Mausklick gespielt, gesichert als FILE66 … FILE70. Bericht: <c>docs/archiv/analyse/abgleich-dosbox.md</c> §4.5.
 /// </summary>
 /// <remarks>
 /// Maß je Lauf: Summe über die Kölner Spieler des Zuwachses der Belastung (FILE50 → Stand danach); ein Spieler, der über 127

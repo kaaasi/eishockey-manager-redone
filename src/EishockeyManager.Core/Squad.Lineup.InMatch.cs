@@ -3,7 +3,7 @@ using EishockeyManager.Formats;
 namespace EishockeyManager.Core;
 
 /// <summary>
-/// Aufstellung während eines Live-Spiels (Eingriff über Kopf/Logo, Spur livespiel-ui-2 B3; <c>docs/analyse/re-livespiel.md</c>
+/// Aufstellung während eines Live-Spiels (Eingriff über Kopf/Logo, Spur livespiel-ui-2 B3; <c>docs/archiv/analyse/re-livespiel.md</c>
 /// §10 und §15). Die Aufstellung 0x40364 bekommt im Spiel als Kennwert DGROUP 0x2D6 + Manager (≠ 0) und prüft ihn an acht
 /// Stellen; ohne Kennwert gelten die Regeln von <see cref="ClickPlayer"/>.
 /// <list type="bullet">

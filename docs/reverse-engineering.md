@@ -144,7 +144,7 @@ Höchstwerte 0x11C–0x11F = **5, 3, 2, 2**. Belegt im Overlay „Spielstart“ 
 ## Startwerte der Kaderspieler
 
 Spur `kader-start` (#168). Geprüft an `em.exe` (`ndisasm`), Overlay „Spielstart“; im Remake `SquadSetup.StartBase`
-(`Core/Squad.Setup.cs`), Tests `KaderStartTests`.
+(`Core/Squad.Setup.cs`), Tests `StartValuesTests`.
 
 * **Kaderauswahl** (Datei `0x2993A–0x29A5E`): je Art (Torhüter, Verteidiger, Stürmer) so viele Spieler wie die
   Kadertabelle DGROUP `0x169` nach Start-Liga angibt, jeweils ein zufälliger Spieler des Pools (Besitzer `0x1A` = 6) aus
@@ -248,7 +248,7 @@ DGROUP liegt bei Datei 0x16DD0 (Segmenttabelle 0x163C0, Eintrag 0x148).
   * DGROUP **0x3BD** = **Saisonzähler** (erhöht in Datei 0x56476; `highscore.md`).
 * **Nicht geklärt:** ob ein falsches Ergebnis bei Auslöser 2 oder 3 je Folgen hat. Für die Spur nicht nötig, da nichts
   davon portiert wird. Spielstart (1.) ist durch Bildfolge und Code belegt.
-* Test, dass das Remake nicht fragt: `MenueBefundeTests` (`NewGame_AndFirstMatchDays_RunWithoutManualQuestion`,
+* Test, dass das Remake nicht fragt: `MainMenuNewsBarHandbookTests` (`NewGame_AndFirstMatchDays_RunWithoutManualQuestion`,
   `NoScreenImplementsTheManualQuestion`).
 
 ## Credits (Titelleiste im Hauptmenü)
@@ -787,7 +787,7 @@ Hauptmenüschleife 0x44E22 (Datei 0x450EC, Gegner DGROUP 0xE1A6, Heim DGROUP 0xE
   angeschlossen; der Europapokal nicht, weil 0x30852 0x50283 nur für Wettbewerb 0 und 1 ruft (Datei 0x3091C–0x30942).
   Serien (`CountSeries`) gibt es für diese Spiele im Original nicht (Runde 12, R11A-01): 0x50283 springt nach der
   Begegnungstabelle bei Code ≠ 7/8 ans Ende (Datei 0x5030D–0x5031B); DEB-Pokal setzt Code 6 (Datei 0x35E7C), Play-off- und
-  Aufstiegsrundentag 1 (Datei 0x31AB7). Probe `WettbewerbeSpiel12Tests.Series_OnlyLeagueResults_NotCupsOrPostseason`.
+  Aufstiegsrundentag 1 (Datei 0x31AB7). Probe `SeriesSkaterRecountTests.Series_OnlyLeagueResults_NotCupsOrPostseason`.
 * **Tabellenkurve 0x445E0** (Abgleich, nicht umgebaut): x-Schritt `max(2, 8500 / (n − 1) / 100)` mit n = DGROUP 0x7A9,
   Punkte ab x + 5, y = Grundlinie + 2 · Platz + 0x31; ohne Kurve (n ≤ 1) „Vor dem ersten Spieltag.“ (Zeiger 0x674); Platzzahl
   mit „.“ (0x522F) rechts, bei Überschneidung der beiden Kurven verschoben (Datei 0x44801–0x44891). Das Remake skaliert auf
@@ -848,7 +848,7 @@ Teil 1 (Tabellen), Disassembly `ndisasm -b 16`, Dateiadressen.
   (#166), hier nur die Reihenfolge. Da am ersten Spieltag alle Felder gleich sind, behält die Tauschsortierung die Liste:
   Die Folgesaison beginnt mit der Abschlussreihenfolge, der Partner auf dem Platz des Getauschten. Remake:
   `LeagueTable.SuccessorOrder` aus `SeasonRecord` (Abschlusstabelle, `PromotedInto`/`RelegatedInto` jetzt in
-  Tabellenreihenfolge der Aufstiegsrunde, `LeftOberliga`); Tests `WettbewerbeStartordnungTests`.
+  Tabellenreihenfolge der Aufstiegsrunde, `LeftOberliga`); Tests `LeagueStartOrderTests`.
 * **Abzug in der Titelzahl** Datei 0x4F986–0x4F9DE: Spieltag im Titel = 0x7A9[Liga] − 1, wenn Parameter 2 = 1 und
   0x7A9 > 1, sonst 0x7A9. Aufrufer (Stub Ov 0x128 +0x57): Hauptmenü 0x45842 mit 1; automatische Tabelle nach dem Spieltag
   0x37889 mit 0 (nur bei Schalter DGROUP 0x21F + 3 · Liga), danach erst `inc 0x7A9` (0x37897). Beide zeigen damit die Zahl
@@ -857,7 +857,7 @@ Teil 1 (Tabellen), Disassembly `ndisasm -b 16`, Dateiadressen.
   wieder her; ohne Wirkung auf die Anzeige.
 * **Tore modulo 30** 0x30906/0x30916: `while (x > 29) x −= 30` für beide Tore (DGROUP 0x5CAC ff.) vor 0x303D9. Die Marke +30
   setzt nur das Penaltyschießen im K.-o.-Spiel; Gruppenspiele (WM, Europapokal, Aufstiegsrunde) spielen im Remake ohne
-  K.-o. (`knockOut: false`), ihre Ergebnisse bleiben unter 30 (Mehrsaisonprobe `WettbewerbeStartordnungTests`). Keine
+  K.-o. (`knockOut: false`), ihre Ergebnisse bleiben unter 30 (Mehrsaisonprobe `LeagueStartOrderTests`). Keine
   Abweichung, keine Änderung nötig.
 
 * **Videobeleg Startordnung** `folge06_02238` (Karriere-Reihe, zweite Saison, „TABELLE Gesamt 1.Spieltag“, 2. Liga mit dem
@@ -885,7 +885,7 @@ Teil 1 (Tabellen), Disassembly `ndisasm -b 16`, Dateiadressen.
 Teil 2 (Nationalteam):
 
 * **Warnung des Bundestrainers** Datei 0x454C2–0x454D8: nur wenn DGROUP 0xA70E = 5 (Bundestrainer am Zug), Kaderzahl aus
-  `0x120:0x66(5, 0)`, `cmp al,0xA; jnc` – ab 10 Spielern weiter (R8-D02, Test `WettbewerbeNationalteamTests.CoachWarning_Boundary`).
+  `0x120:0x66(5, 0)`, `cmp al,0xA; jnc` – ab 10 Spielern weiter (R8-D02, Test `NationalTeamWorldCupUiTests.CoachWarning_Boundary`).
 * **Schreibstelle der WM-Platzierungen** Datei 0x311CF–0x31351 (Ov 0xE8, nach den Platzierungsspielen; Zweig vor 0x311B4
   legt die nächste Runde an): n = erste 0 der Folge DGROUP 0x828B + 0x50 · Land am Land DGROUP 0x5D5B; n &gt; 15 → für alle
   zwölf Länder (0x6AD … 0x6AD + 11) Byte j = Byte j + 1 (j = 0 … 14), n = 15 (0x311F8–0x3125C). Byte n = 11 für alle zwölf
@@ -893,7 +893,7 @@ Teil 2 (Nationalteam):
   i − 0xCFFB + 2 (0x31304–0x31351); bei i = 0xCFFB Weltmeister DGROUP 0xD0F3 und Aufruf 0x350B6(3, Land). Etat des
   Bundestrainers für die nächste Saison DGROUP 0x29C/0x29E = ((7 − Platzindex) · 300.000 + 900.000) Drittel-DM, sonst
   300.000 – wie `NationalCoach.BudgetFor`. Remake: höchstens 16 WMs (`GameState.MaxWorldCupRankings`), Test
-  `WettbewerbeNationalteamTests.SeventeenthWorldCup_DropsTheOldest` (vorher blieben alle WMs stehen und zählten mit).
+  `WorldCupPlacementsTests.SeventeenthWorldCup_DropsTheOldest` (vorher blieben alle WMs stehen und zählten mit).
 * **Gegner-/Vereinsfenster** `0x128:0x2A` = Datei **0x4D385–0x4E5D4** (Stub Ov 0x128 Segment 0x14D9: Einträge ab +0x20 je
   5 Byte, +0x2A → Overlay-Offset 0x95, Overlaybeginn Datei 0x4D2F0), Argumente (Verein, Seite [bp+8] 0/1/2, [bp+0xA]).
   Texte DGROUP 0x3380–0x35F0 („Höchster Sieg“ 0x33C0, „Höchste Niederl.“ 0x33CE, „Erzielte Tore“ 0x33DF, „Kassierte Tore“
@@ -1127,7 +1127,7 @@ deren Klassenkommentaren; Videovergleich in [wettbewerbe.md](wettbewerbe.md), Ab
   (Spiel g ≥ Argument 3 + Argument 6, Datei 0x3229F–0x322C6) auflösbar; nicht Teil dieser Spur.
 
 **Teil 2 – Fenster „Saisonende“ und Verhandlungen am Saisonende** (Umsetzung `EventSymbols`, `SeasonEndSummaryScreen`,
-`ContractsScreen.DrawSeasonEndBackground`; Tests `UiRestTeil2Tests`):
+`ContractsScreen.DrawSeasonEndBackground`; Tests `SeasonEndEventSymbolsScreenTests`):
 
 * **Symbole 0x06CA6/0x06CDF:** Lage des i-ten Symbols ab (76 | 101), x + 35, über 230 neue Zeile (x = 76, y + 30) – fünf je
   Zeile, linksbündig (vorher im Remake mittig). Je Symbol zuerst der Rahmen kb\13 (144 | 0) 30 × 27, dann das Symbol bei

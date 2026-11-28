@@ -9,7 +9,7 @@ namespace EishockeyManager.Core;
 public readonly record struct LiveMinute(bool Wink, int PauseUnits, int Ticks);
 
 /// <summary>
-/// Ablaufmodell der Live-Anzeige (Spur livespiel-kern, Teil A2; <c>docs/analyse/re-livespiel.md</c> §1, §10, §13). Nur
+/// Ablaufmodell der Live-Anzeige (Spur livespiel-kern, Teil A2; <c>docs/archiv/analyse/re-livespiel.md</c> §1, §10, §13). Nur
 /// Modell: Der Bildschirm fragt je Minute, wie lange er wartet und ob er zwinkert; Zeit vergeht im Spiel weiter nur über
 /// <see cref="GameState.Continue"/>.
 /// <list type="bullet">
@@ -33,7 +33,7 @@ public readonly record struct LiveMinute(bool Wink, int PauseUnits, int Ticks);
 ///   Remake zieht die Spielrechnung aus <see cref="GameState.Random"/> und hält das Zwinkern getrennt (Review #795 P3-1,
 ///   Rundenplan 18), damit die Anzeige keinen Spielwert verschiebt.</item>
 /// <item>Messwert DOSBox `runde-19` (Sitzung 2, DOSBox 0.74-3, `cycles=fixed 3000`, FILE05, #838,
-///   <c>docs/analyse/abgleich-dosbox.md</c> §5): Geschwindigkeit 70 (acht Pinguine bzw. Lampe) 15,9 bzw. 20 s für 60 Minuten –
+///   <c>docs/archiv/analyse/abgleich-dosbox.md</c> §5): Geschwindigkeit 70 (acht Pinguine bzw. Lampe) 15,9 bzw. 20 s für 60 Minuten –
 ///   reine Rechen- und Zeichenzeit, ≈ 1/3 s je Minute; Geschwindigkeit 0 (ein Pinguin) „eine Sekunde je Minute“ zwischen den
 ///   Reporter-Meldungen = Pause (Mittel (0,8 · 15 + 0,2 · 10) Ticks ≈ 0,77 s) + Rechenzeit. Das Modell hier enthält nur die
 ///   Pause; die Rechenzeit setzt der Bildschirm.</item>

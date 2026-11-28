@@ -3,7 +3,7 @@ using EishockeyManager.UI.Screens.Competitions;
 namespace EishockeyManager.UI;
 
 /// <summary>
-/// Bausteine der Live-Anzeige aus Overlay 0x130 von em.exe (L3, <c>docs/analyse/re-livespiel.md</c> §4): Spieluhr, Balken,
+/// Bausteine der Live-Anzeige aus Overlay 0x130 von em.exe (L3, <c>docs/archiv/analyse/re-livespiel.md</c> §4): Spieluhr, Balken,
 /// Lampe und Ziffern. Alle Koordinaten sind wie im Original eingeschlossen (Rechteck 0x0B620 und Linie 0x0B7B5 zeichnen
 /// beide Endpunkte).
 /// </summary>

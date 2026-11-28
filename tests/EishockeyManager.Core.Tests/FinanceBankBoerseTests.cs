@@ -4,7 +4,7 @@ namespace EishockeyManager.Core.Tests;
 
 /// <summary>
 /// Spur geld, Teil 4 (G3, A033): Kreditrahmen der Bank, Grenze zwischen Managern und Börsengebühr nach em.exe
-/// (docs/analyse/re-geld.md, „Datei 0x58409 – Betragsbalken“, Höchstwerte Datei 0x596C2–0x59A12, Buchung Datei
+/// (docs/archiv/analyse/re-geld.md, „Datei 0x58409 – Betragsbalken“, Höchstwerte Datei 0x596C2–0x59A12, Buchung Datei
 /// 0x5915F–0x5952D).
 /// </summary>
 public class FinanceBankBoerseTests

@@ -5,7 +5,7 @@ namespace EishockeyManager.Core.Tests;
 /// <summary>
 /// Spur saisonwechsel, Teil 3 (S-K6, Entscheidung Nutzer 03.11.2026 = A): Satzfolge je Liga wie die Ligamischung em.exe
 /// Datei 0x35EDD – beim Spielstart (0x43A17) und im Saisonwechsel (0x5644E) 55 Tausche je Liga; die Fair-Play-Folge bei
-/// Gleichstand (0x2A1E0, A194) geht danach (docs/analyse/re-runde-12.md, „S-K6“).
+/// Gleichstand (0x2A1E0, A194) geht danach (docs/archiv/analyse/re-runde-12.md, „S-K6“).
 /// </summary>
 public class SaisonwechselSatzfolgeTests
 {

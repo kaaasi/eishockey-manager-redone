@@ -5,7 +5,7 @@ namespace EishockeyManager.UI.Screens.Competitions;
 
 /// <summary>
 /// Der Teil des Wettbewerbscodes DGROUP 0xD0C2, den die Gegner- und Vereinsfenster lesen (B15/B16, A286; Spur
-/// wettbewerbe-anzeige Teil 2, Beleg docs/analyse/re-abweichungen.md B15/B16 Punkt 4).
+/// wettbewerbe-anzeige Teil 2, Beleg docs/archiv/analyse/re-abweichungen.md B15/B16 Punkt 4).
 /// <list type="bullet">
 /// <item>[ORIGINAL] Das Fenster 0x4D385 zeichnet den dritten Knopf (Datei 0x4D7AA) und die Zeile „Historische Ergebnisse gegen …“
 ///   mit der Liste (Datei 0x4E07A) nur bei Code 0; bei 7, 8 und 13 fehlen beide.</item>

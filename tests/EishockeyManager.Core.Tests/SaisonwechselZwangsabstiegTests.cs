@@ -4,7 +4,7 @@ namespace EishockeyManager.Core.Tests;
 
 /// <summary>
 /// Spur saisonwechsel, Teil 2 (S-K3): Zwangsabstieg wegen Schulden wie em.exe Datei 0x55F17–0x560DB (Statusbit 0x04) und
-/// Austausch der Aufstiegsrunden über die Gruppentabelle (Datei 0x56157–0x5636D); docs/analyse/re-saisonwechsel.md §2.
+/// Austausch der Aufstiegsrunden über die Gruppentabelle (Datei 0x56157–0x5636D); docs/archiv/analyse/re-saisonwechsel.md §2.
 /// </summary>
 public class SaisonwechselZwangsabstiegTests
 {

@@ -3,7 +3,7 @@ using EishockeyManager.Core;
 namespace EishockeyManager.Core.Tests;
 
 /// <summary>
-/// Spur livespiel-kern, Teil A1 (L1): Anzeigezähler der Live-Anzeige (<c>docs/analyse/re-livespiel.md</c> §2, §12).
+/// Spur livespiel-kern, Teil A1 (L1): Anzeigezähler der Live-Anzeige (<c>docs/archiv/analyse/re-livespiel.md</c> §2, §12).
 /// Vor dem Teil rot: es gab keine Reihenliste und keine Drittelzähler (<c>GameState.LiveScoreboard</c> fehlte, Build-Fehler).
 /// </summary>
 public sealed class LivespielKernScoreboardTests

@@ -17,7 +17,7 @@ public readonly record struct GoalNotice(int Minute, int HomeClub, int AwayClub,
 public readonly record struct ScoreboardPenalty(int Minute, int Side, int Minutes);
 
 /// <summary>
-/// Eine Reihe der Live-Anzeige (Spur livespiel-kern, Teil A1; <c>docs/analyse/re-livespiel.md</c> §2): eine Paarung mit
+/// Eine Reihe der Live-Anzeige (Spur livespiel-kern, Teil A1; <c>docs/archiv/analyse/re-livespiel.md</c> §2): eine Paarung mit
 /// ihren Drittelzählern.
 /// <list type="bullet">
 /// <item>[ORIGINAL] Chancen je Drittel und Seite DGROUP 0xA839 + 14p + 2k + s: die Torszene 0x53C57 zählt bei Art 0

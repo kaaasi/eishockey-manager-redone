@@ -4,7 +4,7 @@ namespace EishockeyManager.Core.Tests;
 
 /// <summary>
 /// Spur <c>kader-transfer</c>, Teil 7 (Inventur A136, A229–A232, A238, A239; P1 Nr. 9): Ankündigungen der Kaderspieler nach dem
-/// Tagesablauf 0x07169 (<c>docs/analyse/re-nachtrag.md</c>, Abschnitt 1, Umsetzung U1–U3). Vorher rot: tägliche Chance 1/60 nur im
+/// Tagesablauf 0x07169 (<c>docs/archiv/analyse/re-nachtrag.md</c>, Abschnitt 1, Umsetzung U1–U3). Vorher rot: tägliche Chance 1/60 nur im
 /// letzten Vertragsjahr mit Frist 30. März, Ruhestand 33–37 als Teil der Ankündigung, 10 % Absagen, Laufzeiten 80/13/7 %.
 /// </summary>
 public class PlayerAnnouncementsTests

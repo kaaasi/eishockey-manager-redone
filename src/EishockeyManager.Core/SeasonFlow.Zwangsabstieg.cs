@@ -16,7 +16,7 @@ namespace EishockeyManager.Core;
 /// der Aufstiegsrunde seiner Liga (Datei 0x55F93–0x560C5, <see cref="InsertForcedRelegation"/>). Der Austausch (<see
 /// cref="RelegationExchange"/>) findet ihn dort als Absteiger. Bit 0x04 unterdrückt die Pfeile (Datei 0x56287–0x56334) und
 /// zeigt im Fenster „Ereignisse“ Symbol 0 (Tabelle DGROUP 0x4B2E); auf die Prämien wirkt es nicht (Datei 0x270A8–0x270B2 prüft
-/// nur Bit 0x01 und 0x02). docs/analyse/re-saisonwechsel.md §2.
+/// nur Bit 0x01 und 0x02). docs/archiv/analyse/re-saisonwechsel.md §2.
 /// </remarks>
 public sealed partial class GameState
 {

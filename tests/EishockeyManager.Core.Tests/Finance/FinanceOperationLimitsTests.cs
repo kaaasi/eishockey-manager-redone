@@ -4,7 +4,7 @@ namespace EishockeyManager.Core.Tests;
 
 /// <summary>
 /// Spur geld, Teil 5 (G4; A034, A312): Höchstwerte, Vorgaben und Buchung der Finanzbedienung nach em.exe
-/// (docs/analyse/re-geld.md, „Datei 0x58409 – Betragsbalken“; Höchstwerte Datei 0x596C2–0x59A12, Buchung Datei
+/// (docs/archiv/analyse/re-geld.md, „Datei 0x58409 – Betragsbalken“; Höchstwerte Datei 0x596C2–0x59A12, Buchung Datei
 /// 0x5915F–0x5952D). Leihen beim Mitmanager im lokalen Spiel sofort ohne Anfrage (Entscheidung Nutzer E2).
 /// </summary>
 public class FinanceOperationLimitsTests

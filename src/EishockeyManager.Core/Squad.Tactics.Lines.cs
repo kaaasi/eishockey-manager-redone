@@ -11,7 +11,7 @@ namespace EishockeyManager.Core;
 /// <c>mov [es:bx+0x2e+2·Teil],al</c>; Remake <c>MatchEngine.Intervention.cs</c>, landet über <c>KeepMatchFields</c> im Feld), in
 /// der Neuzählung 0x388F6 (Datei 0x38A2A) und bei gesetztem 0x2C Bit 3 in 0x84D7 selbst (Datei 0x857D; für jeden Verein, auch
 /// Managervereine, und nicht an 0x16 gebunden). Beleg: DOSBox `runde-19`, KÖLNER EC in FILE50 mit 0/2 beginnt Spieltag
-/// 2 mit Abwehr 0 und Sturm 2 bis Minute 3 (<c>docs/analyse/abgleich-dosbox.md</c> §4.1). Beim Spielstart stehen beide Felder
+/// 2 mit Abwehr 0 und Sturm 2 bis Minute 3 (<c>docs/archiv/analyse/abgleich-dosbox.md</c> §4.1). Beim Spielstart stehen beide Felder
 /// aller Vereine auf 0 (FILE02).
 /// </remarks>
 public sealed partial class Tactics

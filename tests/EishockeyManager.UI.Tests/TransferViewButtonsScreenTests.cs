@@ -5,7 +5,7 @@ using EishockeyManager.Tests.Support;
 
 namespace EishockeyManager.UI.Tests;
 
-/// <summary>PR35-02 aus docs/reviews/2026-10-26-pr35-review.md über die echten Knöpfe der Transferansicht.</summary>
+/// <summary>PR35-02 aus docs/archiv/reviews/runden-1-2/2026-10-26-pr35-review.md über die echten Knöpfe der Transferansicht.</summary>
 public class TransferViewButtonsScreenTests
 {
     [GameDataFact]

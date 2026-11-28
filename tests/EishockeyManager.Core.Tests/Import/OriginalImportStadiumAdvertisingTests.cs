@@ -5,7 +5,7 @@ using EishockeyManager.Tests.Support;
 namespace EishockeyManager.Core.Tests;
 
 /// <summary>
-/// Spur hok-import, Befunde des Reviews zu PR #670 (<c>docs/reviews/2026-11-09-integration-hok-import-r14.md</c>): R14HI-02
+/// Spur hok-import, Befunde des Reviews zu PR #670 (<c>docs/archiv/reviews/runde-14/2026-11-09-integration-hok-import-r14.md</c>): R14HI-02
 /// (laufende Stadionausbauten), R14HI-03 (Werbevertrag mit Betrag, der nicht durch 3 teilbar ist), R14HI-04 (Zeilen der Feldkarte
 /// mit Status B/A, die der Import nicht übernahm).
 /// </summary>

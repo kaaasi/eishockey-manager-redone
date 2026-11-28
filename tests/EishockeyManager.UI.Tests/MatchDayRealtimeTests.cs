@@ -6,7 +6,7 @@ namespace EishockeyManager.UI.Tests;
 /// <summary>
 /// #838 (Spur abgleich-dosbox-19, Teil 2): Echtzeit eines Spieltags gegen die Messung der DOSBox-Aufnahme `runde-19`
 /// (Sitzung 2, DOSBox 0.74-3, <c>cycles=fixed 3000</c>, FILE05, von Minute 1 bis 60 handgestoppt). Bericht:
-/// <c>docs/analyse/abgleich-dosbox.md</c> §5.
+/// <c>docs/archiv/analyse/abgleich-dosbox.md</c> §5.
 /// </summary>
 public class MatchDayRealtimeTests
 {

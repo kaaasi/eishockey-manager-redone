@@ -12,7 +12,7 @@ public enum InterventionMode
 
 /// <summary>
 /// Eingriff in eine laufende Managerpaarung als Befehle des Spielkerns (Spur livespiel-kern, Teil A3, L6;
-/// <c>docs/analyse/re-livespiel.md</c> §10). Der Live-Bildschirm (Spur livespiel-ui-2, B3) setzt Klicks in diese Befehle um;
+/// <c>docs/archiv/analyse/re-livespiel.md</c> §10). Der Live-Bildschirm (Spur livespiel-ui-2, B3) setzt Klicks in diese Befehle um;
 /// sie wirken ab der nächsten Rechnung auf die <see cref="LiveTeam"/> der Paarung.
 /// <list type="bullet">
 /// <item>[ORIGINAL] Nur für den Verein der angeklickten Seite mit Manager (Vereinsfeld 0x16 ≠ 0, Datei 0x38E5F/0x38E7B):

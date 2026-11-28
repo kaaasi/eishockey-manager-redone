@@ -18,7 +18,7 @@ namespace EishockeyManager.Core;
 /// </summary>
 /// <remarks>
 /// [ORIGINAL] Spielstart und Hinzufügen laufen in der Spielvorbereitung 0x28165 durch denselben Code, Datei 0x29C3B–0x29CF7 (Beleg
-/// <c>k13_platzwahl.py</c>, <c>docs/analyse/re-abweichungen.md</c> K13): behalten, wenn Start-Liga L ≠ Bundesliga, Liga des Vereins
+/// <c>k13_platzwahl.py</c>, <c>docs/archiv/analyse/re-abweichungen.md</c> K13): behalten, wenn Start-Liga L ≠ Bundesliga, Liga des Vereins
 /// = L (0x34FD5(v) / 2) und Satz v ≤ DGROUP 0x7CB (35); sonst Satz r = random(Basis L, Basis L + 11) (Datei 0x29C78), neu gezogen,
 /// solange r der Verein eines Managers mit kleinerer Nummer ist (Datei 0x29C9B–0x29CC3) oder 0x45CD0(r, 1) ≠ 0 (Datei 0x29CCC); dann
 /// Tausch 0x36169(v, r, 0x80) – auch bei r = v.

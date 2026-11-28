@@ -66,8 +66,8 @@ des Schemas.
 ```
 
 - **Prüfung vor dem Lesen:** zuerst `kennung`, dann `schema`. Fremde Datei → „Die Datei ist kein Spielstand dieses
-  Spiels.“; höhere Version → „Der Spielstand stammt aus einer neueren Version …“. Ältere Versionen laufen durch die
-  Migrationen (`SaveGame.Migrations`, je Version eine Funktion auf dem JSON-Baum; zunächst leer).
+  Spiels.“; höhere Version → „Der Spielstand stammt aus einer neueren Version …“. Ältere Versionen sind seit Runde 27 (A1 = B,
+  R27-D2 = B) nicht mehr ladbar: Es gibt keine Migrationen, nur das aktuelle Schema (`SaveGame.SchemaVersion`, Schema 65).
 - **Felder:** alle Instanzfelder (auch `private`, auch geerbte aus Core/Formats), nach Name sortiert. Rückfelder
   automatischer Eigenschaften heißen wie die Eigenschaft (`Age`), andere Felder wie im Code (`_eternal`).
   Beim Laden muss jedes Feld vorhanden und keines unbekannt sein – sonst Meldung „beschädigt“.
@@ -103,12 +103,11 @@ des Schemas.
 **Schemawächter:** `SaveGame.SchemaDescription()` listet alle erreichbaren Typen, Felder, Feldtypen und
 Aufzählungsnamen; `SaveGame.SchemaFingerprint()` ist deren Hash. Der Test `SchemaFingerprint_MatchesSchemaVersion`
 kennt den Hash zur aktuellen Version. Wer ein Zustandsfeld hinzufügt, umbenennt oder dessen Typ ändert, erhöht
-`SchemaVersion`, trägt eine Migration ein (neues Feld mit Startwert, umbenanntes Feld verschieben) und führt den Hash
-nach. `CheckSchemaCoverage()` meldet Felder, deren Typ das Format nicht kennt (z. B. Delegaten), und – über
+`SchemaVersion` und führt den Hash nach (Migrationen gibt es seit Runde 27 nicht mehr, ältere Stände werden abgelehnt). `CheckSchemaCoverage()` meldet Felder, deren Typ das Format nicht kennt (z. B. Delegaten), und – über
 `SaveGame.CoverageProbe()` – jedes Feld, das der Writer nicht schreibt oder der Reader nicht zurückliest. Die Probe
 schreibt für **jeden** erreichbaren Typ ein leeres Objekt, auch für Typen, die in keinem Beispielspielstand vorkommen (#81).
 
-**Migrationen:**
+**Migrationen (Verlauf bis Runde 26, historisch):** Der Code enthält sie nicht mehr (A1 = B, R27-D2 = B: nur Schema 65 ist ladbar); die Tabelle bleibt als Herkunft der Felder. Dateinamen `SaveGame.Migration*.cs` bestehen nicht mehr.
 
 | Von → nach | Anlass | Änderung |
 |---|---|---|

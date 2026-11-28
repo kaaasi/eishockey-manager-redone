@@ -26,7 +26,7 @@ public sealed partial class Manager
 
 /// <summary>
 /// Spielstand – Spur ui-meldungen, Teil 4: was das Hauptmenü des Originals beim Aufbau am Spielzustand ändert
-/// (Hauptmenü Datei 0x44E22, Prüfung <c>docs/analyse/re-runde-12.md</c> E4). Nach Entscheidung E4 = B als Ereignis im Spielkern:
+/// (Hauptmenü Datei 0x44E22, Prüfung <c>docs/archiv/analyse/re-runde-12.md</c> E4). Nach Entscheidung E4 = B als Ereignis im Spielkern:
 /// Der Zug beginnt in <see cref="BeginManagerTurn"/> (Funktionsanfang 0x44E22), jeder Aufbau des Menüs meldet sich über
 /// <see cref="OnMainMenu"/> (Datei 0x44FBD); der Bildschirm zeichnet nur.
 /// </summary>

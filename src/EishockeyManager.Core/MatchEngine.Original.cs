@@ -216,7 +216,7 @@ public static class OriginalMatch
     /// Ist der erste Platz der Strafbank frei, wird es bei lrandom(0, 15) = 0 eine 5-Minuten-Strafe.
     /// Einsatz = Vereinsfeld 0x26, beim Managerverein + Managerwert 0x974B − 20, begrenzt auf 0 … 100.
     /// [ORIGINAL] Die drei lrandom-Züge folgen unmittelbar aufeinander und hängen über den Zyklus der Folge zusammen
-    /// (<see cref="LRandomCycle"/>, #773, Beleg DOSBox `runde-17`, <c>docs/analyse/abgleich-dosbox.md</c> §2): die 5 Minuten kommen
+    /// (<see cref="LRandomCycle"/>, #773, Beleg DOSBox `runde-17`, <c>docs/archiv/analyse/abgleich-dosbox.md</c> §2): die 5 Minuten kommen
     /// mit der Häufigkeit des Zyklus je Weg (Einsatz 40: 12,55 % aller Strafen statt 1/16). Der Zug bleibt einer aus
     /// <paramref name="random"/> (gleiche Zahl von Zügen wie vorher); [APPROX] Lage im Zyklus gleichverteilt.
     /// </summary>

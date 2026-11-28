@@ -8,7 +8,7 @@ namespace EishockeyManager.Core.Tests;
 /// Spur abgleich-fix, Teil 1 (Geld beim Saisonwechsel, #734, #737): Gegenproben zur Ursache. Beide Kontoabweichungen sind keine
 /// Fehler der Finanzrechnung: Mit dem Zustand, den das Original im Paar tatsächlich hatte, landet das Remake im Bereich des
 /// Abgleichs (<c>HokCompareClasses</c>, Konto: Veränderung seit a ±10 %, mindestens 50.000 DM); ohne ihn nicht. Bericht:
-/// <c>docs/analyse/abgleich-original.md</c>.
+/// <c>docs/archiv/analyse/abgleich-original.md</c>.
 /// </summary>
 public class SeasonChangeMoneyDeviationTests
 {

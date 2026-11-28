@@ -104,7 +104,7 @@ Erstreviews: Opus 5.5 für `aufraeumen-migration`, `-tot`, `-doppelt`; Sonnet 5.
   `scan_docs`). **Prüfung:** `funktionskarte.py <em.exe> --csv` vor/nach mit gleicher Statusverteilung; Linkprüfung aller relativen Verweise in
   `docs/**` (Skript im PR, nicht eingecheckt); `tools/reverse-engineering/markerliste.py` (ohne `--write`) läuft unverändert
   (liest `inventur.md`). CI entfällt.
-- **Status:** Teile 1–4 fertig (PR #1060, 27.11.2026): 284 Reviews (Runden 3–26) nach `docs/archiv/reviews/runde-<n>/` (Fixlauf zu Review P2-1/P3-2: 35 Reviews in die Runde nach Rundenarchiv umsortiert, 4 nach `runden-1-2/`), `analyse/re-*`, `abgleich-*`, `belastung*` samt Skripten nach `docs/archiv/analyse/`, D3/D4 archiviert (Amiga-Abschnitt in `formate/dateiformate.md`), `scan_docs` liest `docs/archiv/analyse/`; Verweisliste für `aufraeumen-doku`: [analyse/aufraeumen-verweise.md](analyse/aufraeumen-verweise.md). Wartet auf Review.
+- **Status:** Teile 1–4 fertig (PR #1060, 27.11.2026): 284 Reviews (Runden 3–26) nach `docs/archiv/reviews/runde-<n>/` (Fixlauf zu Review P2-1/P3-2: 35 Reviews in die Runde nach Rundenarchiv umsortiert, 4 nach `runden-1-2/`), `analyse/re-*`, `abgleich-*`, `belastung*` samt Skripten nach `docs/archiv/analyse/`, D3/D4 archiviert (Amiga-Abschnitt in `formate/dateiformate.md`), `scan_docs` liest `docs/archiv/analyse/`; Verweisliste für `aufraeumen-doku`: `analyse/aufraeumen-verweise.md` (von `aufraeumen-doku` entfernt). Wartet auf Review.
 
 ### Spur `aufraeumen-tot` – tote und Nur-Test-Pfade im Core (Welle 2, nach Merge von `aufraeumen-migration`)
 
@@ -139,12 +139,12 @@ Erstreviews: Opus 5.5 für `aufraeumen-migration`, `-tot`, `-doppelt`; Sonnet 5.
   `[bp+0xA] = 8`, Datei 0x5494C–0x5499E).
 - **Dateien:** `tests/EishockeyManager.Core.Tests/**`. **Prüfung:** alle drei Läufe; Testliste alt → neu (gleiche Fallzahl + #978);
   Zeile „Dateiüberschneidung: keine …“ im PR.
-- **Status:** fertig, Review offen (PR #1069; Teile 0–3 in einem Lauf: 145 Dateien nach Thema umbenannt und in Themenordner gelegt, #978 als eigener Fall).
+- **Status:** fertig, Review offen (PR #1069; Teile 0–3 in einem Lauf: 138 Dateien nach Thema umbenannt (Rename) und in Themenordner gelegt, 145 blieben im Wurzelordner; Fix in `aufraeumen-doku` #978 als eigener Fall).
 
 ### Spur `aufraeumen-tests-ui` – UI-Tests und Abläufe (Welle 4, parallel zu `aufraeumen-tests-core`)
 
 - **Teile:** 0. Stand neu erheben; 1. UI-Familien nach Konzept §1.2, gleiche Dateinamen (UI-Seite), U9 (`Click(ScreenDriver, Rect)`
-  in eine Hilfe); 2. Abläufe aus Konzept §1.2 (`FinanzenRest.cs` …) nach Bildschirm umbenennen; 3. U14/A5 = A: Rauchtest jedes
+  in eine Hilfe); 2. Abläufe aus Konzept §1.2 (`Finanzen.cs` …) nach Bildschirm umbenennen; 3. U14/A5 = A: Rauchtest jedes
   Ablaufs als `[GameDataTheory]`, gescheiterte Abläufe (2 auf `69e9c40`: `pixel-verein-bundestrainer`,
   `transfer-vertrag-kauf-saisonende`) reparieren, wenn der Ablauf nur den Testaufbau braucht, sonst löschen (Begründung je Ablauf).
 - **Dateien:** `tests/EishockeyManager.UI.Tests/**`, `src/EishockeyManager.Tools/Scenarios/**`. **Prüfung:** alle drei Läufe;
@@ -162,7 +162,7 @@ Erstreviews: Opus 5.5 für `aufraeumen-migration`, `-tot`, `-doppelt`; Sonnet 5.
 - **Dateien:** `docs/**`, `tools/**`, Kommentare mit Doku-Pfaden in `src/`/`tests/` (nur die Pfadangabe). **Prüfung:** alle drei
   Läufe (Kommentare in Code), Linkprüfung des ganzen Repos ohne tote Ziele, Markerdiff, `funktionskarte.py <em.exe> --csv`
   vor/nach (Statusverteilung gleich).
-- **Status:** nicht gestartet.
+- **Status:** Teile 1–3 fertig (Lauf 28.11.2026, PR siehe Übergabe): Pfadverweise in 176 Dateien aus `src/`, `tests/`, `tools/` nachgezogen (`aufraeumen-verweise.md` entfernt); Themendokus gegen Code geprüft (alte Test- und Methodennamen, entfernte Mitglieder aus #1064/#1067/#1069/#1070, Migrationshinweise); `markerliste.py --write` einmal (keine ID verloren, A1035 neu); #980 P3-1/2, #1024 P3-2 (Nachtrag in `abweichungen-v1.md`), K13-Klassentext, W1 (Doku in `tools/reverse-engineering/README.md`); #980 P3-4 nur Vermerk (keine Dateiänderung). Offen: `tools/pruefen.sh` (kein SDK in der Umgebung, Kommentare/Pfade only). Wartet auf Review.
 
 ### Zurückgestellt (Entscheidung Nutzer bzw. fehlende Grundlage)
 

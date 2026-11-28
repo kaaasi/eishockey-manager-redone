@@ -9,7 +9,7 @@ namespace EishockeyManager.UI.Screens.Competitions;
 /// </summary>
 /// <remarks>
 /// [ORIGINAL] em.exe <c>0x128:0x2A</c> = Datei 0x4D385, Vereinszweig (Team &lt; DGROUP 0x6AD = 52, [bp−0x14] = 0) bzw. Teams ab
-/// 0x40; Aufbau in <c>docs/analyse/re-runde-12.md</c> „UM-2“. Lage relativ zu (93 | 44) wie im Länderzweig:
+/// 0x40; Aufbau in <c>docs/archiv/analyse/re-runde-12.md</c> „UM-2“. Lage relativ zu (93 | 44) wie im Länderzweig:
 /// <list type="bullet">
 /// <item>[ORIGINAL] Kopf wie <see cref="TeamInfoWindow"/>: Rahmen, Umriss (258 | 52) … (297 | 91), Logo bei (259 | 53) (kb\(0x50 +
 ///   Vereinsfeld 0x34 &amp; 0x3F), Teams ab 0x40 kb\0x8F, Datei 0x4D41D–0x4D440), graue Fläche (122 | 58) … (228 | 87).</item>

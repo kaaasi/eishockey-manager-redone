@@ -4,7 +4,7 @@ namespace EishockeyManager.Core;
 /// Spur saisonwechsel, Teil 3 (S-K6, Entscheidung Nutzer 03.11.2026 = A): Satzfolge der Vereine je Liga wie em.exe.
 /// </summary>
 /// <remarks>
-/// [ORIGINAL] Ligamischung Datei 0x35EDD (Ov 0xF0, Stub 0xF0:0x43; docs/analyse/re-runde-12.md, „S-K6“), aufgerufen beim
+/// [ORIGINAL] Ligamischung Datei 0x35EDD (Ov 0xF0, Stub 0xF0:0x43; docs/archiv/analyse/re-runde-12.md, „S-K6“), aufgerufen beim
 /// Spielstart (Datei 0x43A17) und im Saisonwechsel (Datei 0x5644E, nach Auf- und Abstieg): je Liga 55-mal zwei Plätze
 /// random(b, b + 11) tauschen (auch denselben Platz; Datei 0x35FD2–0x3613F). Der Tausch 0x36169 mit Schalter 1 bewegt den
 /// ganzen Vereinssatz; die Platzliste DGROUP 0x5CCB (Tabellenfolge) behält dabei ihre Vereine. Die Vereine bleiben in ihrer
@@ -14,7 +14,7 @@ namespace EishockeyManager.Core;
 /// der Liga-Spielplan (Datei 0x4E7C7, A113; GameState.Spielplan.cs).
 /// Zufallsquelle: Das Original zieht aus lrandom (Datei 0xBFD5, <c>0x38:0x7E5</c>; Datei 0x36013/0x3602E: lrandom(b, b + 11)),
 /// einem eigenen Generator x = (16 · x + 167) mod 4.000.000, dessen Zustand (DGROUP 0xE017) nicht im Spielstand steht
-/// (docs/analyse/re-runde-13.md, S-K6-b). Spur wettbewerbe-regeln Teil 2 (#897, N3 = B: eigene Zufallsquellen auf
+/// (docs/archiv/analyse/re-runde-13.md, S-K6-b). Spur wettbewerbe-regeln Teil 2 (#897, N3 = B: eigene Zufallsquellen auf
 /// <see cref="GameState.Random"/>): Die 3 · 55 Tausche ziehen je zwei Würfe random(0, 11) aus dem gemeinsamen Strom, am 29. April
 /// an der Stelle der Mischung (Datei 0x5644E), nach den 40 Würfen der Länder (A825, Datei 0x35EE3–0x35FC9). Bis Runde 22 eine abgeleitete Quelle (Startwert aus Saison und Stromzustand,
 /// ohne Weiterschalten). [APPROX] lrandom ist nicht nachgebaut (Folge nicht zugexakt, N3 = B). [ORIGINAL] Die Teamwert-Wanderung
@@ -121,7 +121,7 @@ public sealed partial class GameState
     /// übrigen Vereine nach Index. Fehlt eine geführte Folge (ungewöhnliche Ligagröße), gilt <see cref="ClubRecordOrder"/>.
     /// </summary>
     /// <remarks>
-    /// [ORIGINAL] T03/A843/A935 (Spur saison-geld; docs/analyse/re-abweichungen.md T03): Die Wanderung 0x09D1B(10) (Datei 0x56448)
+    /// [ORIGINAL] T03/A843/A935 (Spur saison-geld; docs/archiv/analyse/re-abweichungen.md T03): Die Wanderung 0x09D1B(10) (Datei 0x56448)
     /// zählt die Vereinssätze in der Folge nach dem Austausch der Gruppen 0–2 (0x36169 mit Schalter 1 tauscht ganze Sätze,
     /// Datei 0x56137–0x5636D) und vor der Mischung 0x35EDD (Datei 0x5644E).
     /// </remarks>
@@ -144,7 +144,7 @@ public sealed partial class GameState
     /// <remarks>
     /// [ORIGINAL] Grenzen nach Satzplatz (0x34FD5(i) / 2 in 0x9D1B, MatchEngine.TeamValues.cs): Nach dem Tausch 0x36169 steht der
     /// Aufsteiger auf dem Platz der höheren Liga. [ORIGINAL] auch im Modus „nur Weltkugel“ (A058, Spur saison Teil 4;
-    /// docs/analyse/re-runde-13.md): Datei 0x56448 ruft 0x9D1B mit Modus 10 ohne Modusprüfung. Spielstände FILE20 → FILE21 (Modus 1):
+    /// docs/archiv/analyse/re-runde-13.md): Datei 0x56448 ruft 0x9D1B mit Modus 10 ohne Modusprüfung. Spielstände FILE20 → FILE21 (Modus 1):
     /// Ligavereine Kondition/Technik (Felder 0x18–0x1B) gewandert und in den Ligagrenzen (Kaufbeuren 80 78 79 75 → 92 91 90 87,
     /// Düsseldorf 94 × 4 an der Obergrenze), alle zwölf Nationalteams dort unverändert, Form 0x1C–0x1E überall neu.
     /// [APPROX] Ein Spielstand vom Bildschirm „Saisonende“ (Phase <see cref="SeasonPhase.SeasonOver"/>), gesichert vor Runde 25, hat

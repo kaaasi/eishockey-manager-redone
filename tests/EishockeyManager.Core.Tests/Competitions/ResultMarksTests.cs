@@ -4,7 +4,7 @@ namespace EishockeyManager.Core.Tests;
 
 /// <summary>
 /// Runde 25, Spur wettbewerbe-anzeige Teil 3: C07 (A098, A482, A924, A925) – Ergebnismarken der K.-o.-Spiele wie im Original.
-/// Erwartete Werte aus <c>c07_marken.py</c> (docs/analyse/re-abweichungen.md C07): Minutenweg, 3:3 nach 60, Heimtor in der
+/// Erwartete Werte aus <c>c07_marken.py</c> (docs/archiv/analyse/re-abweichungen.md C07): Minutenweg, 3:3 nach 60, Heimtor in der
 /// Verlängerung → 4:3 mit einer Marke; 3:3 ohne Tor, Penaltyschießen 3:2 → 6:5 mit zwei Marken – in DEB-Pokal (Zeile 0),
 /// Play-offs (Zeile 2) und WM-Endrunde (Zeile 3) gleich. Vorher umgekehrt (Pokal: zwei bzw. eine; Play-offs: zwei in beiden Fällen).
 /// </summary>

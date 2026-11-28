@@ -10,7 +10,7 @@ public sealed record InfoFilePage(IReadOnlyList<(int X, int Baseline, byte Code)
 /// </summary>
 /// <remarks>
 /// <list type="bullet">
-/// <item>[ORIGINAL] em.exe Datei 0x432EC (Regel in <c>docs/analyse/re-meldungen.md</c> §D), Aufruf nur aus dem Hauptmenü
+/// <item>[ORIGINAL] em.exe Datei 0x432EC (Regel in <c>docs/archiv/analyse/re-meldungen.md</c> §D), Aufruf nur aus dem Hauptmenü
 ///   Datei 0x453E5–0x453F8 (Maus-x = 319, Maus-y = 0).</item>
 /// <item>[ORIGINAL] Seitenaufbau: Hintergrund kb\22, Kopfzeile Schrift 3 (Mini) zentriert, Grundlinie 7, Linie y 9, Text ab
 ///   x 0, Grundlinie 19, Zeilenabstand 8, Seitenende bei Grundlinie &gt; 230 (27 Zeilen), „TASTE!“ ab x 275, Grundlinie 238.

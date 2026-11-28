@@ -9,7 +9,7 @@ public sealed record GoalSceneHeader(string HomeName, string AwayName, int HomeG
     string SpectatorText);
 
 /// <summary>
-/// Ablauf einer Torszene als Modell (Spur torszenen, Teil C2; <c>docs/analyse/re-livespiel.md</c> §16): Kamera, Puckschatten
+/// Ablauf einer Torszene als Modell (Spur torszenen, Teil C2; <c>docs/archiv/analyse/re-livespiel.md</c> §16): Kamera, Puckschatten
 /// und zwölf Objekte je Bild. Kein Zufall, kein Spielzustand – reine Anzeige (R18-D3 = A); die Wanduhr macht der Bildschirm.
 /// <list type="bullet">
 /// <item>[ORIGINAL] Start <c>48h:5250h</c> (Datei 0x12C40–0x12CF7): Kamera Kopf − (16 | 32), je ≥ 0; Objekt 0 = Kopf +0x08/+0x0A

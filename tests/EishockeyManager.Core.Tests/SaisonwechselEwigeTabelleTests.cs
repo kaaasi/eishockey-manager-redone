@@ -4,7 +4,7 @@ namespace EishockeyManager.Core.Tests;
 
 /// <summary>
 /// Spur saisonwechsel, Teil 3 (S-K4, P2 Nr. 13): Ewige Tabelle nach dem Austausch – Ligapunkte der nächsten Saison, Platz der
-/// gespielten (em.exe Datei 0x563AF → 0x5667A; DOSBox-Beleg `file14_3`, docs/analyse/re-saisonwechsel.md §4).
+/// gespielten (em.exe Datei 0x563AF → 0x5667A; DOSBox-Beleg `file14_3`, docs/archiv/analyse/re-saisonwechsel.md §4).
 /// </summary>
 public class SaisonwechselEwigeTabelleTests
 {

@@ -4,7 +4,7 @@ namespace EishockeyManager.Core.Tests;
 
 /// <summary>
 /// Spur geld, Teil 1 (Runde 11, G1; Inventur A041–A043, A047, F090): Stadionausbau nach em.exe Datei 0x3D7F8 (Ausbau im
-/// Stadionbildschirm) und Datei 0x3D316 (wöchentlicher Baufortschritt), Belege in docs/analyse/re-geld.md „Stadion“.
+/// Stadionbildschirm) und Datei 0x3D316 (wöchentlicher Baufortschritt), Belege in docs/archiv/analyse/re-geld.md „Stadion“.
 /// Die ersten vier Tests nutzen nur die bisherige Schnittstelle (StartConstruction, Finanzbuch, Stufen) und waren auf dem
 /// Base-Stand rot.
 /// </summary>

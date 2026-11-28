@@ -4,7 +4,7 @@ namespace EishockeyManager.Core.Tests;
 
 /// <summary>
 /// Spur nationalteam, Runde 13, Teil 2: Ablauf der WM nach der DOSBox-Aufnahme `runde-12`
-/// (<c>docs/analyse/re-runde-13.md</c>, Sitzung 1: A027, A028).
+/// (<c>docs/archiv/analyse/re-runde-13.md</c>, Sitzung 1: A027, A028).
 /// </summary>
 public class WorldCupHaltTests
 {

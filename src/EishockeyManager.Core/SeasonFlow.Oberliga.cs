@@ -8,7 +8,7 @@ namespace EishockeyManager.Core;
 /// [ORIGINAL] em.exe führt die Vereine auf festen Plätzen (Strukturindex): 0–11 Bundesliga, 12–23 2. Liga, 24–35 Oberliga,
 /// 36–47 ohne Liga. Auf- und Abstieg vertauscht ganze Vereinssätze zwischen zwei Plätzen (Datei 0x36169), der Absteiger
 /// übernimmt also den Platz seines Nachrückers. Nachrücker der Oberliga ist der Verein auf Platz random(36, 41) (Datei
-/// 0x56238–0x56282, `0x38:0x847(a, a + 5)`); die Plätze 42–47 rücken nie nach (docs/analyse/re-saisonwechsel.md §3,
+/// 0x56238–0x56282, `0x38:0x847(a, a + 5)`); die Plätze 42–47 rücken nie nach (docs/archiv/analyse/re-saisonwechsel.md §3,
 /// „Auswertung DOSBox-Beleg“: Wedemark 35 → 40, Miesbach 40 → Oberliga, Vereine 42–47 unverändert draußen).
 /// Das Remake vertauscht keine Vereinssätze (der Vereinsindex bleibt fest); die Plätze der Vereine ohne Liga werden daher aus
 /// der ersten Saison und den Paaren der Saisonrückblicke (<see cref="SeasonRecord.LeftOberliga"/> mit
@@ -37,7 +37,7 @@ public sealed partial class GameState
     /// 2. Liga oder Oberliga, je nach Start-Liga) nimmt den Platz des gewählten Vereins ein. Danach je Saison: Der
     /// Oberliga-Absteiger übernimmt den Platz seines Nachrückers.
     /// [ORIGINAL] Tausch Datei 0x29C78–0x29CF7 mit 0x36169(v, r, 0x80): r erhält den alten Platz von v, auch ohne Liga
-    /// (docs/analyse/re-nachtrag.md §8). [APPROX] Das Remake hält die Paare (gewählter Verein, Verdrängter) nicht fest und
+    /// (docs/archiv/analyse/re-nachtrag.md §8). [APPROX] Das Remake hält die Paare (gewählter Verein, Verdrängter) nicht fest und
     /// leitet sie hier ab: aus den Vereinen der ersten Saison, bei mehreren gewählten Vereinen ohne Liga werden gewählte und
     /// Verdrängte beide aufsteigend nach Vereinsindex gepaart. Bei einem Manager ist die Paarung eindeutig; bei mehreren
     /// kann nur die Platzzuordnung (nicht die Menge der Verdrängten) vom Original abweichen – das beeinflusst allein, welcher

@@ -4,7 +4,7 @@ namespace EishockeyManager.Core.Tests;
 
 /// <summary>
 /// Spur livespiel-ui-2, B2: Anschluss des Minutenschritts an den Spieltagsablauf (<c>MatchEngine.LiveDriver.cs</c>,
-/// <c>docs/analyse/re-livespiel.md</c> §15). Vor dem Teil rot: es gab keinen Treiber (<c>ILiveMatchDriver</c> fehlte,
+/// <c>docs/archiv/analyse/re-livespiel.md</c> §15). Vor dem Teil rot: es gab keinen Treiber (<c>ILiveMatchDriver</c> fehlte,
 /// Build-Fehler) – der Live-Bildschirm konnte die Minuten nicht über <see cref="LiveMatchDay"/> treiben.
 /// </summary>
 public sealed class LiveDriverTests

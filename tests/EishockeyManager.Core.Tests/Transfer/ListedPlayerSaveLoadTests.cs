@@ -4,7 +4,7 @@ using EishockeyManager.Formats;
 namespace EishockeyManager.Core.Tests;
 
 /// <summary>
-/// Integration Runde 14, Spur kader-start: Befunde aus dem Review <c>docs/reviews/2026-11-09-integration-kader-start-r14.md</c>
+/// Integration Runde 14, Spur kader-start: Befunde aus dem Review <c>docs/archiv/reviews/runde-14/2026-11-09-integration-kader-start-r14.md</c>
 /// (R14KS-01 Speichern mit gelistetem Spieler, R14KS-02 Saisonzähler und Heilung gelisteter Spieler).
 /// </summary>
 public class ListedPlayerSaveLoadTests

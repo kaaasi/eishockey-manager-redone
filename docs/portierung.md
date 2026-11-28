@@ -43,7 +43,7 @@ Kachelsymbole und Lampen stammen aus `kb\3`, Pfeile und Rollbalken aus `kb\4`.
   sporadisch die „PASSWORTABFRAGE“ nach einem Wort im gedruckten Handbuch; zwei falsche Antworten hängen das Programm auf.
   Das Remake übernimmt das **nicht** (Entscheidung Nutzer, 30.10.2026). **Keine Spur portiert sie mit.** Belege und
   Fundstellen: [reverse-engineering.md](reverse-engineering.md), Abschnitt „Kopierschutz (Handbuchfrage)“. Test:
-  `MenueBefundeTests`.
+  `MainMenuNewsBarHandbookTests`.
 * **Nachrichtenleiste (#170):** im Hauptmenü nur mit neuer Nachricht (`[ORIGINAL]` Bedingung, `[APPROX]` Dauer der
   Anzeige), siehe `MainMenuScreen`.
 * **Credits mit Zeile „Remake“ (#207, Wunsch Nutzer):** Klick in die Titelleiste des Hauptmenüs zeigt wie im Original

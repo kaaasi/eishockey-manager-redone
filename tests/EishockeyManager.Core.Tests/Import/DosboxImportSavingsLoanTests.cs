@@ -6,7 +6,7 @@ namespace EishockeyManager.Core.Tests;
 /// <summary>
 /// Spur abgleich-dosbox-22 (Runde 23): DOSBox-Aufnahme `runde-22` Sitzung 1 (Referenz-Repo, FILE75/FILE76). Teil 1 belegt, was
 /// Original und Remake schon gleich behandeln; Teil 2 behebt die Abweichungen aus dem Bericht
-/// <c>docs/analyse/abgleich-dosbox-22.md</c> (je ein Regressionstest unten).
+/// <c>docs/archiv/analyse/abgleich-dosbox-22.md</c> (je ein Regressionstest unten).
 /// </summary>
 public class DosboxImportSavingsLoanTests
 {

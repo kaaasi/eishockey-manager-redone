@@ -4,7 +4,7 @@ using EishockeyManager.Tests.Support;
 namespace EishockeyManager.Formats.Tests;
 
 /// <summary>
-/// Spur livespiel-kern, Teil A4: Leser der Torszenen <c>tore\</c> (<c>docs/analyse/re-livespiel.md</c> §11). Vor dem Teil rot:
+/// Spur livespiel-kern, Teil A4: Leser der Torszenen <c>tore\</c> (<c>docs/archiv/analyse/re-livespiel.md</c> §11). Vor dem Teil rot:
 /// es gab keinen Leser (<c>GoalScene</c> fehlte, Build-Fehler).
 /// </summary>
 public sealed class GoalSceneTests

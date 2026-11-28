@@ -354,7 +354,7 @@ public sealed class SetupScreen : Screen
     /// blättert zyklisch (Datei 0x28E4B). Die Sätze sind beim Öffnen schon gemischt (Ligamischung Datei 0x43A17 vor der
     /// Spielvorbereitung Datei 0x43A61): Seiten 0–2 = Vereine der Liga in der Startmischung, Seite 3 (ohne Liga) in
     /// Datenbankfolge. Belege `oberflaeche_0128`/`_0133` (Seite 0/1 permutiert), `_0136` (Seite 3, Zelle 8 = HEC Bonn = DB 44),
-    /// <c>docs/analyse/re-runde-13.md</c>, R-K5. Zufallsquelle (Näherung) siehe <see cref="NewGame.StartOrder"/>.
+    /// <c>docs/archiv/analyse/re-runde-13.md</c>, R-K5. Zufallsquelle (Näherung) siehe <see cref="NewGame.StartOrder"/>.
     /// </summary>
     private int ClubAt(int cell) => _places[_clubPage * ClubsPerPage + cell];
 

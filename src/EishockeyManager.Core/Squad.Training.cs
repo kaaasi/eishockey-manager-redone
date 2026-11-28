@@ -80,7 +80,7 @@ public sealed class TrainingPlan
 
     /// <summary>
     /// Preisindex in Prozent. [ORIGINAL] DGROUP 0x2B8, Startwert 100; außer Laden/Speichern schreibt ihn nichts, er bleibt 100
-    /// (Leser Datei 0x3E811, Datei 0x59DBF; docs/analyse/re-nachtrag.md Abschnitt 5, A183).
+    /// (Leser Datei 0x3E811, Datei 0x59DBF; docs/archiv/analyse/re-nachtrag.md Abschnitt 5, A183).
     /// </summary>
     public int PriceIndex { get; set; } = 100;
 
@@ -399,7 +399,7 @@ public sealed partial class Player
 {
     /// <summary>
     /// Unterzahl: unteres Halbbyte von Kaderplatz +0x19 (0–15), vom Training verändert, wirkt in der Abwehr in Unterzahl.
-    /// [ORIGINAL] Startwerte und Schreiber siehe <see cref="HiddenSkills"/> (docs/analyse/re-nachtrag.md Abschnitt 6).
+    /// [ORIGINAL] Startwerte und Schreiber siehe <see cref="HiddenSkills"/> (docs/archiv/analyse/re-nachtrag.md Abschnitt 6).
     /// [ORIGINAL] Spur kaderplatz-werte (A691): Jeder Eintritt in einen Kaderplatz schreibt den Wert (Startwurf bzw. 0 beim Kauf,
     /// <see cref="Player.ApplyNewSlot"/>); gelesen wird er nur am Kaderplatz (Spiel Datei 0x09A32–0x09AE5, Training 0x06AA4–0x06B01).
     /// [APPROX] Platzhalter 7 für Spieler ohne Kaderplatz (Computervereine, freie Poolplätze), den keine Regel liest, und für

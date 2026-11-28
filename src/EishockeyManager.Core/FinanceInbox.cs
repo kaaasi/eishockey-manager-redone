@@ -107,7 +107,7 @@ public sealed partial class GameState
 
     /// <summary>
     /// Kreditanfrage an einen Mitmanager: er bekommt sie in den Posteingang (verfällt nach einer Woche).
-    /// Nur für den späteren Netzwerkmodus (Entscheidung Nutzer E2, docs/analyse/re-geld.md); im lokalen Spiel holt der
+    /// Nur für den späteren Netzwerkmodus (Entscheidung Nutzer E2, docs/archiv/analyse/re-geld.md); im lokalen Spiel holt der
     /// Bildschirm Finanzen das Geld wie im Original sofort (<see cref="BorrowFromManager"/>, em.exe Datei 0x59269 ff.).
     /// </summary>
     public Message? RequestLoan(int borrower, int lender, long amount)

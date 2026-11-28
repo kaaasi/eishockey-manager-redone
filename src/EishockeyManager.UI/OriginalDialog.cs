@@ -15,7 +15,7 @@ public enum OriginalDialogKind
 /// </summary>
 /// <remarks>
 /// <list type="bullet">
-/// <item>[ORIGINAL] em.exe Datei 0x4C246 (Stub 0x120:0x7A, <c>docs/analyse/re-meldungen.md</c> §C): Fenster 7 × 4 Rahmenteile
+/// <item>[ORIGINAL] em.exe Datei 0x4C246 (Stub 0x120:0x7A, <c>docs/archiv/analyse/re-meldungen.md</c> §C): Fenster 7 × 4 Rahmenteile
 ///   ab (75 | 107) (<see cref="Window"/>); Überschrift Schrift 2 (Flow) zentriert x 105 … 210, Grundlinie 125, Farbe 7, Schatten 0;
 ///   zwei Symbolfelder bei x = 83 und 212, y = 112 (22 × 22, Fläche 17/14, Umriss 16/12 um ein Pixel eingerückt, Zeichen
 ///   „!“/„?“ in Schrift 1, Grundlinie 129, Farbe 0); Linie oben (109 | 131)–(207 | 131) Farbe 7; Textzeilen Schrift 3 (Mini),
@@ -185,7 +185,7 @@ public sealed class OriginalDialog
 /// </summary>
 /// <remarks>
 /// <list type="bullet">
-/// <item>[ORIGINAL] em.exe Datei 0x0C0B8 (<c>docs/analyse/re-meldungen.md</c> §B): Meldung 0x4C246 mit Modus m = 75 − 30 ·
+/// <item>[ORIGINAL] em.exe Datei 0x0C0B8 (<c>docs/archiv/analyse/re-meldungen.md</c> §B): Meldung 0x4C246 mit Modus m = 75 − 30 ·
 ///   [Zeile 1 beginnt mit „Auto-“]; Modus ≥ 2 heißt: keine Knöpfe, keine Eingabe, Pause m / 3 BIOS-Takte (25 bzw. 15 Takte
 ///   zu 18,2 Hz ≈ 1,4 s bzw. 0,8 s). Fehlt Zeile 2, steht dort „einlegen.“. Rückgabe immer 1.</item>
 /// <item>[APPROX] Die Takt-Umrechnung nimmt 18,2 Hz an (BIOS-Zähler; ob 0x11FD den Zähler beschleunigt, ist nicht geprüft,

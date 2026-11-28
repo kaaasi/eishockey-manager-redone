@@ -164,7 +164,7 @@ namespace EishockeyManager.Core.Tests;
 /// 50 … 150 (Datei 0x549A2). Die Spielvorbereitung (101 − Belastung/8, 0x84D7) gibt damit andere Kaderenergien; andere
 /// Ergebnisse und anderer Zufallsverbrauch ab dem ersten Managerspiel. Zufallszüge unverändert (kein neuer Zug).
 /// Runde 12, Spur wettbewerbe-spiel Teil 3 (A174): neu – Computervereine spielen mit der Datenbankstärke ohne Bezug zur Remake-Aufstellung ([ORIGINAL] 0x977F liest nur die Vereinsfelder); Verletzungen, Verkäufe und Aufstellungslücken eines Computervereins ändern seine Stärke nicht mehr. Andere Ergebnisse, sobald ein Computerverein mit veränderter Aufstellung spielt; keine neuen Zufallszüge.
-/// Runde 13, Spur saison Teil 3 (S-K6-a/c, docs/analyse/re-runde-13.md): Seed 3 (beide) und Originaldatenbank (beide) neu – die
+/// Runde 13, Spur saison Teil 3 (S-K6-a/c, docs/archiv/analyse/re-runde-13.md): Seed 3 (beide) und Originaldatenbank (beide) neu – die
 /// Satzfolge der nächsten Saison entsteht am 29. April (Startwert aus dem Zufallszustand dieses Tages, ohne Zug) und die
 /// Fair-Play-Prämie rechnet über die Liga der nächsten Saison in dieser Folge; andere Prämien, Konten und danach Kauf- und
 /// Vertragsentscheidungen. Gegenprobe: ohne Bildung am 29. April und mit der alten Prämienregel alle Abdrücke unverändert.

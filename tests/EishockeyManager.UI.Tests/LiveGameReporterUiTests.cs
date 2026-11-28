@@ -8,7 +8,7 @@ using EishockeyManager.UI.Testing;
 namespace EishockeyManager.UI.Tests;
 
 /// <summary>
-/// Spur livespiel-ui-2, B2 (L2/L4/L5): Live-Bildschirm und Reporter (<c>Screens/Live/</c>, <c>docs/analyse/re-livespiel.md</c>
+/// Spur livespiel-ui-2, B2 (L2/L4/L5): Live-Bildschirm und Reporter (<c>Screens/Live/</c>, <c>docs/archiv/analyse/re-livespiel.md</c>
 /// §15). Vor dem Teil rot: es gab keinen Live-Bildschirm (Build-Fehler), „Tag weiter“ zeigte für die Managerpaarung nur
 /// „Spiele laufen“.
 /// </summary>

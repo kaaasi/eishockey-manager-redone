@@ -8,7 +8,7 @@ namespace EishockeyManager.Core.Tests;
 /// #804 (Spur abgleich-dosbox, Teil 3): Vereinsfelder 0x26 (Einsatz) und 0x2C Bits 4–6 (Angriff) des letzten Spiels
 /// (<see cref="Tactics.MatchEffort"/>, <see cref="Tactics.MatchAttack"/>) im Import und Export von <c>*.HOK</c>. Vorher las der
 /// Import die Felder nicht (Werte aus dem Nachspielen, je Saat verschieden) und der Export schrieb 0 (EXPORT2D: alle 51
-/// Computervereine 0/0/0, Original FILE53 nach einem Spieltag 40 × 20, 60 × 14). Bericht: <c>docs/analyse/abgleich-dosbox.md</c> §3.
+/// Computervereine 0/0/0, Original FILE53 nach einem Spieltag 40 × 20, 60 × 14). Bericht: <c>docs/archiv/analyse/abgleich-dosbox.md</c> §3.
 /// </summary>
 public class ClubMatchFieldsImportExportTests(ITestOutputHelper output)
 {

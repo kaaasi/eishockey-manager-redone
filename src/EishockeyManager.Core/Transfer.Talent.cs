@@ -23,7 +23,7 @@ public enum TalentSearchStart
 /// (Datei 0x06FA5, 0x06D7F), Preis im Tagesabschluss (Datei 0x3EEA2–0x3EF4E).
 /// </summary>
 /// <remarks>
-/// Belege: <c>docs/analyse/re-rest.md</c> „Basis 0x46E – Talentsuche“ und <c>docs/finanzen-rekonstruktion.md</c>
+/// Belege: <c>docs/archiv/analyse/re-rest.md</c> „Basis 0x46E – Talentsuche“ und <c>docs/finanzen-rekonstruktion.md</c>
 /// „Talentsuche (Spur geld, Teil 6)“. Bis Teil 6 gab es Rabatt nach Jugendförderung, 4 Wochen, Chance nach Jugendplatz und
 /// Grenze 30 – nichts davon steht im Original; der „Spion“ im Fenster „Jugendteams“ entfällt (A328: die Texte nutzt nur
 /// 0x465F1).

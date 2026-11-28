@@ -12,7 +12,7 @@ public enum YouthTeamKind
 /// <remarks>
 /// [ORIGINAL] Managersatz DGROUP 0xA075 + 0x15 · Manager: Stärke je Team <c>+0..2</c>, Platz <c>+3..5</c> (0-basiert),
 /// Liga <c>+6..8</c> (0-basiert), Förderung <c>+9</c> (3 Langwörter, Drittel-DM); Bildschirm em.exe Datei 0x3A24B,
-/// Spieltag Datei 0x39DEC, Saisonwechsel Datei 0x3A13B (Doku: <c>docs/finanzen-rekonstruktion.md</c>, <c>docs/analyse/re-geld.md</c>).
+/// Spieltag Datei 0x39DEC, Saisonwechsel Datei 0x3A13B (Doku: <c>docs/finanzen-rekonstruktion.md</c>, <c>docs/archiv/analyse/re-geld.md</c>).
 /// </remarks>
 public sealed class YouthTeam
 {

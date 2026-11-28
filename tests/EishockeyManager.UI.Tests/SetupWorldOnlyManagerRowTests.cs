@@ -8,7 +8,7 @@ namespace EishockeyManager.UI.Tests;
 /// <summary>
 /// Spur <c>kader-start</c>, Runde 14, Teil 2: A056 über die Bedienung der Spielvorbereitung (übersprungen ohne „gamedata“).
 /// [ORIGINAL] em.exe Datei 0x28ACF: bei „nur Weltkugel“ führt jeder Klick in die Managerzeilen auf Zeile 0
-/// (<c>docs/analyse/re-runde-14.md</c>, Bilder <c>file29_1</c>/<c>file29_2</c>).
+/// (<c>docs/archiv/analyse/re-runde-14.md</c>, Bilder <c>file29_1</c>/<c>file29_2</c>).
 /// </summary>
 public class SetupWorldOnlyManagerRowTests
 {

@@ -6,7 +6,7 @@ using EishockeyManager.UI.Screens.Competitions;
 namespace EishockeyManager.UI.Tests;
 
 /// <summary>
-/// Spur nationalteam, Runde 13, Teil 3: WM-Tabelle nach der DOSBox-Aufnahme `runde-12` (<c>docs/analyse/re-runde-13.md</c>,
+/// Spur nationalteam, Runde 13, Teil 3: WM-Tabelle nach der DOSBox-Aufnahme `runde-12` (<c>docs/archiv/analyse/re-runde-13.md</c>,
 /// A293, A294).
 /// </summary>
 public class WorldCupTableUiTests

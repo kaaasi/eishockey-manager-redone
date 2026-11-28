@@ -296,7 +296,7 @@ public static class HighscoreRules
     /// die Platzierungsfolge des Landes DGROUP 0x828B + 0x50 · DGROUP 0x6AC bis zur ersten 0. Die Folge trägt je WM die Plätze
     /// 1 … 8 und für alle übrigen Teilnehmer 11 (Datei 0x31266–0x31291), also zählt Platz 9 … 12 je WM −2 – anders als die
     /// WM-Statistik (<see cref="GameState.WorldCupPoints"/>), die nur Platz 1 … 8 zählt. Höchstens 16 WMs (Datei 0x311F8).
-    /// Belegt mit FILE54 (Platz 4 → 5) und FILE20 (Gruppe → 1), <c>docs/analyse/abgleich-dosbox.md</c> §3.3.
+    /// Belegt mit FILE54 (Platz 4 → 5) und FILE20 (Gruppe → 1), <c>docs/archiv/analyse/abgleich-dosbox.md</c> §3.3.
     /// [ORIGINAL] Land DGROUP 0x6AC ist hier immer Deutschland (einziger Schreiber Datei 0x35FAC in der Ligamischung 0x35EDD; Verein der Zeile wie bisher).
     /// </summary>
     public static int WorldOnlyScore(GameState game)

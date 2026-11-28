@@ -4,7 +4,7 @@ using EishockeyManager.Tests.Support;
 namespace EishockeyManager.Core.Tests;
 
 /// <summary>
-/// #857 (Review <c>docs/reviews/2026-11-14-neuer-manager.md</c>): Nach dem Platztausch eines neuen Managers trägt der Vereinssatz
+/// #857 (Review <c>docs/archiv/reviews/runde-19/2026-11-14-neuer-manager.md</c>): Nach dem Platztausch eines neuen Managers trägt der Vereinssatz
 /// die Kennung des gewählten Vereins – [ORIGINAL] 0x36169 Schalter 0x80 tauscht Name, +0x16, Logo +0x34 und Farbcode +0x3B
 /// (Datei 0x3628F–0x363F6). Der HOK-Export schrieb Logo und Farbcode aus dem Datenbanksatz des Platzes (<c>database[club.Index]</c>),
 /// also die Werte des Verdrängten.

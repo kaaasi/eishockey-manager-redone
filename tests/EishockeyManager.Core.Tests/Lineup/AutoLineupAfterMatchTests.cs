@@ -3,7 +3,7 @@ using EishockeyManager.Tests.Support;
 namespace EishockeyManager.Core.Tests;
 
 /// <summary>
-/// Spur <c>kader-start</c>, Runde 14, Teil 2b (<c>docs/analyse/re-runde-14.md</c>): Taktik-Befund DGROUP 375h (Neuaufstellung
+/// Spur <c>kader-start</c>, Runde 14, Teil 2b (<c>docs/archiv/analyse/re-runde-14.md</c>): Taktik-Befund DGROUP 375h (Neuaufstellung
 /// nach den Spielen), A046 (Tabellenfeld der Zuschauerformel), A135 (Tore und Spiele je Wettbewerb).
 /// </summary>
 public class AutoLineupAfterMatchTests

@@ -5,7 +5,7 @@ namespace EishockeyManager.Core.Tests;
 
 /// <summary>
 /// Spur saison-geld Teil 2 (Runde 25): F06 (A888, Banden je Feld) und F08 (A512 Baufirmen, A526 Sommerpause je Manager,
-/// A509 Bau ohne Ziel). Belege: docs/analyse/re-abweichungen.md Abschnitte F06 und F08. Gegen den Stand eaf8621 rot.
+/// A509 Bau ohne Ziel). Belege: docs/archiv/analyse/re-abweichungen.md Abschnitte F06 und F08. Gegen den Stand eaf8621 rot.
 /// </summary>
 public class BoardContractConstructionTests
 {

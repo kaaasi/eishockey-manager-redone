@@ -225,7 +225,7 @@ Kommentaradresse erst danach verglichen. **Alle Kommentaradressen treffen die ri
 liegen in der Deutung.
 
 Zeilennummern beziehen sich auf den Stand vor dieser Spur (`a09c81e`). „Behoben“ = mit rotem Regressionstest
-(`tests/EishockeyManager.Core.Tests/FinanceNachpruefungTests.cs`) korrigiert; „Issue“ = belegt, aber außerhalb der
+(`tests/EishockeyManager.Core.Tests/FinanceFormulaCrossCheckTests.cs`) korrigiert; „Issue“ = belegt, aber außerhalb der
 Dateigrenzen dieser Spur oder zu groß für sie (Folgespur).
 
 | Fundstelle | Ergebnis | Beleg (Dateioffsets) |
@@ -511,7 +511,7 @@ Jugendspieler), ist offen (re-geld.md „Offen“, Teil 6).
 | Fahnen und Schrift, 6. Platz 3. Liga | UI 8:34 | 0,58 | 0,55 |
 
 Die Lage stimmt zeilengenau (Stangenspitze, Fahne, Schrift); der Rest der Abweichung sind Videounschärfe, die Stange in
-voller Teamfarbe (Video verwischt) und die unveränderte Achse links. Szenario `jugend-original` (`Tools/Scenarios/FinanzenRest.cs`).
+voller Teamfarbe (Video verwischt) und die unveränderte Achse links. Szenario `jugend-original` (`Tools/Scenarios/Finanzen.cs`).
 
 ## Bandenwerbung – Angebots- und Vertragsfeld 0x2A9AD (Spur `finanzen-rest`, Teil 2)
 
@@ -549,7 +549,7 @@ Schatten). Umgesetzt in `UI/Screens/Manager/AdvertisingScreen.cs` (`PanelTexts`,
 - Summenzeilen (0x2AE8A) und Knöpfe „Info“/„Annehmen“ (0x120:0x75) nicht nachgemessen.
 
 **Pixelvergleich** (normierte Kreuzkorrelation der Graustufen, Remake weichgezeichnet gegen Videobild; vorher Base
-`da3b15c`; Szenario `werbung-original` in `Tools/Scenarios/FinanzenRest.cs`):
+`da3b15c`; Szenario `werbung-original` in `Tools/Scenarios/Finanzen.cs`):
 
 | Stand | Videobild | Feld (97–315 × 170–209) | Logo und Pfeile (97–150 × 176–206) | Trennlinie (88–312 × 211–216) |
 |---|---|---|---|---|
@@ -592,7 +592,7 @@ rechnet weiter mit Maßstab 2.
 
 Bildschirmschleife Datei 0x58A57 (Ov 0x138), Betragsbalken Datei 0x58409 (Regel in
 [archiv/analyse/re-geld.md](archiv/analyse/re-geld.md), „Datei 0x58409 – Betragsbalken“). Umsetzung `FinanceScreen.Update`,
-`FinanceAmountBar`; Tests `FinanceBedienungTests` (Core und UI), `FinanceScreenTests`. Ereignisse `[0x5A16]`: 1 = links
+`FinanceAmountBar`; Tests `FinanceOperationLimitsTests` (Core), `FinanceAmountBarTests` (UI), `FinanceScreenTests`. Ereignisse `[0x5A16]`: 1 = links
 gedrückt, 2 = losgelassen, 3 = rechts (Ende). Zustand: Auswahl `[bp-0x16]` (0xFF = keine, anfangs keine), Seite
 `[bp-0x1c]` (0 / 36 / 167), Betrag `[bp-0x2a]` (−1 = keiner), Höchstwert `[bp-0x2e]`, q `[bp-0x32]`.
 

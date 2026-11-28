@@ -24,7 +24,7 @@ Prüfauftrag samt #772, ohne Beleg #730 zurückgestellt); R16-E3 (CI-Läufe hing
 
 ## Runde 16 – Pool wie im Original, Restbefunde des Abgleichs (Plan 11.11.2026, Go 11.11.2026)
 
-Runde 15 abgeschlossen am 11.11.2026: [archiv/runde-15.md](archiv/runde-15.md). Grundlage: Vormerkungen R15-E6 = A und R15-E5 = A
+Runde 15 abgeschlossen am 11.11.2026: [archiv/runde-15.md](runde-15.md). Grundlage: Vormerkungen R15-E6 = A und R15-E5 = A
 (Pool-Umbau #743 in Runde 16), offene Issues #699 (Rest), #703 (R701-06), #730 (Rest), #732, #734, #743, #757, Testlücke
 R727N2-01 (Gesamtreview Runde 15).
 

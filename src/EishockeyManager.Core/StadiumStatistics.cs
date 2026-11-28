@@ -138,7 +138,7 @@ public sealed partial class GameState
     /// Taktik-Befund 375h, Runde 14; berichtigt A190 aus Integration Runde 11);
     /// gespielte Paarungen rechnet seit #837 die Vorbereitung vor dem Spiel ab (<c>MatchGate.cs</c>, [ORIGINAL] wie 0x544C0), die
     /// Abrechnung danach prüft nur noch gewertete oder nicht vorbereitete Spiele (Stand nach dem Spiel). [ORIGINAL] A695
-    /// (docs/analyse/re-abweichungen.md F08, f08_abrechnung.py): keine Abweichung im Ergebnis – nicht vorbereitet sind nur
+    /// (docs/archiv/analyse/re-abweichungen.md F08, f08_abrechnung.py): keine Abweichung im Ergebnis – nicht vorbereitet sind nur
     /// Spielwertung und direkte Aufrufe ohne Spiel, und ohne Spiel ändert sich die Aufstellung nicht.
     /// Sind beide Vereine nicht spielfähig, entscheidet <see cref="HomeForfeits"/> (A191).
     /// </summary>

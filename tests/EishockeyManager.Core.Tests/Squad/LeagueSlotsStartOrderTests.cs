@@ -4,7 +4,7 @@ namespace EishockeyManager.Core.Tests;
 /// Spur <c>kader-start</c>, Runde 13, Teil 3, R-K5 (#549): Die Vereinssätze sind beim Öffnen der Spielvorbereitung schon
 /// gemischt (Ligamischung Datei 0x43A17 → 0x35EDD vor der Spielvorbereitung Datei 0x43A61); die Vereinsauswahl zeigt diese
 /// Folge, der Spielstart übernimmt sie als Satzfolge (<see cref="GameState.LeagueSlots"/>), danach nur der Managertausch.
-/// Belege <c>oberflaeche_0128/_0133/_0136</c>, FILE01/10/27/28 (<c>docs/analyse/re-runde-13.md</c>, R-K5). Vorher zeigte die
+/// Belege <c>oberflaeche_0128/_0133/_0136</c>, FILE01/10/27/28 (<c>docs/archiv/analyse/re-runde-13.md</c>, R-K5). Vorher zeigte die
 /// Auswahl die Datenbankfolge, und die Satzfolge wurde erst nach der Vereinsvergabe gemischt.
 /// </summary>
 public class LeagueSlotsStartOrderTests

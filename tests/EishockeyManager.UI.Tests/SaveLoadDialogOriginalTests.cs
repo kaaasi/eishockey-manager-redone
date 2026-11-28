@@ -6,7 +6,7 @@ using EishockeyManager.UI.Testing;
 namespace EishockeyManager.UI.Tests;
 
 /// <summary>
-/// Spur hok-import, Teil 5 (L6): Speichern-Dialog wie im Original (A338, A339; <c>docs/analyse/re-runde-14.md</c> Sitzung 6,
+/// Spur hok-import, Teil 5 (L6): Speichern-Dialog wie im Original (A338, A339; <c>docs/archiv/analyse/re-runde-14.md</c> Sitzung 6,
 /// Review R14RD2-05.3/.4). Blättern nur über das Pfeilpaar (150 | 169)/(174 | 169), Schritt 48, kein „SEITE:“, weder Mausrad
 /// noch Tasten; Spielstand-Info (em.exe Datei 0x5B661) nur solange die rechte Taste gehalten wird; roter Marker unter der Maus.
 /// Der Pixelvergleich mit <c>a338_*</c> aus dem Referenz-Repo läuft lokal (Ablauf <c>speichern-original</c>, Zahlen im PR),

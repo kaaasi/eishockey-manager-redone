@@ -211,7 +211,7 @@ public static class TeamUi
 /// </summary>
 /// <remarks>
 /// <list type="bullet">
-/// <item>[ORIGINAL] em.exe Datei 0x4C246 (<c>docs/analyse/re-meldungen.md</c> §C): Fenster ab (75 | 107), Überschrift = Name des
+/// <item>[ORIGINAL] em.exe Datei 0x4C246 (<c>docs/archiv/analyse/re-meldungen.md</c> §C): Fenster ab (75 | 107), Überschrift = Name des
 ///   Managers am Zug, „!“-Felder, Knöpfe nur bei Zeile 3 oder 4, ein Linksklick schließt (<see cref="OriginalDialog.Update"/>).</item>
 /// <item>[ORIGINAL] <see cref="ShowShort"/>: Kurzmeldung Datei 0x0C0B8 ohne Knopf und ohne Eingabe, schließt nach Takten von selbst
 ///   (<see cref="ShortMessage"/>); sie gilt für die Texte, die im Original über 0x0C0B8 laufen (Aufrufstellen in der Aufstellung

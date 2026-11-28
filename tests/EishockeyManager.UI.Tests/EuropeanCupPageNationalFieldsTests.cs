@@ -38,7 +38,7 @@ public class EuropeanCupPageNationalFieldsTests
     /// <summary>
     /// B17 (A285, A419): [ORIGINAL] Die Mannschaftsfelder zeigen (K + T) / 2 aus 0x977F (Datei 0x3B65C, 0x3B664–0x3B691): Länder
     /// ohne Bundestrainer Teamwerte + 4 − 4 · Reihe, je auf 0 … 100 begrenzt. Erwartete Werte nach der Nachbildung
-    /// `b17_reihenwerte_national.py` (docs/analyse/re-abweichungen.md B17). Land 55 (DGROUP 0x4C4E: K/T Abwehr 90/90, Sturm 95/93):
+    /// `b17_reihenwerte_national.py` (docs/archiv/analyse/re-abweichungen.md B17). Land 55 (DGROUP 0x4C4E: K/T Abwehr 90/90, Sturm 95/93):
     /// Abwehr 94, 90, 86, Sturm 98, 94, 90. Vorher zeigte das Remake (K + T) / 2 ohne Reihenstufe: Abwehr 90, 90, 90, Sturm
     /// 94, 94, 94. Land 52 (Abwehr 97/103): 100, 98, 96 – vorher 99 in allen Reihen (Grenze 99).
     /// </summary>
